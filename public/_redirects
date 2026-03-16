@@ -1,0 +1,3 @@
+# Cloudflare Pages _redirects file
+# SPA fallback - redirect all routes to index.html
+/*    /index.html   200
