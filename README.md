@@ -249,12 +249,12 @@ service firebase.storage {
    - объявление видно на главной,
    - карточка открывается по маршруту /property/:id.
 
-## 10. Деплой на Cloudflare Pages
+## 10. Деплой на Cloudflare
 
 ### Через GitHub (рекомендуется)
 
 1. Push в репозиторий.
-2. Cloudflare Dashboard -> Workers & Pages -> Create application -> Pages.
+2. Cloudflare Dashboard -> Workers & Pages -> Create application.
 3. Connect to Git.
 4. Build command: npm run build.
 5. Build output: dist.
@@ -267,8 +267,10 @@ service firebase.storage {
 npm install -g wrangler
 wrangler login
 npm run build
-wrangler pages deploy dist --project-name=birklik-az
+wrangler deploy
 ```
+
+В этом проекте используется современный режим Wrangler static assets через [wrangler.toml](wrangler.toml), поэтому `wrangler deploy` публикует папку `dist` как статический сайт с SPA fallback.
 
 ## 11. Частые проблемы
 
