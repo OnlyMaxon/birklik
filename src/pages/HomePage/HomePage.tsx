@@ -127,7 +127,7 @@ export const HomePage: React.FC = () => {
                 {t.search.clearFilters}
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       </section>
     </Layout>
