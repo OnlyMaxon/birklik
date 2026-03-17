@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /properties/{propertyId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.type is string
+        && request.resource.data.district is string
+        && request.resource.data.price.daily is number
+        && request.resource.data.rooms is number;
+
+      allow update, delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+    }
+  }
+}
