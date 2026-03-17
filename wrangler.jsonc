@@ -1,0 +1,12 @@
+{
+  
+  "vars": {
+    "VITE_FIREBASE_API_KEY": "AIzaSyAmjgWxjGBu8gw3NeZgcs30tJUY1Yi_o5o",
+    "VITE_FIREBASE_AUTH_DOMAIN": "cargorealtime-39e63.firebaseapp.com",
+    "VITE_FIREBASE_PROJECT_ID": "cargorealtime-39e63",
+    "VITE_FIREBASE_STORAGE_BUCKET": "cargorealtime-39e63.firebasestorage.app",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "59171620744",
+    "VITE_FIREBASE_APP_ID": "1:59171620744:web:a77c8f5f40f3e16d119c3d"
+  }
+}
+//hii
