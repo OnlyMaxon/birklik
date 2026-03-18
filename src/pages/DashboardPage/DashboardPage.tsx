@@ -196,6 +196,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }))
   }
 
+  const handlePoolSelection = (value: 'yes' | 'no') => {
+    setNewListing(prev => {
+      const hasPoolAmenity = prev.amenities.includes('pool')
+
+      if (value === 'yes' && !hasPoolAmenity) {
+        return { ...prev, amenities: [...prev.amenities, 'pool'] }
+      }
+
+      if (value === 'no' && hasPoolAmenity) {
+        return { ...prev, amenities: prev.amenities.filter(a => a !== 'pool') }
+      }
+
+      return prev
+    })
+  }
+
   if (!isAuthenticated || !user) {
     return null
   }
@@ -373,7 +389,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         </div>
 
                         <div className="form-group">
-                          <label>Email axtar *</label>
+                          <label>Email *</label>
                           <input
                             type="email"
                             value={newListing.contactEmail}
@@ -475,6 +491,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           />
                         </div>
 
+                        <div className="form-group">
+                          <label>{t.search.pool}</label>
+                          <select
+                            value={newListing.amenities.includes('pool') ? 'yes' : 'no'}
+                            onChange={(e) => handlePoolSelection(e.target.value as 'yes' | 'no')}
+                          >
+                            <option value="yes">{t.search.yes}</option>
+                            <option value="no">{t.search.no}</option>
+                          </select>
+                        </div>
+
                         <div className="form-group full-width">
                           <label>{t.form.description}</label>
                           <textarea
@@ -516,7 +543,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width" style={{ backgroundColor: 'rgba(26, 76, 160, 0.08)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #1a4ca0' }}>
                           <p style={{ margin: 0, fontSize: '0.9rem', color: '#1a4ca0', lineHeight: '1.5' }}>
-                            <strong>Oxunuz!</strong> Elan göndərdikdən sonra poddərə sizinlə əlaqə saxlayacaq və {newListing.listingTier === 'free' ? 'təsdiq edəcək' : 'ödəmə təlimatı verəcəq'}.
+                            <strong>Qeyd:</strong> Elan gonderildikden sonra support sizinle elaqe saxlayacaq ve {newListing.listingTier === 'free' ? 'tesdiq verecek' : 'odeme telimatini gonderecek'}.
                           </p>
                         </div>
                       </div>
