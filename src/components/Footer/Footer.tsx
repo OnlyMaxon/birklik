@@ -12,9 +12,7 @@ export const Footer: React.FC = () => {
         <div className="footer-content">
           <div className="footer-brand">
             <Link to="/" className="footer-logo">
-              <span className="footer-logo-frame">
-                <img src="/brand/generated/logo-1024x256.png" alt="Birklik.az" className="footer-logo-image" />
-              </span>
+              <img src="/brand/generated/logo-1024x256.png" alt="Birklik.az" className="footer-logo-image" />
             </Link>
             <p className="footer-tagline">{t.site.tagline}</p>
           </div>

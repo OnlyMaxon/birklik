@@ -47,13 +47,12 @@
 .brand-loader {
   display: flex;
   align-items: center;
-  gap: 0.66rem;
-  padding: 0.68rem 0.98rem;
-  background: linear-gradient(150deg, rgba(7, 17, 44, 0.86), rgba(10, 24, 59, 0.78));
-  border: 1px solid rgba(255, 215, 118, 0.34);
-  border-radius: 17px;
-  box-shadow: 0 22px 46px rgba(2, 8, 28, 0.34);
-  backdrop-filter: blur(4px);
+  gap: 0.8rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .brand-orbit {
@@ -77,21 +76,12 @@
   background: radial-gradient(circle at 30% 30%, #ffe39a, #f6b719 45%, #2f86ff 92%);
 }
 
-.brand-wordmark-shell {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.22rem 0.36rem;
-  border-radius: 10px;
-  background: linear-gradient(160deg, rgba(4, 11, 31, 0.78), rgba(8, 19, 48, 0.66));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
 .brand-wordmark {
-  width: 244px;
+  width: 320px;
   height: auto;
   display: block;
   image-rendering: -webkit-optimize-contrast;
-  filter: drop-shadow(0 3px 8px rgba(3, 9, 28, 0.28)) contrast(1.12) saturate(1.05);
+  filter: drop-shadow(0 3px 8px rgba(3, 9, 28, 0.28)) contrast(1.1) saturate(1.04);
 }
 
 @keyframes spin {
@@ -130,17 +120,11 @@
 
 @media (max-width: 540px) {
   .brand-loader {
-    padding: 0.72rem 0.86rem;
-    gap: 0.75rem;
-  }
-
-  .brand-wordmark-shell {
-    padding: 0.14rem 0.24rem;
-    border-radius: 8px;
+    gap: 0.58rem;
   }
 
   .brand-wordmark {
-    width: 180px;
+    width: 214px;
   }
 
   .brand-orbit {
