@@ -138,5 +138,41 @@ export const az: Translations = {
   hero: {
     title: "Azərbaycanda ideal istirahət evi tapın",
     subtitle: "Villalar, kotteclər və mənzillər — ən yaxşı qiymətlərlə"
+  },
+  pricing: {
+    free: "Pulsuz",
+    standard: "Standart",
+    premium: "Premium",
+    freeDesc: "Başlamaq üçün",
+    standardDesc: "Kiçik müəssisə üçün",
+    premiumDesc: "Profesional hizmet",
+    perMonth: "/ay"
+  },
+  validation: {
+    emailInvalid: "Etibarlı email ünvanı daxil edin",
+    phoneRequired: "Telefon nömrəsi daxil edin",
+    photoLimit: "Pulsuz paket üçün maksimum 4 foto",
+    descriptionTooLong: "Təsviri maksimum 35 sözə qısaldın",
+    addressRequired: "Standart və Premium paketlər üçün ünvan daxil edin",
+    typeRequired: "Mülk növü seçin",
+    districtRequired: "Rayon seçin",
+    priceRequired: "Qiymət daxil edin",
+    roomsRequired: "Otaq sayı daxil edin"
+  },
+  pricing_info: {
+    free_features: "4 foto, qısa təsvir, gizli lokasiya",
+    standard_features: "20 foto, tam təsvir, lokasiya göstərilir",
+    premium_features: "Sınısızmış foto, ana səhifədə 3 həftə prioritet",
+    premium_highlight: "✓ Ana səhifədə 3 həftə göstərilir"
+  },
+  support: {
+    waitingForReview: "Elan gözləmədə - dəstek komandası ilə təmas saxlayacağıq",
+    listed: "Elanınız aktiv",
+    contactSupport: "Dəstəklə əlaqə saxlayın"
+  },
+  testData: {
+    addTest: "Test Məlumatı Əlavə Et",
+    removeTest: "Test Məlumatını Sil",
+    testListings: "Test Elanları"
   }
 }

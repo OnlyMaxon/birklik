@@ -24,6 +24,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [error, setError] = React.useState('')
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([])
+  const [hasTestData, setHasTestData] = React.useState(false)
+  const [isAddingTestData, setIsAddingTestData] = React.useState(false)
+
+  const isTestAccount = user?.email === 'calilorucli42@gmail.com'
 
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -227,6 +231,98 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     await loadListings()
+  }
+
+  const testListings = [
+    {
+      title: { az: 'Lüks villa - Test məntəqəsi', ru: 'Люкс вилла - тестовая', en: 'Luxury Villa - Test' },
+      description: { az: 'Bu test elanıdır. Həqiqət olmayan məlumatdır.', ru: 'Это тестовое объявление. Вымышленные данные.', en: 'This is a test listing. Fictional data.' },
+      type: 'villa' as PropertyType,
+      district: 'baku' as District,
+      address: { az: 'Bakı, Test küçəsi 1', ru: 'Баку, Test улица 1', en: 'Baku, Test street 1' },
+      price: { daily: 250, weekly: 1500, monthly: 5000, currency: 'AZN' },
+      rooms: 5,
+      area: 350,
+      amenities: ['pool', 'parking', 'wifi', 'ac', 'kitchen', 'bbq'] as Amenity[],
+      images: ['https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800'],
+      coordinates: { lat: 40.4093, lng: 49.8671 },
+      listingTier: 'premium' as ListingTier,
+      status: 'active' as const,
+      isFeatured: true,
+      isActive: true,
+      city: 'Baku'
+    },
+    {
+      title: { az: 'Dəniz mənzərəli mənzil - Test', ru: 'Квартира с видом на море - Тест', en: 'Sea View Apartment - Test' },
+      description: { az: 'Test elanı - üç otaqlı müasir mənzil', ru: 'Тестовое объявление - 3-комнатная квартира', en: 'Test listing - 3-room modern apartment' },
+      type: 'apartment' as PropertyType,
+      district: 'bilgah' as District,
+      address: { az: 'Bilgəh, Test Dənizkənarı', ru: 'Бильгях, Test Берег', en: 'Bilgah, Test Beach' },
+      price: { daily: 120, weekly: 700, monthly: 2500, currency: 'AZN' },
+      rooms: 3,
+      area: 95,
+      amenities: ['wifi', 'ac', 'kitchen', 'tv', 'parking', 'beach'] as Amenity[],
+      images: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800'],
+      coordinates: { lat: 40.5644, lng: 50.0372 },
+      listingTier: 'standard' as ListingTier,
+      status: 'active' as const,
+      isFeatured: false,
+      isActive: true,
+      city: 'Baku'
+    }
+  ]
+
+  const handleAddTestData = async () => {
+    if (!user) return
+
+    setIsAddingTestData(true)
+    setError('')
+
+    try {
+      for (const testListing of testListings) {
+        const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
+          ...testListing,
+          owner: {
+            name: user.name,
+            phone: user.phone,
+            email: user.email
+          },
+          ownerId: user.id
+        }
+
+        await createProperty(propertyPayload, [])
+      }
+
+      setHasTestData(true)
+      await loadListings()
+    } catch (err) {
+      setError(t.messages.error)
+    } finally {
+      setIsAddingTestData(false)
+    }
+  }
+
+  const handleRemoveTestData = async () => {
+    const ok = window.confirm('Bütün test məlumatlarını silmək istəyirsiniz?')
+    if (!ok) return
+
+    setIsAddingTestData(true)
+    setError('')
+
+    try {
+      const listingsToDelete = listings.filter(l => l.title.az.includes('Test'))
+
+      for (const listing of listingsToDelete) {
+        await deleteProperty(listing.id)
+      }
+
+      setHasTestData(false)
+      await loadListings()
+    } catch (err) {
+      setError(t.messages.error)
+    } finally {
+      setIsAddingTestData(false)
+    }
   }
 
   return (
@@ -592,6 +688,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         {t.form.submit}
                       </button>
                     </form>
+
+                    {isTestAccount && (
+                      <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #e0e7ff' }}>
+                        <h3 style={{ marginBottom: '1rem', color: '#1a4ca0' }}>🧪 Test Məlumatları</h3>
+                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
+                          Platformu sınaqdan keçirmək üçün test elanları əlavə edin və ya silin.
+                        </p>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                          <button
+                            type="button"
+                            className={`btn ${hasTestData ? 'btn-ghost' : 'btn-accent'}`}
+                            onClick={handleAddTestData}
+                            disabled={isAddingTestData || hasTestData}
+                          >
+                            {isAddingTestData ? t.messages.loading : t.testData.addTest}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={handleRemoveTestData}
+                            disabled={isAddingTestData || !hasTestData}
+                            style={{ color: hasTestData ? '#d32f2f' : '#999' }}
+                          >
+                            {isAddingTestData ? t.messages.loading : t.testData.removeTest}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

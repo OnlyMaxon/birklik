@@ -139,4 +139,40 @@ export interface Translations {
     title: string
     subtitle: string
   }
+  pricing: {
+    free: string
+    standard: string
+    premium: string
+    freeDesc: string
+    standardDesc: string
+    premiumDesc: string
+    perMonth: string
+  }
+  validation: {
+    emailInvalid: string
+    phoneRequired: string
+    photoLimit: string
+    descriptionTooLong: string
+    addressRequired: string
+    typeRequired: string
+    districtRequired: string
+    priceRequired: string
+    roomsRequired: string
+  }
+  pricing_info: {
+    free_features: string
+    standard_features: string
+    premium_features: string
+    premium_highlight: string
+  }
+  support: {
+    waitingForReview: string
+    listed: string
+    contactSupport: string
+  }
+  testData: {
+    addTest: string
+    removeTest: string
+    testListings: string
+  }
 }

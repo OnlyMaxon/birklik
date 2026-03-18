@@ -138,5 +138,41 @@ export const ru: Translations = {
   hero: {
     title: "Найдите идеальный дом для отдыха в Азербайджане",
     subtitle: "Виллы, коттеджи и квартиры — по лучшим ценам"
+  },
+  pricing: {
+    free: "Бесплатно",
+    standard: "Стандарт",
+    premium: "Премиум",
+    freeDesc: "Для начинающих",
+    standardDesc: "Для малого бизнеса",
+    premiumDesc: "Профессиональный сервис",
+    perMonth: "/месяц"
+  },
+  validation: {
+    emailInvalid: "Введите корректный адрес электронной почты",
+    phoneRequired: "Требуется номер телефона",
+    photoLimit: "Максимум 4 фото для бесплатного тарифа",
+    descriptionTooLong: "Описание не должно превышать 35 слов",
+    addressRequired: "Адрес обязателен для Стандарта и Премиума",
+    typeRequired: "Выберите тип недвижимости",
+    districtRequired: "Выберите район",
+    priceRequired: "Введите цену",
+    roomsRequired: "Укажите количество комнат"
+  },
+  pricing_info: {
+    free_features: "4 фото, короткое описание, скрытое местоположение",
+    standard_features: "20 фото, полное описание, видимое местоположение",
+    premium_features: "Неограниченные фото, на главной странице 3 недели",
+    premium_highlight: "✓ На главной странице 3 недели"
+  },
+  support: {
+    waitingForReview: "Объявление на модерации - служба поддержки свяжется с вами",
+    listed: "Ваше объявление активно",
+    contactSupport: "Связаться с поддержкой"
+  },
+  testData: {
+    addTest: "Добавить тестовые данные",
+    removeTest: "Удалить тестовые данные",
+    testListings: "Тестовые объявления"
   }
 }

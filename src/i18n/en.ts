@@ -138,5 +138,41 @@ export const en: Translations = {
   hero: {
     title: "Find Your Perfect Vacation Home in Azerbaijan",
     subtitle: "Villas, cottages and apartments — at the best prices"
+  },
+  pricing: {
+    free: "Free",
+    standard: "Standard",
+    premium: "Premium",
+    freeDesc: "Get started",
+    standardDesc: "For small business",
+    premiumDesc: "Professional service",
+    perMonth: "/month"
+  },
+  validation: {
+    emailInvalid: "Enter a valid email address",
+    phoneRequired: "Phone number is required",
+    photoLimit: "Maximum 4 photos for free tier",
+    descriptionTooLong: "Keep description to maximum 35 words",
+    addressRequired: "Address is required for Standard and Premium",
+    typeRequired: "Select property type",
+    districtRequired: "Select district",
+    priceRequired: "Enter price",
+    roomsRequired: "Enter number of rooms"
+  },
+  pricing_info: {
+    free_features: "4 photos, short description, hidden location",
+    standard_features: "20 photos, full description, location visible",
+    premium_features: "Unlimited photos, featured 3 weeks on homepage",
+    premium_highlight: "✓ Featured 3 weeks on homepage"
+  },
+  support: {
+    waitingForReview: "Listing pending - support team will contact you",
+    listed: "Your listing is active",
+    contactSupport: "Contact support"
+  },
+  testData: {
+    addTest: "Add Test Data",
+    removeTest: "Remove Test Data",
+    testListings: "Test Listings"
   }
 }

@@ -35,10 +35,11 @@
 }
 
 .footer-logo-image {
-  width: 224px;
+  width: 180px;
   height: auto;
   image-rendering: -webkit-optimize-contrast;
-  filter: drop-shadow(0 4px 11px rgba(0, 0, 0, 0.32)) contrast(1.1) saturate(1.06);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28)) contrast(1.12) saturate(1.08);
+  object-fit: contain;
 }
 
 .footer-tagline {
