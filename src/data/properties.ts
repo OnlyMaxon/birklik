@@ -505,6 +505,90 @@ export const mockProperties: Property[] = [
     },
     rating: 4.7,
     reviews: 19
+  },
+  {
+    id: '13',
+    title: {
+      az: 'Yeni test villa - Novxanı',
+      ru: 'Новая тестовая вилла - Новханы',
+      en: 'New Test Villa - Novkhani'
+    },
+    description: {
+      az: 'Test məqsədi üçün əlavə olunmuş villa. Geniş hovuz, sakit məhəllə və böyük həyət.',
+      ru: 'Вилла добавлена для тестов. Большой бассейн, тихий район и просторный двор.',
+      en: 'Villa added for testing purposes. Large pool, quiet district, and spacious yard.'
+    },
+    type: 'villa',
+    district: 'novkhani',
+    address: {
+      az: 'Novxanı, Dəniz bağları 18',
+      ru: 'Новханы, Дениз баглары 18',
+      en: 'Novkhani, Deniz baglari 18'
+    },
+    price: {
+      daily: 220,
+      weekly: 1320,
+      monthly: 4800,
+      currency: 'AZN'
+    },
+    rooms: 4,
+    area: 260,
+    amenities: ['pool', 'parking', 'wifi', 'ac', 'kitchen', 'tv', 'garden', 'bbq'],
+    images: [
+      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=800',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800',
+      'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?w=800'
+    ],
+    coordinates: { lat: 40.5521, lng: 50.0914 },
+    owner: {
+      name: 'Test User',
+      phone: '+994551112233',
+      email: 'test13@birklik.az'
+    },
+    rating: 4.6,
+    reviews: 6
+  },
+  {
+    id: '14',
+    title: {
+      az: 'Yeni test mənzil - Bakı',
+      ru: 'Новая тестовая квартира - Баку',
+      en: 'New Test Apartment - Baku'
+    },
+    description: {
+      az: 'Bakı mərkəzində test üçün əlavə edilmiş rahat mənzil. Metroya yaxın, tam təchizatlı.',
+      ru: 'Уютная квартира в центре Баку для теста. Рядом с метро, полностью оборудована.',
+      en: 'Comfortable apartment in central Baku added for testing. Near metro, fully equipped.'
+    },
+    type: 'apartment',
+    district: 'baku',
+    address: {
+      az: 'Bakı, Nizami küçəsi 41',
+      ru: 'Баку, улица Низами 41',
+      en: 'Baku, Nizami street 41'
+    },
+    price: {
+      daily: 95,
+      weekly: 560,
+      monthly: 1900,
+      currency: 'AZN'
+    },
+    rooms: 2,
+    area: 78,
+    amenities: ['parking', 'wifi', 'ac', 'kitchen', 'tv', 'washer'],
+    images: [
+      'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800'
+    ],
+    coordinates: { lat: 40.3774, lng: 49.8432 },
+    owner: {
+      name: 'Test User 2',
+      phone: '+994556667788',
+      email: 'test14@birklik.az'
+    },
+    rating: 4.4,
+    reviews: 4
   }
 ]
 

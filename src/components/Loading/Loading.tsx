@@ -15,7 +15,9 @@ export const Loading: React.FC<LoadingProps> = ({ fullScreen = false, message, b
           <div className="brand-orbit">
             <div className="brand-core"></div>
           </div>
-          <img className="brand-wordmark" src="/brand/generated/logo-512x128.png" alt="Birklik.az" />
+          <span className="brand-wordmark-shell">
+            <img className="brand-wordmark" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
+          </span>
         </div>
       ) : (
         <div className="loading-spinner">

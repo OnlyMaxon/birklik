@@ -20,7 +20,9 @@ export const Header: React.FC = () => {
       <div className="container">
         <div className="header-content">
           <Link to="/" className="logo" onClick={() => setMenuOpen(false)}>
-            <img className="logo-image" src="/brand/generated/logo-512x128.png" alt="Birklik.az" />
+            <span className="logo-frame">
+              <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
+            </span>
             <span className="logo-tagline">{t.site.tagline}</span>
           </Link>
 
