@@ -1,7 +1,8 @@
 .map-container {
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  border: 1px solid rgba(16, 66, 136, 0.14);
+  box-shadow: 0 14px 30px rgba(8, 31, 78, 0.14);
 }
 
 .leaflet-map {
@@ -28,8 +29,8 @@
 
 .popup-title {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--gray-800);
+  font-weight: 700;
+  color: #1b4e96;
   margin-bottom: 0.25rem;
   line-height: 1.3;
 }
@@ -42,7 +43,7 @@
 
 .popup-price {
   font-size: 0.875rem;
-  color: var(--primary-color);
+  color: #1f62c7;
 }
 
 .popup-price strong {

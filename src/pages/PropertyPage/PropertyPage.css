@@ -1,5 +1,8 @@
 .property-page {
   padding: 2rem 0;
+  background:
+    radial-gradient(circle at 86% -8%, rgba(142, 202, 230, 0.2), transparent 30%),
+    linear-gradient(180deg, #f4f8ff 0%, #eaf1ff 100%);
 }
 
 .breadcrumb {
@@ -22,7 +25,7 @@
 .property-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 2rem;
+  gap: 1.6rem;
   align-items: start;
 }
 
@@ -33,13 +36,17 @@
 }
 
 .property-info {
-  padding: 2rem;
+  padding: 1.6rem;
+  border: 1px solid rgba(16, 68, 140, 0.12);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fff, #f5f9ff);
+  box-shadow: 0 16px 34px rgba(9, 34, 82, 0.12);
 }
 
 .property-title {
   font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--gray-800);
+  font-weight: 800;
+  color: #173f77;
   margin-bottom: 1rem;
 }
 
@@ -78,9 +85,10 @@
 .property-features {
   display: flex;
   gap: 2rem;
-  padding: 1.5rem;
-  background: var(--gray-50);
-  border-radius: var(--radius-lg);
+  padding: 1.3rem;
+  background: linear-gradient(180deg, #f8fbff, #eef4ff);
+  border-radius: 16px;
+  border: 1px solid rgba(18, 72, 146, 0.12);
   margin-bottom: 1.5rem;
 }
 
@@ -112,8 +120,8 @@
 
 .property-section h3 {
   font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--primary-color);
+  font-weight: 800;
+  color: #1d59b8;
   margin-bottom: 0.75rem;
 }
 
@@ -147,7 +155,11 @@
 }
 
 .booking-card {
-  padding: 1.5rem;
+  padding: 1.4rem;
+  border: 1px solid rgba(16, 68, 140, 0.14);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff, #f5f9ff);
+  box-shadow: 0 16px 34px rgba(9, 34, 82, 0.12);
 }
 
 .price-section {
@@ -169,8 +181,8 @@
 
 .price-section .price-value {
   font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-weight: 800;
+  color: #1f62c7;
 }
 
 .w-full {

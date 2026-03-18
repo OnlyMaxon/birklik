@@ -206,7 +206,7 @@ export const HomePage: React.FC = () => {
                     <li key={perk}>{perk}</li>
                   ))}
                 </ul>
-                <button className={`btn ${plan.highlighted ? 'btn-accent' : 'btn-outline'}`}>Elan yerleshdir</button>
+                <button className={`btn ${plan.highlighted ? 'btn-accent' : 'btn-outline'}`}>{t.nav.addListing}</button>
               </article>
             ))}
           </div>
@@ -221,7 +221,7 @@ export const HomePage: React.FC = () => {
         <div className="container cta-box">
           <h2>Her sey bir klikle hazir</h2>
           <p>Evini bugun elan et, sabahdan rezervasiya qebul etmeye basla.</p>
-          <Link className="btn btn-accent btn-lg" to="/dashboard/add">Indi basla</Link>
+          <Link className="btn btn-accent btn-lg" to="/dashboard/add">{t.nav.addListing}</Link>
         </div>
       </section>
     </Layout>

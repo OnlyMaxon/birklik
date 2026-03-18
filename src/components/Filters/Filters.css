@@ -1,5 +1,5 @@
 .filters-container {
-  margin-bottom: 2rem;
+  margin-bottom: 1.6rem;
 }
 
 .filters-toggle {
@@ -7,10 +7,11 @@
 }
 
 .filters-panel {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 250, 255, 0.98));
+  border-radius: 20px;
+  padding: 1.4rem;
+  border: 1px solid rgba(16, 64, 136, 0.12);
+  box-shadow: 0 18px 34px rgba(11, 36, 86, 0.12);
   display: none;
 }
 
@@ -32,25 +33,25 @@
 }
 
 .filter-group label {
-  font-weight: 500;
-  color: var(--gray-700);
+  font-weight: 700;
+  color: #284a7d;
   font-size: 0.875rem;
 }
 
 .filter-group select,
 .filter-group input {
-  padding: 0.625rem 0.75rem;
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius);
+  padding: 0.68rem 0.8rem;
+  border: 1px solid rgba(18, 70, 140, 0.2);
+  border-radius: 12px;
   font-size: 0.875rem;
-  background-color: var(--white);
+  background-color: #fff;
 }
 
 .filter-group select:focus,
 .filter-group input:focus {
-  border-color: var(--primary-color);
+  border-color: #2b6ad0;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+  box-shadow: 0 0 0 3px rgba(43, 106, 208, 0.14);
 }
 
 .filters-actions {

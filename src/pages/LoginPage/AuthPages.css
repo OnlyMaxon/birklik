@@ -4,7 +4,10 @@
   justify-content: center;
   min-height: calc(100vh - 200px);
   padding: 2rem 1rem;
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 183, 3, 0.18), transparent 32%),
+    radial-gradient(circle at 90% 0%, rgba(142, 202, 230, 0.2), transparent 35%),
+    linear-gradient(180deg, #eef5ff 0%, #e8f0ff 100%);
 }
 
 .auth-container {
@@ -13,7 +16,11 @@
 }
 
 .auth-card {
-  padding: 2.5rem;
+  padding: 2rem;
+  border-radius: 22px;
+  border: 1px solid rgba(17, 69, 143, 0.12);
+  background: linear-gradient(180deg, #ffffff, #f5f9ff);
+  box-shadow: 0 20px 36px rgba(10, 37, 87, 0.14);
 }
 
 .auth-header {
@@ -23,13 +30,13 @@
 
 .auth-header h1 {
   font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  font-weight: 800;
+  color: #163d77;
   margin-bottom: 0.5rem;
 }
 
 .auth-header p {
-  color: var(--gray-500);
+  color: #5c759b;
 }
 
 .auth-form {
@@ -60,11 +67,11 @@
 
 .forgot-link {
   font-size: 0.875rem;
-  color: var(--primary-color);
+  color: #1f64c9;
 }
 
 .forgot-link:hover {
-  color: var(--accent-color);
+  color: #ffb703;
 }
 
 .error-message {
@@ -89,18 +96,18 @@
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--gray-200);
-  color: var(--gray-600);
+  border-top: 1px solid rgba(17, 69, 143, 0.14);
+  color: #5d7599;
   font-size: 0.875rem;
 }
 
 .auth-footer a {
-  color: var(--primary-color);
+  color: #1f64c9;
   font-weight: 600;
 }
 
 .auth-footer a:hover {
-  color: var(--accent-color);
+  color: #ffb703;
 }
 
 @media (max-width: 480px) {

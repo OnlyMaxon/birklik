@@ -1,11 +1,13 @@
 .dashboard-page {
-  padding: 2rem 0;
+  padding: 2.1rem 0;
   min-height: calc(100vh - 200px);
-  background-color: var(--gray-50);
+  background:
+    radial-gradient(circle at 90% -15%, rgba(142, 202, 230, 0.24), transparent 34%),
+    linear-gradient(180deg, #f3f8ff 0%, #eaf1ff 100%);
 }
 
 .dashboard-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.7rem;
 }
 
 .user-info {
@@ -19,7 +21,8 @@
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--accent-color);
+  border: 3px solid #ffb703;
+  box-shadow: 0 8px 18px rgba(11, 34, 78, 0.2);
 }
 
 .user-info h1 {
@@ -36,15 +39,15 @@
 .dashboard-layout {
   display: grid;
   grid-template-columns: 250px 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 /* Sidebar */
 .dashboard-sidebar {
-  background: var(--white);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(170deg, #0c2855 0%, #0a1f42 100%);
+  border-radius: 20px;
   padding: 1rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 18px 36px rgba(6, 18, 46, 0.28);
   height: fit-content;
   position: sticky;
   top: 90px;
@@ -61,21 +64,21 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-radius: var(--radius);
-  color: var(--gray-600);
-  font-weight: 500;
+  border-radius: 12px;
+  color: rgba(220, 234, 255, 0.86);
+  font-weight: 700;
   text-align: left;
   transition: var(--transition);
 }
 
 .nav-item:hover {
-  background-color: var(--gray-100);
-  color: var(--gray-800);
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
 }
 
 .nav-item.active {
-  background-color: var(--primary-color);
-  color: var(--white);
+  background: linear-gradient(120deg, #ffb703, #ffd166);
+  color: #122f5f;
 }
 
 .nav-item svg {
@@ -89,7 +92,7 @@
 
 .tab-content h2 {
   font-size: 1.5rem;
-  color: var(--gray-800);
+  color: #173c73;
   margin-bottom: 1.5rem;
 }
 
@@ -106,6 +109,10 @@
   gap: 1.5rem;
   padding: 1rem;
   align-items: center;
+  border: 1px solid rgba(19, 71, 143, 0.12);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #f4f8ff);
+  box-shadow: 0 12px 24px rgba(9, 30, 73, 0.12);
 }
 
 .listing-image {
@@ -137,8 +144,8 @@
 }
 
 .listing-price {
-  color: var(--primary-color);
-  font-weight: 600;
+  color: #1d63c9;
+  font-weight: 800;
 }
 
 .listing-stats {
@@ -172,9 +179,10 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, #fff, #f4f8ff);
+  border-radius: 20px;
+  border: 1px solid rgba(17, 69, 139, 0.12);
+  box-shadow: 0 16px 34px rgba(11, 39, 90, 0.12);
 }
 
 .empty-state svg {
@@ -196,9 +204,10 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, #ffffff, #f5fbff);
+  border-radius: 20px;
+  border: 1px solid rgba(16, 133, 107, 0.16);
+  box-shadow: 0 16px 34px rgba(11, 39, 90, 0.12);
   color: var(--success);
 }
 
@@ -213,7 +222,11 @@
 
 /* Add Listing Form */
 .add-listing-form {
-  padding: 2rem;
+  padding: 1.7rem;
+  border: 1px solid rgba(17, 69, 143, 0.12);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #ffffff, #f5f9ff);
+  box-shadow: 0 16px 32px rgba(12, 39, 88, 0.13);
 }
 
 .form-grid {
@@ -254,16 +267,17 @@
 
 .file-upload {
   position: relative;
-  border: 2px dashed var(--gray-300);
-  border-radius: var(--radius);
+  border: 2px dashed rgba(24, 83, 168, 0.26);
+  border-radius: 14px;
   padding: 2rem;
   text-align: center;
   cursor: pointer;
   transition: var(--transition);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .file-upload:hover {
-  border-color: var(--primary-color);
+  border-color: #2b6ad0;
 }
 
 .file-upload input {
@@ -299,8 +313,12 @@
 
 /* Profile */
 .profile-card {
-  padding: 2rem;
+  padding: 1.7rem;
   max-width: 500px;
+  border-radius: 20px;
+  border: 1px solid rgba(17, 69, 143, 0.12);
+  background: linear-gradient(180deg, #ffffff, #f5f9ff);
+  box-shadow: 0 16px 32px rgba(12, 39, 88, 0.13);
 }
 
 .profile-header {
