@@ -47,8 +47,8 @@
 .brand-loader {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.88rem 1.22rem;
+  gap: 0.66rem;
+  padding: 0.68rem 0.98rem;
   background: linear-gradient(150deg, rgba(7, 17, 44, 0.86), rgba(10, 24, 59, 0.78));
   border: 1px solid rgba(255, 215, 118, 0.34);
   border-radius: 17px;
@@ -57,10 +57,10 @@
 }
 
 .brand-orbit {
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 5px solid rgba(255, 255, 255, 0.18);
+  border: 4px solid rgba(255, 255, 255, 0.18);
   border-top-color: #5ea2ff;
   border-left-color: #f6b719;
   animation: spin 1.05s linear infinite;
@@ -71,8 +71,8 @@
 }
 
 .brand-core {
-  width: 26px;
-  height: 26px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #ffe39a, #f6b719 45%, #2f86ff 92%);
 }
