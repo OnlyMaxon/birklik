@@ -23,6 +23,10 @@ export interface PropertyOwner {
   email: string
 }
 
+export type ListingTier = 'free' | 'standard' | 'premium'
+
+export type ListingStatus = 'active' | 'pending'
+
 export interface Property {
   id: string
   type: PropertyType
@@ -41,6 +45,8 @@ export interface Property {
   reviews?: number
   // Firebase specific fields
   ownerId?: string
+  listingTier?: ListingTier
+  status?: ListingStatus
   isFeatured?: boolean
   isActive?: boolean
   createdAt?: string

@@ -3,17 +3,21 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList } from '../../data'
-import { PropertyType, District, Amenity, Property } from '../../types'
+import { PropertyType, District, Amenity, Property, ListingTier } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner } from '../../services'
 import './DashboardPage.css'
 
 type TabType = 'listings' | 'add' | 'profile'
 
-export const DashboardPage: React.FC = () => {
+interface DashboardPageProps {
+  initialTab?: TabType
+}
+
+export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'listings' }) => {
   const { language, t } = useLanguage()
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = React.useState<TabType>('listings')
+  const [activeTab, setActiveTab] = React.useState<TabType>(initialTab)
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
   const [listings, setListings] = React.useState<Property[]>([])
   const [isLoadingListings, setIsLoadingListings] = React.useState(false)
@@ -49,13 +53,16 @@ export const DashboardPage: React.FC = () => {
   const [newListing, setNewListing] = React.useState({
     title: '',
     description: '',
+    listingTier: 'free' as ListingTier,
     type: '' as PropertyType | '',
     district: '' as District | '',
     address: '',
     price: '',
     rooms: '',
     area: '',
-    amenities: [] as Amenity[]
+    amenities: [] as Amenity[],
+    contactEmail: '',
+    contactPhone: ''
   })
 
   const handleAddListing = async (e: React.FormEvent) => {
@@ -68,9 +75,44 @@ export const DashboardPage: React.FC = () => {
     setIsSubmitting(true)
     setError('')
 
+    // Validate contact information
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!newListing.contactEmail.trim() || !emailRegex.test(newListing.contactEmail)) {
+      setError('Etibarlı email ünvanı daxil edin')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!newListing.contactPhone.trim()) {
+      setError('Telefon nömrəsi daxil edin')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
+      setError('Pulsuz paket ucun maksimum 4 foto yuklemek olar')
+      setIsSubmitting(false)
+      return
+    }
+
+    const descriptionWordCount = newListing.description.trim().split(/\s+/).filter(Boolean).length
+    if (newListing.listingTier === 'free' && descriptionWordCount > 35) {
+      setError('Pulsuz paketde tesvir maksimum 35 soz ola biler')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (newListing.listingTier !== 'free' && !newListing.address.trim()) {
+      setError('Standart ve Premium paketde unvan daxil edilmelidir')
+      setIsSubmitting(false)
+      return
+    }
+
     const dailyPrice = Number(newListing.price)
     const rooms = Number(newListing.rooms)
     const area = Number(newListing.area || 0)
+    const normalizedAddress = newListing.listingTier === 'free' ? 'Lokasiya gizlidir' : newListing.address
+    const listingStatus = newListing.listingTier === 'free' ? 'active' : 'pending'
 
     const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
       type: newListing.type,
@@ -97,17 +139,19 @@ export const DashboardPage: React.FC = () => {
         en: newListing.description
       },
       address: {
-        az: newListing.address,
-        ru: newListing.address,
-        en: newListing.address
+        az: normalizedAddress,
+        ru: normalizedAddress,
+        en: normalizedAddress
       },
       owner: {
         name: user.name,
-        phone: user.phone,
-        email: user.email
+        phone: newListing.contactPhone || user.phone,
+        email: newListing.contactEmail || user.email
       },
       ownerId: user.id,
-      isFeatured: false,
+      listingTier: newListing.listingTier,
+      status: listingStatus,
+      isFeatured: newListing.listingTier === 'premium',
       isActive: true,
       city: 'Baku'
     }
@@ -126,13 +170,16 @@ export const DashboardPage: React.FC = () => {
       setNewListing({
         title: '',
         description: '',
+        listingTier: 'free',
         type: '',
         district: '',
         address: '',
         price: '',
         rooms: '',
         area: '',
-        amenities: []
+        amenities: [],
+        contactEmail: '',
+        contactPhone: ''
       })
       setSelectedFiles([])
     }, 2000)
@@ -233,6 +280,8 @@ export const DashboardPage: React.FC = () => {
                   ) : listings.length > 0 ? (
                     <div className="listings-list">
                       {listings.map((property) => {
+                        const statusBadgeClass = property.status === 'active' ? 'badge-success' : 'badge-warning'
+                        const statusText = property.status === 'active' ? '✓ Aktiv' : '⏳ Teklifin Gözlənilməsi'
                         return (
                           <div key={property.id} className="listing-item card">
                             <img 
@@ -241,20 +290,25 @@ export const DashboardPage: React.FC = () => {
                               className="listing-image"
                             />
                             <div className="listing-info">
-                              <Link to={`/property/${property.id}`} className="listing-title">
-                                {getLocalizedText(property.title)}
-                              </Link>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Link to={`/property/${property.id}`} className="listing-title">
+                                  {getLocalizedText(property.title)}
+                                </Link>
+                                <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                  {statusText}
+                                </span>
+                              </div>
                               <p className="listing-location">
                                 {t.districts[property.district]}
                               </p>
                               <p className="listing-price">
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
                               </p>
+                              <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                                <strong>Status:</strong> {property.status === 'active' ? 'Aktiv' : 'Gözləmədə'}
+                              </p>
                             </div>
                             <div className="listing-actions">
-                              <span className={`badge ${property.isActive ? 'badge-success' : 'badge-warning'}`}>
-                                {property.isActive ? t.dashboard.active : t.dashboard.pending}
-                              </span>
                               <div className="action-buttons">
                                 <button className="btn btn-ghost btn-sm">{t.dashboard.edit}</button>
                                 <button className="btn btn-ghost btn-sm text-error" onClick={() => handleDeleteListing(property.id)}>{t.dashboard.delete}</button>
@@ -300,6 +354,47 @@ export const DashboardPage: React.FC = () => {
                     <form onSubmit={handleAddListing} className="add-listing-form card">
                       <div className="form-grid">
                         <div className="form-group full-width">
+                          <label>Elan paketi *</label>
+                          <select
+                            value={newListing.listingTier}
+                            onChange={(e) => setNewListing({ ...newListing, listingTier: e.target.value as ListingTier })}
+                          >
+                            <option value="free">Pulsuz (0 AZN, 3-4 foto, lokasiya yoxdur)</option>
+                            <option value="standard">Standart (15 AZN/ay, 20 foto, lokasiya var)</option>
+                            <option value="premium">Premium (30 AZN/ay, one cixarilir)</option>
+                          </select>
+                          <small>
+                            {newListing.listingTier === 'premium'
+                              ? 'Premium elan 3 hefte ana sehifede prioritetli gosterilir.'
+                              : newListing.listingTier === 'standard'
+                              ? 'Standart paket tam melumat ve lokasiya ucundur.'
+                              : 'Pulsuz paketde qisa tesvir, maksimum 4 foto ve gizli lokasiya var.'}
+                          </small>
+                        </div>
+
+                        <div className="form-group">
+                          <label>Email axtar *</label>
+                          <input
+                            type="email"
+                            value={newListing.contactEmail}
+                            onChange={(e) => setNewListing({...newListing, contactEmail: e.target.value})}
+                            placeholder="your@email.com"
+                            required
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>Telefon *</label>
+                          <input
+                            type="tel"
+                            value={newListing.contactPhone}
+                            onChange={(e) => setNewListing({...newListing, contactPhone: e.target.value})}
+                            placeholder="+994 XX XXX XX XX"
+                            required
+                          />
+                        </div>
+
+                        <div className="form-group full-width">
                           <label>{t.form.title} *</label>
                           <input
                             type="text"
@@ -338,12 +433,13 @@ export const DashboardPage: React.FC = () => {
                         </div>
 
                         <div className="form-group full-width">
-                          <label>{t.form.address} *</label>
+                          <label>{t.form.address} {newListing.listingTier === 'free' ? '' : '*'}</label>
                           <input
                             type="text"
                             value={newListing.address}
                             onChange={(e) => setNewListing({...newListing, address: e.target.value})}
-                            required
+                            required={newListing.listingTier !== 'free'}
+                            placeholder={newListing.listingTier === 'free' ? 'Pulsuz paketde lokasiya gizledilir' : ''}
                           />
                         </div>
 
@@ -413,9 +509,15 @@ export const DashboardPage: React.FC = () => {
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>Drag & drop or click to upload</p>
+                            <p>{newListing.listingTier === 'free' ? 'Maksimum 4 foto (Pulsuz paket)' : 'Drag & drop or click to upload'}</p>
                             {selectedFiles.length > 0 && <p>{selectedFiles.length} file(s) selected</p>}
                           </div>
+                        </div>
+
+                        <div className="form-group full-width" style={{ backgroundColor: 'rgba(26, 76, 160, 0.08)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #1a4ca0' }}>
+                          <p style={{ margin: 0, fontSize: '0.9rem', color: '#1a4ca0', lineHeight: '1.5' }}>
+                            <strong>Oxunuz!</strong> Elan göndərdikdən sonra poddərə sizinlə əlaqə saxlayacaq və {newListing.listingTier === 'free' ? 'təsdiq edəcək' : 'ödəmə təlimatı verəcəq'}.
+                          </p>
                         </div>
                       </div>
 

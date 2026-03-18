@@ -226,6 +226,13 @@
   grid-column: 1 / -1;
 }
 
+.form-group small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--gray-500);
+  font-size: 0.82rem;
+}
+
 .amenities-checkboxes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
         <div className="footer-content">
           <div className="footer-brand">
             <Link to="/" className="footer-logo">
-              <span className="logo-text">{t.site.name}</span>
+              <img src="/brand/generated/logo-512x128.png" alt="Birklik.az" className="footer-logo-image" />
             </Link>
             <p className="footer-tagline">{t.site.tagline}</p>
           </div>
@@ -20,6 +20,7 @@ export const Footer: React.FC = () => {
           <div className="footer-links">
             <Link to="/" className="footer-link">{t.footer.about}</Link>
             <Link to="/" className="footer-link">{t.footer.contact}</Link>
+            <Link to="/dashboard/add" className="footer-link">Elan yerleshdir</Link>
             <Link to="/" className="footer-link">{t.footer.terms}</Link>
             <Link to="/" className="footer-link">{t.footer.privacy}</Link>
           </div>

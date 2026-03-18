@@ -19,8 +19,8 @@ export const Header: React.FC = () => {
     <header className="header">
       <div className="container">
         <div className="header-content">
-          <Link to="/" className="logo">
-            <span className="logo-text">{t.site.name}</span>
+          <Link to="/" className="logo" onClick={() => setMenuOpen(false)}>
+            <img className="logo-image" src="/brand/generated/logo-512x128.png" alt="Birklik.az" />
             <span className="logo-tagline">{t.site.tagline}</span>
           </Link>
 
@@ -28,7 +28,10 @@ export const Header: React.FC = () => {
             <Link to="/" className="nav-link" onClick={() => setMenuOpen(false)}>
               {t.nav.home}
             </Link>
-            
+            <Link to="/dashboard/add" className="nav-link nav-highlight" onClick={() => setMenuOpen(false)}>
+              Elan yerleshdir
+            </Link>
+
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard" className="nav-link" onClick={() => setMenuOpen(false)}>
@@ -66,7 +69,11 @@ export const Header: React.FC = () => {
               ))}
             </div>
 
-            <button 
+            <Link className="btn btn-accent btn-sm header-cta" to="/dashboard/add">
+              Elan yerleshdir
+            </Link>
+
+            <button
               className="menu-toggle"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"

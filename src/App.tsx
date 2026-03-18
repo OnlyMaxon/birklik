@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import React from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HomePage, PropertyPage, LoginPage, RegisterPage, DashboardPage } from './pages'
 import { Loading } from './components'
 import { useAuth } from './context'
@@ -8,7 +9,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
-    return <Loading fullScreen message="Loading..." />
+    return <Loading fullScreen message="Loading..." brand />
   }
 
   if (!isAuthenticated) {
@@ -23,7 +24,7 @@ const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
-    return <Loading fullScreen message="Loading..." />
+    return <Loading fullScreen message="Loading..." brand />
   }
 
   if (isAuthenticated) {
@@ -35,33 +36,49 @@ const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 function App() {
   const { isLoading } = useAuth()
+  const location = useLocation()
+  const [showRouteLoader, setShowRouteLoader] = React.useState(true)
+
+  React.useEffect(() => {
+    setShowRouteLoader(true)
+    const timeout = window.setTimeout(() => setShowRouteLoader(false), 420)
+    return () => window.clearTimeout(timeout)
+  }, [location.pathname])
 
   // Show loading screen while checking auth state
   if (isLoading) {
-    return <Loading fullScreen message="Birklik.az" />
+    return <Loading fullScreen message="Birklik.az" brand />
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/property/:id" element={<PropertyPage />} />
-      <Route path="/login" element={
-        <AuthRoute>
-          <LoginPage />
-        </AuthRoute>
-      } />
-      <Route path="/register" element={
-        <AuthRoute>
-          <RegisterPage />
-        </AuthRoute>
-      } />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <DashboardPage />
-        </ProtectedRoute>
-      } />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      {showRouteLoader && <Loading fullScreen message="Birklik.az" brand />}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/property/:id" element={<PropertyPage />} />
+        <Route path="/login" element={
+          <AuthRoute>
+            <LoginPage />
+          </AuthRoute>
+        } />
+        <Route path="/register" element={
+          <AuthRoute>
+            <RegisterPage />
+          </AuthRoute>
+        } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/add" element={
+          <ProtectedRoute>
+            <DashboardPage initialTab="add" />
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   )
 }
 
