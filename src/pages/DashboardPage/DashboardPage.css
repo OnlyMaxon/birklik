@@ -374,9 +374,27 @@
 }
 
 @media (max-width: 768px) {
+  .dashboard-page {
+    padding: 1.35rem 0;
+  }
+
+  .user-info h1 {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-nav {
+    gap: 0.4rem;
+  }
+
+  .nav-item {
+    padding: 0.7rem 0.82rem;
+    font-size: 0.88rem;
+  }
+
   .listing-item {
     grid-template-columns: 1fr;
     text-align: center;
+    gap: 0.9rem;
   }
 
   .listing-image {
@@ -390,5 +408,29 @@
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .user-avatar {
+    width: 52px;
+    height: 52px;
+  }
+
+  .add-listing-form,
+  .profile-card {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  .empty-state,
+  .success-state {
+    padding: 2.1rem 1rem;
   }
 }

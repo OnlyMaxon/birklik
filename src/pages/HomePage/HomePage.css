@@ -269,11 +269,11 @@
 
 @media (max-width: 768px) {
   .hero {
-    min-height: 78vh;
+    min-height: 76vh;
   }
 
   .hero-content {
-    padding-top: 4.1rem;
+    padding-top: 3.8rem;
     align-items: center;
     text-align: center;
   }
@@ -293,5 +293,48 @@
 
   .cta-box {
     padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 72vh;
+  }
+
+  .hero-content {
+    padding: 3.5rem 0.7rem 2.2rem;
+  }
+
+  .hero-title {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+    line-height: 1.08;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .hero-chips {
+    margin-top: 0.7rem;
+    gap: 0.42rem;
+  }
+
+  .hero-chip {
+    font-size: 0.7rem;
+    padding: 0.34rem 0.52rem;
+  }
+
+  .plan-card {
+    padding: 1.05rem;
+  }
+
+  .plan-price strong {
+    font-size: 1.58rem;
+  }
+
+  .section-header {
+    gap: 0.65rem;
   }
 }

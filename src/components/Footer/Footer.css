@@ -29,7 +29,7 @@
 }
 
 .footer-logo-image {
-  width: 240px;
+  width: 280px;
   height: auto;
   image-rendering: -webkit-optimize-contrast;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.34)) contrast(1.1) saturate(1.05);
@@ -100,7 +100,7 @@
   }
 
   .footer-logo-image {
-    width: 208px;
+    width: 232px;
   }
 
   .footer-links {
@@ -109,5 +109,19 @@
 
   .footer-social {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 2.4rem 0 1.2rem;
+  }
+
+  .footer-logo-image {
+    width: 198px;
+  }
+
+  .footer-links {
+    gap: 0.9rem 1rem;
   }
 }
