@@ -391,6 +391,10 @@
     background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1100&q=66');
   }
 
+  .hero-overlay {
+    background: linear-gradient(140deg, rgba(8, 22, 51, 0.92), rgba(9, 33, 70, 0.9));
+  }
+
   .hero-content {
     padding-top: 3.1rem;
     align-items: center;
@@ -433,6 +437,10 @@
   .hero {
     min-height: 64dvh;
     background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=780&q=62');
+  }
+
+  .hero-pattern {
+    opacity: 0.2;
   }
 
   .hero-content {

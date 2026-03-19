@@ -1,5 +1,5 @@
-/* Mobile and iOS Google webview fallbacks.
-  Keeps app logic unchanged and avoids aggressive visual overrides. */
+/* Aggressive mobile and iOS Google webview fallbacks.
+   Keeps app logic unchanged and only adjusts presentation. */
 
 /* Base typography safety */
 .btn,
@@ -144,15 +144,154 @@
 }
 
 /* iPhone Google/Chrome shell safe mode */
-.ios-google .loading-overlay,
-.ios-google .modal-overlay {
+.ios-google body {
+  background: #edf4ff;
+  color: #17355f;
+}
+
+.ios-google .header,
+.ios-google .footer,
+.ios-google .plans-section,
+.ios-google .cta-section,
+.ios-google .properties-section,
+.ios-google .property-page,
+.ios-google .dashboard-page,
+.ios-google .auth-page {
+  background-image: none !important;
+}
+
+.ios-google .header {
+  background: #0c2347 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-.ios-google .header,
-.ios-google .nav,
-.ios-google .mobile-menu-backdrop {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+.ios-google .hero-overlay {
+  background: linear-gradient(145deg, rgba(7, 20, 45, 0.95), rgba(11, 39, 80, 0.92)) !important;
+}
+
+.ios-google .hero-pattern {
+  display: none;
+}
+
+.ios-google .properties-section {
+  background: #edf4ff !important;
+}
+
+.ios-google .plans-section {
+  background: linear-gradient(160deg, #0a1f45 0%, #0d2f67 100%) !important;
+}
+
+.ios-google .cta-section,
+.ios-google .footer {
+  background: linear-gradient(160deg, #071937 0%, #0b244c 100%) !important;
+}
+
+.ios-google .hero-type-card,
+.ios-google .search-bar,
+.ios-google .filters-panel,
+.ios-google .property-card,
+.ios-google .booking-card,
+.ios-google .property-info,
+.ios-google .add-listing-form,
+.ios-google .profile-card,
+.ios-google .auth-card {
+  background: #ffffff !important;
+  border-color: rgba(19, 78, 158, 0.14) !important;
+}
+
+.ios-google .property-card,
+.ios-google .plan-card,
+.ios-google .filters-panel,
+.ios-google .auth-card,
+.ios-google .booking-card,
+.ios-google .property-info,
+.ios-google .add-listing-form,
+.ios-google .profile-card {
+  box-shadow: 0 8px 18px rgba(10, 33, 73, 0.12) !important;
+}
+
+.ios-google .btn-primary {
+  background: linear-gradient(135deg, #1f62c7 0%, #3b82e8 100%) !important;
+  color: #ffffff !important;
+}
+
+.ios-google .btn-accent {
+  background: linear-gradient(135deg, #ffb703 0%, #ffd166 100%) !important;
+  color: #0f2f5f !important;
+}
+
+.ios-google .btn-outline {
+  background: #ffffff !important;
+  border-color: #1f62c7 !important;
+  color: #1f62c7 !important;
+}
+
+.ios-google .nav-link,
+.ios-google .footer-link,
+.ios-google .store-title,
+.ios-google .footer-store-title {
+  color: rgba(230, 240, 255, 0.94) !important;
+}
+
+.ios-google .property-title,
+.ios-google .section-title,
+.ios-google .listing-title,
+.ios-google .modal-title,
+.ios-google .auth-header h1 {
+  color: #173f77 !important;
+}
+
+.ios-google .hero-title {
+  color: #f7fbff !important;
+}
+
+.ios-google .hero-subtitle,
+.ios-google .plans-header p,
+.ios-google .app-download-box p,
+.ios-google .footer-app-panel p,
+.ios-google .footer-tagline {
+  color: rgba(224, 237, 255, 0.9) !important;
+}
+
+.ios-google .badge-primary {
+  background: #1f62c7 !important;
+  color: #ffffff !important;
+}
+
+.ios-google .badge-accent {
+  background: #ffb703 !important;
+  color: #17355f !important;
+}
+
+.ios-google input,
+.ios-google select,
+.ios-google textarea {
+  background: #ffffff !important;
+  border-color: rgba(24, 83, 167, 0.24) !important;
+  color: #17355f !important;
+}
+
+.ios-google .leaflet-map,
+.ios-google .gallery-main {
+  border-color: rgba(16, 66, 136, 0.18) !important;
+}
+
+.ios-google .property-image img,
+.ios-google .gallery-main img,
+.ios-google .popup-image,
+.ios-google .listing-image {
+  filter: saturate(0.97) contrast(1.01);
+}
+
+.ios-google .loading-overlay,
+.ios-google .modal-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(8, 19, 45, 0.72) !important;
+}
+
+.ios-google .btn,
+.ios-google .nav-link {
+  text-shadow: none;
 }

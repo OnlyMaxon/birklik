@@ -188,8 +188,9 @@
 @media (max-width: 768px) {
   .header {
     --header-height: 72px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(120deg, #071228 0%, #0c2347 100%);
   }
 
   .menu-toggle {
@@ -308,8 +309,8 @@
 @media (max-width: 480px) {
   .header {
     --header-height: 66px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .header-content {
