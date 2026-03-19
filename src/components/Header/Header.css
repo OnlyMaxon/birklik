@@ -28,7 +28,7 @@
 }
 
 .logo-image {
-  width: 252px;
+  width: 236px;
   height: auto;
   display: block;
   image-rendering: -webkit-optimize-contrast;
@@ -176,7 +176,7 @@
   }
 
   .logo-image {
-    width: 214px;
+    width: 198px;
   }
 }
 
@@ -197,7 +197,7 @@
   }
 
   .logo-image {
-    width: 186px;
+    width: 172px;
   }
 
   .header-actions {
@@ -267,7 +267,7 @@
   }
 
   .logo-image {
-    width: 168px;
+    width: 156px;
   }
 
   .nav {
@@ -282,7 +282,7 @@
 
 @media (max-width: 390px) {
   .logo-image {
-    width: 152px;
+    width: 144px;
   }
 
   .header-actions {

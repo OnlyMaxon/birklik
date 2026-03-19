@@ -29,7 +29,7 @@ export const Header: React.FC = () => {
               {t.nav.home}
             </Link>
             <Link to="/dashboard/add" className="nav-link nav-highlight" onClick={() => setMenuOpen(false)}>
-              Elan yerleshdir
+              {t.nav.addListing}
             </Link>
 
             {isAuthenticated ? (
@@ -70,7 +70,7 @@ export const Header: React.FC = () => {
             </div>
 
             <Link className="btn btn-accent btn-sm header-cta" to="/dashboard/add">
-              Elan yerleshdir
+              {t.nav.addListing}
             </Link>
 
             <button

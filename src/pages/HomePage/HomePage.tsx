@@ -18,48 +18,11 @@ const initialFilters: FilterState = {
   hasPool: null
 }
 
-const featureChips = [
-  'Hovuz',
-  'Kondisioner',
-  'Sauna',
-  'PlayStation',
-  'Bilyard',
-  'Tennis',
-  'Usaq zonasi',
-  'Samovar',
-  'Manqal',
-  'Bag',
-  'Deniz menzeresi',
-  'Dag menzeresi'
-]
-
-const listingPlans = [
-  {
-    id: 'free',
-    title: 'Pulsuz',
-    price: '0 AZN',
-    period: '/ ay',
-    perks: ['3-4 foto', 'Qisa tesvir', 'Lokasiya yoxdur'],
-    emphasis: 'Yeni baslayanlar ucun'
-  },
-  {
-    id: 'standard',
-    title: 'Standart',
-    price: '15 AZN',
-    period: '/ ay',
-    perks: ['20 foto', 'Tam tesvir', 'Lokasiya elave edilir'],
-    emphasis: 'Planli satis ucun optimal'
-  },
-  {
-    id: 'premium',
-    title: 'Premium',
-    price: '30 AZN',
-    period: '/ ay',
-    perks: ['Standart paket +', '3 hefte ana sehifede one cixir', 'Son hefte normal axina kecir'],
-    emphasis: 'Maksimum gorunurluk',
-    highlighted: true
-  }
-]
+const featureChipsByLanguage = {
+  az: ['Hovuz', 'Kondisioner', 'Sauna', 'PlayStation', 'Bilyard', 'Tennis', 'Usaq zonasi', 'Samovar', 'Manqal', 'Bag', 'Deniz menzeresi', 'Dag menzeresi'],
+  en: ['Pool', 'Air conditioning', 'Sauna', 'PlayStation', 'Billiards', 'Tennis', 'Kids area', 'Samovar', 'BBQ', 'Garden', 'Sea view', 'Mountain view'],
+  ru: ['Бассейн', 'Кондиционер', 'Сауна', 'PlayStation', 'Бильярд', 'Теннис', 'Детская зона', 'Самовар', 'Мангал', 'Сад', 'Вид на море', 'Вид на горы']
+} as const
 
 export const HomePage: React.FC = () => {
   const { t, language } = useLanguage()
@@ -101,9 +64,37 @@ export const HomePage: React.FC = () => {
     setFilters(initialFilters)
   }
 
-  const mapLabel = showMap
-    ? (language === 'en' ? 'Hide map' : language === 'ru' ? 'Скрыть карту' : 'Xeriteni gizlet')
-    : (language === 'en' ? 'Show map' : language === 'ru' ? 'Показать карту' : 'Xeritede goster')
+  const mapLabel = showMap ? t.home.hideMap : t.home.showMap
+
+  const featureChips = featureChipsByLanguage[language]
+
+  const listingPlans = [
+    {
+      id: 'free',
+      title: t.pricing.free,
+      price: '0 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.free_features],
+      emphasis: t.pricing.freeDesc
+    },
+    {
+      id: 'standard',
+      title: t.pricing.standard,
+      price: '15 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.standard_features],
+      emphasis: t.pricing.standardDesc
+    },
+    {
+      id: 'premium',
+      title: t.pricing.premium,
+      price: '30 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.premium_features, t.pricing_info.premium_highlight],
+      emphasis: t.pricing.premiumDesc,
+      highlighted: true
+    }
+  ]
 
   return (
     <Layout>
@@ -112,7 +103,7 @@ export const HomePage: React.FC = () => {
         <div className="hero-pattern"></div>
         <div className="container hero-content">
           <p className="hero-kicker">Birklik.az</p>
-          <h1 className="hero-title">Her sey bir klikle hazir</h1>
+          <h1 className="hero-title">{t.hero.title}</h1>
           <p className="hero-subtitle">{t.hero.subtitle}</p>
           <SearchBar
             value={filters.search}
@@ -130,7 +121,7 @@ export const HomePage: React.FC = () => {
       <section className="section properties-section">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Top villalar ve istirahet evleri</h2>
+            <h2 className="section-title">{t.home.topListingsTitle}</h2>
             <button
               className={`btn ${showMap ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setShowMap(!showMap)}
@@ -188,8 +179,8 @@ export const HomePage: React.FC = () => {
       <section className="section plans-section">
         <div className="container">
           <div className="plans-header">
-            <h2 className="section-title">3 nov elan paketi</h2>
-            <p>Menim de fikrimce sizin teklif etdiyiniz 3 paket duzgun ve bazar ucun balanslidir.</p>
+            <h2 className="section-title">{t.home.plansTitle}</h2>
+            <p>{t.home.plansSubtitle}</p>
           </div>
 
           <div className="plans-grid">
@@ -212,15 +203,15 @@ export const HomePage: React.FC = () => {
           </div>
 
           <p className="plans-note">
-            Tövsiyem: startda bu qiymetleri saxlayin, 4-6 hefte sonra conversion ve demand datasina gore Standarti 20 AZN, Premiumu 50 AZN edin.
+            {t.home.plansNote}
           </p>
         </div>
       </section>
 
       <section className="section cta-section">
         <div className="container cta-box">
-          <h2>Her sey bir klikle hazir</h2>
-          <p>Evini bugun elan et, sabahdan rezervasiya qebul etmeye basla.</p>
+          <h2>{t.home.ctaTitle}</h2>
+          <p>{t.home.ctaSubtitle}</p>
           <Link className="btn btn-accent btn-lg" to="/dashboard/add">{t.nav.addListing}</Link>
         </div>
       </section>

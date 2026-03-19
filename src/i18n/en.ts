@@ -174,5 +174,15 @@ export const en: Translations = {
     addTest: "Add Test Data",
     removeTest: "Remove Test Data",
     testListings: "Test Listings"
+  },
+  home: {
+    showMap: "Show map",
+    hideMap: "Hide map",
+    topListingsTitle: "Featured villas and vacation homes",
+    plansTitle: "3 listing plans",
+    plansSubtitle: "Choose a plan for your budget and publish listings more effectively.",
+    plansNote: "Plan conditions can be updated over time based on market demand.",
+    ctaTitle: "Everything is ready in one click",
+    ctaSubtitle: "List your home today and start receiving bookings."
   }
 }

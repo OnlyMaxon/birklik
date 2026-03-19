@@ -174,5 +174,15 @@ export const az: Translations = {
     addTest: "Test Məlumatı Əlavə Et",
     removeTest: "Test Məlumatını Sil",
     testListings: "Test Elanları"
+  },
+  home: {
+    showMap: "Xeritede goster",
+    hideMap: "Xeriteni gizlet",
+    topListingsTitle: "Seçilmiş villalar və istirahət evləri",
+    plansTitle: "3 növ elan paketi",
+    plansSubtitle: "Hər büdcə üçün uyğun paket seçin və elanınızı daha effektiv yerləşdirin.",
+    plansNote: "Paket şərtləri bazar tələbinə uyğun mütəmadi olaraq yenilənə bilər.",
+    ctaTitle: "Hər şey bir kliklə hazırdır",
+    ctaSubtitle: "Evinizi bu gün elan edin və rezervasiya qəbul etməyə başlayın."
   }
 }

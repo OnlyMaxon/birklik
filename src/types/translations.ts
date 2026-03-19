@@ -175,4 +175,14 @@ export interface Translations {
     removeTest: string
     testListings: string
   }
+  home: {
+    showMap: string
+    hideMap: string
+    topListingsTitle: string
+    plansTitle: string
+    plansSubtitle: string
+    plansNote: string
+    ctaTitle: string
+    ctaSubtitle: string
+  }
 }
