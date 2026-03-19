@@ -132,6 +132,7 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--gray-800);
+  overflow-wrap: anywhere;
 }
 
 .listing-title:hover {
@@ -141,6 +142,7 @@
 .listing-location {
   color: var(--gray-500);
   font-size: 0.875rem;
+  overflow-wrap: anywhere;
 }
 
 .listing-price {

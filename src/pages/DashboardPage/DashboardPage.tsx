@@ -4,7 +4,7 @@ import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList } from '../../data'
 import { PropertyType, District, Amenity, Property, ListingTier } from '../../types'
-import { createProperty, deleteProperty, getPropertiesByOwner } from '../../services'
+import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
 type TabType = 'listings' | 'add' | 'profile'
@@ -26,8 +26,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([])
   const [hasTestData, setHasTestData] = React.useState(false)
   const [isAddingTestData, setIsAddingTestData] = React.useState(false)
+  const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
 
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
+  const savedMessage = language === 'ru'
+    ? 'Объявление успешно сохранено'
+    : language === 'en'
+    ? 'Listing saved successfully'
+    : 'Elan ugurla yadda saxlanildi'
 
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -68,6 +74,35 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     contactEmail: '',
     contactPhone: ''
   })
+
+  const resetListingForm = React.useCallback(() => {
+    setNewListing({
+      title: '',
+      description: '',
+      listingTier: 'free',
+      type: '',
+      district: '',
+      address: '',
+      price: '',
+      rooms: '',
+      area: '',
+      amenities: [],
+      contactEmail: user?.email || '',
+      contactPhone: user?.phone || ''
+    })
+    setSelectedFiles([])
+    setEditingListingId(null)
+  }, [user])
+
+  React.useEffect(() => {
+    if (activeTab === 'add' && !editingListingId && user) {
+      setNewListing(prev => ({
+        ...prev,
+        contactEmail: prev.contactEmail || user.email,
+        contactPhone: prev.contactPhone || user.phone
+      }))
+    }
+  }, [activeTab, editingListingId, user])
 
   const handleAddListing = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -160,33 +195,29 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       city: 'Baku'
     }
 
-    const created = await createProperty(propertyPayload, selectedFiles)
-    if (!created) {
-      setError(t.messages.error)
-      setIsSubmitting(false)
-      return
+    if (editingListingId) {
+      const updated = await updateProperty(editingListingId, propertyPayload, selectedFiles)
+      if (!updated) {
+        setError(t.messages.error)
+        setIsSubmitting(false)
+        return
+      }
+    } else {
+      const created = await createProperty(propertyPayload, selectedFiles)
+      if (!created) {
+        setError(t.messages.error)
+        setIsSubmitting(false)
+        return
+      }
     }
 
     setShowAddSuccess(true)
     setTimeout(() => {
       setShowAddSuccess(false)
       setActiveTab('listings')
-      setNewListing({
-        title: '',
-        description: '',
-        listingTier: 'free',
-        type: '',
-        district: '',
-        address: '',
-        price: '',
-        rooms: '',
-        area: '',
-        amenities: [],
-        contactEmail: '',
-        contactPhone: ''
-      })
-      setSelectedFiles([])
-    }, 2000)
+      resetListingForm()
+      loadListings()
+    }, 1500)
 
     setIsSubmitting(false)
   }
@@ -231,6 +262,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     await loadListings()
+  }
+
+  const handleEditListing = (property: Property) => {
+    setEditingListingId(property.id)
+    setError('')
+    setShowAddSuccess(false)
+    setSelectedFiles([])
+
+    setNewListing({
+      title: property.title.az || property.title.ru || property.title.en,
+      description: property.description.az || property.description.ru || property.description.en,
+      listingTier: property.listingTier || 'free',
+      type: property.type,
+      district: property.district,
+      address: property.address.az || property.address.ru || property.address.en,
+      price: String(property.price.daily || ''),
+      rooms: String(property.rooms || ''),
+      area: String(property.area || ''),
+      amenities: property.amenities || [],
+      contactEmail: property.owner.email || user.email,
+      contactPhone: property.owner.phone || user.phone
+    })
+
+    setActiveTab('add')
   }
 
   const testListings = [
@@ -422,7 +477,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             </div>
                             <div className="listing-actions">
                               <div className="action-buttons">
-                                <button className="btn btn-ghost btn-sm">{t.dashboard.edit}</button>
+                                <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>
                                 <button className="btn btn-ghost btn-sm text-error" onClick={() => handleDeleteListing(property.id)}>{t.dashboard.delete}</button>
                               </div>
                             </div>
@@ -451,7 +506,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
               {/* Add Listing Tab */}
               {activeTab === 'add' && (
                 <div className="tab-content fade-in">
-                  <h2>{t.dashboard.addListing}</h2>
+                  <h2>{editingListingId ? t.dashboard.edit : t.dashboard.addListing}</h2>
                   {error && <div className="error-message">{error}</div>}
 
                   {showAddSuccess ? (
@@ -460,7 +515,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                         <polyline points="22 4 12 14.01 9 11.01"/>
                       </svg>
-                      <p>{t.dashboard.listingAdded}</p>
+                      <p>{editingListingId ? savedMessage : t.dashboard.listingAdded}</p>
                     </div>
                   ) : (
                     <form onSubmit={handleAddListing} className="add-listing-form card">
@@ -645,11 +700,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       </div>
 
                       <div className="form-actions">
-                        <button type="button" className="btn btn-ghost" onClick={() => setActiveTab('listings')}>
+                        <button type="button" className="btn btn-ghost" onClick={() => {
+                          setActiveTab('listings')
+                          resetListingForm()
+                        }}>
                           {t.form.cancel}
                         </button>
                         <button type="submit" className="btn btn-accent" disabled={isSubmitting}>
-                          {isSubmitting ? t.messages.loading : t.form.submit}
+                          {isSubmitting ? t.messages.loading : editingListingId ? t.dashboard.edit : t.form.submit}
                         </button>
                       </div>
                     </form>

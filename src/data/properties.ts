@@ -58,13 +58,33 @@ export const filterProperties = (
     hasPool?: boolean | null
   }
 ): Property[] => {
+  const amenityAliases: Record<Amenity, string[]> = {
+    pool: ['pool', 'hovuz', 'бассейн'],
+    parking: ['parking', 'парковка', 'parkinq'],
+    wifi: ['wifi', 'wi-fi', 'вайфай'],
+    ac: ['ac', 'air conditioning', 'kondisioner', 'кондиционер'],
+    kitchen: ['kitchen', 'metbex', 'кухня'],
+    tv: ['tv', 'televizor', 'телевизор'],
+    washer: ['washer', 'paltaryuyan', 'стиральная'],
+    garden: ['garden', 'bag', 'сад'],
+    bbq: ['bbq', 'manqal', 'мангал'],
+    security: ['security', 'muhafize', 'охрана'],
+    beach: ['beach', 'deniz', 'пляж'],
+    gym: ['gym', 'idman', 'спортзал']
+  }
+
   return properties.filter(property => {
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
       const matchesTitle = Object.values(property.title).some(t => t.toLowerCase().includes(searchLower))
       const matchesAddress = Object.values(property.address).some(a => a.toLowerCase().includes(searchLower))
-      if (!matchesTitle && !matchesAddress) return false
+      const matchedAmenity = (Object.entries(amenityAliases) as Array<[Amenity, string[]]>).find(([, aliases]) =>
+        aliases.some(alias => alias.includes(searchLower) || searchLower.includes(alias))
+      )
+      const matchesAmenity = matchedAmenity ? property.amenities.includes(matchedAmenity[0]) : false
+
+      if (!matchesTitle && !matchesAddress && !matchesAmenity) return false
     }
 
     // Type filter

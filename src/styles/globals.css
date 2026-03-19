@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Urbanist:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
 
 :root {
-  --font-body: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
-  --font-display: 'Urbanist', 'Segoe UI', sans-serif;
+  --font-body: 'Manrope', 'Segoe UI', sans-serif;
+  --font-display: 'Sora', 'Segoe UI', sans-serif;
   --primary-color: #1f62c7;
   --primary-light: #3b82e8;
   --primary-dark: #133b79;
@@ -44,6 +44,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
@@ -56,12 +57,15 @@ body {
     radial-gradient(circle at 90% -12%, rgba(142, 202, 230, 0.2), transparent 36%),
     linear-gradient(180deg, #f4f8ff 0%, #e9f1ff 100%);
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 #root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: clip;
 }
 
 main {
@@ -81,6 +85,10 @@ a:hover {
 img {
   max-width: 100%;
   height: auto;
+}
+
+h1, h2, h3, p {
+  overflow-wrap: anywhere;
 }
 
 button {
@@ -140,6 +148,8 @@ input:focus, select:focus, textarea:focus {
   transition: var(--transition);
   text-decoration: none;
   cursor: pointer;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .btn-primary {

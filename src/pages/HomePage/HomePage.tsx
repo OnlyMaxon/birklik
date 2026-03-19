@@ -4,7 +4,7 @@ import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import { SearchBar, Filters, PropertyCard, PropertyMap, Loading } from '../../components'
 import { filterProperties } from '../../data'
-import { FilterState, Property } from '../../types'
+import { Amenity, FilterState, Property } from '../../types'
 import { getProperties } from '../../services'
 import './HomePage.css'
 
@@ -18,14 +18,17 @@ const initialFilters: FilterState = {
   hasPool: null
 }
 
-const featureChipsByLanguage = {
-  az: ['Hovuz', 'Kondisioner', 'Sauna', 'PlayStation', 'Bilyard', 'Tennis', 'Usaq zonasi', 'Samovar', 'Manqal', 'Bag', 'Deniz menzeresi', 'Dag menzeresi'],
-  en: ['Pool', 'Air conditioning', 'Sauna', 'PlayStation', 'Billiards', 'Tennis', 'Kids area', 'Samovar', 'BBQ', 'Garden', 'Sea view', 'Mountain view'],
-  ru: ['Бассейн', 'Кондиционер', 'Сауна', 'PlayStation', 'Бильярд', 'Теннис', 'Детская зона', 'Самовар', 'Мангал', 'Сад', 'Вид на море', 'Вид на горы']
-} as const
+const quickFilters: Array<{ amenity: Amenity; emoji: string }> = [
+  { amenity: 'pool', emoji: '🏊' },
+  { amenity: 'ac', emoji: '❄️' },
+  { amenity: 'bbq', emoji: '🔥' },
+  { amenity: 'garden', emoji: '🌿' },
+  { amenity: 'beach', emoji: '🏖️' },
+  { amenity: 'security', emoji: '🛡️' }
+]
 
 export const HomePage: React.FC = () => {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(false)
   const [properties, setProperties] = React.useState<Property[]>([])
@@ -66,7 +69,14 @@ export const HomePage: React.FC = () => {
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
-  const featureChips = featureChipsByLanguage[language]
+  const applyQuickAmenityFilter = (amenity: Amenity) => {
+    const amenityLabel = t.amenities[amenity]
+    setFilters(prev => ({
+      ...prev,
+      search: amenityLabel,
+      hasPool: amenity === 'pool' ? true : prev.hasPool
+    }))
+  }
 
   const listingPlans = [
     {
@@ -111,8 +121,16 @@ export const HomePage: React.FC = () => {
           />
 
           <div className="hero-chips">
-            {featureChips.map((chip) => (
-              <span className="hero-chip" key={chip}>{chip}</span>
+            {quickFilters.map(({ amenity, emoji }) => (
+              <button
+                type="button"
+                className="hero-chip"
+                key={amenity}
+                onClick={() => applyQuickAmenityFilter(amenity)}
+              >
+                <span aria-hidden="true">{emoji}</span>
+                <span>{t.amenities[amenity]}</span>
+              </button>
             ))}
           </div>
         </div>
