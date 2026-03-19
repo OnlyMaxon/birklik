@@ -225,7 +225,11 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 183, 3, 0.26), transparent 34%),
+    radial-gradient(circle at 86% 14%, rgba(142, 202, 230, 0.22), transparent 34%),
+    rgba(6, 17, 39, 0.74);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -236,33 +240,91 @@
 .modal-content {
   position: relative;
   width: 100%;
-  max-width: 450px;
-  padding: 2rem;
+  max-width: 500px;
+  padding: 1.7rem;
   max-height: 90vh;
   overflow-y: auto;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background:
+    radial-gradient(circle at 90% -10%, rgba(142, 202, 230, 0.22), transparent 36%),
+    linear-gradient(165deg, #ffffff 0%, #f3f8ff 100%);
+  box-shadow: 0 34px 64px rgba(6, 18, 45, 0.34);
 }
 
-.modal-content h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--gray-800);
-  margin-bottom: 1.5rem;
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.42rem;
+  font-weight: 800;
+  color: #173f77;
+  margin-bottom: 0.3rem;
+}
+
+.modal-subtitle {
+  margin-bottom: 1rem;
+  color: #4e6a95;
+  font-size: 0.93rem;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.modal-form .form-group {
+  margin-bottom: 0.8rem;
+}
+
+.modal-form .form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2f5389;
+  letter-spacing: 0.01em;
+}
+
+.modal-form input,
+.modal-form textarea {
+  border: 1px solid rgba(16, 71, 148, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 0.75rem 0.9rem;
+}
+
+.modal-form input:focus,
+.modal-form textarea:focus {
+  border-color: #2b6ad0;
+  box-shadow: 0 0 0 4px rgba(43, 106, 208, 0.12);
+}
+
+.modal-form textarea {
+  min-height: 96px;
+  resize: vertical;
 }
 
 .modal-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: var(--gray-500);
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4d6a96;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(17, 68, 140, 0.18);
 }
 
 .modal-close:hover {
-  color: var(--gray-700);
+  color: #143666;
+  background: #fff;
 }
 
 .success-message {
   text-align: center;
-  padding: 2rem;
+  padding: 1.6rem 1.2rem;
   color: var(--success);
 }
 

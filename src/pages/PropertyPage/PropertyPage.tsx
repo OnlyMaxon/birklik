@@ -14,6 +14,9 @@ export const PropertyPage: React.FC = () => {
   const [contactSent, setContactSent] = React.useState(false)
   const [property, setProperty] = React.useState<Property | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
+  const modalSubtitle = language === 'en'
+    ? 'Leave your contact details and we will call you shortly.'
+    : 'Elaqe melumatlarinizi yazin, qisa muddetde sizinle elaqe saxlayaq.'
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -227,23 +230,24 @@ export const PropertyPage: React.FC = () => {
               </div>
             ) : (
               <>
-                <h3>{t.property.book}</h3>
-                <form onSubmit={handleContactSubmit}>
+                <h3 className="modal-title">{t.property.book}</h3>
+                <p className="modal-subtitle">{modalSubtitle}</p>
+                <form onSubmit={handleContactSubmit} className="modal-form">
                   <div className="form-group">
                     <label>{t.auth.fullName}</label>
-                    <input type="text" required />
+                    <input type="text" required placeholder={language === 'en' ? 'Your full name' : 'Ad ve soyad'} />
                   </div>
                   <div className="form-group">
                     <label>{t.auth.phone}</label>
-                    <input type="tel" required />
+                    <input type="tel" required placeholder="+994 xx xxx xx xx" />
                   </div>
                   <div className="form-group">
                     <label>{t.auth.email}</label>
-                    <input type="email" required />
+                    <input type="email" required placeholder="you@email.com" />
                   </div>
                   <div className="form-group">
                     <label>{t.form.description}</label>
-                    <textarea rows={3}></textarea>
+                    <textarea rows={3} placeholder={language === 'en' ? 'Any extra details about your request' : 'Istekle bagli elave qeyd'}></textarea>
                   </div>
                   <button type="submit" className="btn btn-accent btn-lg w-full">
                     {t.form.submit}
