@@ -21,33 +21,37 @@ const squareSizes = [512, 256, 192, 180, 128, 96, 64, 32, 16]
 async function run() {
   await mkdir(outputDir, { recursive: true })
 
-  const source = sharp(input)
-  const metadata = await source.metadata()
+  // Trim transparent borders first so the logo occupies output space.
+  const trimmedSource = await sharp(input)
+    .trim()
+    .toBuffer()
+
+  const metadata = await sharp(trimmedSource).metadata()
 
   if (!metadata.width || !metadata.height) {
     throw new Error('Could not read source image dimensions')
   }
 
   for (const size of horizontalSizes) {
-    await sharp(input)
+    await sharp(trimmedSource)
       .resize(size.width, size.height, { fit: 'contain', background: '#ffffff00' })
       .png({ compressionLevel: 9 })
       .toFile(path.join(outputDir, size.name))
   }
 
   for (const size of squareSizes) {
-    await sharp(input)
+    await sharp(trimmedSource)
       .resize(size, size, { fit: 'contain', background: '#ffffff00' })
       .png({ compressionLevel: 9 })
       .toFile(path.join(outputDir, `logo-${size}x${size}.png`))
   }
 
-  await sharp(input)
+  await sharp(trimmedSource)
     .resize(512, 512, { fit: 'contain', background: '#ffffff00' })
     .webp({ quality: 90 })
     .toFile(path.join(outputDir, 'logo-512x512.webp'))
 
-  await sharp(input)
+  await sharp(trimmedSource)
     .resize(1024, 256, { fit: 'contain', background: '#ffffff00' })
     .webp({ quality: 90 })
     .toFile(path.join(outputDir, 'logo-1024x256.webp'))
