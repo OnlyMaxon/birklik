@@ -24,7 +24,7 @@
 
 .property-layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
   gap: 1.6rem;
   align-items: start;
 }
@@ -84,7 +84,8 @@
 
 .property-features {
   display: flex;
-  gap: 2rem;
+  gap: 1rem 1.4rem;
+  flex-wrap: wrap;
   padding: 1.3rem;
   background: linear-gradient(180deg, #f8fbff, #eef4ff);
   border-radius: 16px;
@@ -408,6 +409,10 @@
     width: calc(100vw - 1.2rem);
     max-width: calc(100vw - 1.2rem);
     padding: 1.05rem 0.95rem 0.95rem;
+  }
+
+  .modal-overlay {
+    backdrop-filter: none;
   }
 }
 

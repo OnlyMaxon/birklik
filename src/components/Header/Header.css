@@ -9,6 +9,7 @@
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 12px 30px rgba(0, 10, 32, 0.34);
+  --header-height: 86px;
 }
 
 .header-content {
@@ -16,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.1rem;
-  min-height: 86px;
+  min-height: var(--header-height);
 }
 
 .logo {
@@ -28,7 +29,7 @@
 }
 
 .logo-image {
-  width: 236px;
+  width: clamp(150px, 22vw, 236px);
   height: auto;
   display: block;
   image-rendering: -webkit-optimize-contrast;
@@ -180,11 +181,16 @@
   }
 
   .logo-image {
-    width: 198px;
+    width: clamp(146px, 25vw, 198px);
   }
 }
 
 @media (max-width: 768px) {
+  .header {
+    --header-height: 72px;
+    backdrop-filter: blur(9px);
+  }
+
   .menu-toggle {
     display: flex;
     align-items: center;
@@ -192,7 +198,6 @@
   }
 
   .header-content {
-    min-height: 74px;
     gap: 0.7rem;
   }
 
@@ -201,7 +206,7 @@
   }
 
   .logo-image {
-    width: 172px;
+    width: clamp(132px, 34vw, 162px);
   }
 
   .header-actions {
@@ -219,7 +224,7 @@
 
   .nav {
     position: fixed;
-    top: 74px;
+    top: var(--header-height);
     left: 0.65rem;
     right: 0.65rem;
     bottom: auto;
@@ -300,16 +305,21 @@
 }
 
 @media (max-width: 480px) {
+  .header {
+    --header-height: 66px;
+    backdrop-filter: blur(7px);
+  }
+
   .header-content {
-    min-height: 68px;
+    gap: 0.45rem;
   }
 
   .logo-image {
-    width: 156px;
+    width: clamp(120px, 35vw, 146px);
   }
 
   .nav {
-    top: 68px;
+    top: var(--header-height);
     left: 0.48rem;
     right: 0.48rem;
     max-height: calc(100dvh - 78px);
@@ -324,10 +334,15 @@
 
 @media (max-width: 390px) {
   .logo-image {
-    width: 144px;
+    width: 116px;
   }
 
   .header-actions {
-    gap: 0.35rem;
+    gap: 0.25rem;
+  }
+
+  .lang-btn {
+    font-size: 0.66rem;
+    padding: 0.22rem 0.38rem;
   }
 }

@@ -6,7 +6,7 @@
 }
 
 .leaflet-map {
-  height: 400px;
+  height: clamp(250px, 52dvh, 400px);
   width: 100%;
   z-index: 1;
 }
@@ -67,4 +67,14 @@
 
 .leaflet-popup-close-button:hover {
   color: var(--gray-700) !important;
+}
+
+@media (max-width: 640px) {
+  .leaflet-map {
+    height: 300px;
+  }
+
+  .map-popup {
+    min-width: 160px;
+  }
 }
