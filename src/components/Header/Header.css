@@ -325,13 +325,18 @@
     top: var(--header-height);
     left: 0.48rem;
     right: 0.48rem;
-    max-height: calc(100dvh - 78px);
+    max-height: calc(100dvh - 72px);
     padding: 0.9rem 0.82rem 1rem;
   }
 
   .lang-btn {
     font-size: 0.69rem;
     padding: 0.25rem 0.46rem;
+  }
+
+  .nav-link {
+    font-size: 0.95rem;
+    line-height: 1.2;
   }
 }
 

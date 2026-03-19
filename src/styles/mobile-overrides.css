@@ -1,0 +1,196 @@
+/* Aggressive mobile and iOS Google webview fallbacks.
+   Keeps app logic unchanged and only adjusts presentation. */
+
+/* Base typography safety */
+.btn,
+.nav-link,
+.footer-link,
+.hero-type-label,
+.property-title,
+.section-title {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 2.5rem 0;
+  }
+
+  .section-title {
+    margin-bottom: 1.25rem;
+  }
+
+  .container {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
+  .header-content {
+    gap: 0.5rem;
+  }
+
+  .language-switcher {
+    transform: scale(0.95);
+    transform-origin: right center;
+  }
+
+  .hero-title {
+    font-size: clamp(1.6rem, 7vw, 2.25rem);
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .search-bar {
+    box-shadow: 0 10px 20px rgba(4, 12, 34, 0.2);
+  }
+
+  .properties-grid {
+    margin-top: 1rem;
+  }
+
+  .property-layout {
+    gap: 1rem;
+  }
+
+  .property-info,
+  .booking-card,
+  .add-listing-form,
+  .profile-card,
+  .filters-panel,
+  .auth-card {
+    border-radius: 14px;
+  }
+
+  .dashboard-layout {
+    gap: 1rem;
+  }
+
+  .dashboard-nav {
+    padding-bottom: 0.3rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .listing-item {
+    gap: 0.8rem;
+  }
+
+  .footer {
+    padding-top: 2rem;
+  }
+
+  .footer-content {
+    gap: 1.2rem;
+    padding-bottom: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .header .language-switcher {
+    display: none;
+  }
+
+  .logo-image {
+    max-width: 122px;
+  }
+
+  .hero {
+    min-height: 60dvh;
+  }
+
+  .hero-content {
+    padding-top: 2.3rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .hero-type-card {
+    border-radius: 12px;
+    padding: 0.65rem 0.7rem;
+  }
+
+  .btn,
+  .btn-lg {
+    padding: 0.78rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .property-content {
+    padding: 0.9rem;
+  }
+
+  .property-footer {
+    gap: 0.4rem;
+  }
+
+  .price-value {
+    font-size: 1rem;
+  }
+
+  .leaflet-map {
+    height: 250px;
+  }
+
+  .footer-store-btn,
+  .store-btn {
+    width: 100%;
+  }
+}
+
+/* iPhone Google/Chrome shell safe mode */
+.ios-google body {
+  background: #eef4ff;
+}
+
+.ios-google .header,
+.ios-google .footer,
+.ios-google .plans-section,
+.ios-google .cta-section,
+.ios-google .properties-section,
+.ios-google .property-page,
+.ios-google .dashboard-page,
+.ios-google .auth-page {
+  background-image: none !important;
+}
+
+.ios-google .header {
+  background: #0c2347 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.ios-google .hero-overlay {
+  background: linear-gradient(145deg, rgba(7, 20, 45, 0.95), rgba(11, 39, 80, 0.92)) !important;
+}
+
+.ios-google .hero-pattern {
+  display: none;
+}
+
+.ios-google .card,
+.ios-google .plan-card,
+.ios-google .filters-panel,
+.ios-google .auth-card,
+.ios-google .booking-card,
+.ios-google .property-info,
+.ios-google .add-listing-form,
+.ios-google .profile-card {
+  box-shadow: 0 8px 18px rgba(10, 33, 73, 0.12) !important;
+}
+
+.ios-google .loading-overlay,
+.ios-google .modal-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.ios-google .btn,
+.ios-google .nav-link {
+  text-shadow: none;
+}
