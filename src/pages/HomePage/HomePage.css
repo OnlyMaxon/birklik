@@ -244,7 +244,12 @@
 }
 
 .cta-section {
-  background: linear-gradient(180deg, #eff5ff 0%, #e8f1ff 100%);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(255, 183, 3, 0.18), transparent 34%),
+    radial-gradient(circle at 88% 10%, rgba(142, 202, 230, 0.16), transparent 30%),
+    linear-gradient(160deg, #061327 0%, #0c2955 100%);
+  padding-top: 2.1rem;
+  padding-bottom: 1.4rem;
 }
 
 .app-download-box {
@@ -254,13 +259,14 @@
   gap: 1.2rem;
   flex-wrap: wrap;
   text-align: left;
-  padding: 2.3rem 2rem;
-  border-radius: 26px;
-  border: 1px solid rgba(15, 53, 116, 0.16);
+  padding: 2rem 0;
+  border-radius: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   background:
-    radial-gradient(circle at 80% 0%, rgba(142, 202, 230, 0.24), transparent 35%),
-    linear-gradient(170deg, #ffffff 0%, #f1f7ff 100%);
-  box-shadow: 0 18px 38px rgba(10, 38, 90, 0.14);
+    radial-gradient(circle at 80% 0%, rgba(142, 202, 230, 0.15), transparent 35%),
+    transparent;
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -273,19 +279,33 @@
   font-size: 0.76rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #1f62c7;
+  color: #ffd166;
   font-weight: 800;
 }
 
 .app-download-box h2 {
   font-family: var(--font-display);
   margin-bottom: 0.35rem;
-  color: #0f2b60;
+  color: #f2f8ff;
   font-size: clamp(1.6rem, 4vw, 2.2rem);
 }
 
 .app-download-box p {
-  color: #355586;
+  color: rgba(220, 234, 255, 0.9);
+}
+
+.app-download-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.store-title {
+  color: rgba(228, 240, 255, 0.9);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 0.9rem;
 }
 
 .store-buttons {
@@ -298,7 +318,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  background: linear-gradient(155deg, #0d2a57, #0a1f44);
+  background: linear-gradient(155deg, #0b2149, #091a38);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #f2f8ff;
   border-radius: 14px;
@@ -394,9 +414,13 @@
   }
 
   .app-download-box {
-    padding: 1.5rem 1rem;
+    padding: 1.3rem 0;
     text-align: center;
     justify-content: center;
+  }
+
+  .app-download-right {
+    align-items: center;
   }
 
   .store-buttons {

@@ -229,16 +229,18 @@ export const HomePage: React.FC = () => {
       <section className="section cta-section">
         <div className="container app-download-box">
           <div className="app-download-copy">
-            <p className="app-download-kicker">Birklik.az App</p>
-            <h2>{language === 'en' ? 'Get Birklik on your phone' : 'Birklik tətbiqini telefonuna yüklə'}</h2>
+            <p className="app-download-kicker">Birklik.az</p>
+            <h2>{language === 'en' ? 'What we do' : 'Biz nə edirik'}</h2>
             <p>
               {language === 'en'
-                ? 'Mobile app design mock. Store links will be activated after release.'
-                : 'Mobil tətbiq maketidir. Buraxılışdan sonra mağaza linkləri aktiv olacaq.'}
+                ? 'We connect guests with trusted villas, apartments and holiday homes across Azerbaijan.'
+                : 'Azərbaycan üzrə villa, mənzil və bağ evlərinin kirayəsini bir platformada birləşdiririk.'}
             </p>
           </div>
 
-          <div className="store-buttons" aria-label="Store buttons mock">
+          <div className="app-download-right">
+            <p className="store-title">{language === 'en' ? 'Our apps' : 'Tətbiqlərimiz'}</p>
+            <div className="store-buttons" aria-label="Store buttons mock">
             <button type="button" className="store-btn" aria-label="Apple App Store mock">
               <span className="store-icon" aria-hidden="true"></span>
               <span className="store-text">
@@ -254,6 +256,7 @@ export const HomePage: React.FC = () => {
                 <strong>Google Play</strong>
               </span>
             </button>
+            </div>
           </div>
         </div>
       </section>
