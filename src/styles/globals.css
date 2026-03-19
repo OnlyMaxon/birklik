@@ -46,6 +46,7 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
   background: linear-gradient(160deg, #061327 0%, #0c2955 100%);
   overscroll-behavior-y: none;
 }
@@ -152,8 +153,9 @@ input:focus, select:focus, textarea:focus {
   transition: var(--transition);
   text-decoration: none;
   cursor: pointer;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .btn-primary {
