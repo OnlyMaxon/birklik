@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Outfit:wght@600;700;800&display=swap');
 
 :root {
+  color-scheme: light;
   --font-body: 'Manrope', 'Segoe UI', sans-serif;
   --font-display: 'Sora', 'Segoe UI', sans-serif;
   --font-hero: 'Outfit', 'Segoe UI', sans-serif;
@@ -46,6 +47,7 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   background: linear-gradient(160deg, #061327 0%, #0c2955 100%);
   overscroll-behavior-y: none;
@@ -63,6 +65,9 @@ body {
   background-color: #0c2955;
   min-height: 100dvh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 #root {
