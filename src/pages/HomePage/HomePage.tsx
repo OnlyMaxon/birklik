@@ -1,5 +1,4 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import { SearchBar, Filters, PropertyCard, PropertyMap, Loading } from '../../components'
@@ -228,10 +227,34 @@ export const HomePage: React.FC = () => {
       </section>
 
       <section className="section cta-section">
-        <div className="container cta-box">
-          <h2>{t.home.ctaTitle}</h2>
-          <p>{t.home.ctaSubtitle}</p>
-          <Link className="btn btn-accent btn-lg" to="/dashboard/add">{t.nav.addListing}</Link>
+        <div className="container app-download-box">
+          <div className="app-download-copy">
+            <p className="app-download-kicker">Birklik.az App</p>
+            <h2>{language === 'en' ? 'Get Birklik on your phone' : 'Birklik tətbiqini telefonuna yüklə'}</h2>
+            <p>
+              {language === 'en'
+                ? 'Mobile app design mock. Store links will be activated after release.'
+                : 'Mobil tətbiq maketidir. Buraxılışdan sonra mağaza linkləri aktiv olacaq.'}
+            </p>
+          </div>
+
+          <div className="store-buttons" aria-label="Store buttons mock">
+            <button type="button" className="store-btn" aria-label="Apple App Store mock">
+              <span className="store-icon" aria-hidden="true"></span>
+              <span className="store-text">
+                <small>{language === 'en' ? 'Download on the' : 'Yüklə'}</small>
+                <strong>App Store</strong>
+              </span>
+            </button>
+
+            <button type="button" className="store-btn" aria-label="Google Play mock">
+              <span className="store-icon" aria-hidden="true">▶</span>
+              <span className="store-text">
+                <small>{language === 'en' ? 'Get it on' : 'Yüklə'}</small>
+                <strong>Google Play</strong>
+              </span>
+            </button>
+          </div>
         </div>
       </section>
     </Layout>
