@@ -125,6 +125,67 @@
     padding: 0.9rem;
   }
 
+  .dashboard-sidebar {
+    padding: 0.75rem;
+    border-radius: 16px;
+  }
+
+  .dashboard-nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+    overflow: visible;
+  }
+
+  .nav-item {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
+    padding: 0.62rem 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1.1;
+    gap: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-item svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .add-listing-form,
+  .profile-card,
+  .listing-item,
+  .property-card,
+  .plan-card {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .form-group,
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .listing-location-picker,
+  .location-search-row,
+  .location-search-row .btn {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .form-group small,
+  .listing-title,
+  .listing-location,
+  .plan-card li,
+  .plan-emphasis {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   .property-footer {
     gap: 0.4rem;
   }
@@ -281,7 +342,14 @@
 .ios-google .gallery-main img,
 .ios-google .popup-image,
 .ios-google .listing-image {
-  filter: saturate(0.97) contrast(1.01);
+  filter: none !important;
+}
+
+.ios-google .property-image,
+.ios-google .gallery-main,
+.ios-google .listing-image,
+.ios-google .popup-image {
+  background: #dfe9fb;
 }
 
 .ios-google .loading-overlay,
