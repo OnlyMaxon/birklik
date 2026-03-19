@@ -8,9 +8,10 @@ interface FiltersProps {
   filters: FilterState
   onFilterChange: (filters: FilterState) => void
   onClear: () => void
+  hideTypeFilter?: boolean
 }
 
-export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear }) => {
+export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false }) => {
   const { t } = useLanguage()
   const [isOpen, setIsOpen] = React.useState(false)
 
@@ -42,18 +43,20 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
 
       <div className={`filters-panel ${isOpen ? 'open' : ''}`}>
         <div className="filters-grid">
-          <div className="filter-group">
-            <label>{t.search.propertyType}</label>
-            <select 
-              value={filters.type || ''} 
-              onChange={(e) => handleChange('type', e.target.value as PropertyType || '')}
-            >
-              <option value="">{t.search.any}</option>
-              {propertyTypes.map(type => (
-                <option key={type} value={type}>{t.propertyTypes[type]}</option>
-              ))}
-            </select>
-          </div>
+          {!hideTypeFilter && (
+            <div className="filter-group">
+              <label>{t.search.propertyType}</label>
+              <select 
+                value={filters.type || ''} 
+                onChange={(e) => handleChange('type', e.target.value as PropertyType || '')}
+              >
+                <option value="">{t.search.any}</option>
+                {propertyTypes.map(type => (
+                  <option key={type} value={type}>{t.propertyTypes[type]}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="filter-group">
             <label>{t.search.district}</label>

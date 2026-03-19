@@ -64,32 +64,54 @@
   max-width: 640px;
 }
 
-.hero-chips {
-  margin-top: 1.15rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.56rem;
-  max-width: 920px;
+.hero-type-filters {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  width: min(100%, 980px);
 }
 
-.hero-chip {
-  display: inline-flex;
+.hero-type-card {
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: rgba(248, 252, 255, 0.95);
-  padding: 0.5rem 0.8rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.11);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 0.62rem;
+  padding: 0.86rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.46);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.95));
+  color: #214171;
+  box-shadow: 0 10px 20px rgba(8, 26, 60, 0.2);
+  font-weight: 800;
   cursor: pointer;
   transition: var(--transition);
 }
 
-.hero-chip:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+.hero-type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px rgba(8, 26, 60, 0.28);
+}
+
+.hero-type-card.active {
+  border-color: rgba(255, 183, 3, 0.9);
+  box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.24), 0 16px 28px rgba(8, 26, 60, 0.3);
+}
+
+.hero-type-icon {
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, #ffd166, #ffb703);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 0.98rem;
+}
+
+.hero-type-label {
+  font-size: 1.02rem;
+  line-height: 1.1;
 }
 
 .section-header {
@@ -305,13 +327,17 @@
     font-size: 1rem;
   }
 
-  .hero-chips {
-    justify-content: center;
+  .hero-type-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
   }
 
-  .hero-chip {
-    font-size: 0.76rem;
-    padding: 0.42rem 0.7rem;
+  .hero-type-card {
+    padding: 0.72rem 0.78rem;
+  }
+
+  .hero-type-label {
+    font-size: 0.9rem;
   }
 
   .cta-box {
@@ -339,14 +365,17 @@
     margin-bottom: 1.1rem;
   }
 
-  .hero-chips {
-    margin-top: 0.7rem;
-    gap: 0.42rem;
+  .hero-type-filters {
+    margin-top: 0.62rem;
+    grid-template-columns: 1fr;
   }
 
-  .hero-chip {
-    font-size: 0.7rem;
-    padding: 0.34rem 0.52rem;
+  .hero-type-card {
+    width: 100%;
+  }
+
+  .hero-type-label {
+    font-size: 0.88rem;
   }
 
   .plan-card {

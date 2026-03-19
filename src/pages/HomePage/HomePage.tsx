@@ -4,7 +4,7 @@ import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import { SearchBar, Filters, PropertyCard, PropertyMap, Loading } from '../../components'
 import { filterProperties } from '../../data'
-import { Amenity, FilterState, Property } from '../../types'
+import { FilterState, Property, PropertyType } from '../../types'
 import { getProperties } from '../../services'
 import './HomePage.css'
 
@@ -18,17 +18,15 @@ const initialFilters: FilterState = {
   hasPool: null
 }
 
-const quickFilters: Array<{ amenity: Amenity; emoji: string }> = [
-  { amenity: 'pool', emoji: '🏊' },
-  { amenity: 'ac', emoji: '❄️' },
-  { amenity: 'bbq', emoji: '🔥' },
-  { amenity: 'garden', emoji: '🌿' },
-  { amenity: 'beach', emoji: '🏖️' },
-  { amenity: 'security', emoji: '🛡️' }
-]
+type TypeFilterCard = {
+  key: string
+  type: PropertyType | ''
+  icon: string
+  label: string
+}
 
 export const HomePage: React.FC = () => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(false)
   const [properties, setProperties] = React.useState<Property[]>([])
@@ -69,13 +67,15 @@ export const HomePage: React.FC = () => {
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
-  const applyQuickAmenityFilter = (amenity: Amenity) => {
-    const amenityLabel = t.amenities[amenity]
-    setFilters(prev => ({
-      ...prev,
-      search: amenityLabel,
-      hasPool: amenity === 'pool' ? true : prev.hasPool
-    }))
+  const typeFilterCards: TypeFilterCard[] = [
+    { key: 'apartment', type: 'apartment', icon: '🏢', label: t.propertyTypes.apartment },
+    { key: 'villa', type: 'villa', icon: '🏡', label: t.propertyTypes.villa },
+    { key: 'cottage', type: 'cottage', icon: '🏘️', label: language === 'en' ? 'Holiday homes' : 'Bağ evləri' },
+    { key: 'daily', type: '', icon: '📅', label: language === 'en' ? 'Daily rental' : 'Gündəlik kirayə' }
+  ]
+
+  const handleTypeCardSelect = (type: PropertyType | '') => {
+    setFilters(prev => ({ ...prev, type }))
   }
 
   const listingPlans = [
@@ -120,16 +120,16 @@ export const HomePage: React.FC = () => {
             onChange={(value) => setFilters({ ...filters, search: value })}
           />
 
-          <div className="hero-chips">
-            {quickFilters.map(({ amenity, emoji }) => (
+          <div className="hero-type-filters" role="group" aria-label="Type filters">
+            {typeFilterCards.map((card) => (
               <button
                 type="button"
-                className="hero-chip"
-                key={amenity}
-                onClick={() => applyQuickAmenityFilter(amenity)}
+                className={`hero-type-card ${filters.type === card.type ? 'active' : ''}`}
+                key={card.key}
+                onClick={() => handleTypeCardSelect(card.type)}
               >
-                <span aria-hidden="true">{emoji}</span>
-                <span>{t.amenities[amenity]}</span>
+                <span className="hero-type-icon" aria-hidden="true">{card.icon}</span>
+                <span className="hero-type-label">{card.label}</span>
               </button>
             ))}
           </div>
@@ -156,6 +156,7 @@ export const HomePage: React.FC = () => {
             filters={filters}
             onFilterChange={setFilters}
             onClear={handleClearFilters}
+            hideTypeFilter={true}
           />
 
           {isLoading && <Loading message={t.messages.loading} />}
