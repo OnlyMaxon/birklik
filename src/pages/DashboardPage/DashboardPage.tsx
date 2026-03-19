@@ -15,6 +15,11 @@ interface DashboardPageProps {
   initialTab?: TabType
 }
 
+interface GeocodeResult {
+  lat: string
+  lon: string
+}
+
 const DEFAULT_COORDINATES = { lat: 40.4093, lng: 49.8671 }
 
 interface LocationPickerProps {
@@ -66,6 +71,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [isAddingTestData, setIsAddingTestData] = React.useState(false)
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
   const [listingCoordinates, setListingCoordinates] = React.useState(DEFAULT_COORDINATES)
+  const [locationSearch, setLocationSearch] = React.useState('')
+  const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
+  const [locationSearchError, setLocationSearchError] = React.useState('')
 
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
   const savedMessage = language === 'en'
@@ -130,6 +138,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setSelectedFiles([])
     setEditingListingId(null)
     setListingCoordinates(DEFAULT_COORDINATES)
+    setLocationSearch('')
+    setLocationSearchError('')
   }, [user])
 
   React.useEffect(() => {
@@ -141,6 +151,54 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       }))
     }
   }, [activeTab, editingListingId, user])
+
+  const handleSearchLocation = async () => {
+    const query = locationSearch.trim() || newListing.address.trim()
+    if (!query) {
+      setLocationSearchError(language === 'en' ? 'Enter address for search.' : 'Axtarış üçün ünvan daxil edin.')
+      return
+    }
+
+    setIsSearchingLocation(true)
+    setLocationSearchError('')
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(`${query}, Azerbaijan`)}`
+      const response = await fetch(url, {
+        headers: {
+          'Accept-Language': language === 'en' ? 'en' : 'az'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Geocoding request failed')
+      }
+
+      const results = (await response.json()) as GeocodeResult[]
+
+      if (!results.length) {
+        setLocationSearchError(language === 'en' ? 'Address not found. Try a more specific address.' : 'Ünvan tapılmadı. Daha dəqiq ünvan yazın.')
+        return
+      }
+
+      const lat = Number(results[0].lat)
+      const lng = Number(results[0].lon)
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        setLocationSearchError(language === 'en' ? 'Invalid coordinates received.' : 'Koordinatlar düzgün alınmadı.')
+        return
+      }
+
+      setListingCoordinates({
+        lat: Number(lat.toFixed(6)),
+        lng: Number(lng.toFixed(6))
+      })
+    } catch (searchError) {
+      setLocationSearchError(language === 'en' ? 'Location search failed. Try again.' : 'Ünvan axtarışı uğursuz oldu. Yenidən cəhd edin.')
+    } finally {
+      setIsSearchingLocation(false)
+    }
+  }
 
   const handleAddListing = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -650,6 +708,23 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         <div className="form-group full-width">
                           <label>Xəritədə nöqtə *</label>
                           <p className="location-hint">Xəritədə klik edin və ya koordinatları əl ilə daxil edin.</p>
+                          <div className="location-search-row">
+                            <input
+                              type="text"
+                              value={locationSearch}
+                              onChange={(e) => setLocationSearch(e.target.value)}
+                              placeholder={language === 'en' ? 'Search address (e.g. Mardakan, Baku)' : 'Ünvan axtarın (məs: Mərdəkan, Bakı)'}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              onClick={handleSearchLocation}
+                              disabled={isSearchingLocation}
+                            >
+                              {isSearchingLocation ? t.messages.loading : (language === 'en' ? 'Find on map' : 'Xəritədə tap')}
+                            </button>
+                          </div>
+                          {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
                           <div className="listing-location-picker">
                             <MapContainer
                               center={[listingCoordinates.lat, listingCoordinates.lng]}

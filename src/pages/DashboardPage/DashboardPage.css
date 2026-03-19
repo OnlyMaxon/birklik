@@ -300,6 +300,23 @@
   color: #486b9f;
 }
 
+.location-search-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.55rem;
+  margin-bottom: 0.65rem;
+}
+
+.location-search-row .btn {
+  min-width: 124px;
+}
+
+.location-search-error {
+  margin: 0 0 0.65rem;
+  color: #c03a3a;
+  font-size: 0.82rem;
+}
+
 .listing-location-picker {
   border: 1px solid rgba(18, 70, 140, 0.2);
   border-radius: 14px;
@@ -438,6 +455,10 @@
   }
 
   .coords-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .location-search-row {
     grid-template-columns: 1fr;
   }
 }

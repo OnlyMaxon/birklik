@@ -136,7 +136,7 @@ export const en: Translations = {
     error: "An error occurred"
   },
   hero: {
-    title: "Find Your Perfect Vacation Home in Azerbaijan",
+    title: "Your Perfect Azerbaijan Getaway Starts Here",
     subtitle: "Villas, cottages and apartments — at the best prices"
   },
   pricing: {
