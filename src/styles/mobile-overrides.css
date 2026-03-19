@@ -1,5 +1,5 @@
-/* Aggressive mobile and iOS Google webview fallbacks.
-   Keeps app logic unchanged and only adjusts presentation. */
+/* Mobile and iOS Google webview fallbacks.
+  Keeps app logic unchanged and avoids aggressive visual overrides. */
 
 /* Base typography safety */
 .btn,
@@ -144,53 +144,15 @@
 }
 
 /* iPhone Google/Chrome shell safe mode */
-.ios-google body {
-  background: #eef4ff;
-}
-
-.ios-google .header,
-.ios-google .footer,
-.ios-google .plans-section,
-.ios-google .cta-section,
-.ios-google .properties-section,
-.ios-google .property-page,
-.ios-google .dashboard-page,
-.ios-google .auth-page {
-  background-image: none !important;
-}
-
-.ios-google .header {
-  background: #0c2347 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.ios-google .hero-overlay {
-  background: linear-gradient(145deg, rgba(7, 20, 45, 0.95), rgba(11, 39, 80, 0.92)) !important;
-}
-
-.ios-google .hero-pattern {
-  display: none;
-}
-
-.ios-google .card,
-.ios-google .plan-card,
-.ios-google .filters-panel,
-.ios-google .auth-card,
-.ios-google .booking-card,
-.ios-google .property-info,
-.ios-google .add-listing-form,
-.ios-google .profile-card {
-  box-shadow: 0 8px 18px rgba(10, 33, 73, 0.12) !important;
-}
-
 .ios-google .loading-overlay,
 .ios-google .modal-overlay {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-.ios-google .btn,
-.ios-google .nav-link {
-  text-shadow: none;
+.ios-google .header,
+.ios-google .nav,
+.ios-google .mobile-menu-backdrop {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
