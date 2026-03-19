@@ -4,11 +4,44 @@ import { useLanguage } from '../../context'
 import './Footer.css'
 
 export const Footer: React.FC = () => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   return (
     <footer className="footer">
       <div className="container">
+        <div className="footer-app-panel">
+          <div className="footer-app-copy">
+            <p className="footer-app-kicker">Birklik.az</p>
+            <h2>{language === 'en' ? 'What we do' : 'Biz nə edirik'}</h2>
+            <p>
+              {language === 'en'
+                ? 'We connect guests with trusted villas, apartments and holiday homes across Azerbaijan.'
+                : 'Azərbaycan üzrə villa, mənzil və bağ evlərinin kirayəsini bir platformada birləşdiririk.'}
+            </p>
+          </div>
+
+          <div className="footer-app-right">
+            <p className="footer-store-title">{language === 'en' ? 'Our apps' : 'Tətbiqlərimiz'}</p>
+            <div className="footer-store-buttons" aria-label="Store buttons mock">
+              <button type="button" className="footer-store-btn" aria-label="Apple App Store mock">
+                <span className="footer-store-icon" aria-hidden="true"></span>
+                <span className="footer-store-text">
+                  <small>{language === 'en' ? 'Download on the' : 'Yüklə'}</small>
+                  <strong>App Store</strong>
+                </span>
+              </button>
+
+              <button type="button" className="footer-store-btn" aria-label="Google Play mock">
+                <span className="footer-store-icon" aria-hidden="true">▶</span>
+                <span className="footer-store-text">
+                  <small>{language === 'en' ? 'Get it on' : 'Yüklə'}</small>
+                  <strong>Google Play</strong>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="footer-content">
           <div className="footer-brand">
             <Link to="/" className="footer-logo">

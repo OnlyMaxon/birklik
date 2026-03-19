@@ -230,8 +230,10 @@ export const PropertyPage: React.FC = () => {
               </div>
             ) : (
               <>
-                <h3 className="modal-title">{t.property.book}</h3>
-                <p className="modal-subtitle">{modalSubtitle}</p>
+                <div className="modal-header">
+                  <h3 className="modal-title">{t.property.book}</h3>
+                  <p className="modal-subtitle">{modalSubtitle}</p>
+                </div>
                 <form onSubmit={handleContactSubmit} className="modal-form">
                   <div className="form-group">
                     <label>{t.auth.fullName}</label>

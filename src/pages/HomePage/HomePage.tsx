@@ -226,40 +226,6 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <section className="section cta-section">
-        <div className="container app-download-box">
-          <div className="app-download-copy">
-            <p className="app-download-kicker">Birklik.az</p>
-            <h2>{language === 'en' ? 'What we do' : 'Biz nə edirik'}</h2>
-            <p>
-              {language === 'en'
-                ? 'We connect guests with trusted villas, apartments and holiday homes across Azerbaijan.'
-                : 'Azərbaycan üzrə villa, mənzil və bağ evlərinin kirayəsini bir platformada birləşdiririk.'}
-            </p>
-          </div>
-
-          <div className="app-download-right">
-            <p className="store-title">{language === 'en' ? 'Our apps' : 'Tətbiqlərimiz'}</p>
-            <div className="store-buttons" aria-label="Store buttons mock">
-            <button type="button" className="store-btn" aria-label="Apple App Store mock">
-              <span className="store-icon" aria-hidden="true"></span>
-              <span className="store-text">
-                <small>{language === 'en' ? 'Download on the' : 'Yüklə'}</small>
-                <strong>App Store</strong>
-              </span>
-            </button>
-
-            <button type="button" className="store-btn" aria-label="Google Play mock">
-              <span className="store-icon" aria-hidden="true">▶</span>
-              <span className="store-text">
-                <small>{language === 'en' ? 'Get it on' : 'Yüklə'}</small>
-                <strong>Google Play</strong>
-              </span>
-            </button>
-            </div>
-          </div>
-        </div>
-      </section>
     </Layout>
   )
 }

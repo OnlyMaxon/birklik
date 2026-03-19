@@ -239,12 +239,12 @@
 
 .modal-content {
   position: relative;
-  width: 100%;
-  max-width: 500px;
-  padding: 1.7rem;
-  max-height: 90vh;
+  width: min(92vw, 440px);
+  max-width: 440px;
+  padding: 1.3rem 1.2rem 1.15rem;
+  max-height: 84vh;
   overflow-y: auto;
-  border-radius: 22px;
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.42);
   background:
     radial-gradient(circle at 90% -10%, rgba(142, 202, 230, 0.22), transparent 36%),
@@ -252,28 +252,38 @@
   box-shadow: 0 34px 64px rgba(6, 18, 45, 0.34);
 }
 
+.modal-content.card:hover {
+  transform: none;
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 0.95rem;
+  padding-top: 0.15rem;
+}
+
 .modal-title {
   font-family: var(--font-display);
-  font-size: 1.42rem;
+  font-size: 1.34rem;
   font-weight: 800;
   color: #173f77;
-  margin-bottom: 0.3rem;
+  margin: 0;
 }
 
 .modal-subtitle {
-  margin-bottom: 1rem;
+  margin: 0.35rem 0 0;
   color: #4e6a95;
-  font-size: 0.93rem;
+  font-size: 0.88rem;
 }
 
 .modal-form {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
 }
 
 .modal-form .form-group {
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.62rem;
 }
 
 .modal-form .form-group label {
@@ -286,9 +296,9 @@
 .modal-form input,
 .modal-form textarea {
   border: 1px solid rgba(16, 71, 148, 0.2);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.84);
-  padding: 0.75rem 0.9rem;
+  padding: 0.66rem 0.82rem;
 }
 
 .modal-form input:focus,
@@ -298,7 +308,7 @@
 }
 
 .modal-form textarea {
-  min-height: 96px;
+  min-height: 84px;
   resize: vertical;
 }
 
@@ -395,7 +405,9 @@
   }
 
   .modal-content {
-    padding: 1.25rem;
+    width: calc(100vw - 1.2rem);
+    max-width: calc(100vw - 1.2rem);
+    padding: 1.05rem 0.95rem 0.95rem;
   }
 }
 
