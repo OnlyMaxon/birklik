@@ -6,7 +6,6 @@ export type Amenity = 'pool' | 'parking' | 'wifi' | 'ac' | 'kitchen' | 'tv' | 'w
 
 export interface LocalizedText {
   az: string
-  ru: string
   en: string
 }
 

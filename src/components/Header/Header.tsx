@@ -11,7 +11,6 @@ export const Header: React.FC = () => {
 
   const languages = [
     { code: 'az' as const, label: 'AZ' },
-    { code: 'ru' as const, label: 'RU' },
     { code: 'en' as const, label: 'EN' }
   ]
 

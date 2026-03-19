@@ -17,7 +17,7 @@ interface LanguageProviderProps {
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('language')
-    return (saved as Language) || 'az'
+    return saved === 'en' ? 'en' : 'az'
   })
 
   const setLanguage = (lang: Language) => {

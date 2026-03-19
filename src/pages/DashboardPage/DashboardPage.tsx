@@ -1,5 +1,7 @@
 import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList } from '../../data'
@@ -11,6 +13,42 @@ type TabType = 'listings' | 'add' | 'profile'
 
 interface DashboardPageProps {
   initialTab?: TabType
+}
+
+const DEFAULT_COORDINATES = { lat: 40.4093, lng: 49.8671 }
+
+interface LocationPickerProps {
+  coordinates: { lat: number; lng: number }
+  onChange: (coords: { lat: number; lng: number }) => void
+}
+
+const MapCenterUpdater: React.FC<{ coordinates: { lat: number; lng: number } }> = ({ coordinates }) => {
+  const map = useMap()
+
+  React.useEffect(() => {
+    map.setView([coordinates.lat, coordinates.lng], map.getZoom(), { animate: true })
+  }, [coordinates, map])
+
+  return null
+}
+
+const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange }) => {
+  useMapEvents({
+    click: (event) => {
+      onChange({
+        lat: Number(event.latlng.lat.toFixed(6)),
+        lng: Number(event.latlng.lng.toFixed(6))
+      })
+    }
+  })
+
+  return (
+    <CircleMarker
+      center={[coordinates.lat, coordinates.lng]}
+      radius={10}
+      pathOptions={{ color: '#1f62c7', fillColor: '#ffb703', fillOpacity: 0.95, weight: 3 }}
+    />
+  )
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'listings' }) => {
@@ -27,11 +65,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [hasTestData, setHasTestData] = React.useState(false)
   const [isAddingTestData, setIsAddingTestData] = React.useState(false)
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
+  const [listingCoordinates, setListingCoordinates] = React.useState(DEFAULT_COORDINATES)
 
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
-  const savedMessage = language === 'ru'
-    ? 'Объявление успешно сохранено'
-    : language === 'en'
+  const savedMessage = language === 'en'
     ? 'Listing saved successfully'
     : 'Elan ugurla yadda saxlanildi'
 
@@ -41,7 +78,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
   }, [isAuthenticated, navigate])
 
-  const getLocalizedText = (text: Record<'az' | 'ru' | 'en', string>) => text[language]
+  const getLocalizedText = (text: Record<'az' | 'en', string>) => text[language]
 
   const loadListings = React.useCallback(async () => {
     if (!user) return
@@ -92,6 +129,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
     setSelectedFiles([])
     setEditingListingId(null)
+    setListingCoordinates(DEFAULT_COORDINATES)
   }, [user])
 
   React.useEffect(() => {
@@ -166,20 +204,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       area,
       amenities: newListing.amenities,
       images: [],
-      coordinates: { lat: 40.4093, lng: 49.8671 },
+      coordinates: listingCoordinates,
       title: {
         az: newListing.title,
-        ru: newListing.title,
         en: newListing.title
       },
       description: {
         az: newListing.description,
-        ru: newListing.description,
         en: newListing.description
       },
       address: {
         az: normalizedAddress,
-        ru: normalizedAddress,
         en: normalizedAddress
       },
       owner: {
@@ -271,12 +306,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setSelectedFiles([])
 
     setNewListing({
-      title: property.title.az || property.title.ru || property.title.en,
-      description: property.description.az || property.description.ru || property.description.en,
+      title: property.title.az || property.title.en,
+      description: property.description.az || property.description.en,
       listingTier: property.listingTier || 'free',
       type: property.type,
       district: property.district,
-      address: property.address.az || property.address.ru || property.address.en,
+      address: property.address.az || property.address.en,
       price: String(property.price.daily || ''),
       rooms: String(property.rooms || ''),
       area: String(property.area || ''),
@@ -285,16 +320,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       contactPhone: property.owner.phone || user.phone
     })
 
+    setListingCoordinates(property.coordinates || DEFAULT_COORDINATES)
+
     setActiveTab('add')
   }
 
   const testListings = [
     {
-      title: { az: 'Lüks villa - Test məntəqəsi', ru: 'Люкс вилла - тестовая', en: 'Luxury Villa - Test' },
-      description: { az: 'Bu test elanıdır. Həqiqət olmayan məlumatdır.', ru: 'Это тестовое объявление. Вымышленные данные.', en: 'This is a test listing. Fictional data.' },
+      title: { az: 'Lüks villa - Test məntəqəsi', en: 'Luxury Villa - Test' },
+      description: { az: 'Bu test elanıdır. Həqiqət olmayan məlumatdır.', en: 'This is a test listing. Fictional data.' },
       type: 'villa' as PropertyType,
       district: 'baku' as District,
-      address: { az: 'Bakı, Test küçəsi 1', ru: 'Баку, Test улица 1', en: 'Baku, Test street 1' },
+      address: { az: 'Bakı, Test küçəsi 1', en: 'Baku, Test street 1' },
       price: { daily: 250, weekly: 1500, monthly: 5000, currency: 'AZN' },
       rooms: 5,
       area: 350,
@@ -308,11 +345,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       city: 'Baku'
     },
     {
-      title: { az: 'Dəniz mənzərəli mənzil - Test', ru: 'Квартира с видом на море - Тест', en: 'Sea View Apartment - Test' },
-      description: { az: 'Test elanı - üç otaqlı müasir mənzil', ru: 'Тестовое объявление - 3-комнатная квартира', en: 'Test listing - 3-room modern apartment' },
+      title: { az: 'Dəniz mənzərəli mənzil - Test', en: 'Sea View Apartment - Test' },
+      description: { az: 'Test elanı - üç otaqlı müasir mənzil', en: 'Test listing - 3-room modern apartment' },
       type: 'apartment' as PropertyType,
       district: 'bilgah' as District,
-      address: { az: 'Bilgəh, Test Dənizkənarı', ru: 'Бильгях, Test Берег', en: 'Bilgah, Test Beach' },
+      address: { az: 'Bilgəh, Test Dənizkənarı', en: 'Bilgah, Test Beach' },
       price: { daily: 120, weekly: 700, monthly: 2500, currency: 'AZN' },
       rooms: 3,
       area: 95,
@@ -608,6 +645,66 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             required={newListing.listingTier !== 'free'}
                             placeholder={newListing.listingTier === 'free' ? 'Pulsuz paketde lokasiya gizledilir' : ''}
                           />
+                        </div>
+
+                        <div className="form-group full-width">
+                          <label>Xəritədə nöqtə *</label>
+                          <p className="location-hint">Xəritədə klik edin və ya koordinatları əl ilə daxil edin.</p>
+                          <div className="listing-location-picker">
+                            <MapContainer
+                              center={[listingCoordinates.lat, listingCoordinates.lng]}
+                              zoom={13}
+                              scrollWheelZoom={false}
+                              className="listing-location-map"
+                            >
+                              <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                              />
+                              <MapCenterUpdater coordinates={listingCoordinates} />
+                              <LocationPicker
+                                coordinates={listingCoordinates}
+                                onChange={setListingCoordinates}
+                              />
+                            </MapContainer>
+                          </div>
+                          <div className="coords-grid">
+                            <div className="form-group">
+                              <label>Latitude</label>
+                              <input
+                                type="number"
+                                step="0.000001"
+                                value={listingCoordinates.lat}
+                                onChange={(e) => {
+                                  const value = Number(e.target.value)
+                                  if (Number.isFinite(value)) {
+                                    setListingCoordinates(prev => ({ ...prev, lat: value }))
+                                  }
+                                }}
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>Longitude</label>
+                              <input
+                                type="number"
+                                step="0.000001"
+                                value={listingCoordinates.lng}
+                                onChange={(e) => {
+                                  const value = Number(e.target.value)
+                                  if (Number.isFinite(value)) {
+                                    setListingCoordinates(prev => ({ ...prev, lng: value }))
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => setListingCoordinates(DEFAULT_COORDINATES)}
+                          >
+                            Koordinatı sıfırla (Bakı mərkəzi)
+                          </button>
                         </div>
 
                         <div className="form-group">

@@ -45,6 +45,8 @@
 html {
   scroll-behavior: smooth;
   overflow-x: clip;
+  background: linear-gradient(160deg, #061327 0%, #0c2955 100%);
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -56,6 +58,7 @@ body {
     radial-gradient(circle at 8% -20%, rgba(255, 183, 3, 0.22), transparent 33%),
     radial-gradient(circle at 90% -12%, rgba(142, 202, 230, 0.2), transparent 36%),
     linear-gradient(180deg, #f4f8ff 0%, #e9f1ff 100%);
+  background-color: #0c2955;
   min-height: 100vh;
   overflow-x: clip;
 }

@@ -39,7 +39,7 @@ const mapDocToProperty = (snapshotDoc: { id: string; data: () => unknown }): Pro
   }
 }
 
-const matchesSearch = (property: Property, searchTerm?: string, lang: Language = 'ru'): boolean => {
+const matchesSearch = (property: Property, searchTerm?: string, lang: Language = 'az'): boolean => {
   if (!searchTerm) return true
 
   const searchLower = searchTerm.toLowerCase().trim()
@@ -305,7 +305,7 @@ export const getFeaturedProperties = async (count: number = 6): Promise<Property
 }
 
 // Search properties by title or description
-export const searchProperties = async (searchTerm: string, lang: 'az' | 'ru' | 'en' = 'ru'): Promise<Property[]> => {
+export const searchProperties = async (searchTerm: string, lang: Language = 'az'): Promise<Property[]> => {
   try {
     // Note: Firestore doesn't support full-text search natively
     // For production, consider using Algolia or Elasticsearch
