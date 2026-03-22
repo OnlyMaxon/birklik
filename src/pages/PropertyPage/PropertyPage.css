@@ -190,6 +190,114 @@
   width: 100%;
 }
 
+.booking-card .btn:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.availability-card {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(17, 68, 140, 0.16);
+  background: linear-gradient(180deg, #f8fbff, #eef4ff);
+}
+
+.availability-card h4 {
+  font-size: 0.9rem;
+  color: #1c4a88;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.availability-state {
+  font-size: 0.86rem;
+  margin-bottom: 0.55rem;
+}
+
+.availability-state.available {
+  color: #0f7a58;
+}
+
+.availability-state.busy {
+  color: #a45a1a;
+}
+
+.availability-month {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1f4f90;
+  margin-bottom: 0.35rem;
+}
+
+.availability-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.availability-weekdays span {
+  font-size: 0.68rem;
+  color: #6783ac;
+  text-align: center;
+  font-weight: 700;
+}
+
+.availability-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.22rem;
+  margin-bottom: 0.55rem;
+}
+
+.availability-day {
+  height: 24px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #284e83;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(18, 70, 140, 0.08);
+}
+
+.availability-day.outside {
+  opacity: 0.45;
+}
+
+.availability-day.busy {
+  background: linear-gradient(165deg, rgba(255, 183, 3, 0.3), rgba(244, 111, 66, 0.28));
+  border-color: rgba(196, 108, 20, 0.28);
+  color: #7c3e11;
+  font-weight: 700;
+}
+
+.availability-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.availability-dates span {
+  display: block;
+  font-size: 0.74rem;
+  color: #5e79a1;
+}
+
+.availability-dates strong {
+  color: #173f77;
+  font-size: 0.88rem;
+}
+
+.availability-next {
+  margin-top: 0.55rem;
+  color: #4a6288;
+  font-size: 0.82rem;
+}
+
 .owner-info {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
@@ -403,6 +511,10 @@
 
   .booking-card {
     padding: 1rem;
+  }
+
+  .availability-dates {
+    grid-template-columns: 1fr;
   }
 
   .modal-content {

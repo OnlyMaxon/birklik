@@ -7,6 +7,39 @@ import { getPropertyById } from '../../services'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
 
+interface CalendarCell {
+  label: string
+  dateISO?: string
+  inMonth: boolean
+}
+
+const toISODate = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const buildCalendarCells = (monthDate: Date): CalendarCell[] => {
+  const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+  const startWeekDay = (firstDay.getDay() + 6) % 7
+  const startDate = new Date(firstDay)
+  startDate.setDate(firstDay.getDate() - startWeekDay)
+
+  const cells: CalendarCell[] = []
+  for (let i = 0; i < 42; i += 1) {
+    const current = new Date(startDate)
+    current.setDate(startDate.getDate() + i)
+    cells.push({
+      label: String(current.getDate()),
+      dateISO: toISODate(current),
+      inMonth: current.getMonth() === monthDate.getMonth()
+    })
+  }
+
+  return cells
+}
+
 export const PropertyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { language, t } = useLanguage()
@@ -36,6 +69,20 @@ export const PropertyPage: React.FC = () => {
   }, [id])
 
   const getLocalizedText = (text: Record<Language, string>) => text[language]
+
+  const formatDate = (value?: string) => {
+    if (!value) return '-'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return value
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'az-Latn-AZ').format(date)
+  }
+
+  const getTodayISO = () => new Date().toISOString().split('T')[0]
+
+  const isOccupationExpired = (item: Property) => {
+    if (!item.unavailableTo) return false
+    return item.unavailableTo < getTodayISO()
+  }
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,6 +114,27 @@ export const PropertyPage: React.FC = () => {
       </Layout>
     )
   }
+
+  const isAvailable = property.isActive !== false || isOccupationExpired(property)
+  const availabilityTitle = language === 'en' ? 'Availability calendar' : 'Mövcudluq kalendari'
+  const availabilityNote = isAvailable
+    ? (language === 'en' ? 'Currently available for booking.' : 'Hazırda sifariş üçün açıqdır.')
+    : (language === 'en' ? 'Temporarily occupied and hidden from public listing.' : 'Müvəqqəti məşğuldur və ümumi siyahıda göstərilmir.')
+  const availableFromNote = !isAvailable && property.unavailableTo
+    ? (language === 'en' ? `Available again from ${formatDate(property.unavailableTo)}.` : `${formatDate(property.unavailableTo)} tarixindən sonra yenidən boş olacaq.`)
+    : ''
+
+  const calendarBaseDate = property.unavailableFrom
+    ? new Date(property.unavailableFrom)
+    : new Date()
+  const monthLabel = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'az-Latn-AZ', {
+    month: 'long',
+    year: 'numeric'
+  }).format(calendarBaseDate)
+  const weekDayLabels = language === 'en'
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['B.e', 'Ç.a', 'Ç', 'C.a', 'C', 'Ş', 'B']
+  const calendarCells = buildCalendarCells(calendarBaseDate)
 
   return (
     <Layout>
@@ -189,9 +257,48 @@ export const PropertyPage: React.FC = () => {
                 <button 
                   className="btn btn-accent btn-lg w-full"
                   onClick={() => setShowContactForm(true)}
+                  disabled={!isAvailable}
                 >
-                  {t.property.book}
+                  {isAvailable ? t.property.book : (language === 'en' ? 'Occupied' : 'Məşğul')}
                 </button>
+
+                <div className="availability-card">
+                  <h4>{availabilityTitle}</h4>
+                  <p className={`availability-state ${isAvailable ? 'available' : 'busy'}`}>{availabilityNote}</p>
+                  <div className="availability-month">{monthLabel}</div>
+                  <div className="availability-weekdays">
+                    {weekDayLabels.map((label) => (
+                      <span key={label}>{label}</span>
+                    ))}
+                  </div>
+                  <div className="availability-calendar-grid">
+                    {calendarCells.map((cell, index) => {
+                      const isBusy = !!cell.dateISO && !!property.unavailableFrom && !!property.unavailableTo
+                        && cell.dateISO >= property.unavailableFrom
+                        && cell.dateISO <= property.unavailableTo
+
+                      return (
+                        <span
+                          key={`${cell.dateISO || 'empty'}-${index}`}
+                          className={`availability-day ${cell.inMonth ? '' : 'outside'} ${isBusy ? 'busy' : ''}`}
+                        >
+                          {cell.label}
+                        </span>
+                      )
+                    })}
+                  </div>
+                  <div className="availability-dates">
+                    <div>
+                      <span>{language === 'en' ? 'Busy from' : 'Məşğul başlanğıc'}</span>
+                      <strong>{formatDate(property.unavailableFrom)}</strong>
+                    </div>
+                    <div>
+                      <span>{language === 'en' ? 'Busy until' : 'Məşğul bitiş'}</span>
+                      <strong>{formatDate(property.unavailableTo)}</strong>
+                    </div>
+                  </div>
+                  {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
+                </div>
 
                 <div className="owner-info">
                   <h4>{t.property.contact}</h4>

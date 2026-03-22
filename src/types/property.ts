@@ -48,6 +48,8 @@ export interface Property {
   status?: ListingStatus
   isFeatured?: boolean
   isActive?: boolean
+  unavailableFrom?: string
+  unavailableTo?: string
   createdAt?: string
   updatedAt?: string
   city?: string

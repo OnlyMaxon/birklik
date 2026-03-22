@@ -22,6 +22,18 @@ import { mockProperties } from '../data'
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 12
 
+const getTodayISO = (): string => new Date().toISOString().split('T')[0]
+
+const isOccupationExpired = (property: Property): boolean => {
+  if (!property.unavailableTo) return false
+  return property.unavailableTo < getTodayISO()
+}
+
+const isHiddenByAvailability = (property: Property): boolean => {
+  if (property.isActive !== false) return false
+  return !isOccupationExpired(property)
+}
+
 export interface PropertyFilters {
   type?: PropertyType | 'all'
   district?: string
@@ -97,12 +109,14 @@ export const getProperties = async (
     const properties = snapshot.docs
       .map(mapDocToProperty)
       .filter(property => {
+        if (isHiddenByAvailability(property)) return false
         if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
         return matchesSearch(property, filters?.search)
       })
 
     if (properties.length === 0) {
       const fallbackProperties = mockProperties.filter(property => {
+        if (isHiddenByAvailability(property)) return false
         if (filters?.type && filters.type !== 'all' && property.type !== filters.type) return false
         if (filters?.district && property.district !== filters.district) return false
         if (filters?.minPrice && property.price.daily < filters.minPrice) return false
@@ -123,6 +137,7 @@ export const getProperties = async (
   } catch (error) {
     console.error('Error getting properties:', error)
     const fallbackProperties = mockProperties.filter(property => {
+      if (isHiddenByAvailability(property)) return false
       if (filters?.type && filters.type !== 'all' && property.type !== filters.type) return false
       if (filters?.district && property.district !== filters.district) return false
       if (filters?.minPrice && property.price.daily < filters.minPrice) return false
@@ -162,7 +177,9 @@ export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]>
     )
     const snapshot = await getDocs(q)
 
-    return snapshot.docs.map(mapDocToProperty)
+    return snapshot.docs
+      .map(mapDocToProperty)
+      .filter(property => !isHiddenByAvailability(property))
   } catch (error) {
     console.error('Error getting user properties:', error)
     return []
@@ -320,7 +337,7 @@ export const searchProperties = async (searchTerm: string, lang: Language = 'az'
     const searchLower = searchTerm.toLowerCase()
     const properties = snapshot.docs.map(mapDocToProperty)
 
-    return properties.filter((property) => matchesSearch(property, searchLower, lang))
+    return properties.filter((property) => !isHiddenByAvailability(property) && matchesSearch(property, searchLower, lang))
   } catch (error) {
     console.error('Error searching properties:', error)
     return []

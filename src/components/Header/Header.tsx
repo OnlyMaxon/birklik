@@ -95,10 +95,6 @@ export const Header: React.FC = () => {
               ))}
             </div>
 
-            <Link className="btn btn-accent btn-sm header-cta" to="/dashboard/add">
-              {t.nav.addListing}
-            </Link>
-
             <button
               className="menu-toggle"
               onClick={() => setMenuOpen(!menuOpen)}

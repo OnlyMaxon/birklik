@@ -114,12 +114,6 @@
   color: #12284b;
 }
 
-.header-cta {
-  white-space: nowrap;
-  font-weight: 800;
-  border-radius: 999px;
-}
-
 .menu-toggle {
   display: none;
   width: 34px;
@@ -176,10 +170,6 @@
 }
 
 @media (max-width: 1024px) {
-  .header-cta {
-    display: none;
-  }
-
   .logo-image {
     width: clamp(146px, 25vw, 198px);
   }

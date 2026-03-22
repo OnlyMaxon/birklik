@@ -21,6 +21,12 @@ interface GeocodeResult {
 }
 
 const DEFAULT_COORDINATES = { lat: 40.4093, lng: 49.8671 }
+const getTodayISO = (): string => new Date().toISOString().split('T')[0]
+
+const isOccupationExpired = (property: Property): boolean => {
+  if (!property.unavailableTo) return false
+  return property.unavailableTo < getTodayISO()
+}
 
 interface LocationPickerProps {
   coordinates: { lat: number; lng: number }
@@ -74,11 +80,43 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [locationSearch, setLocationSearch] = React.useState('')
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
   const [locationSearchError, setLocationSearchError] = React.useState('')
+  const [busyListingId, setBusyListingId] = React.useState<string | null>(null)
+  const [busyFrom, setBusyFrom] = React.useState('')
+  const [busyTo, setBusyTo] = React.useState('')
+  const [isSavingAvailability, setIsSavingAvailability] = React.useState(false)
 
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
   const savedMessage = language === 'en'
     ? 'Listing saved successfully'
     : 'Elan ugurla yadda saxlanildi'
+
+  const listingPlans = [
+    {
+      id: 'free' as ListingTier,
+      title: t.pricing.free,
+      price: '0 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.free_features],
+      emphasis: t.pricing.freeDesc
+    },
+    {
+      id: 'standard' as ListingTier,
+      title: t.pricing.standard,
+      price: '15 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.standard_features],
+      emphasis: t.pricing.standardDesc
+    },
+    {
+      id: 'premium' as ListingTier,
+      title: t.pricing.premium,
+      price: '30 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.premium_features, t.pricing_info.premium_highlight],
+      emphasis: t.pricing.premiumDesc,
+      highlighted: true
+    }
+  ]
 
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -94,7 +132,37 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setIsLoadingListings(true)
     setError('')
     const ownerListings = await getPropertiesByOwner(user.id)
-    setListings(ownerListings)
+
+    const expiredInactive = ownerListings.filter(
+      listing => listing.isActive === false && isOccupationExpired(listing)
+    )
+
+    if (expiredInactive.length > 0) {
+      await Promise.all(
+        expiredInactive.map((listing) =>
+          updateProperty(listing.id, {
+            isActive: true,
+            unavailableFrom: '',
+            unavailableTo: ''
+          })
+        )
+      )
+    }
+
+    const normalizedListings = ownerListings.map(listing => {
+      if (listing.isActive === false && isOccupationExpired(listing)) {
+        return {
+          ...listing,
+          isActive: true,
+          unavailableFrom: '',
+          unavailableTo: ''
+        }
+      }
+
+      return listing
+    })
+
+    setListings(normalizedListings)
     setIsLoadingListings(false)
   }, [user])
 
@@ -357,6 +425,67 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     await loadListings()
   }
 
+  const handleOpenBusyModal = (property: Property) => {
+    setBusyListingId(property.id)
+    setBusyFrom(property.unavailableFrom || '')
+    setBusyTo(property.unavailableTo || '')
+  }
+
+  const handleCloseBusyModal = () => {
+    setBusyListingId(null)
+    setBusyFrom('')
+    setBusyTo('')
+  }
+
+  const handleSetInactiveWithDates = async () => {
+    if (!busyListingId) return
+
+    if (!busyFrom || !busyTo) {
+      setError(language === 'en' ? 'Select both start and end dates.' : 'Baslama ve bitme tarixini secin.')
+      return
+    }
+
+    if (busyFrom > busyTo) {
+      setError(language === 'en' ? 'Start date must be before end date.' : 'Baslama tarixi bitme tarixinden boyuk ola bilmez.')
+      return
+    }
+
+    setIsSavingAvailability(true)
+    setError('')
+
+    const updated = await updateProperty(busyListingId, {
+      isActive: false,
+      unavailableFrom: busyFrom,
+      unavailableTo: busyTo
+    })
+
+    if (!updated) {
+      setError(t.messages.error)
+      setIsSavingAvailability(false)
+      return
+    }
+
+    setIsSavingAvailability(false)
+    handleCloseBusyModal()
+    await loadListings()
+  }
+
+  const handleSetActive = async (id: string) => {
+    setError('')
+    const updated = await updateProperty(id, {
+      isActive: true,
+      unavailableFrom: '',
+      unavailableTo: ''
+    })
+
+    if (!updated) {
+      setError(t.messages.error)
+      return
+    }
+
+    await loadListings()
+  }
+
   const handleEditListing = (property: Property) => {
     setEditingListingId(property.id)
     setError('')
@@ -542,8 +671,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   ) : listings.length > 0 ? (
                     <div className="listings-list">
                       {listings.map((property) => {
-                        const statusBadgeClass = property.status === 'active' ? 'badge-success' : 'badge-warning'
-                        const statusText = property.status === 'active' ? '✓ Aktiv' : '⏳ Teklifin Gözlənilməsi'
+                        const isCurrentlyActive = property.isActive !== false || isOccupationExpired(property)
                         return (
                           <div key={property.id} className="listing-item card">
                             <img 
@@ -556,8 +684,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 <Link to={`/property/${property.id}`} className="listing-title">
                                   {getLocalizedText(property.title)}
                                 </Link>
-                                <span className={`badge ${statusBadgeClass}`} style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                  {statusText}
+                                <span className={`badge ${isCurrentlyActive ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                  {isCurrentlyActive ? '✓ Aktiv' : '📅 Məşğul'}
                                 </span>
                               </div>
                               <p className="listing-location">
@@ -567,11 +695,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
                               </p>
                               <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                                <strong>Status:</strong> {property.status === 'active' ? 'Aktiv' : 'Gözləmədə'}
+                                <strong>Status:</strong> {isCurrentlyActive ? 'Aktiv' : 'Məşğul / göstərilmir'}
                               </p>
+                              {!isCurrentlyActive && property.unavailableFrom && property.unavailableTo && (
+                                <p style={{ fontSize: '0.84rem', color: '#8b5a10', marginTop: '0.15rem' }}>
+                                  <strong>Tarix:</strong> {property.unavailableFrom} - {property.unavailableTo}
+                                </p>
+                              )}
+                              {!isCurrentlyActive && property.unavailableTo && (
+                                <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
+                                  Yenidən aktiv etmək üçün Active düyməsini sıxın.
+                                </p>
+                              )}
                             </div>
                             <div className="listing-actions">
                               <div className="action-buttons">
+                                {isCurrentlyActive ? (
+                                  <button className="btn btn-ghost btn-sm" onClick={() => handleOpenBusyModal(property)}>
+                                    Non active et
+                                  </button>
+                                ) : (
+                                  <button className="btn btn-accent btn-sm" onClick={() => handleSetActive(property.id)}>
+                                    Active et
+                                  </button>
+                                )}
                                 <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>
                                 <button className="btn btn-ghost btn-sm text-error" onClick={() => handleDeleteListing(property.id)}>{t.dashboard.delete}</button>
                               </div>
@@ -614,26 +761,37 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                     </div>
                   ) : (
                     <form onSubmit={handleAddListing} className="add-listing-form card">
-                      <div className="form-grid">
-                        <div className="form-group full-width">
-                          <label>Elan paketi *</label>
-                          <select
-                            value={newListing.listingTier}
-                            onChange={(e) => setNewListing({ ...newListing, listingTier: e.target.value as ListingTier })}
-                          >
-                            <option value="free">Pulsuz (0 AZN, 3-4 foto, lokasiya yoxdur)</option>
-                            <option value="standard">Standart (15 AZN/ay, 20 foto, lokasiya var)</option>
-                            <option value="premium">Premium (30 AZN/ay, one cixarilir)</option>
-                          </select>
-                          <small>
-                            {newListing.listingTier === 'premium'
-                              ? 'Premium elan 3 hefte ana sehifede prioritetli gosterilir.'
-                              : newListing.listingTier === 'standard'
-                              ? 'Standart paket tam melumat ve lokasiya ucundur.'
-                              : 'Pulsuz paketde qisa tesvir, maksimum 4 foto ve gizli lokasiya var.'}
-                          </small>
-                        </div>
+                      <div className="listing-plans-header">
+                        <h3>{t.home.plansTitle}</h3>
+                        <p>{t.home.plansSubtitle}</p>
+                      </div>
 
+                      <div className="listing-plans-grid">
+                        {listingPlans.map((plan) => (
+                          <button
+                            type="button"
+                            key={plan.id}
+                            className={`listing-plan-card ${newListing.listingTier === plan.id ? 'selected' : ''} ${plan.highlighted ? 'highlighted' : ''}`}
+                            onClick={() => setNewListing({ ...newListing, listingTier: plan.id })}
+                          >
+                            <div className="listing-plan-head">
+                              <h4>{plan.title}</h4>
+                              <div className="listing-plan-price">
+                                <strong>{plan.price}</strong>
+                                <span>{plan.period}</span>
+                              </div>
+                            </div>
+                            <p className="listing-plan-emphasis">{plan.emphasis}</p>
+                            <ul>
+                              {plan.perks.map((perk) => (
+                                <li key={perk}>{perk}</li>
+                              ))}
+                            </ul>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="form-grid">
                         <div className="form-group">
                           <label>Email *</label>
                           <input
@@ -953,6 +1111,39 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
           </div>
         </div>
       </div>
+
+      {busyListingId && (
+        <div className="availability-modal-overlay" onClick={handleCloseBusyModal}>
+          <div className="availability-modal card" onClick={(e) => e.stopPropagation()}>
+            <h3>{language === 'en' ? 'Mark as occupied' : 'Məşğul tarixlərini seçin'}</h3>
+            <p>
+              {language === 'en'
+                ? 'This listing will be hidden from homepage until selected end date.'
+                : 'Bu elan seçdiyiniz bitmə tarixinə qədər ana səhifədə göstərilməyəcək.'}
+            </p>
+
+            <div className="availability-grid">
+              <div className="form-group">
+                <label>{language === 'en' ? 'From' : 'Başlama tarixi'}</label>
+                <input type="date" value={busyFrom} onChange={(e) => setBusyFrom(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>{language === 'en' ? 'To' : 'Bitmə tarixi'}</label>
+                <input type="date" value={busyTo} min={busyFrom || undefined} onChange={(e) => setBusyTo(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="availability-actions">
+              <button type="button" className="btn btn-ghost" onClick={handleCloseBusyModal}>
+                {t.form.cancel}
+              </button>
+              <button type="button" className="btn btn-accent" onClick={handleSetInactiveWithDates} disabled={isSavingAvailability}>
+                {isSavingAvailability ? t.messages.loading : (language === 'en' ? 'Set non active' : 'Non active et')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }

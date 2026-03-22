@@ -69,41 +69,12 @@ export const HomePage: React.FC = () => {
   const typeFilterCards: TypeFilterCard[] = [
     { key: 'apartment', type: 'apartment', icon: '🏢', label: t.propertyTypes.apartment },
     { key: 'villa', type: 'villa', icon: '🏡', label: t.propertyTypes.villa },
-    { key: 'cottage', type: 'cottage', icon: '🏘️', label: language === 'en' ? 'Holiday homes' : 'Bağ evləri' },
-    { key: 'daily', type: '', icon: '📅', label: language === 'en' ? 'Daily rental' : 'Gündəlik kirayə' }
+    { key: 'cottage', type: 'cottage', icon: '🏘️', label: language === 'en' ? 'Holiday homes' : 'Bağ evləri' }
   ]
 
   const handleTypeCardSelect = (type: PropertyType | '') => {
     setFilters(prev => ({ ...prev, type }))
   }
-
-  const listingPlans = [
-    {
-      id: 'free',
-      title: t.pricing.free,
-      price: '0 AZN',
-      period: t.pricing.perMonth,
-      perks: [t.pricing_info.free_features],
-      emphasis: t.pricing.freeDesc
-    },
-    {
-      id: 'standard',
-      title: t.pricing.standard,
-      price: '15 AZN',
-      period: t.pricing.perMonth,
-      perks: [t.pricing_info.standard_features],
-      emphasis: t.pricing.standardDesc
-    },
-    {
-      id: 'premium',
-      title: t.pricing.premium,
-      price: '30 AZN',
-      period: t.pricing.perMonth,
-      perks: [t.pricing_info.premium_features, t.pricing_info.premium_highlight],
-      emphasis: t.pricing.premiumDesc,
-      highlighted: true
-    }
-  ]
 
   return (
     <Layout>
@@ -193,39 +164,6 @@ export const HomePage: React.FC = () => {
           ) : null}
         </div>
       </section>
-
-      <section className="section plans-section">
-        <div className="container">
-          <div className="plans-header">
-            <h2 className="section-title">{t.home.plansTitle}</h2>
-            <p>{t.home.plansSubtitle}</p>
-          </div>
-
-          <div className="plans-grid">
-            {listingPlans.map((plan) => (
-              <article key={plan.id} className={`plan-card ${plan.highlighted ? 'plan-card-highlighted' : ''}`}>
-                <h3>{plan.title}</h3>
-                <div className="plan-price">
-                  <strong>{plan.price}</strong>
-                  <span>{plan.period}</span>
-                </div>
-                <p className="plan-emphasis">{plan.emphasis}</p>
-                <ul>
-                  {plan.perks.map((perk) => (
-                    <li key={perk}>{perk}</li>
-                  ))}
-                </ul>
-                <button className={`btn ${plan.highlighted ? 'btn-accent' : 'btn-outline'}`}>{t.nav.addListing}</button>
-              </article>
-            ))}
-          </div>
-
-          <p className="plans-note">
-            {t.home.plansNote}
-          </p>
-        </div>
-      </section>
-
     </Layout>
   )
 }

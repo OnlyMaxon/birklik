@@ -167,6 +167,8 @@
 .action-buttons {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .text-error {
@@ -229,6 +231,85 @@
   border-radius: 20px;
   background: linear-gradient(180deg, #ffffff, #f5f9ff);
   box-shadow: 0 16px 32px rgba(12, 39, 88, 0.13);
+}
+
+.listing-plans-header {
+  margin-bottom: 0.9rem;
+}
+
+.listing-plans-header h3 {
+  font-size: 1.15rem;
+  color: #173c73;
+  margin-bottom: 0.2rem;
+}
+
+.listing-plans-header p {
+  color: #4e6a95;
+  font-size: 0.9rem;
+}
+
+.listing-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+
+.listing-plan-card {
+  text-align: left;
+  border: 1px solid rgba(18, 70, 140, 0.2);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff, #f5f9ff);
+  padding: 0.85rem;
+  transition: var(--transition);
+}
+
+.listing-plan-card.highlighted {
+  background: linear-gradient(165deg, rgba(255, 183, 3, 0.15), rgba(142, 202, 230, 0.18));
+}
+
+.listing-plan-card.selected {
+  border-color: #2b6ad0;
+  box-shadow: 0 0 0 3px rgba(43, 106, 208, 0.15);
+}
+
+.listing-plan-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.listing-plan-head h4 {
+  font-size: 1rem;
+  color: #173c73;
+}
+
+.listing-plan-price strong {
+  font-size: 1rem;
+  color: #0f2f5f;
+}
+
+.listing-plan-price span {
+  font-size: 0.78rem;
+  color: #4e6a95;
+  margin-left: 0.25rem;
+}
+
+.listing-plan-emphasis {
+  margin-top: 0.35rem;
+  color: #1f62c7;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.listing-plan-card ul {
+  margin-top: 0.45rem;
+  padding-left: 1rem;
+  color: #435f88;
+  font-size: 0.8rem;
+  display: grid;
+  gap: 0.25rem;
 }
 
 .form-grid {
@@ -398,6 +479,48 @@
   gap: 1rem;
 }
 
+.availability-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: rgba(2, 10, 26, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.availability-modal {
+  width: min(100%, 460px);
+  padding: 1.2rem;
+  border-radius: 16px;
+}
+
+.availability-modal h3 {
+  font-size: 1.18rem;
+  color: #173c73;
+  margin-bottom: 0.3rem;
+}
+
+.availability-modal p {
+  color: #4e6a95;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.availability-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.availability-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
 @media (max-width: 1024px) {
   .dashboard-layout {
     grid-template-columns: 1fr;
@@ -454,11 +577,19 @@
     grid-template-columns: 1fr;
   }
 
+  .listing-plans-grid {
+    grid-template-columns: 1fr;
+  }
+
   .coords-grid {
     grid-template-columns: 1fr;
   }
 
   .location-search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-grid {
     grid-template-columns: 1fr;
   }
 }
