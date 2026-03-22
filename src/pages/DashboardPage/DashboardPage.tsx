@@ -21,6 +21,7 @@ interface GeocodeResult {
 }
 
 const DEFAULT_COORDINATES = { lat: 40.4093, lng: 49.8671 }
+const TEST_LISTING_MARKER = '[TEST_DATA]'
 const getTodayISO = (): string => new Date().toISOString().split('T')[0]
 
 const isOccupationExpired = (property: Property): boolean => {
@@ -33,6 +34,17 @@ const locationTabs: { key: LocationCategory; az: string; en: string }[] = [
   { key: 'metro', az: 'Metro', en: 'Metro' },
   { key: 'landmark', az: 'Nisangah', en: 'Landmark' }
 ]
+
+const isTestListing = (listing: Property): boolean => {
+  const titleAz = listing.title?.az || ''
+  const titleEn = listing.title?.en || ''
+  const descriptionAz = listing.description?.az || ''
+  const descriptionEn = listing.description?.en || ''
+
+  return [titleAz, titleEn, descriptionAz, descriptionEn].some((value) =>
+    value.includes(TEST_LISTING_MARKER)
+  )
+}
 
 const quickMorePopular = ['pool', 'ac', 'wifi', 'bbq']
 const quickNearPopular = ['sea', 'forest', 'park']
@@ -173,6 +185,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
 
     setListings(normalizedListings)
+    setHasTestData(normalizedListings.some(isTestListing))
     setIsLoadingListings(false)
   }, [user])
 
@@ -586,17 +599,24 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const testListings = [
     {
-      title: { az: 'Lüks villa - Test məntəqəsi', en: 'Luxury Villa - Test' },
-      description: { az: 'Bu test elanıdır. Həqiqət olmayan məlumatdır.', en: 'This is a test listing. Fictional data.' },
+      title: { az: `${TEST_LISTING_MARKER} Luks villa - Merdekan`, en: `${TEST_LISTING_MARKER} Luxury villa - Mardakan` },
+      description: {
+        az: `${TEST_LISTING_MARKER} Bu elan test ucundur: hovuz, besedka, manqal, sauna, denize yaxin villa.`,
+        en: `${TEST_LISTING_MARKER} Test listing with pool, gazebo, BBQ, sauna and close-to-sea location.`
+      },
       type: 'villa' as PropertyType,
-      district: 'baku' as District,
-      address: { az: 'Bakı, Test küçəsi 1', en: 'Baku, Test street 1' },
-      price: { daily: 250, weekly: 1500, monthly: 5000, currency: 'AZN' },
+      district: 'mardakan' as District,
+      address: { az: 'Merdekan, Test kuc. 1', en: 'Mardakan, Test street 1' },
+      price: { daily: 320, weekly: 1920, monthly: 7680, currency: 'AZN' },
       rooms: 5,
       area: 350,
       amenities: ['pool', 'parking', 'wifi', 'ac', 'kitchen', 'bbq'] as Amenity[],
+      extraFeatures: ['pool', 'ac', 'sauna', 'gazebo', 'bbq', 'wifi'],
+      nearbyPlaces: ['sea', 'park', 'restaurant'],
+      locationCategory: 'metro' as LocationCategory,
+      locationTags: ['koroglu', 'sahil'],
       images: ['https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800'],
-      coordinates: { lat: 40.4093, lng: 49.8671 },
+      coordinates: { lat: 40.4925, lng: 50.1464 },
       listingTier: 'premium' as ListingTier,
       status: 'active' as const,
       isFeatured: true,
@@ -604,15 +624,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       city: 'Baku'
     },
     {
-      title: { az: 'Dəniz mənzərəli mənzil - Test', en: 'Sea View Apartment - Test' },
-      description: { az: 'Test elanı - üç otaqlı müasir mənzil', en: 'Test listing - 3-room modern apartment' },
+      title: { az: `${TEST_LISTING_MARKER} Deniz menzereli menzil`, en: `${TEST_LISTING_MARKER} Sea view apartment` },
+      description: {
+        az: `${TEST_LISTING_MARKER} Test menzil: kondisioner, wifi, deniz ve restoran yaxinligi.`,
+        en: `${TEST_LISTING_MARKER} Test apartment with AC, Wi-Fi and nearby sea/restaurants.`
+      },
       type: 'apartment' as PropertyType,
       district: 'bilgah' as District,
-      address: { az: 'Bilgəh, Test Dənizkənarı', en: 'Bilgah, Test Beach' },
+      address: { az: 'Bilgeh, Test denizkenari', en: 'Bilgah, Test beach line' },
       price: { daily: 120, weekly: 700, monthly: 2500, currency: 'AZN' },
       rooms: 3,
       area: 95,
       amenities: ['wifi', 'ac', 'kitchen', 'tv', 'parking', 'beach'] as Amenity[],
+      extraFeatures: ['ac', 'wifi', 'garage', 'boardGames'],
+      nearbyPlaces: ['sea', 'restaurant', 'park'],
+      locationCategory: 'landmark' as LocationCategory,
+      locationTags: ['denizkenari', 'whiteCity'],
       images: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800'],
       coordinates: { lat: 40.5644, lng: 50.0372 },
       listingTier: 'standard' as ListingTier,
@@ -620,6 +647,31 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       isFeatured: false,
       isActive: true,
       city: 'Baku'
+    },
+    {
+      title: { az: `${TEST_LISTING_MARKER} Qebele bag evi`, en: `${TEST_LISTING_MARKER} Gabala cottage` },
+      description: {
+        az: `${TEST_LISTING_MARKER} Dag ve mesh yaxinliginda test kottec.`,
+        en: `${TEST_LISTING_MARKER} Test cottage near mountains and forest.`
+      },
+      type: 'cottage' as PropertyType,
+      district: 'gabala' as District,
+      address: { az: 'Qebele, Test heyet evi', en: 'Gabala, Test cottage area' },
+      price: { daily: 180, weekly: 1050, monthly: 3600, currency: 'AZN' },
+      rooms: 4,
+      area: 160,
+      amenities: ['wifi', 'ac', 'kitchen', 'garden', 'bbq'] as Amenity[],
+      extraFeatures: ['wifi', 'bbq', 'samovar', 'kidsZone'],
+      nearbyPlaces: ['mountains', 'forest', 'riverLake'],
+      locationCategory: 'rayon' as LocationCategory,
+      locationTags: ['xirdalan'],
+      images: ['https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800'],
+      coordinates: { lat: 40.9815, lng: 47.8452 },
+      listingTier: 'standard' as ListingTier,
+      status: 'active' as const,
+      isFeatured: false,
+      isActive: true,
+      city: 'Gabala'
     }
   ]
 
@@ -630,6 +682,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setError('')
 
     try {
+      const existingTestListings = listings.filter((listing) => listing.ownerId === user.id && isTestListing(listing))
+
+      for (const listing of existingTestListings) {
+        await deleteProperty(listing.id)
+      }
+
       for (const testListing of testListings) {
         const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
           ...testListing,
@@ -661,7 +719,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setError('')
 
     try {
-      const listingsToDelete = listings.filter(l => l.title.az.includes('Test'))
+      const listingsToDelete = listings.filter(l => l.ownerId === user.id && isTestListing(l))
 
       for (const listing of listingsToDelete) {
         await deleteProperty(listing.id)
