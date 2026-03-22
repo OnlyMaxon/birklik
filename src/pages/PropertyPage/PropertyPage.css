@@ -149,6 +149,36 @@
   color: var(--success);
 }
 
+.extra-item {
+  border: 1px solid rgba(17, 66, 133, 0.12);
+  border-radius: 10px;
+  padding: 0.3rem 0.55rem;
+  background: rgba(248, 251, 255, 0.85);
+}
+
+.property-city-line {
+  margin-top: 0.55rem;
+}
+
+.location-tags-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+
+.location-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 66, 133, 0.14);
+  background: rgba(31, 98, 199, 0.08);
+  color: #2d558d;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.58rem;
+}
+
 /* Sidebar */
 .property-sidebar {
   position: sticky;

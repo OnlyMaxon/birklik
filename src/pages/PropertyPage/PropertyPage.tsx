@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
+import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById } from '../../services'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
@@ -135,6 +136,12 @@ export const PropertyPage: React.FC = () => {
     ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     : ['B.e', 'Ç.a', 'Ç', 'C.a', 'C', 'Ş', 'B']
   const calendarCells = buildCalendarCells(calendarBaseDate)
+  const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, language))
+  const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, language))
+  const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
+  const locationLabels = selectedLocationOptions
+    ? (property.locationTags || []).map((key) => getOptionLabel(selectedLocationOptions, key, language))
+    : []
 
   return (
     <Layout>
@@ -221,9 +228,47 @@ export const PropertyPage: React.FC = () => {
                   </div>
                 </div>
 
+                {moreLabels.length > 0 && (
+                  <div className="property-section">
+                    <h3>{language === 'en' ? 'More' : 'Elave'}</h3>
+                    <div className="amenities-grid">
+                      {moreLabels.map((label) => (
+                        <span key={label} className="amenity-item extra-item">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {nearLabels.length > 0 && (
+                  <div className="property-section">
+                    <h3>{language === 'en' ? 'Near' : 'Yaxinda'}</h3>
+                    <div className="amenities-grid">
+                      {nearLabels.map((label) => (
+                        <span key={label} className="amenity-item extra-item">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="property-section">
                   <h3>{t.property.address}</h3>
                   <p>{getLocalizedText(property.address)}</p>
+                  {property.city && (
+                    <p className="property-city-line">
+                      <strong>{language === 'en' ? 'City' : 'Seher'}:</strong> {property.city}
+                    </p>
+                  )}
+                  {locationLabels.length > 0 && (
+                    <div className="location-tags-inline">
+                      {locationLabels.map((label) => (
+                        <span key={label} className="location-tag-chip">{label}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="property-section">

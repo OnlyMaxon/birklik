@@ -177,9 +177,7 @@ export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]>
     )
     const snapshot = await getDocs(q)
 
-    return snapshot.docs
-      .map(mapDocToProperty)
-      .filter(property => !isHiddenByAvailability(property))
+    return snapshot.docs.map(mapDocToProperty)
   } catch (error) {
     console.error('Error getting user properties:', error)
     return []

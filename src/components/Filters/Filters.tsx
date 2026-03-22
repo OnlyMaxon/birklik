@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '../../context'
-import { FilterState, PropertyType, District } from '../../types'
-import { propertyTypes, districts } from '../../data'
+import { FilterState, PropertyType, District, LocationCategory } from '../../types'
+import { propertyTypes, districts, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
 import './Filters.css'
 
 interface FiltersProps {
@@ -9,14 +9,39 @@ interface FiltersProps {
   onFilterChange: (filters: FilterState) => void
   onClear: () => void
   hideTypeFilter?: boolean
+  mapToggle?: {
+    active: boolean
+    label: string
+    onClick: () => void
+  }
 }
 
-export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false }) => {
-  const { t } = useLanguage()
+const locationTabs: { key: LocationCategory; az: string; en: string }[] = [
+  { key: 'rayon', az: 'Rayon', en: 'District' },
+  { key: 'metro', az: 'Metro', en: 'Metro' },
+  { key: 'landmark', az: 'Nisangah', en: 'Landmark' }
+]
+
+const quickMorePopular = ['pool', 'ac', 'wifi', 'bbq']
+const quickNearPopular = ['sea', 'forest', 'park']
+
+export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, mapToggle }) => {
+  const { t, language } = useLanguage()
   const [isOpen, setIsOpen] = React.useState(false)
+  const [showMore, setShowMore] = React.useState(false)
+  const [locationSearch, setLocationSearch] = React.useState('')
 
   const handleChange = (key: keyof FilterState, value: string | number | boolean | null) => {
     onFilterChange({ ...filters, [key]: value })
+  }
+
+  const toggleArrayValue = (key: 'extraFilters' | 'nearbyPlaces' | 'locationTags', value: string) => {
+    const current = filters[key]
+    const updated = current.includes(value)
+      ? current.filter((item) => item !== value)
+      : [...current, value]
+
+    onFilterChange({ ...filters, [key]: updated })
   }
 
   const handleRoomsChange = (value: string) => {
@@ -29,17 +54,120 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
     else handleChange('hasPool', null)
   }
 
+  const handleLocationCategoryChange = (category: LocationCategory) => {
+    onFilterChange({
+      ...filters,
+      locationCategory: category,
+      locationTags: []
+    })
+    setLocationSearch('')
+  }
+
+  const getLocalizedLabel = React.useCallback((option: { az: string; en: string }) => {
+    return language === 'en' ? option.en : option.az
+  }, [language])
+
+  const sortByLabel = React.useCallback((a: { az: string; en: string }, b: { az: string; en: string }) => {
+    return getLocalizedLabel(a).localeCompare(getLocalizedLabel(b), language === 'en' ? 'en' : 'az')
+  }, [getLocalizedLabel, language])
+
+  const sortedMoreOptions = React.useMemo(() => [...moreFilterOptions].sort(sortByLabel), [sortByLabel])
+  const sortedNearOptions = React.useMemo(() => [...nearFilterOptions].sort(sortByLabel), [sortByLabel])
+  const activeLocationOptions = React.useMemo(
+    () => [...cityLocationOptions[filters.locationCategory]].sort(sortByLabel),
+    [filters.locationCategory, sortByLabel]
+  )
+
+  const clearSection = (key: 'extraFilters' | 'nearbyPlaces' | 'locationTags') => {
+    onFilterChange({ ...filters, [key]: [] })
+  }
+
+  const resetAdvancedOnly = () => {
+    onFilterChange({
+      ...filters,
+      extraFilters: [],
+      nearbyPlaces: [],
+      city: '',
+      locationTags: []
+    })
+  }
+
+  const filteredLocationOptions = activeLocationOptions.filter((item) => {
+    const query = locationSearch.toLowerCase().trim()
+    if (!query) return true
+    return item.az.toLowerCase().includes(query) || item.en.toLowerCase().includes(query)
+  })
+
+  const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
+  const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
+  const moreButtonLabel = language === 'en' ? 'More' : 'Elave'
+  const nearTitle = language === 'en' ? 'Near' : 'Yaxinda'
+  const cityLabel = language === 'en' ? 'City' : 'Seher'
+  const chooseLocationText = language === 'en' ? 'Choose city locations' : 'Seher daxilinde secim edin'
+  const searchPlaceholder = language === 'en'
+    ? 'Search district, metro, landmark'
+    : 'Rayon, metro, nisangah axtar'
+
+  const moreLabelMap = new Map(sortedMoreOptions.map((item) => [item.key, getLocalizedLabel(item)]))
+  const nearLabelMap = new Map(sortedNearOptions.map((item) => [item.key, getLocalizedLabel(item)]))
+  const locationLabelMap = new Map(
+    Object.values(cityLocationOptions)
+      .flat()
+      .map((item) => [item.key, getLocalizedLabel(item)])
+  )
+
+  const selectedChips = [
+    ...filters.extraFilters.map((key) => ({ id: `more-${key}`, key, label: moreLabelMap.get(key) || key, group: 'extraFilters' as const })),
+    ...filters.nearbyPlaces.map((key) => ({ id: `near-${key}`, key, label: nearLabelMap.get(key) || key, group: 'nearbyPlaces' as const })),
+    ...(filters.city ? [{ id: `city-${filters.city}`, key: filters.city, label: `${cityLabel}: ${filters.city}`, group: 'city' as const }] : []),
+    ...filters.locationTags.map((key) => ({ id: `loc-${key}`, key, label: locationLabelMap.get(key) || key, group: 'locationTags' as const }))
+  ]
+
+  const handleRemoveChip = (chip: typeof selectedChips[number]) => {
+    if (chip.group === 'city') {
+      onFilterChange({ ...filters, city: '' })
+      return
+    }
+
+    if (chip.group === 'extraFilters' || chip.group === 'nearbyPlaces' || chip.group === 'locationTags') {
+      toggleArrayValue(chip.group, chip.key)
+    }
+  }
+
+  const activeBasicCount = [
+    filters.type,
+    filters.district,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.rooms,
+    filters.hasPool === null ? null : filters.hasPool
+  ].filter((item) => item !== null && item !== '').length
+  const activeAdvancedCount = selectedChips.length
+  const totalActiveCount = activeBasicCount + activeAdvancedCount
+
   return (
     <div className="filters-container">
-      <button 
-        className="filters-toggle btn btn-outline"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-        </svg>
-        {t.search.filters}
-      </button>
+      <div className="filters-top-row">
+        <button
+          className="filters-toggle btn btn-outline"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          {t.search.filters}
+          {totalActiveCount > 0 && <span className="filters-active-count">{totalActiveCount}</span>}
+        </button>
+        {mapToggle && (
+          <button className={`btn ${mapToggle.active ? 'btn-primary' : 'btn-outline'}`} onClick={mapToggle.onClick}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {mapToggle.label}
+          </button>
+        )}
+      </div>
 
       <div className={`filters-panel ${isOpen ? 'open' : ''}`}>
         <div className="filters-grid">
@@ -117,7 +245,167 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
           </div>
         </div>
 
+        <div className="more-toggle-wrap">
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowMore((prev) => !prev)}>
+            {moreButtonLabel}
+          </button>
+        </div>
+
+        {selectedChips.length > 0 && (
+          <div className="selected-chips-row">
+            {selectedChips.map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                className="selected-chip"
+                onClick={() => handleRemoveChip(chip)}
+                title={language === 'en' ? 'Remove filter' : 'Filteri sil'}
+              >
+                <span>{chip.label}</span>
+                <strong aria-hidden="true">×</strong>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {showMore && (
+          <div className="filters-extended">
+            <div className="extended-block">
+              <div className="extended-header">
+                <h4>{moreButtonLabel} <span className="count-pill">{filters.extraFilters.length}</span></h4>
+                {filters.extraFilters.length > 0 && (
+                  <button type="button" className="section-clear-btn" onClick={() => clearSection('extraFilters')}>
+                    {language === 'en' ? 'Clear' : 'Temizle'}
+                  </button>
+                )}
+              </div>
+              <div className="quick-chip-row">
+                {popularMoreOptions.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    className={`quick-chip ${filters.extraFilters.includes(option.key) ? 'active' : ''}`}
+                    onClick={() => toggleArrayValue('extraFilters', option.key)}
+                  >
+                    {getLocalizedLabel(option)}
+                  </button>
+                ))}
+              </div>
+              <div className="chip-grid">
+                {sortedMoreOptions.map((option) => (
+                  <label key={option.key} className="filter-chip">
+                    <input
+                      type="checkbox"
+                      checked={filters.extraFilters.includes(option.key)}
+                      onChange={() => toggleArrayValue('extraFilters', option.key)}
+                    />
+                    <span>{getLocalizedLabel(option)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="extended-block">
+              <div className="extended-header">
+                <h4>{nearTitle} <span className="count-pill">{filters.nearbyPlaces.length}</span></h4>
+                {filters.nearbyPlaces.length > 0 && (
+                  <button type="button" className="section-clear-btn" onClick={() => clearSection('nearbyPlaces')}>
+                    {language === 'en' ? 'Clear' : 'Temizle'}
+                  </button>
+                )}
+              </div>
+              <div className="quick-chip-row">
+                {popularNearOptions.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    className={`quick-chip ${filters.nearbyPlaces.includes(option.key) ? 'active' : ''}`}
+                    onClick={() => toggleArrayValue('nearbyPlaces', option.key)}
+                  >
+                    {getLocalizedLabel(option)}
+                  </button>
+                ))}
+              </div>
+              <div className="chip-grid near-grid">
+                {sortedNearOptions.map((option) => (
+                  <label key={option.key} className="filter-chip">
+                    <input
+                      type="checkbox"
+                      checked={filters.nearbyPlaces.includes(option.key)}
+                      onChange={() => toggleArrayValue('nearbyPlaces', option.key)}
+                    />
+                    <span>{getLocalizedLabel(option)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="extended-block city-picker-block">
+              <div className="extended-header">
+                <h4>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></h4>
+                {filters.locationTags.length > 0 && (
+                  <button type="button" className="section-clear-btn" onClick={() => clearSection('locationTags')}>
+                    {language === 'en' ? 'Clear' : 'Temizle'}
+                  </button>
+                )}
+              </div>
+              <div className="city-picker-header">
+                <label>{cityLabel}</label>
+                <select
+                  value={filters.city}
+                  onChange={(e) => onFilterChange({ ...filters, city: e.target.value })}
+                >
+                  <option value="">{t.search.any}</option>
+                  <option value="Baku">Baku</option>
+                  <option value="Sumqayit">Sumqayit</option>
+                  <option value="Gabala">Gabala</option>
+                  <option value="Quba">Quba</option>
+                </select>
+              </div>
+
+              <div className="city-tabs" role="tablist" aria-label="Location category tabs">
+                {locationTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    className={`city-tab ${filters.locationCategory === tab.key ? 'active' : ''}`}
+                    onClick={() => handleLocationCategoryChange(tab.key)}
+                  >
+                    {language === 'en' ? tab.en : tab.az}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="search"
+                className="city-search-input"
+                placeholder={searchPlaceholder}
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+              />
+
+              <div className="city-option-list">
+                {filteredLocationOptions.length > 0 ? filteredLocationOptions.map((option) => (
+                  <label key={option.key} className="city-option-item">
+                    <input
+                      type="checkbox"
+                      checked={filters.locationTags.includes(option.key)}
+                      onChange={() => toggleArrayValue('locationTags', option.key)}
+                    />
+                    <span>{getLocalizedLabel(option)}</span>
+                  </label>
+                )) : (
+                  <p className="empty-option-list">{language === 'en' ? 'No locations found.' : 'Lokasiya tapilmadi.'}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="filters-actions">
+          <button className="btn btn-ghost" onClick={resetAdvancedOnly}>
+            {language === 'en' ? 'Reset advanced' : 'Elave filterleri temizle'}
+          </button>
           <button className="btn btn-ghost" onClick={onClear}>
             {t.search.clearFilters}
           </button>

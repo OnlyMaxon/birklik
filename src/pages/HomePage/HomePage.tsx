@@ -14,7 +14,12 @@ const initialFilters: FilterState = {
   minPrice: null,
   maxPrice: null,
   rooms: null,
-  hasPool: null
+  hasPool: null,
+  extraFilters: [],
+  nearbyPlaces: [],
+  city: '',
+  locationCategory: 'rayon',
+  locationTags: []
 }
 
 type TypeFilterCard = {
@@ -56,7 +61,12 @@ export const HomePage: React.FC = () => {
       minPrice: filters.minPrice || undefined,
       maxPrice: filters.maxPrice || undefined,
       rooms: filters.rooms || undefined,
-      hasPool: filters.hasPool
+      hasPool: filters.hasPool,
+      extraFilters: filters.extraFilters,
+      nearbyPlaces: filters.nearbyPlaces,
+      city: filters.city || undefined,
+      locationCategory: filters.locationCategory,
+      locationTags: filters.locationTags
     })
   }, [properties, filters])
 
@@ -110,16 +120,6 @@ export const HomePage: React.FC = () => {
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">{t.home.topListingsTitle}</h2>
-            <button
-              className={`btn ${showMap ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setShowMap(!showMap)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-              {mapLabel}
-            </button>
           </div>
 
           <Filters
@@ -127,6 +127,11 @@ export const HomePage: React.FC = () => {
             onFilterChange={setFilters}
             onClear={handleClearFilters}
             hideTypeFilter={true}
+            mapToggle={{
+              active: showMap,
+              label: mapLabel,
+              onClick: () => setShowMap(!showMap)
+            }}
           />
 
           {isLoading && <Loading message={t.messages.loading} />}

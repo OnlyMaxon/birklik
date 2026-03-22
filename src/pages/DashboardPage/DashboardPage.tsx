@@ -4,8 +4,8 @@ import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'rea
 import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import { propertyTypes, districts, amenitiesList } from '../../data'
-import { PropertyType, District, Amenity, Property, ListingTier } from '../../types'
+import { propertyTypes, districts, amenitiesList, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
+import { PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
@@ -27,6 +27,15 @@ const isOccupationExpired = (property: Property): boolean => {
   if (!property.unavailableTo) return false
   return property.unavailableTo < getTodayISO()
 }
+
+const locationTabs: { key: LocationCategory; az: string; en: string }[] = [
+  { key: 'rayon', az: 'Rayon', en: 'District' },
+  { key: 'metro', az: 'Metro', en: 'Metro' },
+  { key: 'landmark', az: 'Nisangah', en: 'Landmark' }
+]
+
+const quickMorePopular = ['pool', 'ac', 'wifi', 'bbq']
+const quickNearPopular = ['sea', 'forest', 'park']
 
 interface LocationPickerProps {
   coordinates: { lat: number; lng: number }
@@ -78,6 +87,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
   const [listingCoordinates, setListingCoordinates] = React.useState(DEFAULT_COORDINATES)
   const [locationSearch, setLocationSearch] = React.useState('')
+  const [locationTagsSearch, setLocationTagsSearch] = React.useState('')
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
   const [locationSearchError, setLocationSearchError] = React.useState('')
   const [busyListingId, setBusyListingId] = React.useState<string | null>(null)
@@ -184,6 +194,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     rooms: '',
     area: '',
     amenities: [] as Amenity[],
+    extraFeatures: [] as string[],
+    nearbyPlaces: [] as string[],
+    locationCategory: 'rayon' as LocationCategory,
+    locationTags: [] as string[],
+    city: 'Baku',
     contactEmail: '',
     contactPhone: ''
   })
@@ -200,6 +215,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       rooms: '',
       area: '',
       amenities: [],
+      extraFeatures: [],
+      nearbyPlaces: [],
+      locationCategory: 'rayon',
+      locationTags: [],
+      city: 'Baku',
       contactEmail: user?.email || '',
       contactPhone: user?.phone || ''
     })
@@ -207,6 +227,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setEditingListingId(null)
     setListingCoordinates(DEFAULT_COORDINATES)
     setLocationSearch('')
+    setLocationTagsSearch('')
     setLocationSearchError('')
   }, [user])
 
@@ -329,6 +350,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       rooms,
       area,
       amenities: newListing.amenities,
+      extraFeatures: newListing.extraFeatures,
+      nearbyPlaces: newListing.nearbyPlaces,
+      locationCategory: newListing.locationCategory,
+      locationTags: newListing.locationTags,
       images: [],
       coordinates: listingCoordinates,
       title: {
@@ -353,7 +378,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       status: listingStatus,
       isFeatured: newListing.listingTier === 'premium',
       isActive: true,
-      city: 'Baku'
+      city: newListing.city || 'Baku'
     }
 
     if (editingListingId) {
@@ -392,6 +417,24 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }))
   }
 
+  const toggleStringField = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags', value: string) => {
+    setNewListing(prev => ({
+      ...prev,
+      [field]: prev[field].includes(value)
+        ? prev[field].filter(item => item !== value)
+        : [...prev[field], value]
+    }))
+  }
+
+  const handleLocationCategoryChange = (category: LocationCategory) => {
+    setNewListing(prev => ({
+      ...prev,
+      locationCategory: category,
+      locationTags: []
+    }))
+    setLocationTagsSearch('')
+  }
+
   const handlePoolSelection = (value: 'yes' | 'no') => {
     setNewListing(prev => {
       const hasPoolAmenity = prev.amenities.includes('pool')
@@ -406,6 +449,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
       return prev
     })
+  }
+
+  const filteredLocationTagOptions = cityLocationOptions[newListing.locationCategory].filter((option) => {
+    const query = locationTagsSearch.trim().toLowerCase()
+    if (!query) return true
+    return option.az.toLowerCase().includes(query) || option.en.toLowerCase().includes(query)
+  })
+
+  const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string }) => {
+    return language === 'en' ? option.en : option.az
+  }, [language])
+
+  const sortByOptionLabel = React.useCallback((a: { az: string; en: string }, b: { az: string; en: string }) => {
+    return getLocalizedOptionLabel(a).localeCompare(getLocalizedOptionLabel(b), language === 'en' ? 'en' : 'az')
+  }, [getLocalizedOptionLabel, language])
+
+  const sortedMoreOptions = React.useMemo(() => [...moreFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
+  const sortedNearOptions = React.useMemo(() => [...nearFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
+  const sortedLocationTagOptions = React.useMemo(() => [...filteredLocationTagOptions].sort(sortByOptionLabel), [filteredLocationTagOptions, sortByOptionLabel])
+  const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
+  const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
+
+  const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags') => {
+    setNewListing(prev => ({ ...prev, [field]: [] }))
   }
 
   if (!isAuthenticated || !user) {
@@ -503,6 +570,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       rooms: String(property.rooms || ''),
       area: String(property.area || ''),
       amenities: property.amenities || [],
+      extraFeatures: property.extraFeatures || [],
+      nearbyPlaces: property.nearbyPlaces || [],
+      locationCategory: property.locationCategory || 'rayon',
+      locationTags: property.locationTags || [],
+      city: property.city || 'Baku',
       contactEmail: property.owner.email || user.email,
       contactPhone: property.owner.phone || user.phone
     })
@@ -1005,6 +1077,132 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 <span>{t.amenities[amenity]}</span>
                               </label>
                             ))}
+                          </div>
+                        </div>
+
+                        <div className="form-group full-width">
+                          <div className="dashboard-section-head">
+                            <label>{language === 'en' ? 'More' : 'Elave'} <span className="dashboard-count-pill">{newListing.extraFeatures.length}</span></label>
+                            {newListing.extraFeatures.length > 0 && (
+                              <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('extraFeatures')}>
+                                {language === 'en' ? 'Clear' : 'Temizle'}
+                              </button>
+                            )}
+                          </div>
+                          <div className="dashboard-quick-chip-row">
+                            {popularMoreOptions.map((option) => (
+                              <button
+                                type="button"
+                                key={option.key}
+                                className={`dashboard-quick-chip ${newListing.extraFeatures.includes(option.key) ? 'active' : ''}`}
+                                onClick={() => toggleStringField('extraFeatures', option.key)}
+                              >
+                                {getLocalizedOptionLabel(option)}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="advanced-checkboxes">
+                            {sortedMoreOptions.map((option) => (
+                              <label key={option.key} className="checkbox-label advanced-checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={newListing.extraFeatures.includes(option.key)}
+                                  onChange={() => toggleStringField('extraFeatures', option.key)}
+                                />
+                                <span>{getLocalizedOptionLabel(option)}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="form-group full-width">
+                          <div className="dashboard-section-head">
+                            <label>{language === 'en' ? 'Near' : 'Yaxinda'} <span className="dashboard-count-pill">{newListing.nearbyPlaces.length}</span></label>
+                            {newListing.nearbyPlaces.length > 0 && (
+                              <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('nearbyPlaces')}>
+                                {language === 'en' ? 'Clear' : 'Temizle'}
+                              </button>
+                            )}
+                          </div>
+                          <div className="dashboard-quick-chip-row">
+                            {popularNearOptions.map((option) => (
+                              <button
+                                type="button"
+                                key={option.key}
+                                className={`dashboard-quick-chip ${newListing.nearbyPlaces.includes(option.key) ? 'active' : ''}`}
+                                onClick={() => toggleStringField('nearbyPlaces', option.key)}
+                              >
+                                {getLocalizedOptionLabel(option)}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="advanced-checkboxes near-checkboxes">
+                            {sortedNearOptions.map((option) => (
+                              <label key={option.key} className="checkbox-label advanced-checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={newListing.nearbyPlaces.includes(option.key)}
+                                  onChange={() => toggleStringField('nearbyPlaces', option.key)}
+                                />
+                                <span>{getLocalizedOptionLabel(option)}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="form-group full-width location-tags-section">
+                          <div className="dashboard-section-head">
+                            <label>{language === 'en' ? 'City locations' : 'Seher daxili lokasiya secimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
+                            {newListing.locationTags.length > 0 && (
+                              <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('locationTags')}>
+                                {language === 'en' ? 'Clear' : 'Temizle'}
+                              </button>
+                            )}
+                          </div>
+                          <div className="city-picker-form-header">
+                            <select
+                              value={newListing.city}
+                              onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
+                            >
+                              <option value="Baku">Baku</option>
+                              <option value="Sumqayit">Sumqayit</option>
+                              <option value="Gabala">Gabala</option>
+                              <option value="Quba">Quba</option>
+                            </select>
+                            <input
+                              type="search"
+                              placeholder={language === 'en' ? 'Search district, metro, landmark' : 'Rayon, metro, nisangah axtar'}
+                              value={locationTagsSearch}
+                              onChange={(e) => setLocationTagsSearch(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="city-tabs form-city-tabs">
+                            {locationTabs.map((tab) => (
+                              <button
+                                type="button"
+                                key={tab.key}
+                                className={`city-tab ${newListing.locationCategory === tab.key ? 'active' : ''}`}
+                                onClick={() => handleLocationCategoryChange(tab.key)}
+                              >
+                                {language === 'en' ? tab.en : tab.az}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="city-option-list form-city-option-list">
+                            {sortedLocationTagOptions.length > 0 ? sortedLocationTagOptions.map((option) => (
+                              <label key={option.key} className="city-option-item">
+                                <input
+                                  type="checkbox"
+                                  checked={newListing.locationTags.includes(option.key)}
+                                  onChange={() => toggleStringField('locationTags', option.key)}
+                                />
+                                <span>{getLocalizedOptionLabel(option)}</span>
+                              </label>
+                            )) : (
+                              <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : 'Lokasiya tapilmadi.'}</p>
+                            )}
                           </div>
                         </div>
 
