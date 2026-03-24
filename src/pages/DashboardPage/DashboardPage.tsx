@@ -32,7 +32,7 @@ const isOccupationExpired = (property: Property): boolean => {
 const locationTabs: { key: LocationCategory; az: string; en: string }[] = [
   { key: 'rayon', az: 'Rayon', en: 'District' },
   { key: 'metro', az: 'Metro', en: 'Metro' },
-  { key: 'landmark', az: 'Nisangah', en: 'Landmark' }
+  { key: 'landmark', az: 'Nişangah', en: 'Landmark' }
 ]
 
 const isTestListing = (listing: Property): boolean => {
@@ -110,7 +110,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
   const savedMessage = language === 'en'
     ? 'Listing saved successfully'
-    : 'Elan ugurla yadda saxlanildi'
+    : 'Elan uğurla yadda saxlanıldı'
 
   const listingPlans = [
     {
@@ -327,20 +327,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
-      setError('Pulsuz paket ucun maksimum 4 foto yuklemek olar')
+      setError('Pulsuz paket üçün maksimum 4 foto yükləmək olar')
       setIsSubmitting(false)
       return
     }
 
     const descriptionWordCount = newListing.description.trim().split(/\s+/).filter(Boolean).length
     if (newListing.listingTier === 'free' && descriptionWordCount > 35) {
-      setError('Pulsuz paketde tesvir maksimum 35 soz ola biler')
+      setError('Pulsuz paketdə təsvir maksimum 35 söz ola bilər')
       setIsSubmitting(false)
       return
     }
 
     if (newListing.listingTier !== 'free' && !newListing.address.trim()) {
-      setError('Standart ve Premium paketde unvan daxil edilmelidir')
+      setError('Standart və Premium paketdə ünvan daxil edilməlidir')
       setIsSubmitting(false)
       return
     }
@@ -483,6 +483,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const sortedLocationTagOptions = React.useMemo(() => [...filteredLocationTagOptions].sort(sortByOptionLabel), [filteredLocationTagOptions, sortByOptionLabel])
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
+  const selectedFilePreviewUrls = React.useMemo(() => {
+    return selectedFiles.map((file) => URL.createObjectURL(file))
+  }, [selectedFiles])
+
+  React.useEffect(() => {
+    return () => {
+      selectedFilePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [selectedFilePreviewUrls])
 
   const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags') => {
     setNewListing(prev => ({ ...prev, [field]: [] }))
@@ -968,20 +977,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </select>
                         </div>
 
-                        <div className="form-group">
-                          <label>{t.search.district} *</label>
-                          <select
-                            value={newListing.district}
-                            onChange={(e) => setNewListing({...newListing, district: e.target.value as District})}
-                            required
-                          >
-                            <option value="">{t.form.selectDistrict}</option>
-                            {districts.map(district => (
-                              <option key={district} value={district}>{t.districts[district]}</option>
-                            ))}
-                          </select>
-                        </div>
-
                         <div className="form-group full-width">
                           <label>{t.form.address} {newListing.listingTier === 'free' ? '' : '*'}</label>
                           <input
@@ -989,7 +984,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             value={newListing.address}
                             onChange={(e) => setNewListing({...newListing, address: e.target.value})}
                             required={newListing.listingTier !== 'free'}
-                            placeholder={newListing.listingTier === 'free' ? 'Pulsuz paketde lokasiya gizledilir' : ''}
+                            placeholder={newListing.listingTier === 'free' ? 'Pulsuz paketdə lokasiya gizlədilir' : ''}
                           />
                         </div>
 
@@ -1140,10 +1135,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'More' : 'Elave'} <span className="dashboard-count-pill">{newListing.extraFeatures.length}</span></label>
+                            <label>{language === 'en' ? 'More' : 'Əlavə'} <span className="dashboard-count-pill">{newListing.extraFeatures.length}</span></label>
                             {newListing.extraFeatures.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('extraFeatures')}>
-                                {language === 'en' ? 'Clear' : 'Temizle'}
+                                {language === 'en' ? 'Clear' : 'Təmizlə'}
                               </button>
                             )}
                           </div>
@@ -1175,10 +1170,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'Near' : 'Yaxinda'} <span className="dashboard-count-pill">{newListing.nearbyPlaces.length}</span></label>
+                            <label>{language === 'en' ? 'Near' : 'Yaxında'} <span className="dashboard-count-pill">{newListing.nearbyPlaces.length}</span></label>
                             {newListing.nearbyPlaces.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('nearbyPlaces')}>
-                                {language === 'en' ? 'Clear' : 'Temizle'}
+                                {language === 'en' ? 'Clear' : 'Təmizlə'}
                               </button>
                             )}
                           </div>
@@ -1210,29 +1205,47 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width location-tags-section">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'City locations' : 'Seher daxili lokasiya secimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
+                            <label>{language === 'en' ? 'City and nearby locations' : 'Şəhər və yaxın məkanlar'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
                             {newListing.locationTags.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('locationTags')}>
-                                {language === 'en' ? 'Clear' : 'Temizle'}
+                                {language === 'en' ? 'Clear' : 'Təmizlə'}
                               </button>
                             )}
                           </div>
                           <div className="city-picker-form-header">
-                            <select
-                              value={newListing.city}
-                              onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
-                            >
-                              <option value="Baku">Baku</option>
-                              <option value="Sumqayit">Sumqayit</option>
-                              <option value="Gabala">Gabala</option>
-                              <option value="Quba">Quba</option>
-                            </select>
+                            <div className="city-field-group">
+                              <label>{language === 'en' ? 'City' : 'Şəhər'}</label>
+                              <select
+                                value={newListing.city}
+                                onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
+                              >
+                                <option value="Baku">Bakı</option>
+                                <option value="Sumqayit">Sumqayıt</option>
+                                <option value="Gabala">Qəbələ</option>
+                                <option value="Quba">Quba</option>
+                              </select>
+                            </div>
+                            <div className="city-field-group">
+                              <label>{language === 'en' ? 'District / village' : 'Rayon / kənd'}</label>
+                              <select
+                                value={newListing.district}
+                                onChange={(e) => setNewListing({ ...newListing, district: e.target.value as District })}
+                                required
+                              >
+                                <option value="">{language === 'en' ? 'Select district / village' : 'Rayon / kənd seçin'}</option>
+                                {districts.map((district) => (
+                                  <option key={district} value={district}>{t.districts[district]}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="city-search-group">
                             <input
                               type="search"
-                              placeholder={language === 'en' ? 'Search district, metro, landmark' : 'Rayon, metro, nisangah axtar'}
+                              placeholder={language === 'en' ? 'Search district, metro, landmark' : 'Rayon, metro, nişangah axtar'}
                               value={locationTagsSearch}
                               onChange={(e) => setLocationTagsSearch(e.target.value)}
                             />
+                            </div>
                           </div>
 
                           <div className="city-tabs form-city-tabs">
@@ -1259,7 +1272,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 <span>{getLocalizedOptionLabel(option)}</span>
                               </label>
                             )) : (
-                              <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : 'Lokasiya tapilmadi.'}</p>
+                              <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : 'Lokasiya tapılmadı.'}</p>
                             )}
                           </div>
                         </div>
@@ -1276,11 +1289,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             <p>{newListing.listingTier === 'free' ? 'Maksimum 4 foto (Pulsuz paket)' : 'Drag & drop or click to upload'}</p>
                             {selectedFiles.length > 0 && <p>{selectedFiles.length} file(s) selected</p>}
                           </div>
+                          {selectedFilePreviewUrls.length > 0 && (
+                            <div className="upload-preview-grid">
+                              {selectedFilePreviewUrls.map((url, index) => (
+                                <div key={url} className="upload-preview-item">
+                                  <img src={url} alt={`preview-${index + 1}`} />
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         <div className="form-group full-width" style={{ backgroundColor: 'rgba(26, 76, 160, 0.08)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #1a4ca0' }}>
                           <p style={{ margin: 0, fontSize: '0.9rem', color: '#1a4ca0', lineHeight: '1.5' }}>
-                            <strong>Qeyd:</strong> Elan gonderildikden sonra support sizinle elaqe saxlayacaq ve {newListing.listingTier === 'free' ? 'tesdiq verecek' : 'odeme telimatini gonderecek'}.
+                            <strong>Qeyd:</strong> Elan göndərildikdən sonra dəstək komandası sizinlə əlaqə saxlayacaq və {newListing.listingTier === 'free' ? 'təsdiq verəcək' : 'ödəniş təlimatını göndərəcək'}.
                           </p>
                         </div>
                       </div>
