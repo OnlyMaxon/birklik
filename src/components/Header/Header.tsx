@@ -101,7 +101,11 @@ export const Header: React.FC = () => {
               aria-expanded={menuOpen}
               aria-label="Toggle menu"
             >
-              <span className={`hamburger ${menuOpen ? 'open' : ''}`}></span>
+              <span className={`menu-icon ${menuOpen ? 'open' : ''}`} aria-hidden="true">
+                <span className="menu-line menu-line-top"></span>
+                <span className="menu-line menu-line-middle"></span>
+                <span className="menu-line menu-line-bottom"></span>
+              </span>
             </button>
           </div>
         </div>
