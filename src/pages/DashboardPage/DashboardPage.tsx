@@ -112,6 +112,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     ? 'Listing saved successfully'
     : 'Elan uğurla yadda saxlanıldı'
 
+  const cityOptions = [
+    { value: 'Baku', az: 'Bakı', en: 'Baku' },
+    { value: 'Sumqayit', az: 'Sumqayıt', en: 'Sumqayit' },
+    { value: 'Gabala', az: 'Qəbələ', en: 'Gabala' },
+    { value: 'Quba', az: 'Quba', en: 'Quba' }
+  ]
+
   const listingPlans = [
     {
       id: 'free' as ListingTier,
@@ -215,6 +222,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     contactEmail: '',
     contactPhone: ''
   })
+
+  const selectedFilePreviews = React.useMemo(
+    () => selectedFiles.map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file)
+    })),
+    [selectedFiles]
+  )
+
+  React.useEffect(() => {
+    return () => {
+      selectedFilePreviews.forEach((item) => URL.revokeObjectURL(item.url))
+    }
+  }, [selectedFilePreviews])
 
   const resetListingForm = React.useCallback(() => {
     setNewListing({
@@ -327,7 +348,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
-      setError('Pulsuz paket üçün maksimum 4 foto yükləmək olar')
+      setError('Pulsuz paket üçün maksimum 4 şəkil yükləmək olar')
       setIsSubmitting(false)
       return
     }
@@ -483,15 +504,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const sortedLocationTagOptions = React.useMemo(() => [...filteredLocationTagOptions].sort(sortByOptionLabel), [filteredLocationTagOptions, sortByOptionLabel])
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
-  const selectedFilePreviewUrls = React.useMemo(() => {
-    return selectedFiles.map((file) => URL.createObjectURL(file))
-  }, [selectedFiles])
-
-  React.useEffect(() => {
-    return () => {
-      selectedFilePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
-    }
-  }, [selectedFilePreviewUrls])
 
   const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags') => {
     setNewListing(prev => ({ ...prev, [field]: [] }))
@@ -530,12 +542,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     if (!busyListingId) return
 
     if (!busyFrom || !busyTo) {
-      setError(language === 'en' ? 'Select both start and end dates.' : 'Baslama ve bitme tarixini secin.')
+      setError(language === 'en' ? 'Select both start and end dates.' : 'Başlama və bitmə tarixlərini seçin.')
       return
     }
 
     if (busyFrom > busyTo) {
-      setError(language === 'en' ? 'Start date must be before end date.' : 'Baslama tarixi bitme tarixinden boyuk ola bilmez.')
+      setError(language === 'en' ? 'Start date must be before end date.' : 'Başlama tarixi bitmə tarixindən böyük ola bilməz.')
       return
     }
 
@@ -610,7 +622,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     {
       title: { az: `${TEST_LISTING_MARKER} Luks villa - Merdekan`, en: `${TEST_LISTING_MARKER} Luxury villa - Mardakan` },
       description: {
-        az: `${TEST_LISTING_MARKER} Bu elan test ucundur: hovuz, besedka, manqal, sauna, denize yaxin villa.`,
+        az: `${TEST_LISTING_MARKER} Bu elan test üçündür: hovuz, besedka, manqal, sauna, dənizə yaxın villa.`,
         en: `${TEST_LISTING_MARKER} Test listing with pool, gazebo, BBQ, sauna and close-to-sea location.`
       },
       type: 'villa' as PropertyType,
@@ -635,7 +647,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     {
       title: { az: `${TEST_LISTING_MARKER} Deniz menzereli menzil`, en: `${TEST_LISTING_MARKER} Sea view apartment` },
       description: {
-        az: `${TEST_LISTING_MARKER} Test menzil: kondisioner, wifi, deniz ve restoran yaxinligi.`,
+        az: `${TEST_LISTING_MARKER} Test mənzil: kondisioner, Wi-Fi, dəniz və restoran yaxınlığı.`,
         en: `${TEST_LISTING_MARKER} Test apartment with AC, Wi-Fi and nearby sea/restaurants.`
       },
       type: 'apartment' as PropertyType,
@@ -658,14 +670,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       city: 'Baku'
     },
     {
-      title: { az: `${TEST_LISTING_MARKER} Qebele bag evi`, en: `${TEST_LISTING_MARKER} Gabala cottage` },
+      title: { az: `${TEST_LISTING_MARKER} Qəbələ bağ evi`, en: `${TEST_LISTING_MARKER} Gabala cottage` },
       description: {
-        az: `${TEST_LISTING_MARKER} Dag ve mesh yaxinliginda test kottec.`,
+        az: `${TEST_LISTING_MARKER} Dağ və meşə yaxınlığında test kottec.`,
         en: `${TEST_LISTING_MARKER} Test cottage near mountains and forest.`
       },
       type: 'cottage' as PropertyType,
       district: 'gabala' as District,
-      address: { az: 'Qebele, Test heyet evi', en: 'Gabala, Test cottage area' },
+      address: { az: 'Qəbələ, Test həyət evi', en: 'Gabala, Test cottage area' },
       price: { daily: 180, weekly: 1050, monthly: 3600, currency: 'AZN' },
       rooms: 4,
       area: 160,
@@ -843,7 +855,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               )}
                               {!isCurrentlyActive && property.unavailableTo && (
                                 <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
-                                  Yenidən aktiv etmək üçün Active düyməsini sıxın.
+                                  Yenidən aktiv etmək üçün "Aktiv et" düyməsini sıxın.
                                 </p>
                               )}
                             </div>
@@ -851,11 +863,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               <div className="action-buttons">
                                 {isCurrentlyActive ? (
                                   <button className="btn btn-ghost btn-sm" onClick={() => handleOpenBusyModal(property)}>
-                                    Non active et
+                                    Qeyri-aktiv et
                                   </button>
                                 ) : (
                                   <button className="btn btn-accent btn-sm" onClick={() => handleSetActive(property.id)}>
-                                    Active et
+                                    Aktiv et
                                   </button>
                                 )}
                                 <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>
@@ -973,6 +985,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             <option value="">{t.form.selectType}</option>
                             {propertyTypes.map(type => (
                               <option key={type} value={type}>{t.propertyTypes[type]}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label>{language === 'en' ? 'City' : 'Şəhər'} *</label>
+                          <select
+                            value={newListing.city}
+                            onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
+                            required
+                          >
+                            {cityOptions.map((city) => (
+                              <option key={city.value} value={city.value}>{language === 'en' ? city.en : city.az}</option>
                             ))}
                           </select>
                         </div>
@@ -1205,7 +1230,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width location-tags-section">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'City and nearby locations' : 'Şəhər və yaxın məkanlar'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
+                            <label>{language === 'en' ? 'City locations' : 'Şəhərdaxili lokasiya seçimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
                             {newListing.locationTags.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('locationTags')}>
                                 {language === 'en' ? 'Clear' : 'Təmizlə'}
@@ -1213,39 +1238,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             )}
                           </div>
                           <div className="city-picker-form-header">
-                            <div className="city-field-group">
-                              <label>{language === 'en' ? 'City' : 'Şəhər'}</label>
-                              <select
-                                value={newListing.city}
-                                onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
-                              >
-                                <option value="Baku">Bakı</option>
-                                <option value="Sumqayit">Sumqayıt</option>
-                                <option value="Gabala">Qəbələ</option>
-                                <option value="Quba">Quba</option>
-                              </select>
-                            </div>
-                            <div className="city-field-group">
-                              <label>{language === 'en' ? 'District / village' : 'Rayon / kənd'}</label>
-                              <select
-                                value={newListing.district}
-                                onChange={(e) => setNewListing({ ...newListing, district: e.target.value as District })}
-                                required
-                              >
-                                <option value="">{language === 'en' ? 'Select district / village' : 'Rayon / kənd seçin'}</option>
-                                {districts.map((district) => (
-                                  <option key={district} value={district}>{t.districts[district]}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="city-search-group">
+                            <select
+                              value={newListing.district}
+                              onChange={(e) => setNewListing({ ...newListing, district: e.target.value as District })}
+                              required
+                            >
+                              <option value="">{t.form.selectDistrict}</option>
+                              {districts.map((district) => (
+                                <option key={district} value={district}>{t.districts[district]}</option>
+                              ))}
+                            </select>
                             <input
                               type="search"
-                              placeholder={language === 'en' ? 'Search district, metro, landmark' : 'Rayon, metro, nişangah axtar'}
+                              placeholder={language === 'en' ? 'Search district, metro, landmark' : 'Rayon, metro, nişangah axtarın'}
                               value={locationTagsSearch}
                               onChange={(e) => setLocationTagsSearch(e.target.value)}
                             />
-                            </div>
                           </div>
 
                           <div className="city-tabs form-city-tabs">
@@ -1286,14 +1294,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>{newListing.listingTier === 'free' ? 'Maksimum 4 foto (Pulsuz paket)' : 'Drag & drop or click to upload'}</p>
-                            {selectedFiles.length > 0 && <p>{selectedFiles.length} file(s) selected</p>}
+                            <p>{newListing.listingTier === 'free' ? 'Maksimum 4 şəkil (Pulsuz paket)' : (language === 'en' ? 'Drag & drop or click to upload' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
+                            {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : 'fayl seçildi'}</p>}
                           </div>
-                          {selectedFilePreviewUrls.length > 0 && (
+                          {selectedFilePreviews.length > 0 && (
                             <div className="upload-preview-grid">
-                              {selectedFilePreviewUrls.map((url, index) => (
-                                <div key={url} className="upload-preview-item">
-                                  <img src={url} alt={`preview-${index + 1}`} />
+                              {selectedFilePreviews.map((preview) => (
+                                <div key={preview.url} className="upload-preview-item">
+                                  <img src={preview.url} alt={preview.name} />
+                                  <span>{preview.name}</span>
                                 </div>
                               ))}
                             </div>
@@ -1416,7 +1425,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                 {t.form.cancel}
               </button>
               <button type="button" className="btn btn-accent" onClick={handleSetInactiveWithDates} disabled={isSavingAvailability}>
-                {isSavingAvailability ? t.messages.loading : (language === 'en' ? 'Set non active' : 'Non active et')}
+                {isSavingAvailability ? t.messages.loading : (language === 'en' ? 'Set non active' : 'Qeyri-aktiv et')}
               </button>
             </div>
           </div>

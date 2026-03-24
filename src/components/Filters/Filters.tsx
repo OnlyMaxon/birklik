@@ -85,6 +85,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   const resetAdvancedOnly = () => {
     onFilterChange({
       ...filters,
+      district: '',
       extraFilters: [],
       nearbyPlaces: [],
       city: '',
@@ -103,11 +104,10 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   const moreButtonLabel = language === 'en' ? 'More' : 'Əlavə'
   const nearTitle = language === 'en' ? 'Near' : 'Yaxında'
   const cityLabel = language === 'en' ? 'City' : 'Şəhər'
-  const districtLabel = language === 'en' ? 'District / village' : 'Rayon / kənd'
-  const chooseLocationText = language === 'en' ? 'Choose nearby locations' : 'Yaxın məkanları seçin'
+  const chooseLocationText = language === 'en' ? 'Choose city locations' : 'Şəhər daxilində seçim edin'
   const searchPlaceholder = language === 'en'
     ? 'Search district, metro, landmark'
-    : 'Rayon, metro, nişangah axtar'
+    : 'Rayon, metro, nişangah axtarın'
 
   const moreLabelMap = new Map(sortedMoreOptions.map((item) => [item.key, getLocalizedLabel(item)]))
   const nearLabelMap = new Map(sortedNearOptions.map((item) => [item.key, getLocalizedLabel(item)]))
@@ -118,6 +118,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   )
 
   const selectedChips = [
+    ...(filters.district ? [{ id: `district-${filters.district}`, key: filters.district, label: `${t.search.district}: ${t.districts[filters.district as District]}`, group: 'district' as const }] : []),
     ...filters.extraFilters.map((key) => ({ id: `more-${key}`, key, label: moreLabelMap.get(key) || key, group: 'extraFilters' as const })),
     ...filters.nearbyPlaces.map((key) => ({ id: `near-${key}`, key, label: nearLabelMap.get(key) || key, group: 'nearbyPlaces' as const })),
     ...(filters.city ? [{ id: `city-${filters.city}`, key: filters.city, label: `${cityLabel}: ${filters.city}`, group: 'city' as const }] : []),
@@ -130,6 +131,11 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
       return
     }
 
+    if (chip.group === 'district') {
+      onFilterChange({ ...filters, district: '' })
+      return
+    }
+
     if (chip.group === 'extraFilters' || chip.group === 'nearbyPlaces' || chip.group === 'locationTags') {
       toggleArrayValue(chip.group, chip.key)
     }
@@ -137,7 +143,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
 
   const activeBasicCount = [
     filters.type,
-    filters.district,
+    filters.city,
     filters.minPrice,
     filters.maxPrice,
     filters.rooms,
@@ -186,6 +192,20 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
               </select>
             </div>
           )}
+
+          <div className="filter-group">
+            <label>{cityLabel}</label>
+            <select
+              value={filters.city}
+              onChange={(e) => onFilterChange({ ...filters, city: e.target.value })}
+            >
+              <option value="">{t.search.any}</option>
+              <option value="Baku">Bakı</option>
+              <option value="Sumqayit">Sumqayıt</option>
+              <option value="Gabala">Qəbələ</option>
+              <option value="Quba">Quba</option>
+            </select>
+          </div>
 
           <div className="filter-group">
             <label>{t.search.minPrice}</label>
@@ -247,7 +267,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 type="button"
                 className="selected-chip"
                 onClick={() => handleRemoveChip(chip)}
-                title={language === 'en' ? 'Remove filter' : 'Filteri sil'}
+                title={language === 'en' ? 'Remove filter' : 'Filtri sil'}
               >
                 <span>{chip.label}</span>
                 <strong aria-hidden="true">×</strong>
@@ -338,21 +358,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 )}
               </div>
               <div className="city-picker-header">
-                <label>{cityLabel}</label>
-                <select
-                  value={filters.city}
-                  onChange={(e) => onFilterChange({ ...filters, city: e.target.value })}
-                >
-                  <option value="">{t.search.any}</option>
-                  <option value="Baku">Bakı</option>
-                  <option value="Sumqayit">Sumqayıt</option>
-                  <option value="Gabala">Qəbələ</option>
-                  <option value="Quba">Quba</option>
-                </select>
-              </div>
-
-              <div className="city-picker-header district-picker-row">
-                <label>{districtLabel}</label>
+                <label>{t.search.district}</label>
                 <select
                   value={filters.district || ''}
                   onChange={(e) => handleChange('district', e.target.value as District || '')}

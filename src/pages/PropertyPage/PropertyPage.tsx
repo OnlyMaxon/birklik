@@ -50,7 +50,7 @@ export const PropertyPage: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true)
   const modalSubtitle = language === 'en'
     ? 'Leave your contact details and we will call you shortly.'
-    : 'Elaqe melumatlarinizi yazin, qisa muddetde sizinle elaqe saxlayaq.'
+    : 'Əlaqə məlumatlarınızı yazın, qısa müddətdə sizinlə əlaqə saxlayaq.'
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -117,7 +117,7 @@ export const PropertyPage: React.FC = () => {
   }
 
   const isAvailable = property.isActive !== false || isOccupationExpired(property)
-  const availabilityTitle = language === 'en' ? 'Availability calendar' : 'Mövcudluq kalendari'
+  const availabilityTitle = language === 'en' ? 'Availability calendar' : 'Mövcudluq təqvimi'
   const availabilityNote = isAvailable
     ? (language === 'en' ? 'Currently available for booking.' : 'Hazırda sifariş üçün açıqdır.')
     : (language === 'en' ? 'Temporarily occupied and hidden from public listing.' : 'Müvəqqəti məşğuldur və ümumi siyahıda göstərilmir.')
@@ -230,7 +230,7 @@ export const PropertyPage: React.FC = () => {
 
                 {moreLabels.length > 0 && (
                   <div className="property-section">
-                    <h3>{language === 'en' ? 'More' : 'Elave'}</h3>
+                    <h3>{language === 'en' ? 'More' : 'Əlavə'}</h3>
                     <div className="amenities-grid">
                       {moreLabels.map((label) => (
                         <span key={label} className="amenity-item extra-item">
@@ -243,7 +243,7 @@ export const PropertyPage: React.FC = () => {
 
                 {nearLabels.length > 0 && (
                   <div className="property-section">
-                    <h3>{language === 'en' ? 'Near' : 'Yaxinda'}</h3>
+                    <h3>{language === 'en' ? 'Near' : 'Yaxında'}</h3>
                     <div className="amenities-grid">
                       {nearLabels.map((label) => (
                         <span key={label} className="amenity-item extra-item">
@@ -259,7 +259,7 @@ export const PropertyPage: React.FC = () => {
                   <p>{getLocalizedText(property.address)}</p>
                   {property.city && (
                     <p className="property-city-line">
-                      <strong>{language === 'en' ? 'City' : 'Seher'}:</strong> {property.city}
+                      <strong>{language === 'en' ? 'City' : 'Şəhər'}:</strong> {property.city}
                     </p>
                   )}
                   {locationLabels.length > 0 && (
@@ -401,7 +401,7 @@ export const PropertyPage: React.FC = () => {
                   </div>
                   <div className="form-group">
                     <label>{t.form.description}</label>
-                    <textarea rows={3} placeholder={language === 'en' ? 'Any extra details about your request' : 'Istekle bagli elave qeyd'}></textarea>
+                    <textarea rows={3} placeholder={language === 'en' ? 'Any extra details about your request' : 'İstəklə bağlı əlavə qeyd'}></textarea>
                   </div>
                   <button type="submit" className="btn btn-accent btn-lg w-full">
                     {t.form.submit}

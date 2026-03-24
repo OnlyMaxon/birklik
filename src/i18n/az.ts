@@ -18,18 +18,18 @@ export const az: Translations = {
   search: {
     placeholder: "Məkan, rayon və ya ünvan daxil edin...",
     button: "Axtar",
-    filters: "Filterlər",
+    filters: "Filtrlər",
     priceRange: "Qiymət aralığı",
     rooms: "Otaq sayı",
     pool: "Hovuz",
     propertyType: "Mülk növü",
     district: "Rayon",
     minPrice: "Min qiymət",
-    maxPrice: "Max qiymət",
+    maxPrice: "Maksimum qiymət",
     any: "Hamısı",
     yes: "Var",
     no: "Yoxdur",
-    clearFilters: "Filterləri təmizlə"
+    clearFilters: "Filtrləri təmizlə"
   },
   property: {
     perNight: "gecə",
@@ -65,7 +65,7 @@ export const az: Translations = {
     apartment: "Mənzil",
     house: "Ev",
     cottage: "Kottec",
-    penthouse: "Penthous"
+    penthouse: "Penthaus"
   },
   districts: {
     mardakan: "Mərdəkan",
@@ -85,7 +85,7 @@ export const az: Translations = {
     email: "E-poçt",
     password: "Şifrə",
     confirmPassword: "Şifrəni təsdiqlə",
-    fullName: "Ad Soyad",
+    fullName: "Ad və soyad",
     phone: "Telefon",
     rememberMe: "Məni xatırla",
     forgotPassword: "Şifrəni unutdunuz?",
@@ -145,7 +145,7 @@ export const az: Translations = {
     premium: "Premium",
     freeDesc: "Başlamaq üçün",
     standardDesc: "Kiçik müəssisə üçün",
-    premiumDesc: "Profesional hizmet",
+    premiumDesc: "Peşəkar xidmət",
     perMonth: "/ay"
   },
   validation: {
@@ -162,22 +162,22 @@ export const az: Translations = {
   pricing_info: {
     free_features: "4 foto, qısa təsvir, gizli lokasiya",
     standard_features: "20 foto, tam təsvir, lokasiya göstərilir",
-    premium_features: "Sınısızmış foto, ana səhifədə 3 həftə prioritet",
+    premium_features: "Limitsiz foto, ana səhifədə 3 həftə prioritet",
     premium_highlight: "✓ Ana səhifədə 3 həftə göstərilir"
   },
   support: {
-    waitingForReview: "Elan gözləmədə - dəstek komandası ilə təmas saxlayacağıq",
+    waitingForReview: "Elan gözləmədə - dəstək komandası ilə əlaqə saxlayacağıq",
     listed: "Elanınız aktiv",
     contactSupport: "Dəstəklə əlaqə saxlayın"
   },
   testData: {
-    addTest: "Test Məlumatı Əlavə Et",
+    addTest: "Test məlumatı əlavə et",
     removeTest: "Test Məlumatını Sil",
     testListings: "Test Elanları"
   },
   home: {
-    showMap: "Xeritede goster",
-    hideMap: "Xeriteni gizlet",
+    showMap: "Xəritədə göstər",
+    hideMap: "Xəritəni gizlət",
     topListingsTitle: "Seçilmiş villalar və istirahət evləri",
     plansTitle: "3 növ elan paketi",
     plansSubtitle: "Hər büdcə üçün uyğun paket seçin və elanınızı daha effektiv yerləşdirin.",

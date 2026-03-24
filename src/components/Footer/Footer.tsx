@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
               <button type="button" className="footer-store-btn" aria-label="Apple App Store mock">
                 <span className="footer-store-icon" aria-hidden="true"></span>
                 <span className="footer-store-text">
-                  <small>{language === 'en' ? 'Download on the' : 'Yüklə'}</small>
+                  <small>{language === 'en' ? 'Download on the' : 'Yükləyin'}</small>
                   <strong>App Store</strong>
                 </span>
               </button>
@@ -34,7 +34,7 @@ export const Footer: React.FC = () => {
               <button type="button" className="footer-store-btn" aria-label="Google Play mock">
                 <span className="footer-store-icon" aria-hidden="true">▶</span>
                 <span className="footer-store-text">
-                  <small>{language === 'en' ? 'Get it on' : 'Yüklə'}</small>
+                  <small>{language === 'en' ? 'Get it on' : 'Yükləyin'}</small>
                   <strong>Google Play</strong>
                 </span>
               </button>

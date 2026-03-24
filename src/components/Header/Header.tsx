@@ -96,14 +96,12 @@ export const Header: React.FC = () => {
             </div>
 
             <button
-              className={`menu-toggle ${menuOpen ? 'open' : ''}`}
+              className="menu-toggle"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-expanded={menuOpen}
               aria-label="Toggle menu"
             >
-              <span className="menu-line"></span>
-              <span className="menu-line"></span>
-              <span className="menu-line"></span>
+              <span className={`hamburger ${menuOpen ? 'open' : ''}`}></span>
             </button>
           </div>
         </div>

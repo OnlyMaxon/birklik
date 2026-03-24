@@ -420,24 +420,9 @@
 
 .city-picker-form-header {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(120px, 220px) 1fr;
   gap: 0.6rem;
   margin-bottom: 0.65rem;
-}
-
-.city-field-group {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.city-field-group label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #2d507f;
-}
-
-.city-search-group {
-  display: grid;
 }
 
 .form-city-tabs {
@@ -540,23 +525,32 @@
 .upload-preview-grid {
   margin-top: 0.75rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.55rem;
 }
 
 .upload-preview-item {
+  border: 1px solid rgba(16, 66, 135, 0.14);
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(17, 66, 133, 0.16);
   background: #fff;
-  box-shadow: 0 8px 18px rgba(9, 34, 82, 0.1);
 }
 
 .upload-preview-item img {
   width: 100%;
-  height: 80px;
+  height: 86px;
   object-fit: cover;
   display: block;
+}
+
+.upload-preview-item span {
+  display: block;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.72rem;
+  color: #315280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .location-hint {
@@ -796,7 +790,7 @@
   .dashboard-nav {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.35rem;
     overflow: visible;
   }
@@ -805,18 +799,18 @@
     min-width: 0;
     width: 100%;
     justify-content: center;
-    padding: 0.62rem 0.5rem;
-    font-size: 0.8rem;
-    line-height: 1.2;
-    gap: 0.35rem;
+    padding: 0.56rem 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.1;
+    gap: 0.25rem;
     white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
     text-align: center;
-    min-height: 56px;
   }
 
   .nav-item svg {
-    width: 18px;
-    height: 18px;
+    display: none;
   }
 
   .user-info {
