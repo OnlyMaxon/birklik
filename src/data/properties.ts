@@ -45,8 +45,6 @@ export const amenitiesList: Amenity[] = [
 ]
 
 export const moreFilterOptions: FilterOption[] = [
-  { key: 'pool', az: 'Hovuz', en: 'Pool' },
-  { key: 'ac', az: 'Kondisioner', en: 'Air conditioning' },
   { key: 'sauna', az: 'Sauna', en: 'Sauna' },
   { key: 'kidsZone', az: 'Uşaq oyun zonası', en: 'Kids play zone' },
   { key: 'playstation', az: 'PlayStation', en: 'PlayStation' },
@@ -55,12 +53,11 @@ export const moreFilterOptions: FilterOption[] = [
   { key: 'boardGames', az: 'Stol oyunları', en: 'Board games' },
   { key: 'samovar', az: 'Samovar', en: 'Samovar' },
   { key: 'gazebo', az: 'Besedka', en: 'Gazebo' },
-  { key: 'bbq', az: 'Manqal', en: 'BBQ' },
-  { key: 'wifi', az: 'Wi-Fi', en: 'Wi-Fi' },
   { key: 'garage', az: 'Qaraj', en: 'Garage' }
 ]
 
 export const nearFilterOptions: FilterOption[] = [
+  { key: 'beach', az: 'Çimərlik', en: 'Beach' },
   { key: 'mountains', az: 'Dağlar', en: 'Mountains' },
   { key: 'forest', az: 'Meşə', en: 'Forest' },
   { key: 'sea', az: 'Dəniz', en: 'Sea' },
@@ -155,10 +152,6 @@ export const cityLocationOptions: Record<LocationCategory, FilterOption[]> = {
 }
 
 const moreToAmenityMap: Record<string, Amenity> = {
-  pool: 'pool',
-  ac: 'ac',
-  wifi: 'wifi',
-  bbq: 'bbq',
   garage: 'parking'
 }
 

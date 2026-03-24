@@ -46,8 +46,8 @@ const isTestListing = (listing: Property): boolean => {
   )
 }
 
-const quickMorePopular = ['pool', 'ac', 'wifi', 'bbq']
-const quickNearPopular = ['sea', 'forest', 'park']
+const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
+const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
 interface LocationPickerProps {
   coordinates: { lat: number; lng: number }

@@ -22,8 +22,8 @@ const locationTabs: { key: LocationCategory; az: string; en: string }[] = [
   { key: 'landmark', az: 'Nişangah', en: 'Landmark' }
 ]
 
-const quickMorePopular = ['pool', 'ac', 'wifi', 'bbq']
-const quickNearPopular = ['sea', 'forest', 'park']
+const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
+const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
 export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, mapToggle }) => {
   const { t, language } = useLanguage()
