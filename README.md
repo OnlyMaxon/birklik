@@ -96,6 +96,12 @@ VITE_FIREBASE_APP_ID=your_app_id
 1. Firebase Console -> Build -> Authentication.
 2. Нажмите Get started.
 3. Sign-in method -> Email/Password -> Enable.
+4. Authentication -> Settings -> Authorized domains:
+  - добавьте `birklik.az`
+  - добавьте `www.birklik.az` (если используется)
+  - добавьте ваш Cloudflare preview домен (`*.pages.dev` проектный домен)
+
+Без этого Firebase будет показывать предупреждение про OAuth redirect domain и popup/redirect провайдеры не будут работать на вашем домене.
 
 ### Шаг 5. Включите Firestore
 
@@ -216,6 +222,14 @@ service firebase.storage {
     match /properties/{allPaths=**} {
       allow read: if true;
       allow write: if request.auth != null;
+    }
+
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
   }
 }
