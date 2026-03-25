@@ -94,7 +94,7 @@
   }
 
   .header .language-switcher {
-    display: none;
+    display: inline-flex;
   }
 
   .logo-image {
@@ -146,9 +146,10 @@
     font-size: 0.82rem;
     line-height: 1.1;
     gap: 0.35rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    text-align: center;
   }
 
   .nav-item svg {
