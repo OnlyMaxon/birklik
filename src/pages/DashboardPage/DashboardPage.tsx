@@ -109,6 +109,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileName, setProfileName] = React.useState('')
   const [profilePhone, setProfilePhone] = React.useState('')
   const [profileAvatar, setProfileAvatar] = React.useState('')
+  const [profileAvatarFile, setProfileAvatarFile] = React.useState<File | null>(null)
   const [profileMessage, setProfileMessage] = React.useState('')
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
@@ -521,10 +522,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setProfileName(user.name)
     setProfilePhone(user.phone)
     setProfileAvatar(user.avatar || '')
+    setProfileAvatarFile(null)
   }, [user])
 
   const handleProfilePhotoChange = (file: File | null) => {
     if (!file) return
+    setProfileAvatarFile(file)
 
     const reader = new FileReader()
     reader.onload = () => {
@@ -551,7 +554,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     const result = await updateUserProfile({
       name: profileName.trim(),
       phone: profilePhone.trim(),
-      avatar: profileAvatar || undefined
+      avatar: profileAvatar || undefined,
+      avatarFile: profileAvatarFile
     })
 
     if (!result.success) {
@@ -561,6 +565,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     setProfileMessage(language === 'en' ? 'Profile updated successfully.' : 'Profil uğurla yeniləndi.')
+    setProfileAvatarFile(null)
     setIsSavingProfile(false)
   }
 
@@ -1391,7 +1396,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             <button
                               type="button"
                               className="btn btn-ghost btn-sm"
-                              onClick={() => setProfileAvatar('')}
+                              onClick={() => {
+                                setProfileAvatar('')
+                                setProfileAvatarFile(null)
+                              }}
                             >
                               {language === 'en' ? 'Remove' : 'Sil'}
                             </button>

@@ -8,7 +8,8 @@ import {
   User as FirebaseUser
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { auth, db } from '../config/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { auth, db, storage } from '../config/firebase'
 import { User } from '../types'
 
 interface AuthContextType {
@@ -19,7 +20,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
-  updateUserProfile: (payload: { name: string; phone: string; avatar?: string }) => Promise<{ success: boolean; error?: string }>
+  updateUserProfile: (payload: { name: string; phone: string; avatar?: string; avatarFile?: File | null }) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -123,16 +124,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const updateUserProfile = async (payload: { name: string; phone: string; avatar?: string }): Promise<{ success: boolean; error?: string }> => {
+  const updateUserProfile = async (payload: { name: string; phone: string; avatar?: string; avatarFile?: File | null }): Promise<{ success: boolean; error?: string }> => {
     if (!firebaseUser || !user) {
       return { success: false, error: 'auth/not-authenticated' }
     }
 
     try {
+      let avatarUrl = payload.avatar || user.avatar || ''
+
+      if (payload.avatarFile) {
+        const fileName = `avatars/${firebaseUser.uid}/${Date.now()}_${payload.avatarFile.name}`
+        const avatarRef = ref(storage, fileName)
+        await uploadBytes(avatarRef, payload.avatarFile)
+        avatarUrl = await getDownloadURL(avatarRef)
+      }
+
       const updates = {
         name: payload.name,
         phone: payload.phone,
-        avatar: payload.avatar || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name || 'User')}&background=1a365d&color=fff`,
+        avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name || 'User')}&background=1a365d&color=fff`,
         updatedAt: new Date().toISOString()
       }
 
