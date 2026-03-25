@@ -85,7 +85,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'listings' }) => {
   const { language, t } = useLanguage()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, updateUserProfile } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState<TabType>(initialTab)
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
@@ -106,6 +106,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [busyFrom, setBusyFrom] = React.useState('')
   const [busyTo, setBusyTo] = React.useState('')
   const [isSavingAvailability, setIsSavingAvailability] = React.useState(false)
+  const [profileName, setProfileName] = React.useState('')
+  const [profilePhone, setProfilePhone] = React.useState('')
+  const [profileAvatar, setProfileAvatar] = React.useState('')
+  const [profileMessage, setProfileMessage] = React.useState('')
+  const [profileError, setProfileError] = React.useState('')
+  const [isSavingProfile, setIsSavingProfile] = React.useState(false)
 
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
   const savedMessage = language === 'en'
@@ -502,11 +508,60 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const sortedMoreOptions = React.useMemo(() => [...moreFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
   const sortedNearOptions = React.useMemo(() => [...nearFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
   const sortedLocationTagOptions = React.useMemo(() => [...filteredLocationTagOptions].sort(sortByOptionLabel), [filteredLocationTagOptions, sortByOptionLabel])
+  const selectableAmenities = React.useMemo(() => amenitiesList.filter((amenity) => amenity !== 'beach'), [])
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
 
   const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags') => {
     setNewListing(prev => ({ ...prev, [field]: [] }))
+  }
+
+  React.useEffect(() => {
+    if (!user) return
+    setProfileName(user.name)
+    setProfilePhone(user.phone)
+    setProfileAvatar(user.avatar || '')
+  }, [user])
+
+  const handleProfilePhotoChange = (file: File | null) => {
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setProfileAvatar(reader.result)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!profileName.trim()) {
+      setProfileError(language === 'en' ? 'Full name is required.' : 'Ad və soyad tələb olunur.')
+      setProfileMessage('')
+      return
+    }
+
+    setIsSavingProfile(true)
+    setProfileError('')
+    setProfileMessage('')
+
+    const result = await updateUserProfile({
+      name: profileName.trim(),
+      phone: profilePhone.trim(),
+      avatar: profileAvatar || undefined
+    })
+
+    if (!result.success) {
+      setProfileError(language === 'en' ? 'Failed to update profile.' : 'Profil yenilənmədi.')
+      setIsSavingProfile(false)
+      return
+    }
+
+    setProfileMessage(language === 'en' ? 'Profile updated successfully.' : 'Profil uğurla yeniləndi.')
+    setIsSavingProfile(false)
   }
 
   if (!isAuthenticated || !user) {
@@ -1015,7 +1070,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width">
                           <label>Xəritədə nöqtə *</label>
-                          <p className="location-hint">Xəritədə klik edin və ya koordinatları əl ilə daxil edin.</p>
+                          <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
                           <div className="location-search-row">
                             <input
                               type="text"
@@ -1050,36 +1105,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 onChange={setListingCoordinates}
                               />
                             </MapContainer>
-                          </div>
-                          <div className="coords-grid">
-                            <div className="form-group">
-                              <label>Latitude</label>
-                              <input
-                                type="number"
-                                step="0.000001"
-                                value={listingCoordinates.lat}
-                                onChange={(e) => {
-                                  const value = Number(e.target.value)
-                                  if (Number.isFinite(value)) {
-                                    setListingCoordinates(prev => ({ ...prev, lat: value }))
-                                  }
-                                }}
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Longitude</label>
-                              <input
-                                type="number"
-                                step="0.000001"
-                                value={listingCoordinates.lng}
-                                onChange={(e) => {
-                                  const value = Number(e.target.value)
-                                  if (Number.isFinite(value)) {
-                                    setListingCoordinates(prev => ({ ...prev, lng: value }))
-                                  }
-                                }}
-                              />
-                            </div>
                           </div>
                           <button
                             type="button"
@@ -1145,7 +1170,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         <div className="form-group full-width">
                           <label>{t.form.selectAmenities}</label>
                           <div className="amenities-checkboxes">
-                            {amenitiesList.map(amenity => (
+                            {selectableAmenities.map(amenity => (
                               <label key={amenity} className="checkbox-label">
                                 <input
                                   type="checkbox"
@@ -1339,28 +1364,54 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   
                   <div className="profile-card card">
                     <div className="profile-header">
-                      <img src={user.avatar} alt={user.name} className="profile-avatar" />
+                      <img src={profileAvatar || user.avatar} alt={user.name} className="profile-avatar" />
                       <div>
-                        <h3>{user.name}</h3>
+                        <h3>{profileName || user.name}</h3>
                         <p>{user.email}</p>
                       </div>
                     </div>
 
-                    <form className="profile-form">
+                    {profileError && <div className="error-message">{profileError}</div>}
+                    {profileMessage && <div className="success-inline-message">{profileMessage}</div>}
+
+                    <form className="profile-form" onSubmit={handleSaveProfile}>
+                      <div className="form-group">
+                        <label>{language === 'en' ? 'Profile Photo' : 'Profil şəkli'}</label>
+                        <div className="profile-photo-upload-row">
+                          <label className="btn btn-ghost btn-sm profile-photo-btn">
+                            {language === 'en' ? 'Choose photo' : 'Şəkil seç'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="profile-photo-input"
+                              onChange={(e) => handleProfilePhotoChange(e.target.files?.[0] || null)}
+                            />
+                          </label>
+                          {profileAvatar && (
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => setProfileAvatar('')}
+                            >
+                              {language === 'en' ? 'Remove' : 'Sil'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
                       <div className="form-group">
                         <label>{t.auth.fullName}</label>
-                        <input type="text" defaultValue={user.name} />
+                        <input type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} />
                       </div>
                       <div className="form-group">
                         <label>{t.auth.email}</label>
-                        <input type="email" defaultValue={user.email} />
+                        <input type="email" defaultValue={user.email} disabled />
                       </div>
                       <div className="form-group">
                         <label>{t.auth.phone}</label>
-                        <input type="tel" defaultValue={user.phone} />
+                        <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} />
                       </div>
-                      <button type="button" className="btn btn-accent">
-                        {t.form.submit}
+                      <button type="submit" className="btn btn-accent" disabled={isSavingProfile}>
+                        {isSavingProfile ? t.messages.loading : t.form.submit}
                       </button>
                     </form>
 

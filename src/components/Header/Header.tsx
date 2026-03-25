@@ -48,6 +48,18 @@ export const Header: React.FC = () => {
           </Link>
 
           <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
+            <div className="language-switcher mobile-language-switcher">
+              {languages.map((lang) => (
+                <button
+                  key={`mobile-${lang.code}`}
+                  className={`lang-btn ${language === lang.code ? 'active' : ''}`}
+                  onClick={() => setLanguage(lang.code)}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+
             <Link to="/" className="nav-link" onClick={() => setMenuOpen(false)}>
               {t.nav.home}
             </Link>
@@ -83,7 +95,7 @@ export const Header: React.FC = () => {
           </nav>
 
           <div className="header-actions">
-            <div className="language-switcher">
+            <div className="language-switcher desktop-language-switcher">
               {languages.map((lang) => (
                 <button
                   key={lang.code}

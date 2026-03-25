@@ -3,7 +3,7 @@ import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import { SearchBar, Filters, PropertyCard, PropertyMap, Loading } from '../../components'
 import { filterProperties } from '../../data'
-import { FilterState, Property, PropertyType } from '../../types'
+import { FilterState, Property } from '../../types'
 import { getProperties } from '../../services'
 import './HomePage.css'
 
@@ -22,15 +22,8 @@ const initialFilters: FilterState = {
   locationTags: []
 }
 
-type TypeFilterCard = {
-  key: string
-  type: PropertyType | ''
-  icon: string
-  label: string
-}
-
 export const HomePage: React.FC = () => {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(false)
   const [properties, setProperties] = React.useState<Property[]>([])
@@ -76,16 +69,6 @@ export const HomePage: React.FC = () => {
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
-  const typeFilterCards: TypeFilterCard[] = [
-    { key: 'apartment', type: 'apartment', icon: '🏢', label: t.propertyTypes.apartment },
-    { key: 'villa', type: 'villa', icon: '🏡', label: t.propertyTypes.villa },
-    { key: 'cottage', type: 'cottage', icon: '🏘️', label: language === 'en' ? 'Holiday homes' : 'Bağ evləri' }
-  ]
-
-  const handleTypeCardSelect = (type: PropertyType | '') => {
-    setFilters(prev => ({ ...prev, type }))
-  }
-
   return (
     <Layout>
       <section className="hero">
@@ -99,20 +82,6 @@ export const HomePage: React.FC = () => {
             value={filters.search}
             onChange={(value) => setFilters({ ...filters, search: value })}
           />
-
-          <div className="hero-type-filters" role="group" aria-label="Type filters">
-            {typeFilterCards.map((card) => (
-              <button
-                type="button"
-                className={`hero-type-card ${filters.type === card.type ? 'active' : ''}`}
-                key={card.key}
-                onClick={() => handleTypeCardSelect(card.type)}
-              >
-                <span className="hero-type-icon" aria-hidden="true">{card.icon}</span>
-                <span className="hero-type-label">{card.label}</span>
-              </button>
-            ))}
-          </div>
         </div>
       </section>
 

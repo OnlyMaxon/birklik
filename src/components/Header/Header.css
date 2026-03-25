@@ -96,6 +96,10 @@
   padding: 0.2rem;
 }
 
+.mobile-language-switcher {
+  display: none;
+}
+
 .lang-btn {
   padding: 0.36rem 0.7rem;
   font-size: 0.78rem;
@@ -218,6 +222,16 @@
 
   .language-switcher {
     padding: 0.14rem;
+  }
+
+  .desktop-language-switcher {
+    display: none;
+  }
+
+  .mobile-language-switcher {
+    display: inline-flex;
+    width: fit-content;
+    margin: 0 0 0.25rem;
   }
 
   .lang-btn {

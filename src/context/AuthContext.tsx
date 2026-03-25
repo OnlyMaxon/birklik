@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   register: (name: string, email: string, phone: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
+  updateUserProfile: (payload: { name: string; phone: string; avatar?: string }) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -122,6 +123,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
+  const updateUserProfile = async (payload: { name: string; phone: string; avatar?: string }): Promise<{ success: boolean; error?: string }> => {
+    if (!firebaseUser || !user) {
+      return { success: false, error: 'auth/not-authenticated' }
+    }
+
+    try {
+      const updates = {
+        name: payload.name,
+        phone: payload.phone,
+        avatar: payload.avatar || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name || 'User')}&background=1a365d&color=fff`,
+        updatedAt: new Date().toISOString()
+      }
+
+      await setDoc(doc(db, 'users', firebaseUser.uid), updates, { merge: true })
+
+      await updateProfile(firebaseUser, {
+        displayName: payload.name,
+        photoURL: updates.avatar
+      })
+
+      setUser(prev => prev ? {
+        ...prev,
+        name: updates.name,
+        phone: updates.phone,
+        avatar: updates.avatar
+      } : prev)
+
+      return { success: true }
+    } catch (error: any) {
+      console.error('Update profile error:', error)
+      return { success: false, error: error.code || 'auth/update-failed' }
+    }
+  }
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -130,7 +165,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isLoading,
       login, 
       register, 
-      logout 
+      logout,
+      updateUserProfile
     }}>
       {children}
     </AuthContext.Provider>
