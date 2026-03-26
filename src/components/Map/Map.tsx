@@ -40,6 +40,29 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
 
   const mapZoom = singleProperty ? 14 : zoom
 
+  const markerIcons = React.useMemo(() => {
+    return new Map(
+      properties.map((property) => {
+        const priceLabel = `${property.price.daily} ${property.price.currency}`
+        const markerMarkup = `
+          <div class="premium-price-marker">
+            <span>${priceLabel}</span>
+          </div>
+        `
+
+        const icon = L.divIcon({
+          className: 'premium-price-marker-wrap',
+          html: markerMarkup,
+          iconSize: [84, 34],
+          iconAnchor: [42, 34],
+          popupAnchor: [0, -30]
+        })
+
+        return [property.id, icon] as const
+      })
+    )
+  }, [properties])
+
   return (
     <div className="map-container">
       <MapContainer 
@@ -56,6 +79,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
           <Marker 
             key={property.id} 
             position={[property.coordinates.lat, property.coordinates.lng]}
+            icon={markerIcons.get(property.id)}
           >
             <Popup>
               <div className="map-popup">

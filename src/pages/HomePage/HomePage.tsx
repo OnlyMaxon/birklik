@@ -26,9 +26,13 @@ export const HomePage: React.FC = () => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(false)
+  const [showTotalPrice, setShowTotalPrice] = React.useState(true)
+  const [activeCategory, setActiveCategory] = React.useState('views')
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
+
+  const isEnglish = t.search.button === 'Search'
 
   React.useEffect(() => {
     const loadProperties = async () => {
@@ -69,6 +73,38 @@ export const HomePage: React.FC = () => {
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
+  const premiumCategories = React.useMemo(() => ([
+    { key: 'views', label: isEnglish ? 'Panoramic views' : 'Mənzərəli evlər' },
+    { key: 'sea', label: isEnglish ? 'By the sea' : 'Dəniz kənarı' },
+    { key: 'pools', label: isEnglish ? 'With pool' : 'Hovuzlu' },
+    { key: 'farms', label: isEnglish ? 'Farm stays' : 'Təbiət evləri' },
+    { key: 'treehouses', label: isEnglish ? 'Tree houses' : 'Ağac evlər' },
+    { key: 'iconic', label: isEnglish ? 'Iconic places' : 'Məşhur istiqamətlər' },
+    { key: 'trending', label: isEnglish ? 'Trending now' : 'Populyar seçimlər' },
+    { key: 'rooms', label: isEnglish ? '3+ rooms' : '3+ otaq' }
+  ]), [isEnglish])
+
+  const applyPremiumCategory = (category: string) => {
+    setActiveCategory(category)
+
+    if (category === 'sea') {
+      setFilters((prev) => ({ ...prev, nearbyPlaces: ['beach'], hasPool: null }))
+      return
+    }
+
+    if (category === 'pools') {
+      setFilters((prev) => ({ ...prev, hasPool: true }))
+      return
+    }
+
+    if (category === 'rooms') {
+      setFilters((prev) => ({ ...prev, rooms: 3 }))
+      return
+    }
+
+    setFilters((prev) => ({ ...prev, nearbyPlaces: [], hasPool: null, rooms: null }))
+  }
+
   return (
     <Layout>
       <section className="hero">
@@ -82,13 +118,37 @@ export const HomePage: React.FC = () => {
             value={filters.search}
             onChange={(value) => setFilters({ ...filters, search: value })}
           />
+
+          <div className="hero-category-row" role="group" aria-label="Premium categories">
+            {premiumCategories.map((category) => (
+              <button
+                type="button"
+                key={category.key}
+                className={`hero-category-chip ${activeCategory === category.key ? 'active' : ''}`}
+                onClick={() => applyPremiumCategory(category.key)}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="section properties-section">
+      <section id="premium-results" className="section properties-section">
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">{t.home.topListingsTitle}</h2>
+            <label className="total-price-toggle">
+              <span>{isEnglish ? 'Show total price' : 'Pokazyvat itogovuyu cenu'}</span>
+              <button
+                type="button"
+                className={`total-switch ${showTotalPrice ? 'active' : ''}`}
+                onClick={() => setShowTotalPrice((prev) => !prev)}
+                aria-pressed={showTotalPrice}
+              >
+                <span className="switch-knob" />
+              </button>
+            </label>
           </div>
 
           <Filters
@@ -111,17 +171,21 @@ export const HomePage: React.FC = () => {
             </div>
           )}
 
-          {!isLoading && showMap && (
-            <div className="map-section mb-6">
-              <PropertyMap properties={filteredProperties} />
-            </div>
-          )}
-
           {!isLoading && filteredProperties.length > 0 ? (
-            <div className="properties-grid grid grid-4">
-              {filteredProperties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
+            <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
+              <div className="premium-results-list">
+                <div className="properties-grid premium-properties-grid">
+                  {filteredProperties.map((property) => (
+                    <PropertyCard key={property.id} property={property} />
+                  ))}
+                </div>
+              </div>
+
+              {showMap && (
+                <aside className="premium-results-map">
+                  <PropertyMap properties={filteredProperties} />
+                </aside>
+              )}
             </div>
           ) : !isLoading && !error ? (
             <div className="no-results">
