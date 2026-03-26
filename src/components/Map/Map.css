@@ -1,12 +1,12 @@
 .map-container {
-  border-radius: 20px;
+  border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(120, 101, 74, 0.2);
-  box-shadow: 0 22px 38px rgba(66, 53, 37, 0.16);
+  border: 1px solid rgba(120, 101, 74, 0.18);
+  box-shadow: 0 14px 26px rgba(66, 53, 37, 0.12);
 }
 
 .leaflet-map {
-  height: clamp(250px, 52dvh, 400px);
+  height: clamp(260px, 56dvh, 520px);
   width: 100%;
   z-index: 1;
 }
@@ -59,17 +59,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 72px;
-  height: 32px;
-  padding: 0 0.62rem;
+  min-width: 64px;
+  height: 28px;
+  padding: 0 0.52rem;
   border-radius: 999px;
-  border: 1px solid rgba(104, 82, 53, 0.34);
-  background: linear-gradient(180deg, #fffef9, #f5ecdf);
-  box-shadow: 0 10px 20px rgba(70, 55, 37, 0.25);
+  border: 1px solid rgba(104, 82, 53, 0.26);
+  background: #fffdfa;
+  box-shadow: 0 6px 14px rgba(70, 55, 37, 0.18);
   color: #4a3d2f;
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   position: relative;
 }
 
@@ -77,13 +77,13 @@
   content: '';
   position: absolute;
   left: 50%;
-  bottom: -7px;
-  width: 11px;
-  height: 11px;
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
   transform: translateX(-50%) rotate(45deg);
-  background: #f5ecdf;
-  border-right: 1px solid rgba(104, 82, 53, 0.34);
-  border-bottom: 1px solid rgba(104, 82, 53, 0.34);
+  background: #fffdfa;
+  border-right: 1px solid rgba(104, 82, 53, 0.26);
+  border-bottom: 1px solid rgba(104, 82, 53, 0.26);
 }
 
 /* Custom marker styling */

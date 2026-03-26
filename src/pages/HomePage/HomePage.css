@@ -44,6 +44,7 @@
   background:
     radial-gradient(circle at 86% -10%, rgba(223, 202, 171, 0.2), transparent 33%),
     linear-gradient(180deg, #f9f7f2 0%, #f4efe7 100%);
+  padding-top: 2.2rem;
 }
 
 .section-header {
@@ -65,19 +66,30 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 420px);
+  gap: 1.1rem;
   align-items: start;
+}
+
+.premium-results-list {
+  min-width: 0;
 }
 
 .premium-results-map {
   position: sticky;
-  top: 98px;
+  top: 92px;
+  align-self: start;
 }
 
 .premium-results-map .map-container {
   border-radius: 20px;
   overflow: hidden;
+  height: calc(100dvh - 112px);
+  min-height: 520px;
+}
+
+.premium-results-map .leaflet-map {
+  height: 100%;
 }
 
 .premium-properties-grid {
@@ -133,6 +145,11 @@
 
   .premium-results-map {
     position: static;
+  }
+
+  .premium-results-map .map-container {
+    height: auto;
+    min-height: 0;
   }
 }
 
