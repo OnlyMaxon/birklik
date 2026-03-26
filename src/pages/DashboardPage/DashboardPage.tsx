@@ -115,6 +115,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
 
   const isTestAccount = user?.email === 'calilorucli42@gmail.com'
+  const isEnglish = language === 'en'
   const savedMessage = language === 'en'
     ? 'Listing saved successfully'
     : 'Elan uğurla yadda saxlanıldı'
@@ -417,7 +418,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ownerId: user.id,
       listingTier: newListing.listingTier,
       status: listingStatus,
-      isFeatured: newListing.listingTier === 'premium',
+      isFeatured: newListing.listingTier === 'premium' && listingStatus === 'active',
       isActive: true,
       city: newListing.city || 'Baku'
     }
@@ -680,14 +681,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const testListings = [
     {
-      title: { az: `${TEST_LISTING_MARKER} Luks villa - Merdekan`, en: `${TEST_LISTING_MARKER} Luxury villa - Mardakan` },
+      title: { az: `${TEST_LISTING_MARKER} Lüks villa - Mərdəkan`, en: `${TEST_LISTING_MARKER} Luxury villa - Mardakan` },
       description: {
         az: `${TEST_LISTING_MARKER} Bu elan test üçündür: hovuz, besedka, manqal, sauna, dənizə yaxın villa.`,
         en: `${TEST_LISTING_MARKER} Test listing with pool, gazebo, BBQ, sauna and close-to-sea location.`
       },
       type: 'villa' as PropertyType,
       district: 'mardakan' as District,
-      address: { az: 'Merdekan, Test kuc. 1', en: 'Mardakan, Test street 1' },
+      address: { az: 'Mərdəkan, Test küç. 1', en: 'Mardakan, Test street 1' },
       price: { daily: 320, weekly: 1920, monthly: 7680, currency: 'AZN' },
       rooms: 5,
       area: 350,
@@ -705,14 +706,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       city: 'Baku'
     },
     {
-      title: { az: `${TEST_LISTING_MARKER} Deniz menzereli menzil`, en: `${TEST_LISTING_MARKER} Sea view apartment` },
+      title: { az: `${TEST_LISTING_MARKER} Dəniz mənzərəli mənzil`, en: `${TEST_LISTING_MARKER} Sea view apartment` },
       description: {
         az: `${TEST_LISTING_MARKER} Test mənzil: kondisioner, Wi-Fi, dəniz və restoran yaxınlığı.`,
         en: `${TEST_LISTING_MARKER} Test apartment with AC, Wi-Fi and nearby sea/restaurants.`
       },
       type: 'apartment' as PropertyType,
       district: 'bilgah' as District,
-      address: { az: 'Bilgeh, Test denizkenari', en: 'Bilgah, Test beach line' },
+      address: { az: 'Bilgəh, Test dənizkənarı', en: 'Bilgah, Test beach line' },
       price: { daily: 120, weekly: 700, monthly: 2500, currency: 'AZN' },
       rooms: 3,
       area: 95,
@@ -864,6 +865,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   </svg>
                   {t.dashboard.profile}
                 </button>
+                {isTestAccount && (
+                  <button
+                    className="nav-item"
+                    onClick={() => navigate('/dashboard/review')}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 12l2 2 4-4"/>
+                      <path d="M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/>
+                    </svg>
+                    {language === 'en' ? 'Moderation' : 'Moderasiya'}
+                  </button>
+                )}
               </nav>
             </aside>
 
@@ -882,7 +895,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   ) : listings.length > 0 ? (
                     <div className="listings-list">
                       {listings.map((property) => {
+                        const status = property.status || 'active'
                         const isCurrentlyActive = property.isActive !== false || isOccupationExpired(property)
+                        const isPendingModeration = status === 'pending'
+                        const statusLabel = isPendingModeration
+                          ? (isEnglish ? 'Pending moderation' : 'Moderasiyada gözləyir')
+                          : (isCurrentlyActive ? (isEnglish ? 'Active' : 'Aktiv') : (isEnglish ? 'Temporarily hidden' : 'Müvəqqəti gizli'))
+
                         return (
                           <div key={property.id} className="listing-item card">
                             <img 
@@ -895,8 +914,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 <Link to={`/property/${property.id}`} className="listing-title">
                                   {getLocalizedText(property.title)}
                                 </Link>
-                                <span className={`badge ${isCurrentlyActive ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                  {isCurrentlyActive ? '✓ Aktiv' : '📅 Məşğul'}
+                                <span className={`badge ${isPendingModeration ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                  {statusLabel}
                                 </span>
                               </div>
                               <p className="listing-location">
@@ -906,14 +925,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
                               </p>
                               <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                                <strong>Status:</strong> {isCurrentlyActive ? 'Aktiv' : 'Məşğul / göstərilmir'}
+                                <strong>Status:</strong> {statusLabel}
                               </p>
-                              {!isCurrentlyActive && property.unavailableFrom && property.unavailableTo && (
+                              {!isPendingModeration && !isCurrentlyActive && property.unavailableFrom && property.unavailableTo && (
                                 <p style={{ fontSize: '0.84rem', color: '#8b5a10', marginTop: '0.15rem' }}>
                                   <strong>Tarix:</strong> {property.unavailableFrom} - {property.unavailableTo}
                                 </p>
                               )}
-                              {!isCurrentlyActive && property.unavailableTo && (
+                              {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (
                                 <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
                                   Yenidən aktiv etmək üçün "Aktiv et" düyməsini sıxın.
                                 </p>
@@ -921,7 +940,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             </div>
                             <div className="listing-actions">
                               <div className="action-buttons">
-                                {isCurrentlyActive ? (
+                                {isPendingModeration ? null : isCurrentlyActive ? (
                                   <button className="btn btn-ghost btn-sm" onClick={() => handleOpenBusyModal(property)}>
                                     Qeyri-aktiv et
                                   </button>
@@ -1339,9 +1358,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           )}
                         </div>
 
-                        <div className="form-group full-width" style={{ backgroundColor: 'rgba(26, 76, 160, 0.08)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #1a4ca0' }}>
-                          <p style={{ margin: 0, fontSize: '0.9rem', color: '#1a4ca0', lineHeight: '1.5' }}>
-                            <strong>Qeyd:</strong> Elan göndərildikdən sonra dəstək komandası sizinlə əlaqə saxlayacaq və {newListing.listingTier === 'free' ? 'təsdiq verəcək' : 'ödəniş təlimatını göndərəcək'}.
+                        <div className="form-group full-width" style={{ backgroundColor: 'rgba(183, 146, 93, 0.14)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #b7925d' }}>
+                          <p style={{ margin: 0, fontSize: '0.9rem', color: '#5e4830', lineHeight: '1.5' }}>
+                            <strong>{isEnglish ? 'Note:' : 'Qeyd:'}</strong>{' '}
+                            {newListing.listingTier === 'free'
+                              ? (isEnglish ? 'Free plan listings are published immediately.' : 'Pulsuz paket elanları dərhal yayımlanır.')
+                              : (isEnglish ? 'Standard and Premium listings are sent to moderation and published after approval.' : 'Standart və Premium elanlar moderasiyaya göndərilir və təsdiqdən sonra yayımlanır.')}
                           </p>
                         </div>
                       </div>

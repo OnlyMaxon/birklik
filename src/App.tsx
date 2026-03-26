@@ -8,6 +8,9 @@ const PropertyPage = React.lazy(() => import('./pages/PropertyPage').then((mod) 
 const LoginPage = React.lazy(() => import('./pages/LoginPage').then((mod) => ({ default: mod.LoginPage })))
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage').then((mod) => ({ default: mod.RegisterPage })))
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
+const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
+
+const MODERATOR_EMAIL = 'calilorucli42@gmail.com'
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -33,6 +36,24 @@ const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return <>{children}</>
+}
+
+const ModeratorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <Loading fullScreen message="Loading..." brand />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (user?.email !== MODERATOR_EMAIL) {
     return <Navigate to="/dashboard" replace />
   }
 
@@ -81,6 +102,11 @@ function App() {
             <ProtectedRoute>
               <DashboardPage initialTab="add" />
             </ProtectedRoute>
+          } />
+          <Route path="/dashboard/review" element={
+            <ModeratorRoute>
+              <ModerationPage />
+            </ModeratorRoute>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

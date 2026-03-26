@@ -9,12 +9,12 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [checkIn, setCheckIn] = React.useState('')
   const [checkOut, setCheckOut] = React.useState('')
   const [guests, setGuests] = React.useState('2')
 
-  const isEnglish = t.search.button === 'Search'
+  const isEnglish = language === 'en'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +25,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch 
     <form className="search-bar" onSubmit={handleSubmit}>
       <div className="search-grid">
         <div className="search-field search-field-destination">
-          <label>{isEnglish ? 'Where to?' : 'Kuda otpravimsya?'}</label>
+          <label>{isEnglish ? 'Where to?' : 'Hara?'}</label>
           <div className="search-input-wrapper">
             <svg
               className="search-icon"
@@ -53,7 +53,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch 
         </div>
 
         <div className="search-field">
-          <label>{isEnglish ? 'Check-in' : 'Data zaezda'}</label>
+          <label>{isEnglish ? 'Check-in' : 'Giriş tarixi'}</label>
           <input
             type="date"
             className="search-input"
@@ -63,7 +63,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch 
         </div>
 
         <div className="search-field">
-          <label>{isEnglish ? 'Check-out' : 'Data vyezda'}</label>
+          <label>{isEnglish ? 'Check-out' : 'Çıxış tarixi'}</label>
           <input
             type="date"
             className="search-input"
@@ -73,7 +73,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch 
         </div>
 
         <div className="search-field">
-          <label>{isEnglish ? 'Guests' : 'Gosti'}</label>
+          <label>{isEnglish ? 'Guests' : 'Qonaq sayı'}</label>
           <select
             className="search-input"
             value={guests}

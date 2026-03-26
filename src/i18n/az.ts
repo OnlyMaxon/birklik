@@ -3,7 +3,7 @@ import { Translations } from '../types'
 export const az: Translations = {
   site: {
     name: "Birklik.az",
-    tagline: "Azərbaycanda ev kirayəsi"
+    tagline: "Azərbaycanda günlük və mövsümi ev kirayəsi"
   },
   nav: {
     home: "Ana səhifə",
@@ -101,7 +101,7 @@ export const az: Translations = {
     profile: "Profil",
     settings: "Parametrlər",
     noListings: "Hələ elan əlavə etməmisiniz",
-    listingAdded: "Elan uğurla əlavə olundu (mock)",
+    listingAdded: "Elan uğurla əlavə olundu",
     edit: "Redaktə et",
     delete: "Sil",
     active: "Aktiv",
@@ -166,13 +166,13 @@ export const az: Translations = {
     premium_highlight: "✓ Ana səhifədə 3 həftə göstərilir"
   },
   support: {
-    waitingForReview: "Elan gözləmədə - dəstək komandası ilə əlaqə saxlayacağıq",
+    waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",
     listed: "Elanınız aktiv",
     contactSupport: "Dəstəklə əlaqə saxlayın"
   },
   testData: {
     addTest: "Test məlumatı əlavə et",
-    removeTest: "Test Məlumatını Sil",
+    removeTest: "Test məlumatını sil",
     testListings: "Test Elanları"
   },
   home: {
@@ -180,8 +180,8 @@ export const az: Translations = {
     hideMap: "Xəritəni gizlət",
     topListingsTitle: "Seçilmiş villalar və istirahət evləri",
     plansTitle: "3 növ elan paketi",
-    plansSubtitle: "Hər büdcə üçün uyğun paket seçin və elanınızı daha effektiv yerləşdirin.",
-    plansNote: "Paket şərtləri bazar tələbinə uyğun mütəmadi olaraq yenilənə bilər.",
+    plansSubtitle: "Büdcənizə uyğun paketi seçin və elanınızı daha effektiv yerləşdirin.",
+    plansNote: "Paket şərtləri bazar tələbinə uyğun olaraq mütəmadi yenilənə bilər.",
     ctaTitle: "Hər şey bir kliklə hazırdır",
     ctaSubtitle: "Evinizi bu gün elan edin və rezervasiya qəbul etməyə başlayın."
   }

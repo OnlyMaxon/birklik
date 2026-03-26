@@ -5,31 +5,31 @@
   --font-body: 'Manrope', 'Segoe UI', sans-serif;
   --font-display: 'Sora', 'Segoe UI', sans-serif;
   --font-hero: 'Outfit', 'Segoe UI', sans-serif;
-  --primary-color: #1f62c7;
-  --primary-light: #3b82e8;
-  --primary-dark: #133b79;
-  --accent-color: #ffb703;
-  --accent-light: #ffd166;
-  --accent-dark: #cb8900;
+  --primary-color: #6e5436;
+  --primary-light: #9b7448;
+  --primary-dark: #4c3a25;
+  --accent-color: #b7925d;
+  --accent-light: #d6b17d;
+  --accent-dark: #8a673c;
   --white: #ffffff;
-  --gray-50: #f4f8ff;
-  --gray-100: #e9f1ff;
-  --gray-200: #d5e2f8;
-  --gray-300: #b6caea;
-  --gray-400: #8fa8d0;
-  --gray-500: #607da9;
-  --gray-600: #3f5f8f;
-  --gray-700: #284777;
-  --gray-800: #17355f;
-  --gray-900: #0c2347;
+  --gray-50: #faf6f0;
+  --gray-100: #f3ebe0;
+  --gray-200: #e7dac8;
+  --gray-300: #d2bea2;
+  --gray-400: #b29c82;
+  --gray-500: #8c7a66;
+  --gray-600: #6f5f4c;
+  --gray-700: #5c4a36;
+  --gray-800: #463524;
+  --gray-900: #342719;
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
-  --shadow-sm: 0 4px 10px rgba(9, 32, 76, 0.08);
-  --shadow: 0 10px 20px rgba(9, 32, 76, 0.1);
-  --shadow-md: 0 14px 30px rgba(9, 32, 76, 0.14);
-  --shadow-lg: 0 20px 42px rgba(9, 32, 76, 0.18);
-  --shadow-xl: 0 30px 56px rgba(9, 32, 76, 0.22);
+  --shadow-sm: 0 4px 10px rgba(58, 43, 27, 0.08);
+  --shadow: 0 10px 20px rgba(58, 43, 27, 0.1);
+  --shadow-md: 0 14px 30px rgba(58, 43, 27, 0.14);
+  --shadow-lg: 0 20px 42px rgba(58, 43, 27, 0.18);
+  --shadow-xl: 0 30px 56px rgba(58, 43, 27, 0.22);
   --radius-sm: 0.35rem;
   --radius: 0.75rem;
   --radius-md: 0.95rem;
@@ -49,7 +49,7 @@ html {
   overflow-x: hidden;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  background: linear-gradient(160deg, #061327 0%, #0c2955 100%);
+  background: linear-gradient(160deg, #2e241b 0%, #4e3d2b 100%);
   overscroll-behavior-y: none;
 }
 
@@ -59,10 +59,10 @@ body {
   line-height: 1.58;
   color: var(--gray-800);
   background:
-    radial-gradient(circle at 8% -20%, rgba(255, 183, 3, 0.22), transparent 33%),
-    radial-gradient(circle at 90% -12%, rgba(142, 202, 230, 0.2), transparent 36%),
-    linear-gradient(180deg, #f4f8ff 0%, #e9f1ff 100%);
-  background-color: #0c2955;
+    radial-gradient(circle at 8% -20%, rgba(215, 183, 133, 0.24), transparent 33%),
+    radial-gradient(circle at 90% -12%, rgba(255, 247, 232, 0.2), transparent 36%),
+    linear-gradient(180deg, #faf6f0 0%, #f3ebe0 100%);
+  background-color: #4e3d2b;
   min-height: 100dvh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -113,7 +113,7 @@ button {
 input, select, textarea {
   font-family: inherit;
   font-size: inherit;
-  border: 1px solid rgba(24, 83, 167, 0.22);
+  border: 1px solid rgba(126, 101, 73, 0.24);
   border-radius: var(--radius);
   padding: 0.75rem 1rem;
   outline: none;
@@ -122,8 +122,8 @@ input, select, textarea {
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: #2b6ad0;
-  box-shadow: 0 0 0 4px rgba(43, 106, 208, 0.15);
+  border-color: #9b7448;
+  box-shadow: 0 0 0 4px rgba(155, 116, 72, 0.18);
 }
 
 /* Container */
@@ -164,26 +164,26 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #1f62c7 0%, #3b82e8 100%);
+  background: linear-gradient(135deg, #8a673c 0%, #b7925d 100%);
   color: var(--white);
-  box-shadow: 0 10px 20px rgba(31, 98, 199, 0.28);
+  box-shadow: 0 10px 20px rgba(73, 56, 36, 0.26);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #3b82e8 0%, #1f62c7 100%);
+  background: linear-gradient(135deg, #b7925d 0%, #8a673c 100%);
   color: var(--white);
   transform: translateY(-1px);
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, #ffb703 0%, #ffd166 100%);
-  color: #0f2f5f;
-  box-shadow: 0 10px 20px rgba(255, 183, 3, 0.34);
+  background: linear-gradient(135deg, #b7925d 0%, #d6b17d 100%);
+  color: #2f2419;
+  box-shadow: 0 10px 20px rgba(73, 56, 36, 0.28);
 }
 
 .btn-accent:hover {
-  background: linear-gradient(135deg, #ffd166 0%, #ffb703 100%);
-  color: #0f2f5f;
+  background: linear-gradient(135deg, #d6b17d 0%, #b7925d 100%);
+  color: #2f2419;
   transform: translateY(-1px);
 }
 
@@ -220,10 +220,10 @@ input:focus, select:focus, textarea:focus {
 
 /* Cards */
 .card {
-  background: linear-gradient(180deg, #ffffff, #f4f9ff);
+  background: linear-gradient(180deg, #fffefb, #f6eee3);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  border: 1px solid rgba(22, 78, 155, 0.12);
+  border: 1px solid rgba(121, 99, 72, 0.2);
   overflow: hidden;
   transition: var(--transition);
 }

@@ -34,6 +34,12 @@ const isHiddenByAvailability = (property: Property): boolean => {
   return !isOccupationExpired(property)
 }
 
+const isPubliclyVisible = (property: Property): boolean => {
+  // Older records may not have status; treat them as active.
+  if (!property.status) return true
+  return property.status === 'active'
+}
+
 export interface PropertyFilters {
   type?: PropertyType | 'all'
   district?: string
@@ -109,6 +115,7 @@ export const getProperties = async (
     const properties = snapshot.docs
       .map(mapDocToProperty)
       .filter(property => {
+        if (!isPubliclyVisible(property)) return false
         if (isHiddenByAvailability(property)) return false
         if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
         return matchesSearch(property, filters?.search)
@@ -116,6 +123,7 @@ export const getProperties = async (
 
     if (properties.length === 0) {
       const fallbackProperties = mockProperties.filter(property => {
+        if (!isPubliclyVisible(property)) return false
         if (isHiddenByAvailability(property)) return false
         if (filters?.type && filters.type !== 'all' && property.type !== filters.type) return false
         if (filters?.district && property.district !== filters.district) return false
@@ -137,6 +145,7 @@ export const getProperties = async (
   } catch (error) {
     console.error('Error getting properties:', error)
     const fallbackProperties = mockProperties.filter(property => {
+      if (!isPubliclyVisible(property)) return false
       if (isHiddenByAvailability(property)) return false
       if (filters?.type && filters.type !== 'all' && property.type !== filters.type) return false
       if (filters?.district && property.district !== filters.district) return false
@@ -335,9 +344,53 @@ export const searchProperties = async (searchTerm: string, lang: Language = 'az'
     const searchLower = searchTerm.toLowerCase()
     const properties = snapshot.docs.map(mapDocToProperty)
 
-    return properties.filter((property) => !isHiddenByAvailability(property) && matchesSearch(property, searchLower, lang))
+    return properties.filter((property) => isPubliclyVisible(property) && !isHiddenByAvailability(property) && matchesSearch(property, searchLower, lang))
   } catch (error) {
     console.error('Error searching properties:', error)
     return []
+  }
+}
+
+// Get all listings waiting for moderation
+export const getPendingProperties = async (): Promise<Property[]> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('status', '==', 'pending')
+    )
+    const snapshot = await getDocs(q)
+
+    return snapshot.docs
+      .map(mapDocToProperty)
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+  } catch (error) {
+    console.error('Error getting pending properties:', error)
+    return []
+  }
+}
+
+// Approve listing and make it publicly visible
+export const approveProperty = async (id: string): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    const currentData = current.data() as Partial<Property>
+
+    await updateDoc(docRef, {
+      status: 'active',
+      isActive: true,
+      isFeatured: currentData.listingTier === 'premium',
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error approving property:', error)
+    return false
   }
 }

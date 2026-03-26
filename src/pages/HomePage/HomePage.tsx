@@ -25,14 +25,11 @@ const initialFilters: FilterState = {
 export const HomePage: React.FC = () => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
-  const [showMap, setShowMap] = React.useState(false)
-  const [showTotalPrice, setShowTotalPrice] = React.useState(true)
-  const [activeCategory, setActiveCategory] = React.useState('views')
+  const [showMap, setShowMap] = React.useState(true)
+  const [isDesktop, setIsDesktop] = React.useState(() => window.innerWidth >= 1024)
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
-
-  const isEnglish = t.search.button === 'Search'
 
   React.useEffect(() => {
     const loadProperties = async () => {
@@ -49,6 +46,21 @@ export const HomePage: React.FC = () => {
 
     loadProperties()
   }, [])
+
+  React.useEffect(() => {
+    const onResize = () => {
+      setIsDesktop(window.innerWidth >= 1024)
+    }
+
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  React.useEffect(() => {
+    if (isDesktop) {
+      setShowMap(true)
+    }
+  }, [isDesktop])
 
   const filteredProperties = React.useMemo(() => {
     return filterProperties(properties, {
@@ -73,63 +85,17 @@ export const HomePage: React.FC = () => {
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
-  const premiumCategories = React.useMemo(() => ([
-    { key: 'views', label: isEnglish ? 'Panoramic views' : 'Mənzərəli evlər' },
-    { key: 'sea', label: isEnglish ? 'By the sea' : 'Dəniz kənarı' },
-    { key: 'pools', label: isEnglish ? 'With pool' : 'Hovuzlu' },
-    { key: 'farms', label: isEnglish ? 'Farm stays' : 'Təbiət evləri' },
-    { key: 'treehouses', label: isEnglish ? 'Tree houses' : 'Ağac evlər' },
-    { key: 'iconic', label: isEnglish ? 'Iconic places' : 'Məşhur istiqamətlər' },
-    { key: 'trending', label: isEnglish ? 'Trending now' : 'Populyar seçimlər' },
-    { key: 'rooms', label: isEnglish ? '3+ rooms' : '3+ otaq' }
-  ]), [isEnglish])
-
-  const applyPremiumCategory = (category: string) => {
-    setActiveCategory(category)
-
-    if (category === 'sea') {
-      setFilters((prev) => ({ ...prev, nearbyPlaces: ['beach'], hasPool: null }))
-      return
-    }
-
-    if (category === 'pools') {
-      setFilters((prev) => ({ ...prev, hasPool: true }))
-      return
-    }
-
-    if (category === 'rooms') {
-      setFilters((prev) => ({ ...prev, rooms: 3 }))
-      return
-    }
-
-    setFilters((prev) => ({ ...prev, nearbyPlaces: [], hasPool: null, rooms: null }))
-  }
-
   return (
     <Layout>
       <section className="hero">
         <div className="hero-overlay"></div>
         <div className="hero-pattern"></div>
         <div className="container hero-content">
-          <p className="hero-kicker">Birklik.az</p>
-          <h1 className="hero-title">{t.hero.title}</h1>
-          <p className="hero-subtitle">{t.hero.subtitle}</p>
-          <SearchBar
-            value={filters.search}
-            onChange={(value) => setFilters({ ...filters, search: value })}
-          />
-
-          <div className="hero-category-row" role="group" aria-label="Premium categories">
-            {premiumCategories.map((category) => (
-              <button
-                type="button"
-                key={category.key}
-                className={`hero-category-chip ${activeCategory === category.key ? 'active' : ''}`}
-                onClick={() => applyPremiumCategory(category.key)}
-              >
-                {category.label}
-              </button>
-            ))}
+          <div className="hero-search-shell">
+            <SearchBar
+              value={filters.search}
+              onChange={(value) => setFilters({ ...filters, search: value })}
+            />
           </div>
         </div>
       </section>
@@ -138,17 +104,6 @@ export const HomePage: React.FC = () => {
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">{t.home.topListingsTitle}</h2>
-            <label className="total-price-toggle">
-              <span>{isEnglish ? 'Show total price' : 'Pokazyvat itogovuyu cenu'}</span>
-              <button
-                type="button"
-                className={`total-switch ${showTotalPrice ? 'active' : ''}`}
-                onClick={() => setShowTotalPrice((prev) => !prev)}
-                aria-pressed={showTotalPrice}
-              >
-                <span className="switch-knob" />
-              </button>
-            </label>
           </div>
 
           <Filters
@@ -156,11 +111,11 @@ export const HomePage: React.FC = () => {
             onFilterChange={setFilters}
             onClear={handleClearFilters}
             hideTypeFilter={true}
-            mapToggle={{
+            mapToggle={!isDesktop ? {
               active: showMap,
               label: mapLabel,
               onClick: () => setShowMap(!showMap)
-            }}
+            } : undefined}
           />
 
           {isLoading && <Loading message={t.messages.loading} />}

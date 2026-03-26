@@ -8,6 +8,7 @@ export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage()
   const { isAuthenticated, user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const isModerator = user?.email === 'calilorucli42@gmail.com'
 
   React.useEffect(() => {
     if (!menuOpen) {
@@ -60,6 +61,11 @@ export const Header: React.FC = () => {
                 <Link to="/dashboard" className="nav-link" onClick={() => setMenuOpen(false)}>
                   {t.nav.dashboard}
                 </Link>
+                {isModerator && (
+                  <Link to="/dashboard/review" className="nav-link" onClick={() => setMenuOpen(false)}>
+                    {language === 'en' ? 'Moderation' : 'Moderasiya'}
+                  </Link>
+                )}
                 <div className="user-menu">
                   <span className="user-name">{user?.name}</span>
                   <button className="btn btn-ghost btn-sm" onClick={() => {
