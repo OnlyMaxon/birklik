@@ -14,21 +14,21 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const getLocalizedText = (text: Record<Language, string>) => text[language]
 
   return (
-    <Link to={`/property/${property.id}`} className="property-card card">
+    <Link to={`/property/${property.id}`} className="property-card card rounded-airbnb bg-white/95 shadow-airbnb overflow-hidden">
       <div className="property-image">
         <img src={property.images[0]} alt={getLocalizedText(property.title)} loading="lazy" />
-        <div className="property-type-badge badge badge-primary">
+        <div className="property-type-badge badge badge-primary rounded-full">
           {t.propertyTypes[property.type]}
         </div>
         {property.amenities.includes('pool') && (
-          <div className="property-pool-badge badge badge-accent">
+          <div className="property-pool-badge badge badge-accent rounded-full">
             {t.amenities.pool}
           </div>
         )}
       </div>
       
       <div className="property-content">
-        <h3 className="property-title">{getLocalizedText(property.title)}</h3>
+        <h3 className="property-title line-clamp-2">{getLocalizedText(property.title)}</h3>
         
         <p className="property-location">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
