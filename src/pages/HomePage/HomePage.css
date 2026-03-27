@@ -99,9 +99,14 @@
 }
 
 .premium-properties-grid {
+  display: grid;
   margin-top: 0;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.72rem;
+}
+
+.premium-results-shell.with-map .premium-properties-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .premium-results-list::-webkit-scrollbar {
@@ -165,6 +170,10 @@
 @media (max-width: 1024px) {
   .premium-results-shell.with-map {
     grid-template-columns: 1fr;
+  }
+
+  .premium-results-shell.with-map .premium-properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   }
 
   .premium-results-list {
