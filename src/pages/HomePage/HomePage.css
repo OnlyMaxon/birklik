@@ -64,7 +64,7 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.75fr);
+  grid-template-columns: 1fr minmax(320px, 0.65fr);
   gap: 1.1rem;
   align-items: start;
 }
@@ -87,8 +87,9 @@
 .premium-results-map .map-container {
   border-radius: 16px;
   overflow: hidden;
-  height: calc(100dvh - 108px);
-  min-height: 560px;
+  height: 600px;
+  min-height: 600px;
+  max-height: calc(100dvh - 120px);
 }
 
 .premium-results-map .leaflet-map {
@@ -97,8 +98,8 @@
 
 .premium-properties-grid {
   margin-top: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.72rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.65rem;
 }
 
 .premium-properties-grid .property-card {
@@ -151,12 +152,12 @@
   }
 
   .premium-results-map .map-container {
-    height: auto;
-    min-height: 0;
+    height: 400px;
+    min-height: 400px;
   }
 
   .premium-properties-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 }
 
@@ -173,7 +174,8 @@
   }
 
   .premium-properties-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.5rem;
   }
 }
 
@@ -193,6 +195,11 @@
   .section-header .section-title {
     font-size: 1.4rem;
     text-align: left;
+  }
+
+  .premium-properties-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.4rem;
   }
 
   .no-results {
