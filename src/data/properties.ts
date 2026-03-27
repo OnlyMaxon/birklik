@@ -387,11 +387,7 @@ export const getOptionLabel = (options: FilterOption[], key: string, language: '
   return language === 'en' ? option.en : option.az
 }
 
-// Helper functions
-export const getPropertyById = (id: string): Property | undefined => {
-  return mockProperties.find(p => p.id === id)
-}
-
+// Filter properties based on various criteria
 export const filterProperties = (
   properties: Property[],
   filters: {

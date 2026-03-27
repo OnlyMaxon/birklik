@@ -310,47 +310,6 @@ export const deletePropertyImages = async (urls: string[]): Promise<void> => {
   }
 }
 
-// Get featured properties (for homepage)
-export const getFeaturedProperties = async (count: number = 6): Promise<Property[]> => {
-  try {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where('isFeatured', '==', true),
-      orderBy('createdAt', 'desc'),
-      limit(count)
-    )
-    const snapshot = await getDocs(q)
-
-    return snapshot.docs.map(mapDocToProperty)
-  } catch (error) {
-    console.error('Error getting featured properties:', error)
-    return []
-  }
-}
-
-// Search properties by title or description
-export const searchProperties = async (searchTerm: string, lang: Language = 'az'): Promise<Property[]> => {
-  try {
-    // Note: Firestore doesn't support full-text search natively
-    // For production, consider using Algolia or Elasticsearch
-    // This is a simple implementation that gets all and filters client-side
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      orderBy('createdAt', 'desc'),
-      limit(100)
-    )
-    const snapshot = await getDocs(q)
-
-    const searchLower = searchTerm.toLowerCase()
-    const properties = snapshot.docs.map(mapDocToProperty)
-
-    return properties.filter((property) => isPubliclyVisible(property) && !isHiddenByAvailability(property) && matchesSearch(property, searchLower, lang))
-  } catch (error) {
-    console.error('Error searching properties:', error)
-    return []
-  }
-}
-
 // Get all listings waiting for moderation
 export const getPendingProperties = async (): Promise<Property[]> => {
   try {
