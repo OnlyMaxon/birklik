@@ -53,8 +53,8 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
         const icon = L.divIcon({
           className: 'premium-price-marker-wrap',
           html: markerMarkup,
-          iconSize: [84, 34],
-          iconAnchor: [42, 34],
+          iconSize: [96, 42],
+          iconAnchor: [48, 42],
           popupAnchor: [0, -30]
         })
 
