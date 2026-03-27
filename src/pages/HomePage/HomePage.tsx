@@ -7,15 +7,6 @@ import { FilterState, Property } from '../../types'
 import { getProperties } from '../../services'
 import './HomePage.css'
 
-const topCategories = [
-  { key: 'all', icon: '🏡', en: 'All stays', az: 'Bütün elanlar' },
-  { key: 'cottage', icon: '🌲', en: 'Cottages', az: 'Kotteclər' },
-  { key: 'apartment', icon: '🏙️', en: 'Apartments', az: 'Mənzillər' },
-  { key: 'villa', icon: '🏖️', en: 'Villas', az: 'Villalar' },
-  { key: 'house', icon: '🏠', en: 'Houses', az: 'Evlər' },
-  { key: 'penthouse', icon: '🌆', en: 'Penthouses', az: 'Penthauslar' }
-]
-
 const initialFilters: FilterState = {
   search: '',
   type: '',
@@ -33,7 +24,6 @@ const initialFilters: FilterState = {
 
 export const HomePage: React.FC = () => {
   const { t } = useLanguage()
-  const [activeCategory, setActiveCategory] = React.useState('all')
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(true)
   const [isDesktop, setIsDesktop] = React.useState(() => window.innerWidth >= 1024)
@@ -91,17 +81,6 @@ export const HomePage: React.FC = () => {
 
   const handleClearFilters = () => {
     setFilters(initialFilters)
-    setActiveCategory('all')
-  }
-
-  const applyCategory = (category: string) => {
-    setActiveCategory(category)
-    if (category === 'all') {
-      setFilters((prev) => ({ ...prev, type: '' }))
-      return
-    }
-
-    setFilters((prev) => ({ ...prev, type: category as FilterState['type'] }))
   }
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
@@ -123,20 +102,6 @@ export const HomePage: React.FC = () => {
 
       <section id="premium-results" className="section properties-section">
         <div className="container">
-          <div className="category-rail" role="tablist" aria-label="Property categories">
-            {topCategories.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className={`category-chip ${activeCategory === item.key ? 'active' : ''}`}
-                onClick={() => applyCategory(item.key)}
-              >
-                <span className="category-icon" aria-hidden="true">{item.icon}</span>
-                <span>{t.search.button === 'Search' ? item.en : item.az}</span>
-              </button>
-            ))}
-          </div>
-
           <div className="section-header">
             <h2 className="section-title">{t.home.topListingsTitle}</h2>
           </div>

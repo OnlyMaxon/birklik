@@ -1,6 +1,6 @@
 .hero {
   position: relative;
-  min-height: clamp(360px, 52dvh, 500px);
+  min-height: clamp(360px, 58dvh, 520px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -29,7 +29,7 @@
   z-index: 1;
   width: 100%;
   text-align: center;
-  padding: 2.2rem 1rem;
+  padding: 1.8rem 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -37,52 +37,21 @@
 
 .hero-search-shell {
   width: 100%;
-  max-width: 980px;
+  max-width: 860px;
 }
 
 .properties-section {
-  background: linear-gradient(180deg, #faf6f0 0%, #f3ebe0 100%);
+  background:
+    radial-gradient(circle at 86% -10%, rgba(223, 202, 171, 0.2), transparent 33%),
+    linear-gradient(180deg, #f9f7f2 0%, #f4efe7 100%);
   padding-top: 2.2rem;
-}
-
-.category-rail {
-  display: flex;
-  gap: 0.55rem;
-  overflow-x: auto;
-  padding: 0.2rem 0 0.9rem;
-  margin-bottom: 0.45rem;
-}
-
-.category-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.42rem;
-  border: 1px solid rgba(178, 156, 130, 0.42);
-  border-radius: 999px;
-  padding: 0.5rem 0.88rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #6f5f4c;
-  background: rgba(255, 255, 255, 0.85);
-  white-space: nowrap;
-}
-
-.category-chip.active {
-  border-color: #9b7448;
-  color: #4c3a25;
-  background: #e7dac8;
-}
-
-.category-icon {
-  font-size: 0.95rem;
-  line-height: 1;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 0.85rem;
+  margin-bottom: 1.15rem;
   gap: 0.6rem;
 }
 
@@ -97,7 +66,7 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(390px, 440px);
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 420px);
   gap: 1.1rem;
   align-items: start;
 }
@@ -113,7 +82,7 @@
 }
 
 .premium-results-map .map-container {
-  border-radius: 30px;
+  border-radius: 20px;
   overflow: hidden;
   height: calc(100dvh - 112px);
   min-height: 520px;
@@ -125,7 +94,7 @@
 
 .premium-properties-grid {
   margin-top: 0;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -181,11 +150,6 @@
   .premium-results-map .map-container {
     height: auto;
     min-height: 0;
-    border-radius: 24px;
-  }
-
-  .premium-properties-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

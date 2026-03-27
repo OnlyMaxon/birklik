@@ -40,30 +40,13 @@ export const Header: React.FC = () => {
   ]
 
   return (
-    <header className="header bg-birklik-n-50/95 backdrop-blur-md border-b border-birklik-n-200/80">
+    <header className="header">
       <div className="container">
-        <div className="header-content gap-4">
-          <Link to="/" className="logo shrink-0" onClick={() => setMenuOpen(false)}>
+        <div className="header-content">
+          <Link to="/" className="logo" onClick={() => setMenuOpen(false)}>
             <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
             <span className="logo-tagline">{t.site.tagline}</span>
           </Link>
-
-          <button
-            type="button"
-            className="hidden lg:flex header-search-pill items-center justify-between gap-4 rounded-full border border-birklik-n-200 bg-white px-5 py-2 text-sm text-birklik-n-700 shadow-airbnb"
-          >
-            <span className="font-semibold text-birklik-primary-dark">Where to?</span>
-            <span className="h-4 w-px bg-birklik-n-300" />
-            <span className="text-birklik-n-600">Add dates</span>
-            <span className="h-4 w-px bg-birklik-n-300" />
-            <span className="text-birklik-n-600">Guests</span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-birklik-accent text-birklik-n-50">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.3-4.3"/>
-              </svg>
-            </span>
-          </button>
 
           <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
             <Link to="/" className="nav-link" onClick={() => setMenuOpen(false)}>
