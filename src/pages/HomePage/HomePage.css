@@ -64,8 +64,8 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
-  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 380px);
+  gap: 1rem;
   align-items: start;
 }
 
@@ -74,20 +74,19 @@
 }
 
 .premium-results-map {
-  position: sticky;
-  top: 94px;
+  position: static;
   align-self: start;
   background: #faf6f0;
   border: 1px solid #e7dac8;
-  border-radius: 30px;
-  padding: 0.85rem;
-  box-shadow: 0 14px 28px rgba(70, 53, 36, 0.12);
+  border-radius: 22px;
+  padding: 0.65rem;
+  box-shadow: 0 10px 18px rgba(70, 53, 36, 0.1);
 }
 
 .premium-results-map .map-container {
-  border-radius: 24px;
+  border-radius: 16px;
   overflow: hidden;
-  height: calc(100dvh - 126px);
+  height: 520px;
   min-height: 520px;
 }
 
@@ -97,8 +96,8 @@
 
 .premium-properties-grid {
   margin-top: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.3rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
 }
 
 .premium-properties-grid .property-card {

@@ -679,83 +679,153 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setActiveTab('add')
   }
 
-  const testListings = [
-    {
-      title: { az: `${TEST_LISTING_MARKER} Lüks villa - Mərdəkan`, en: `${TEST_LISTING_MARKER} Luxury villa - Mardakan` },
-      description: {
-        az: `${TEST_LISTING_MARKER} Bu elan test üçündür: hovuz, besedka, manqal, sauna, dənizə yaxın villa.`,
-        en: `${TEST_LISTING_MARKER} Test listing with pool, gazebo, BBQ, sauna and close-to-sea location.`
+  const testListings = React.useMemo(() => {
+    const templates = [
+      {
+        type: 'villa' as PropertyType,
+        district: 'mardakan' as District,
+        city: 'Baku',
+        locationCategory: 'metro' as LocationCategory,
+        locationTags: ['koroglu', 'sahil'],
+        amenities: ['pool', 'parking', 'wifi', 'ac', 'kitchen', 'bbq'] as Amenity[],
+        extraFeatures: ['pool', 'ac', 'sauna', 'gazebo', 'bbq', 'wifi'],
+        nearbyPlaces: ['sea', 'park', 'restaurant'],
+        image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200',
+        basePrice: 320,
+        baseRooms: 5,
+        baseArea: 320,
+        titleAz: 'Lüks villa',
+        titleEn: 'Luxury villa',
+        areaAz: 'Mərdəkan',
+        areaEn: 'Mardakan',
+        tier: 'premium' as ListingTier
       },
-      type: 'villa' as PropertyType,
-      district: 'mardakan' as District,
-      address: { az: 'Mərdəkan, Test küç. 1', en: 'Mardakan, Test street 1' },
-      price: { daily: 320, weekly: 1920, monthly: 7680, currency: 'AZN' },
-      rooms: 5,
-      area: 350,
-      amenities: ['pool', 'parking', 'wifi', 'ac', 'kitchen', 'bbq'] as Amenity[],
-      extraFeatures: ['pool', 'ac', 'sauna', 'gazebo', 'bbq', 'wifi'],
-      nearbyPlaces: ['sea', 'park', 'restaurant'],
-      locationCategory: 'metro' as LocationCategory,
-      locationTags: ['koroglu', 'sahil'],
-      images: ['https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800'],
-      coordinates: { lat: 40.4925, lng: 50.1464 },
-      listingTier: 'premium' as ListingTier,
-      status: 'active' as const,
-      isFeatured: true,
-      isActive: true,
-      city: 'Baku'
-    },
-    {
-      title: { az: `${TEST_LISTING_MARKER} Dəniz mənzərəli mənzil`, en: `${TEST_LISTING_MARKER} Sea view apartment` },
-      description: {
-        az: `${TEST_LISTING_MARKER} Test mənzil: kondisioner, Wi-Fi, dəniz və restoran yaxınlığı.`,
-        en: `${TEST_LISTING_MARKER} Test apartment with AC, Wi-Fi and nearby sea/restaurants.`
+      {
+        type: 'apartment' as PropertyType,
+        district: 'bilgah' as District,
+        city: 'Baku',
+        locationCategory: 'landmark' as LocationCategory,
+        locationTags: ['denizkenari', 'whiteCity'],
+        amenities: ['wifi', 'ac', 'kitchen', 'tv', 'parking', 'beach'] as Amenity[],
+        extraFeatures: ['ac', 'wifi', 'garage', 'boardGames'],
+        nearbyPlaces: ['sea', 'restaurant', 'park'],
+        image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200',
+        basePrice: 130,
+        baseRooms: 3,
+        baseArea: 95,
+        titleAz: 'Dəniz mənzərəli mənzil',
+        titleEn: 'Sea view apartment',
+        areaAz: 'Bilgəh',
+        areaEn: 'Bilgah',
+        tier: 'standard' as ListingTier
       },
-      type: 'apartment' as PropertyType,
-      district: 'bilgah' as District,
-      address: { az: 'Bilgəh, Test dənizkənarı', en: 'Bilgah, Test beach line' },
-      price: { daily: 120, weekly: 700, monthly: 2500, currency: 'AZN' },
-      rooms: 3,
-      area: 95,
-      amenities: ['wifi', 'ac', 'kitchen', 'tv', 'parking', 'beach'] as Amenity[],
-      extraFeatures: ['ac', 'wifi', 'garage', 'boardGames'],
-      nearbyPlaces: ['sea', 'restaurant', 'park'],
-      locationCategory: 'landmark' as LocationCategory,
-      locationTags: ['denizkenari', 'whiteCity'],
-      images: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800'],
-      coordinates: { lat: 40.5644, lng: 50.0372 },
-      listingTier: 'standard' as ListingTier,
-      status: 'active' as const,
-      isFeatured: false,
-      isActive: true,
-      city: 'Baku'
-    },
-    {
-      title: { az: `${TEST_LISTING_MARKER} Qəbələ bağ evi`, en: `${TEST_LISTING_MARKER} Gabala cottage` },
-      description: {
-        az: `${TEST_LISTING_MARKER} Dağ və meşə yaxınlığında test kottec.`,
-        en: `${TEST_LISTING_MARKER} Test cottage near mountains and forest.`
+      {
+        type: 'cottage' as PropertyType,
+        district: 'gabala' as District,
+        city: 'Gabala',
+        locationCategory: 'rayon' as LocationCategory,
+        locationTags: ['xirdalan'],
+        amenities: ['wifi', 'ac', 'kitchen', 'garden', 'bbq'] as Amenity[],
+        extraFeatures: ['wifi', 'bbq', 'samovar', 'kidsZone'],
+        nearbyPlaces: ['mountains', 'forest', 'riverLake'],
+        image: 'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200',
+        basePrice: 180,
+        baseRooms: 4,
+        baseArea: 160,
+        titleAz: 'Qəbələ bağ evi',
+        titleEn: 'Gabala cottage',
+        areaAz: 'Qəbələ',
+        areaEn: 'Gabala',
+        tier: 'standard' as ListingTier
       },
-      type: 'cottage' as PropertyType,
-      district: 'gabala' as District,
-      address: { az: 'Qəbələ, Test həyət evi', en: 'Gabala, Test cottage area' },
-      price: { daily: 180, weekly: 1050, monthly: 3600, currency: 'AZN' },
-      rooms: 4,
-      area: 160,
-      amenities: ['wifi', 'ac', 'kitchen', 'garden', 'bbq'] as Amenity[],
-      extraFeatures: ['wifi', 'bbq', 'samovar', 'kidsZone'],
-      nearbyPlaces: ['mountains', 'forest', 'riverLake'],
-      locationCategory: 'rayon' as LocationCategory,
-      locationTags: ['xirdalan'],
-      images: ['https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800'],
-      coordinates: { lat: 40.9815, lng: 47.8452 },
-      listingTier: 'standard' as ListingTier,
-      status: 'active' as const,
-      isFeatured: false,
-      isActive: true,
-      city: 'Gabala'
-    }
-  ]
+      {
+        type: 'house' as PropertyType,
+        district: 'novkhani' as District,
+        city: 'Baku',
+        locationCategory: 'rayon' as LocationCategory,
+        locationTags: ['memarEcemi'],
+        amenities: ['parking', 'wifi', 'kitchen', 'garden', 'bbq'] as Amenity[],
+        extraFeatures: ['garage', 'gazebo', 'bbq', 'wifi'],
+        nearbyPlaces: ['sea', 'park'],
+        image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200',
+        basePrice: 210,
+        baseRooms: 4,
+        baseArea: 210,
+        titleAz: 'Novxanı istirahət evi',
+        titleEn: 'Novkhani holiday house',
+        areaAz: 'Novxanı',
+        areaEn: 'Novkhani',
+        tier: 'free' as ListingTier
+      },
+      {
+        type: 'penthouse' as PropertyType,
+        district: 'baku' as District,
+        city: 'Baku',
+        locationCategory: 'landmark' as LocationCategory,
+        locationTags: ['portBaku'],
+        amenities: ['parking', 'wifi', 'ac', 'kitchen', 'tv', 'security'] as Amenity[],
+        extraFeatures: ['ac', 'wifi', 'cityView', 'security'],
+        nearbyPlaces: ['restaurant', 'mall', 'park'],
+        image: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1200',
+        basePrice: 260,
+        baseRooms: 3,
+        baseArea: 140,
+        titleAz: 'Şəhər mərkəzində penthaus',
+        titleEn: 'City center penthouse',
+        areaAz: 'Bakı',
+        areaEn: 'Baku',
+        tier: 'premium' as ListingTier
+      }
+    ]
+
+    return Array.from({ length: 30 }, (_, index) => {
+      const template = templates[index % templates.length]
+      const serial = index + 1
+      const daily = template.basePrice + (index % 5) * 15
+      const rooms = template.baseRooms + (index % 2)
+      const area = template.baseArea + (index % 4) * 12
+
+      return {
+        title: {
+          az: `${TEST_LISTING_MARKER} ${template.titleAz} #${serial}`,
+          en: `${TEST_LISTING_MARKER} ${template.titleEn} #${serial}`
+        },
+        description: {
+          az: `${TEST_LISTING_MARKER} Bu test elanıdır. Platform funksiyalarını yoxlamaq üçün yaradılıb.`,
+          en: `${TEST_LISTING_MARKER} Test listing created for platform verification workflows.`
+        },
+        type: template.type,
+        district: template.district,
+        address: {
+          az: `${template.areaAz}, Test küç. ${serial}`,
+          en: `${template.areaEn}, Test street ${serial}`
+        },
+        price: {
+          daily,
+          weekly: daily * 6,
+          monthly: daily * 24,
+          currency: 'AZN'
+        },
+        rooms,
+        area,
+        amenities: template.amenities,
+        extraFeatures: template.extraFeatures,
+        nearbyPlaces: template.nearbyPlaces,
+        locationCategory: template.locationCategory,
+        locationTags: template.locationTags,
+        images: [template.image],
+        coordinates: {
+          lat: Number((40.36 + (index % 10) * 0.02).toFixed(6)),
+          lng: Number((49.78 + (index % 10) * 0.03).toFixed(6))
+        },
+        listingTier: template.tier,
+        status: 'active' as const,
+        isFeatured: template.tier === 'premium',
+        isActive: true,
+        city: template.city
+      }
+    })
+  }, [])
 
   const handleAddTestData = async () => {
     if (!user) return
@@ -1456,7 +1526,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             type="button"
                             className={`btn ${hasTestData ? 'btn-ghost' : 'btn-accent'}`}
                             onClick={handleAddTestData}
-                            disabled={isAddingTestData || hasTestData}
+                            disabled={isAddingTestData}
                           >
                             {isAddingTestData ? t.messages.loading : t.testData.addTest}
                           </button>

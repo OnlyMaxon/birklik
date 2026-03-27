@@ -6,7 +6,7 @@
 }
 
 .leaflet-map {
-  height: clamp(300px, 66dvh, 760px);
+  height: clamp(280px, 54dvh, 560px);
   width: 100%;
   z-index: 1;
 }
