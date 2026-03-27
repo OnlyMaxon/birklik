@@ -64,8 +64,8 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 380px);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.75fr);
+  gap: 1.1rem;
   align-items: start;
 }
 
@@ -74,7 +74,8 @@
 }
 
 .premium-results-map {
-  position: static;
+  position: sticky;
+  top: 86px;
   align-self: start;
   background: #faf6f0;
   border: 1px solid #e7dac8;
@@ -86,8 +87,8 @@
 .premium-results-map .map-container {
   border-radius: 16px;
   overflow: hidden;
-  height: 520px;
-  min-height: 520px;
+  height: calc(100dvh - 108px);
+  min-height: 560px;
 }
 
 .premium-results-map .leaflet-map {
@@ -96,8 +97,8 @@
 
 .premium-properties-grid {
   margin-top: 0;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.72rem;
 }
 
 .premium-properties-grid .property-card {
@@ -152,6 +153,10 @@
   .premium-results-map .map-container {
     height: auto;
     min-height: 0;
+  }
+
+  .premium-properties-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

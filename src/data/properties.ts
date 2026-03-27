@@ -1,4 +1,4 @@
-import { Property, PropertyType, District, Amenity, UserListing, LocationCategory } from '../types'
+import { Property, PropertyType, District, Amenity, LocationCategory } from '../types'
 
 export interface FilterOption {
   key: string
@@ -386,9 +386,6 @@ export const getOptionLabel = (options: FilterOption[], key: string, language: '
   if (!option) return key
   return language === 'en' ? option.en : option.az
 }
-
-// Mock user listings for dashboard
-export const mockUserListings: UserListing[] = []
 
 // Helper functions
 export const getPropertyById = (id: string): Property | undefined => {

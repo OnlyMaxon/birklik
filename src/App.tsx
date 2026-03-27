@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Loading } from './components'
 import { useAuth } from './context'
+import { MODERATOR_EMAIL } from './config/constants'
 
 const HomePage = React.lazy(() => import('./pages/HomePage').then((mod) => ({ default: mod.HomePage })))
 const PropertyPage = React.lazy(() => import('./pages/PropertyPage').then((mod) => ({ default: mod.PropertyPage })))
@@ -9,8 +10,6 @@ const LoginPage = React.lazy(() => import('./pages/LoginPage').then((mod) => ({ 
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage').then((mod) => ({ default: mod.RegisterPage })))
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
-
-const MODERATOR_EMAIL = 'calilorucli42@gmail.com'
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {

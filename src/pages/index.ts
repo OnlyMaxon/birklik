@@ -1,6 +1,0 @@
-export { HomePage } from './HomePage'
-export { PropertyPage } from './PropertyPage'
-export { LoginPage } from './LoginPage'
-export { RegisterPage } from './RegisterPage'
-export { DashboardPage } from './DashboardPage'
-export { ModerationPage } from './ModerationPage'

@@ -4,10 +4,9 @@ import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
 import { approveProperty, getPendingProperties } from '../../services'
+import { MODERATOR_EMAIL } from '../../config/constants'
 import { Property } from '../../types'
 import './ModerationPage.css'
-
-const MODERATOR_EMAIL = 'calilorucli42@gmail.com'
 
 export const ModerationPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth()

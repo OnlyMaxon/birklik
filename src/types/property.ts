@@ -61,16 +61,6 @@ export interface Property {
   city?: string
 }
 
-export interface UserListing {
-  id: string
-  propertyId: string
-  status: 'active' | 'pending'
-  views: number
-  inquiries: number
-  createdAt: string
-  updatedAt: string
-}
-
 export interface User {
   id: string
   name: string

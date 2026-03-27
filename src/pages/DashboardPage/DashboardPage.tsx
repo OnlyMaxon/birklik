@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
+import { MODERATOR_EMAIL } from '../../config/constants'
 import { PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
@@ -114,7 +115,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
 
-  const isTestAccount = user?.email === 'calilorucli42@gmail.com'
+  const isTestAccount = user?.email === MODERATOR_EMAIL
   const isEnglish = language === 'en'
   const savedMessage = language === 'en'
     ? 'Listing saved successfully'

@@ -4,7 +4,7 @@
   text-decoration: none;
   color: inherit;
   height: 100%;
-  border-radius: 22px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid #e7dac8;
   background: #faf6f0;
@@ -14,7 +14,7 @@
 
 .property-image {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
 }
 
@@ -36,44 +36,44 @@
 
 .property-type-badge {
   position: absolute;
-  top: 0.85rem;
-  left: 0.85rem;
+  top: 0.62rem;
+  left: 0.62rem;
   background: rgba(52, 39, 25, 0.82);
   color: #faf6f0;
   border: 1px solid rgba(231, 218, 200, 0.35);
   border-radius: 999px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.74rem;
+  padding: 0.24rem 0.56rem;
+  font-size: 0.68rem;
   font-weight: 700;
   backdrop-filter: blur(6px);
 }
 
 .property-pool-badge {
   position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
+  top: 0.62rem;
+  right: 0.62rem;
   background: rgba(214, 177, 125, 0.94);
   color: #342719;
   border: 1px solid rgba(250, 246, 240, 0.6);
   border-radius: 999px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.74rem;
+  padding: 0.24rem 0.56rem;
+  font-size: 0.68rem;
   font-weight: 700;
 }
 
 .property-content {
-  padding: 0.8rem 0.88rem 0.9rem;
+  padding: 0.66rem 0.72rem 0.78rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex: 1;
 }
 
 .property-title {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: #342719;
-  line-height: 1.32;
+  line-height: 1.28;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -86,7 +86,7 @@
   align-items: center;
   gap: 0.34rem;
   color: #6e5436;
-  font-size: 0.78rem;
+  font-size: 0.73rem;
 }
 
 .property-location svg {
@@ -97,7 +97,7 @@
 .property-features {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem 0.7rem;
+  gap: 0.35rem 0.56rem;
 }
 
 .feature {
@@ -105,7 +105,7 @@
   align-items: center;
   gap: 0.32rem;
   color: #6e5436;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
 }
 
 .feature svg {
@@ -117,7 +117,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 0.78rem;
+  padding-top: 0.56rem;
   border-top: 1px solid #e7dac8;
   margin-top: auto;
   flex-wrap: wrap;
@@ -131,13 +131,13 @@
 }
 
 .price-value {
-  font-size: 1.02rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: #342719;
 }
 
 .price-period {
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   color: #6e5436;
 }
 
@@ -145,7 +145,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.76rem;
+  font-size: 0.68rem;
 }
 
 .property-rating svg {
