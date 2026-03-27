@@ -64,18 +64,22 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: 1fr minmax(320px, 0.65fr);
-  gap: 1.1rem;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 34vw, 460px);
+  gap: 1.2rem;
   align-items: start;
 }
 
 .premium-results-list {
   min-width: 0;
+  max-height: calc(100dvh - 108px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.25rem;
 }
 
 .premium-results-map {
   position: sticky;
-  top: 86px;
+  top: 88px;
   align-self: start;
   background: #faf6f0;
   border: 1px solid #e7dac8;
@@ -87,9 +91,7 @@
 .premium-results-map .map-container {
   border-radius: 16px;
   overflow: hidden;
-  height: 600px;
-  min-height: 600px;
-  max-height: calc(100dvh - 120px);
+  height: clamp(520px, calc(100dvh - 120px), 760px);
 }
 
 .premium-results-map .leaflet-map {
@@ -98,8 +100,26 @@
 
 .premium-properties-grid {
   margin-top: 0;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.72rem;
+}
+
+.premium-results-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.premium-results-list::-webkit-scrollbar-track {
+  background: #efe5d8;
+  border-radius: 999px;
+}
+
+.premium-results-list::-webkit-scrollbar-thumb {
+  background: #b99f7e;
+  border-radius: 999px;
+}
+
+.premium-results-list::-webkit-scrollbar-thumb:hover {
+  background: #9f8462;
 }
 
 .premium-properties-grid .property-card {
@@ -147,17 +167,22 @@
     grid-template-columns: 1fr;
   }
 
+  .premium-results-list {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
   .premium-results-map {
     position: static;
   }
 
   .premium-results-map .map-container {
-    height: 400px;
-    min-height: 400px;
+    height: 440px;
   }
 
   .premium-properties-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   }
 }
 
@@ -174,8 +199,8 @@
   }
 
   .premium-properties-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.55rem;
   }
 }
 
@@ -200,6 +225,10 @@
   .premium-properties-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 0.4rem;
+  }
+
+  .premium-results-map .map-container {
+    height: 340px;
   }
 
   .no-results {
