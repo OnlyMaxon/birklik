@@ -999,11 +999,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
                               </p>
                               <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                                <strong>Status:</strong> {statusLabel}
+                                <strong>{isEnglish ? 'Status:' : isRussian ? 'Статус:' : 'Status:'}</strong> {statusLabel}
                               </p>
                               {!isPendingModeration && !isCurrentlyActive && property.unavailableFrom && property.unavailableTo && (
                                 <p style={{ fontSize: '0.84rem', color: '#8b5a10', marginTop: '0.15rem' }}>
-                                  <strong>Tarix:</strong> {property.unavailableFrom} - {property.unavailableTo}
+                                  <strong>{isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'}</strong> {property.unavailableFrom} - {property.unavailableTo}
                                 </p>
                               )}
                               {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (

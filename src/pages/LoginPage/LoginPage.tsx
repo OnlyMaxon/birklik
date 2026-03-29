@@ -5,7 +5,7 @@ import { Layout } from '../../layouts'
 import './AuthPages.css'
 
 export const LoginPage: React.FC = () => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   
@@ -25,11 +25,23 @@ export const LoginPage: React.FC = () => {
       case 'auth/invalid-credential':
       case 'auth/wrong-password':
       case 'auth/user-not-found':
-        return 'Неверный email или пароль'
+        return language === 'en'
+          ? 'Incorrect email or password'
+          : language === 'ru'
+            ? 'Неверный email или пароль'
+            : 'Email və ya şifrə yanlışdır'
       case 'auth/too-many-requests':
-        return 'Слишком много попыток. Попробуйте позже'
+        return language === 'en'
+          ? 'Too many attempts. Please try again later'
+          : language === 'ru'
+            ? 'Слишком много попыток. Попробуйте позже'
+            : 'Həddindən artıq cəhd edildi. Zəhmət olmasa bir az sonra yenidən yoxlayın'
       case 'auth/network-request-failed':
-        return 'Ошибка сети. Проверьте подключение'
+        return language === 'en'
+          ? 'Network error. Check your connection'
+          : language === 'ru'
+            ? 'Ошибка сети. Проверьте подключение'
+            : 'Şəbəkə xətası. İnternet bağlantınızı yoxlayın'
       default:
         return t.messages.error
     }

@@ -5,7 +5,7 @@ import { Layout } from '../../layouts'
 import '../LoginPage/AuthPages.css'
 
 export const RegisterPage: React.FC = () => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { register, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
@@ -32,13 +32,29 @@ export const RegisterPage: React.FC = () => {
   const getErrorMessage = (errorCode: string): string => {
     switch (errorCode) {
       case 'auth/email-already-in-use':
-        return 'Этот email уже зарегистрирован'
+        return language === 'en'
+          ? 'This email is already registered'
+          : language === 'ru'
+            ? 'Этот email уже зарегистрирован'
+            : 'Bu email artıq qeydiyyatdan keçib'
       case 'auth/invalid-email':
-        return 'Некорректный email'
+        return language === 'en'
+          ? 'Invalid email'
+          : language === 'ru'
+            ? 'Некорректный email'
+            : 'Email düzgün deyil'
       case 'auth/weak-password':
-        return 'Пароль должен содержать минимум 6 символов'
+        return language === 'en'
+          ? 'Password must be at least 6 characters'
+          : language === 'ru'
+            ? 'Пароль должен содержать минимум 6 символов'
+            : 'Şifrə ən azı 6 simvoldan ibarət olmalıdır'
       case 'auth/network-request-failed':
-        return 'Ошибка сети. Проверьте подключение'
+        return language === 'en'
+          ? 'Network error. Check your connection'
+          : language === 'ru'
+            ? 'Ошибка сети. Проверьте подключение'
+            : 'Şəbəkə xətası. İnternet bağlantınızı yoxlayın'
       default:
         return t.messages.error
     }
@@ -49,12 +65,24 @@ export const RegisterPage: React.FC = () => {
     setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают')
+      setError(
+        language === 'en'
+          ? 'Passwords do not match'
+          : language === 'ru'
+            ? 'Пароли не совпадают'
+            : 'Şifrələr uyğun gəlmir'
+      )
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Пароль должен содержать минимум 6 символов')
+      setError(
+        language === 'en'
+          ? 'Password must be at least 6 characters'
+          : language === 'ru'
+            ? 'Пароль должен содержать минимум 6 символов'
+            : 'Şifrə ən azı 6 simvoldan ibarət olmalıdır'
+      )
       return
     }
 

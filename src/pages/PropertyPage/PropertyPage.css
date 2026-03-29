@@ -1,5 +1,6 @@
 .property-page {
   padding: 2rem 0;
+  overflow-x: clip;
   background:
     radial-gradient(circle at 86% -8%, rgba(214, 177, 125, 0.18), transparent 30%),
     linear-gradient(180deg, #faf6f0 0%, #f3ebe0 100%);
@@ -27,12 +28,14 @@
   grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
   gap: 1.6rem;
   align-items: start;
+  min-width: 0;
 }
 
 .property-main {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .property-info {
@@ -41,6 +44,7 @@
   border-radius: 20px;
   background: linear-gradient(180deg, #fffefb, #f6eee3);
   box-shadow: 0 16px 34px rgba(58, 43, 27, 0.12);
+  min-width: 0;
 }
 
 .property-title {
@@ -129,6 +133,8 @@
 .property-section p {
   color: var(--gray-600);
   line-height: 1.7;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .amenities-grid {
@@ -183,6 +189,7 @@
 .property-sidebar {
   position: sticky;
   top: 90px;
+  min-width: 0;
 }
 
 .booking-card {
@@ -191,6 +198,7 @@
   border-radius: 20px;
   background: linear-gradient(180deg, #fffefb, #f6eee3);
   box-shadow: 0 16px 34px rgba(58, 43, 27, 0.12);
+  min-width: 0;
 }
 
 .price-section {
@@ -231,6 +239,7 @@
   border-radius: 12px;
   border: 1px solid rgba(121, 99, 72, 0.2);
   background: linear-gradient(180deg, #fffaf3, #f4ebde);
+  min-width: 0;
 }
 
 .availability-card h4 {
@@ -349,10 +358,12 @@
 
 .availability-range-inputs input {
   width: 100%;
+  min-width: 0;
   border-radius: 10px;
   border: 1px solid rgba(121, 99, 72, 0.26);
   background: #fffdf8;
   padding: 0.42rem 0.55rem;
+  font-size: 0.84rem;
 }
 
 .availability-total-box {
@@ -417,9 +428,17 @@
 .owner-phone {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   color: var(--primary-color);
   font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.owner-phone svg {
+  flex-shrink: 0;
 }
 
 .owner-phone:hover {
@@ -482,6 +501,11 @@
 
   .booking-card {
     padding: 1rem;
+  }
+
+  .price-row {
+    flex-wrap: wrap;
+    row-gap: 0.2rem;
   }
 
   .availability-dates {

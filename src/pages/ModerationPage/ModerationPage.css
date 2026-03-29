@@ -43,6 +43,7 @@
   padding: 1rem;
   border: 1px solid rgba(121, 99, 72, 0.2);
   background: linear-gradient(180deg, #fffcf7, #f7efe3);
+  min-width: 0;
 }
 
 .moderation-image {
@@ -55,6 +56,8 @@
 .moderation-content h3 {
   color: #4f3f2d;
   margin-bottom: 0.3rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .moderation-meta {
@@ -78,11 +81,14 @@
 .moderation-owner {
   color: #665745;
   font-size: 0.84rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .moderation-actions {
   display: grid;
   gap: 0.45rem;
+  min-width: 0;
 }
 
 @media (max-width: 900px) {
@@ -99,5 +105,10 @@
   .moderation-actions {
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .moderation-actions .btn {
+    min-width: 0;
+    white-space: normal;
   }
 }
