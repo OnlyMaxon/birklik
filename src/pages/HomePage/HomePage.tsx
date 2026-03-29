@@ -11,6 +11,7 @@ const initialFilters: FilterState = {
   search: '',
   checkIn: '',
   checkOut: '',
+  guests: null,
   type: '',
   district: '',
   minPrice: null,
@@ -70,6 +71,7 @@ export const HomePage: React.FC = () => {
       search: filters.search,
       checkIn: filters.checkIn || undefined,
       checkOut: filters.checkOut || undefined,
+      guests: filters.guests || undefined,
       type: filters.type || undefined,
       district: filters.district || undefined,
       minPrice: filters.minPrice || undefined,
@@ -108,7 +110,9 @@ export const HomePage: React.FC = () => {
               onCitySelect={(city) => setFilters({ ...filters, city })}
               checkInValue={filters.checkIn}
               checkOutValue={filters.checkOut}
+              guestsValue={filters.guests}
               onDateChange={(checkIn, checkOut) => setFilters({ ...filters, checkIn, checkOut })}
+              onGuestsChange={(guests) => setFilters({ ...filters, guests })}
               onSearch={handleSearchSubmit}
             />
           </div>

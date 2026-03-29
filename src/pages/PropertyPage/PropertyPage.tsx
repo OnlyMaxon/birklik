@@ -5,7 +5,7 @@ import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById } from '../../services'
-import { Property, LocalizedText } from '../../types'
+import { Language, Property } from '../../types'
 import './PropertyPage.css'
 
 interface CalendarCell {
@@ -66,7 +66,7 @@ export const PropertyPage: React.FC = () => {
     loadProperty()
   }, [id])
 
-  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
+  const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const formatDate = (value?: string) => {
     if (!value) return '-'
@@ -302,7 +302,6 @@ export const PropertyPage: React.FC = () => {
                   </div>
                 </div>
 
-
                 <div className="owner-info owner-info-priority">
                   <h4>{t.property.contact}</h4>
                   <p className="owner-name">{property.owner.name}</p>
@@ -356,6 +355,7 @@ export const PropertyPage: React.FC = () => {
                       <strong>{formatDate(property.unavailableTo)}</strong>
                     </div>
                   </div>
+
                   <div className="availability-user-range">
                     <div className="availability-range-inputs">
                       <div>
@@ -398,7 +398,6 @@ export const PropertyPage: React.FC = () => {
           </div>
         </div>
       </div>
-
     </Layout>
   )
 }

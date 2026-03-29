@@ -72,8 +72,6 @@ export interface User {
 
 export interface FilterState {
   search: string
-  checkIn: string
-  checkOut: string
   minPrice: number | null
   maxPrice: number | null
   rooms: number | null
@@ -85,4 +83,7 @@ export interface FilterState {
   city: string
   locationCategory: LocationCategory
   locationTags: string[]
+  checkIn: string
+  checkOut: string
+  guests: number | null
 }

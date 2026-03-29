@@ -5,7 +5,7 @@ import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
 import { approveProperty, getPendingProperties } from '../../services'
 import { MODERATOR_EMAIL } from '../../config/constants'
-import { Property } from '../../types'
+import { Language, Property } from '../../types'
 import './ModerationPage.css'
 
 export const ModerationPage: React.FC = () => {
@@ -38,7 +38,7 @@ export const ModerationPage: React.FC = () => {
 
     const ok = await approveProperty(id)
     if (!ok) {
-      setError(language === 'en' ? 'Could not approve listing.' : 'Elanı təsdiqləmək mümkün olmadı.')
+      setError(language === 'en' ? 'Could not approve listing.' : language === 'ru' ? 'Не удалось одобрить объявление.' : 'Elanı təsdiqləmək mümkün olmadı.')
       setIsApprovingId(null)
       return
     }
@@ -47,15 +47,15 @@ export const ModerationPage: React.FC = () => {
     setIsApprovingId(null)
   }
 
-  const getLocalizedText = (text: { az: string; en: string; ru?: string }) => text[language] || text.az || text.en
+  const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   return (
     <Layout>
       <section className="moderation-page">
         <div className="container moderation-container">
           <div className="moderation-header">
-            <h1>{language === 'en' ? 'Listing moderation' : 'Elan moderasiyası'}</h1>
-            <p>{language === 'en' ? 'Standard and Premium forms arrive here for approval.' : 'Standart və Premium elan formaları təsdiq üçün buraya gəlir.'}</p>
+            <h1>{language === 'en' ? 'Listing moderation' : language === 'ru' ? 'Модерация объявлений' : 'Elan moderasiyası'}</h1>
+            <p>{language === 'en' ? 'All listing forms arrive here for approval.' : language === 'ru' ? 'Все объявления поступают сюда на модерацию.' : 'Bütün elan formaları təsdiq üçün buraya gəlir.'}</p>
           </div>
 
           {error && <div className="error-message">{error}</div>}
@@ -64,7 +64,7 @@ export const ModerationPage: React.FC = () => {
             <Loading message={t.messages.loading} />
           ) : pendingListings.length === 0 ? (
             <div className="moderation-empty card">
-              <p>{language === 'en' ? 'No pending listings right now.' : 'Hazırda gözləyən elan yoxdur.'}</p>
+              <p>{language === 'en' ? 'No pending listings right now.' : language === 'ru' ? 'Сейчас нет объявлений в ожидании.' : 'Hazırda gözləyən elan yoxdur.'}</p>
               <Link to="/dashboard" className="btn btn-outline">{t.nav.dashboard}</Link>
             </div>
           ) : (
@@ -78,16 +78,16 @@ export const ModerationPage: React.FC = () => {
                     <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {t.districts[listing.district]}</p>
                     <p className="moderation-description">{getLocalizedText(listing.description)}</p>
                     <p className="moderation-owner">
-                      <strong>{language === 'en' ? 'Owner:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
+                      <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
                     </p>
                     <p className="moderation-owner">
-                      <strong>{language === 'en' ? 'Plan:' : 'Paket:'}</strong> {(listing.listingTier || 'standard').toUpperCase()}
+                      <strong>{language === 'en' ? 'Plan:' : language === 'ru' ? 'Тариф:' : 'Paket:'}</strong> {(listing.listingTier || 'standard').toUpperCase()}
                     </p>
                   </div>
 
                   <div className="moderation-actions">
                     <Link to={`/property/${listing.id}`} className="btn btn-ghost btn-sm">
-                      {language === 'en' ? 'Preview' : 'Önizləmə'}
+                      {language === 'en' ? 'Preview' : language === 'ru' ? 'Предпросмотр' : 'Önizləmə'}
                     </Link>
                     <button
                       type="button"
@@ -97,7 +97,7 @@ export const ModerationPage: React.FC = () => {
                     >
                       {isApprovingId === listing.id
                         ? t.messages.loading
-                        : (language === 'en' ? 'Approve publication' : 'Yayıma icazə ver')}
+                        : (language === 'en' ? 'Approve publication' : language === 'ru' ? 'Одобрить публикацию' : 'Yayıma icazə ver')}
                     </button>
                   </div>
                 </article>

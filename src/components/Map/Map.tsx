@@ -2,7 +2,7 @@ import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { useLanguage } from '../../context'
-import { Property, LocalizedText } from '../../types'
+import { Property, Language } from '../../types'
 import 'leaflet/dist/leaflet.css'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -32,7 +32,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
 }) => {
   const { language, t } = useLanguage()
 
-  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
+  const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const mapActionLabels = {
     google: language === 'en' ? 'Open in Google Maps' : language === 'ru' ? 'Открыть в Google Maps' : 'Google Maps-də aç',

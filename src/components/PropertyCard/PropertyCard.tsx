@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
-import { Property, LocalizedText } from '../../types'
+import { Property, Language } from '../../types'
 import './PropertyCard.css'
 
 interface PropertyCardProps {
@@ -11,7 +11,7 @@ interface PropertyCardProps {
 export const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const { language, t } = useLanguage()
 
-  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
+  const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   return (
     <Link to={`/property/${property.id}`} className="property-card card">

@@ -6,7 +6,7 @@ import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
 import { MODERATOR_EMAIL } from '../../config/constants'
-import { PropertyType, District, Amenity, Property, ListingTier, LocationCategory, LocalizedText } from '../../types'
+import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
@@ -30,10 +30,10 @@ const isOccupationExpired = (property: Property): boolean => {
   return property.unavailableTo < getTodayISO()
 }
 
-const locationTabs: { key: LocationCategory; az: string; en: string }[] = [
-  { key: 'rayon', az: 'Rayon', en: 'District' },
-  { key: 'metro', az: 'Metro', en: 'Metro' },
-  { key: 'landmark', az: 'Nişangah', en: 'Landmark' }
+const locationTabs: { key: LocationCategory; az: string; en: string; ru: string }[] = [
+  { key: 'rayon', az: 'Rayon', en: 'District', ru: 'Район' },
+  { key: 'metro', az: 'Metro', en: 'Metro', ru: 'Метро' },
+  { key: 'landmark', az: 'Nişangah', en: 'Landmark', ru: 'Ориентир' }
 ]
 
 const isTestListing = (listing: Property): boolean => {
@@ -117,8 +117,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const isTestAccount = user?.email === MODERATOR_EMAIL
   const isEnglish = language === 'en'
+  const isRussian = language === 'ru'
   const savedMessage = language === 'en'
     ? 'Listing saved successfully'
+    : language === 'ru'
+      ? 'Объявление успешно сохранено'
     : 'Elan uğurla yadda saxlanıldı'
 
   const cityOptions = [
@@ -162,7 +165,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
   }, [isAuthenticated, navigate])
 
-  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
+  const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const loadListings = React.useCallback(async () => {
     if (!user) return
@@ -287,7 +290,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const handleSearchLocation = async () => {
     const query = locationSearch.trim() || newListing.address.trim()
     if (!query) {
-      setLocationSearchError(language === 'en' ? 'Enter address for search.' : 'Axtarış üçün ünvan daxil edin.')
+      setLocationSearchError(language === 'en' ? 'Enter address for search.' : language === 'ru' ? 'Введите адрес для поиска.' : 'Axtarış üçün ünvan daxil edin.')
       return
     }
 
@@ -298,7 +301,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(`${query}, Azerbaijan`)}`
       const response = await fetch(url, {
         headers: {
-          'Accept-Language': language === 'en' ? 'en' : 'az'
+          'Accept-Language': language === 'en' ? 'en' : language === 'ru' ? 'ru' : 'az'
         }
       })
 
@@ -309,7 +312,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const results = (await response.json()) as GeocodeResult[]
 
       if (!results.length) {
-        setLocationSearchError(language === 'en' ? 'Address not found. Try a more specific address.' : 'Ünvan tapılmadı. Daha dəqiq ünvan yazın.')
+        setLocationSearchError(language === 'en' ? 'Address not found. Try a more specific address.' : language === 'ru' ? 'Адрес не найден. Укажите более точный адрес.' : 'Ünvan tapılmadı. Daha dəqiq ünvan yazın.')
         return
       }
 
@@ -317,7 +320,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const lng = Number(results[0].lon)
 
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        setLocationSearchError(language === 'en' ? 'Invalid coordinates received.' : 'Koordinatlar düzgün alınmadı.')
+        setLocationSearchError(language === 'en' ? 'Invalid coordinates received.' : language === 'ru' ? 'Получены некорректные координаты.' : 'Koordinatlar düzgün alınmadı.')
         return
       }
 
@@ -326,7 +329,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         lng: Number(lng.toFixed(6))
       })
     } catch (searchError) {
-      setLocationSearchError(language === 'en' ? 'Location search failed. Try again.' : 'Ünvan axtarışı uğursuz oldu. Yenidən cəhd edin.')
+      setLocationSearchError(language === 'en' ? 'Location search failed. Try again.' : language === 'ru' ? 'Поиск локации не удался. Попробуйте снова.' : 'Ünvan axtarışı uğursuz oldu. Yenidən cəhd edin.')
     } finally {
       setIsSearchingLocation(false)
     }
@@ -544,7 +547,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     e.preventDefault()
 
     if (!profileName.trim()) {
-      setProfileError(language === 'en' ? 'Full name is required.' : 'Ad və soyad tələb olunur.')
+      setProfileError(language === 'en' ? 'Full name is required.' : language === 'ru' ? 'Требуются имя и фамилия.' : 'Ad və soyad tələb olunur.')
       setProfileMessage('')
       return
     }
@@ -561,12 +564,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
 
     if (!result.success) {
-      setProfileError(language === 'en' ? 'Failed to update profile.' : 'Profil yenilənmədi.')
+      setProfileError(language === 'en' ? 'Failed to update profile.' : language === 'ru' ? 'Не удалось обновить профиль.' : 'Profil yenilənmədi.')
       setIsSavingProfile(false)
       return
     }
 
-    setProfileMessage(language === 'en' ? 'Profile updated successfully.' : 'Profil uğurla yeniləndi.')
+    setProfileMessage(language === 'en' ? 'Profile updated successfully.' : language === 'ru' ? 'Профиль успешно обновлен.' : 'Profil uğurla yeniləndi.')
     setProfileAvatarFile(null)
     setIsSavingProfile(false)
   }
@@ -604,12 +607,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     if (!busyListingId) return
 
     if (!busyFrom || !busyTo) {
-      setError(language === 'en' ? 'Select both start and end dates.' : 'Başlama və bitmə tarixlərini seçin.')
+      setError(language === 'en' ? 'Select both start and end dates.' : language === 'ru' ? 'Выберите даты начала и конца.' : 'Başlama və bitmə tarixlərini seçin.')
       return
     }
 
     if (busyFrom > busyTo) {
-      setError(language === 'en' ? 'Start date must be before end date.' : 'Başlama tarixi bitmə tarixindən böyük ola bilməz.')
+      setError(language === 'en' ? 'Start date must be before end date.' : language === 'ru' ? 'Дата начала должна быть раньше даты окончания.' : 'Başlama tarixi bitmə tarixindən böyük ola bilməz.')
       return
     }
 
@@ -1140,14 +1143,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         </div>
 
                         <div className="form-group">
-                          <label>{language === 'en' ? 'City' : 'Şəhər'} *</label>
+                          <label>{language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *</label>
                           <select
                             value={newListing.city}
                             onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
                             required
                           >
                             {cityOptions.map((city) => (
-                              <option key={city.value} value={city.value}>{language === 'en' ? city.en : city.az}</option>
+                              <option key={city.value} value={city.value}>{language === 'en' ? city.en : language === 'ru' ? city.en : city.az}</option>
                             ))}
                           </select>
                         </div>
@@ -1171,7 +1174,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               type="text"
                               value={locationSearch}
                               onChange={(e) => setLocationSearch(e.target.value)}
-                              placeholder={language === 'en' ? 'Search address (e.g. Mardakan, Baku)' : 'Ünvan axtarın (məs: Mərdəkan, Bakı)'}
+                              placeholder={language === 'en' ? 'Search address (e.g. Mardakan, Baku)' : language === 'ru' ? 'Поиск адреса (напр.: Mardakan, Baku)' : 'Ünvan axtarın (məs: Mərdəkan, Bakı)'}
                             />
                             <button
                               type="button"
@@ -1179,7 +1182,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               onClick={handleSearchLocation}
                               disabled={isSearchingLocation}
                             >
-                              {isSearchingLocation ? t.messages.loading : (language === 'en' ? 'Find on map' : 'Xəritədə tap')}
+                              {isSearchingLocation ? t.messages.loading : (language === 'en' ? 'Find on map' : language === 'ru' ? 'Найти на карте' : 'Xəritədə tap')}
                             </button>
                           </div>
                           {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
@@ -1280,10 +1283,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'More' : 'Əlavə'} <span className="dashboard-count-pill">{newListing.extraFeatures.length}</span></label>
+                            <label>{language === 'en' ? 'More' : language === 'ru' ? 'Дополнительно' : 'Əlavə'} <span className="dashboard-count-pill">{newListing.extraFeatures.length}</span></label>
                             {newListing.extraFeatures.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('extraFeatures')}>
-                                {language === 'en' ? 'Clear' : 'Təmizlə'}
+                                {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
                               </button>
                             )}
                           </div>
@@ -1315,10 +1318,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'Near' : 'Yaxında'} <span className="dashboard-count-pill">{newListing.nearbyPlaces.length}</span></label>
+                            <label>{language === 'en' ? 'Near' : language === 'ru' ? 'Рядом' : 'Yaxında'} <span className="dashboard-count-pill">{newListing.nearbyPlaces.length}</span></label>
                             {newListing.nearbyPlaces.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('nearbyPlaces')}>
-                                {language === 'en' ? 'Clear' : 'Təmizlə'}
+                                {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
                               </button>
                             )}
                           </div>
@@ -1348,7 +1351,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </div>
                         </div>
 
-                        {newListing.city === 'Baku' && (
                         <div className="form-group full-width location-tags-section">
                           <div className="dashboard-section-head">
                             <label>{language === 'en' ? 'City locations' : language === 'ru' ? 'Локации по городу' : 'Şəhərdaxili lokasiya seçimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
@@ -1371,7 +1373,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             </select>
                             <input
                               type="search"
-                              placeholder={language === 'en' ? 'Search district, metro, landmark' : 'Rayon, metro, nişangah axtarın'}
+                              placeholder={language === 'en' ? 'Search district, metro, landmark' : language === 'ru' ? 'Поиск по району, метро, ориентиру' : 'Rayon, metro, nişangah axtarın'}
                               value={locationTagsSearch}
                               onChange={(e) => setLocationTagsSearch(e.target.value)}
                             />
@@ -1385,7 +1387,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 className={`city-tab ${newListing.locationCategory === tab.key ? 'active' : ''}`}
                                 onClick={() => handleLocationCategoryChange(tab.key)}
                               >
-                                {language === 'en' ? tab.en : tab.az}
+                                {language === 'en' ? tab.en : isRussian ? tab.ru : tab.az}
                               </button>
                             ))}
                           </div>
@@ -1401,11 +1403,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 <span>{getLocalizedOptionLabel(option)}</span>
                               </label>
                             )) : (
-                              <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : 'Lokasiya tapılmadı.'}</p>
+                              <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : language === 'ru' ? 'Локации не найдены.' : 'Lokasiya tapılmadı.'}</p>
                             )}
                           </div>
                         </div>
-                        )}
 
                         <div className="form-group full-width">
                           <label>{t.form.photos}</label>
@@ -1416,8 +1417,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>{newListing.listingTier === 'free' ? 'Maksimum 4 şəkil (Pulsuz paket)' : (language === 'en' ? 'Drag & drop or click to upload' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
-                            {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : 'fayl seçildi'}</p>}
+                            <p>{newListing.listingTier === 'free' ? (language === 'ru' ? 'Максимум 4 фото (Бесплатный тариф)' : 'Maksimum 4 şəkil (Pulsuz paket)') : (language === 'en' ? 'Drag & drop or click to upload' : language === 'ru' ? 'Перетащите файлы или нажмите для загрузки' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
+                            {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : language === 'ru' ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>}
                           </div>
                           {selectedFilePreviews.length > 0 && (
                             <div className="upload-preview-grid">
@@ -1433,7 +1434,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                         <div className="form-group full-width" style={{ backgroundColor: 'rgba(183, 146, 93, 0.14)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #b7925d' }}>
                           <p style={{ margin: 0, fontSize: '0.9rem', color: '#5e4830', lineHeight: '1.5' }}>
-                            <strong>{isEnglish ? 'Note:' : 'Qeyd:'}</strong>{' '}
+                            <strong>{isEnglish ? 'Note:' : isRussian ? 'Примечание:' : 'Qeyd:'}</strong>{' '}
                             {isEnglish
                               ? 'All listings, including Free plan, are sent to moderation and published after approval.'
                               : language === 'ru'
@@ -1478,10 +1479,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
                     <form className="profile-form" onSubmit={handleSaveProfile}>
                       <div className="form-group">
-                        <label>{language === 'en' ? 'Profile Photo' : 'Profil şəkli'}</label>
+                        <label>{language === 'en' ? 'Profile Photo' : language === 'ru' ? 'Фото профиля' : 'Profil şəkli'}</label>
                         <div className="profile-photo-upload-row">
                           <label className="btn btn-ghost btn-sm profile-photo-btn">
-                            {language === 'en' ? 'Choose photo' : 'Şəkil seç'}
+                            {language === 'en' ? 'Choose photo' : language === 'ru' ? 'Выбрать фото' : 'Şəkil seç'}
                             <input
                               type="file"
                               accept="image/*"
@@ -1498,7 +1499,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 setProfileAvatarFile(null)
                               }}
                             >
-                              {language === 'en' ? 'Remove' : 'Sil'}
+                              {language === 'en' ? 'Remove' : language === 'ru' ? 'Удалить' : 'Sil'}
                             </button>
                           )}
                         </div>
@@ -1558,7 +1559,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       {busyListingId && (
         <div className="availability-modal-overlay" onClick={handleCloseBusyModal}>
           <div className="availability-modal card" onClick={(e) => e.stopPropagation()}>
-            <h3>{language === 'en' ? 'Mark as occupied' : 'Məşğul tarixlərini seçin'}</h3>
+                  <h3>{language === 'en' ? 'Mark as occupied' : language === 'ru' ? 'Отметить как занятое' : 'Məşğul tarixlərini seçin'}</h3>
             <p>
               {language === 'en'
                 ? 'This listing will be hidden from homepage until selected end date.'
@@ -1567,11 +1568,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
             <div className="availability-grid">
               <div className="form-group">
-                <label>{language === 'en' ? 'From' : 'Başlama tarixi'}</label>
+                      <label>{language === 'en' ? 'From' : language === 'ru' ? 'С' : 'Başlama tarixi'}</label>
                 <input type="date" value={busyFrom} onChange={(e) => setBusyFrom(e.target.value)} />
               </div>
               <div className="form-group">
-                <label>{language === 'en' ? 'To' : 'Bitmə tarixi'}</label>
+                      <label>{language === 'en' ? 'To' : language === 'ru' ? 'По' : 'Bitmə tarixi'}</label>
                 <input type="date" value={busyTo} min={busyFrom || undefined} onChange={(e) => setBusyTo(e.target.value)} />
               </div>
             </div>
@@ -1581,7 +1582,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                 {t.form.cancel}
               </button>
               <button type="button" className="btn btn-accent" onClick={handleSetInactiveWithDates} disabled={isSavingAvailability}>
-                {isSavingAvailability ? t.messages.loading : (language === 'en' ? 'Set non active' : 'Qeyri-aktiv et')}
+                        {isSavingAvailability ? t.messages.loading : (language === 'en' ? 'Set non active' : language === 'ru' ? 'Сделать неактивным' : 'Qeyri-aktiv et')}
               </button>
             </div>
           </div>

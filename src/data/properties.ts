@@ -384,7 +384,8 @@ const includesAny = (values: string[] | undefined, selected: string[]): boolean 
 export const getOptionLabel = (options: FilterOption[], key: string, language: 'az' | 'en' | 'ru'): string => {
   const option = options.find((entry) => entry.key === key)
   if (!option) return key
-  return language === 'en' ? option.en : option.az
+  if (language === 'en') return option.en
+  return option.az
 }
 
 // Filter properties based on various criteria
@@ -394,6 +395,7 @@ export const filterProperties = (
     search?: string
     checkIn?: string
     checkOut?: string
+    guests?: number
     type?: PropertyType | ''
     district?: District | ''
     minPrice?: number
@@ -407,8 +409,6 @@ export const filterProperties = (
     locationTags?: string[]
   }
 ): Property[] => {
-  const todayISO = new Date().toISOString().split('T')[0]
-
   const intersectsRange = (
     rangeStart: string,
     rangeEnd: string,
@@ -422,7 +422,7 @@ export const filterProperties = (
     const busyFrom = property.unavailableFrom
     const busyTo = property.unavailableTo
 
-    if (!busyFrom || !busyTo || property.isActive !== false) {
+    if (!busyFrom || !busyTo) {
       return false
     }
 
@@ -434,7 +434,7 @@ export const filterProperties = (
       return filters.checkIn >= busyFrom && filters.checkIn <= busyTo
     }
 
-    return busyTo >= todayISO
+    return false
   }
 
   const amenityAliases: Record<Amenity, string[]> = {
@@ -480,6 +480,9 @@ export const filterProperties = (
 
     // Rooms filter
     if (filters.rooms && property.rooms !== filters.rooms) return false
+
+    // Guests filter (uses rooms as a simple capacity proxy)
+    if (filters.guests && property.rooms < filters.guests) return false
 
     // Pool filter
     if (filters.hasPool === true && !property.amenities.includes('pool')) return false

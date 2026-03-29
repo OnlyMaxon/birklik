@@ -299,7 +299,7 @@
 }
 
 .availability-day.busy {
-  background: linear-gradient(165deg, rgba(214, 177, 125, 0.34), rgba(168, 121, 64, 0.25));
+  background: linear-gradient(165deg, rgba(255, 183, 3, 0.3), rgba(244, 111, 66, 0.28));
   border-color: rgba(196, 108, 20, 0.28);
   color: #7c3e11;
   font-weight: 700;
@@ -488,6 +488,9 @@
     grid-template-columns: 1fr;
   }
 
+  .availability-range-inputs {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 390px) {

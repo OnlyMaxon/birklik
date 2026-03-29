@@ -62,6 +62,14 @@
   gap: 0.5rem;
 }
 
+.city-inline-filter {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(121, 99, 72, 0.2);
+  border-radius: 12px;
+  padding: 0.72rem;
+  background: rgba(255, 252, 246, 0.84);
+}
+
 .filter-group label {
   font-weight: 700;
   color: #5a4a38;
@@ -137,14 +145,6 @@
   margin-top: 0.9rem;
   display: flex;
   justify-content: flex-start;
-}
-
-.filters-location-inline {
-  margin-top: 0.95rem;
-  border: 1px solid rgba(121, 99, 72, 0.2);
-  border-radius: 14px;
-  padding: 0.9rem;
-  background: rgba(255, 252, 246, 0.82);
 }
 
 .filters-extended {
