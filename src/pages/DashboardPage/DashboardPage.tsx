@@ -984,11 +984,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               className="listing-image"
                             />
                             <div className="listing-info">
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
                                 <Link to={`/property/${property.id}`} className="listing-title">
                                   {getLocalizedText(property.title)}
                                 </Link>
-                                <span className={`badge ${isPendingModeration ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                <span className={`badge ${isPendingModeration ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', whiteSpace: 'normal', flexShrink: 1, maxWidth: '100%' }}>
                                   {statusLabel}
                                 </span>
                               </div>

@@ -205,6 +205,74 @@
   }
 }
 
+@media (max-width: 900px) {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .container,
+  .section,
+  .dashboard-content,
+  .tab-content,
+  .listing-item,
+  .moderation-item,
+  .property-layout,
+  .dashboard-layout,
+  .listing-info,
+  .listing-actions,
+  .action-buttons,
+  .form-grid,
+  .availability-grid {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .listing-item,
+  .moderation-item,
+  .property-card,
+  .filters-panel,
+  .add-listing-form,
+  .profile-card {
+    overflow: hidden;
+  }
+
+  .action-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .action-buttons .btn,
+  .listing-actions .btn,
+  .moderation-actions .btn {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .listing-title,
+  .listing-location,
+  .moderation-content h3,
+  .moderation-description {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  img,
+  video,
+  canvas,
+  iframe,
+  svg,
+  table,
+  pre {
+    max-width: 100%;
+  }
+}
+
 /* iPhone Google/Chrome shell safe mode */
 .ios-google body {
   background: #edf4ff;
