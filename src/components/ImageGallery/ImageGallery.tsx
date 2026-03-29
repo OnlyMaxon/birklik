@@ -9,6 +9,9 @@ interface ImageGalleryProps {
 export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
   const [selectedIndex, setSelectedIndex] = React.useState(0)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
+  const swipeStartX = React.useRef<number | null>(null)
+  const swipeCurrentX = React.useRef<number | null>(null)
+  const didSwipe = React.useRef(false)
 
   const goToPrevious = () => {
     setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
@@ -16,6 +19,46 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
 
   const goToNext = () => {
     setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+  }
+
+  const handleSwipeStart = (e: React.TouchEvent) => {
+    swipeStartX.current = e.touches[0].clientX
+    swipeCurrentX.current = e.touches[0].clientX
+    didSwipe.current = false
+  }
+
+  const handleSwipeMove = (e: React.TouchEvent) => {
+    swipeCurrentX.current = e.touches[0].clientX
+  }
+
+  const handleSwipeEnd = () => {
+    if (swipeStartX.current == null || swipeCurrentX.current == null) return
+
+    const deltaX = swipeCurrentX.current - swipeStartX.current
+    const swipeThreshold = 45
+
+    if (Math.abs(deltaX) >= swipeThreshold) {
+      didSwipe.current = true
+      if (deltaX > 0) {
+        goToPrevious()
+      } else {
+        goToNext()
+      }
+    }
+
+    swipeStartX.current = null
+    swipeCurrentX.current = null
+  }
+
+  const handleMainClick = () => {
+    if (didSwipe.current) {
+      window.setTimeout(() => {
+        didSwipe.current = false
+      }, 0)
+      return
+    }
+
+    setIsModalOpen(true)
   }
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -33,7 +76,13 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
   return (
     <>
       <div className="gallery">
-        <div className="gallery-main" onClick={() => setIsModalOpen(true)}>
+        <div
+          className="gallery-main"
+          onClick={handleMainClick}
+          onTouchStart={handleSwipeStart}
+          onTouchMove={handleSwipeMove}
+          onTouchEnd={handleSwipeEnd}
+        >
           <img src={images[selectedIndex]} alt={`${alt} - Main`} />
           <div className="gallery-zoom-hint">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -60,7 +109,13 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
 
       {isModalOpen && (
         <div className="gallery-modal" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={handleSwipeStart}
+            onTouchMove={handleSwipeMove}
+            onTouchEnd={handleSwipeEnd}
+          >
             <button className="modal-close" onClick={() => setIsModalOpen(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6 6 18"/>

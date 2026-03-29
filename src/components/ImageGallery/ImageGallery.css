@@ -10,6 +10,7 @@
   border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
+  touch-action: pan-y;
   border: 1px solid rgba(16, 66, 136, 0.12);
   box-shadow: 0 14px 30px rgba(8, 31, 78, 0.14);
 }
@@ -95,6 +96,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: pan-y;
 }
 
 .modal-image {
