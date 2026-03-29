@@ -138,7 +138,17 @@
   }
 
   .search-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-field-destination,
+  .search-field-guests {
+    grid-column: 1 / -1;
+  }
+
+  .search-suggestions {
+    max-height: 220px;
+    overflow-y: auto;
   }
 
   .search-input {
@@ -150,6 +160,12 @@
 
   .search-icon {
     left: 0.9rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .search-grid {
+    grid-template-columns: 1fr;
   }
 }
 
