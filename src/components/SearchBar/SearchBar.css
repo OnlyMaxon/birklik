@@ -109,6 +109,44 @@
   padding-left: 0.85rem;
 }
 
+.search-date-shell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.search-date-native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.search-date-display {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  width: 100%;
+  border: 1px solid rgba(205, 186, 154, 0.5);
+  border-radius: 12px;
+  background: #fffcf7;
+  color: #8f8578;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.72rem 0.8rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-date-display.filled {
+  color: #2f2a24;
+}
+
 .search-field-date .search-input {
   font-size: 0.9rem;
   letter-spacing: 0;
@@ -198,6 +236,12 @@
     padding-right: 0.45rem;
     padding-left: 0.55rem;
   }
+
+  .search-date-display {
+    min-height: 44px;
+    font-size: 0.84rem;
+    padding: 0.62rem 0.58rem;
+  }
 }
 
 @media (max-width: 640px) {
@@ -246,6 +290,13 @@
     padding: 0.64rem 0.36rem;
   }
 
+  .search-date-display {
+    min-height: 42px;
+    font-size: 0.8rem;
+    padding: 0.58rem 0.52rem;
+    border-radius: 10px;
+  }
+
   .search-icon {
     left: 0.9rem;
   }
@@ -258,6 +309,10 @@
 
   .search-input {
     font-size: 0.9rem;
+  }
+
+  .search-date-display {
+    font-size: 0.78rem;
   }
 
   .search-grid {

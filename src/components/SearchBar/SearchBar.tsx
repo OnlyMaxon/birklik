@@ -89,6 +89,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     onGuestsChange?.(Number(nextGuests))
   }
 
+  const formatSelectedDate = (dateValue: string) => {
+    if (!dateValue) {
+      return isEnglish ? 'Select date' : isRussian ? 'Выберите дату' : 'Tarix seçin'
+    }
+
+    const date = new Date(dateValue)
+    if (Number.isNaN(date.getTime())) return dateValue
+
+    return date.toLocaleDateString(language === 'ru' ? 'ru-RU' : language === 'en' ? 'en-GB' : 'az-AZ', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+
   const handlePickCity = (city: typeof CITY_SUGGESTIONS[number]) => {
     onChange(getCityLabel(city))
     onCitySelect?.(city.value)
@@ -151,23 +166,35 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
         <div className="search-field search-field-date">
           <label>{isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş tarixi'}</label>
-          <input
-            type="date"
-            className="search-input"
-            value={checkIn}
-            onChange={(e) => handleCheckInChange(e.target.value)}
-          />
+          <div className="search-date-shell">
+            <input
+              type="date"
+              className="search-date-native"
+              value={checkIn}
+              onChange={(e) => handleCheckInChange(e.target.value)}
+              aria-label={isEnglish ? 'Check-in date' : isRussian ? 'Дата заезда' : 'Giriş tarixi'}
+            />
+            <span className={`search-date-display ${checkIn ? 'filled' : ''}`}>
+              {formatSelectedDate(checkIn)}
+            </span>
+          </div>
         </div>
 
         <div className="search-field search-field-date">
           <label>{isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış tarixi'}</label>
-          <input
-            type="date"
-            className="search-input"
-            value={checkOut}
-            min={checkIn || undefined}
-            onChange={(e) => handleCheckOutChange(e.target.value)}
-          />
+          <div className="search-date-shell">
+            <input
+              type="date"
+              className="search-date-native"
+              value={checkOut}
+              min={checkIn || undefined}
+              onChange={(e) => handleCheckOutChange(e.target.value)}
+              aria-label={isEnglish ? 'Check-out date' : isRussian ? 'Дата выезда' : 'Çıxış tarixi'}
+            />
+            <span className={`search-date-display ${checkOut ? 'filled' : ''}`}>
+              {formatSelectedDate(checkOut)}
+            </span>
+          </div>
         </div>
 
         <div className="search-field">
