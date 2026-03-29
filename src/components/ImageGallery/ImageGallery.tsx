@@ -12,6 +12,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
   const swipeStartX = React.useRef<number | null>(null)
   const swipeCurrentX = React.useRef<number | null>(null)
   const didSwipe = React.useRef(false)
+  const isPointerDown = React.useRef(false)
 
   const goToPrevious = () => {
     setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
@@ -50,6 +51,24 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
     swipeCurrentX.current = null
   }
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    isPointerDown.current = true
+    swipeStartX.current = e.clientX
+    swipeCurrentX.current = e.clientX
+    didSwipe.current = false
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isPointerDown.current) return
+    swipeCurrentX.current = e.clientX
+  }
+
+  const handlePointerUp = () => {
+    if (!isPointerDown.current) return
+    isPointerDown.current = false
+    handleSwipeEnd()
+  }
+
   const handleMainClick = () => {
     if (didSwipe.current) {
       window.setTimeout(() => {
@@ -82,8 +101,38 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
           onTouchStart={handleSwipeStart}
           onTouchMove={handleSwipeMove}
           onTouchEnd={handleSwipeEnd}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           <img src={images[selectedIndex]} alt={`${alt} - Main`} />
+          <button
+            type="button"
+            className="gallery-main-nav gallery-main-prev"
+            onClick={(e) => {
+              e.stopPropagation()
+              goToPrevious()
+            }}
+            aria-label="Previous image"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="gallery-main-nav gallery-main-next"
+            onClick={(e) => {
+              e.stopPropagation()
+              goToNext()
+            }}
+            aria-label="Next image"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
           <div className="gallery-zoom-hint">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/>
@@ -115,6 +164,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
             onTouchStart={handleSwipeStart}
             onTouchMove={handleSwipeMove}
             onTouchEnd={handleSwipeEnd}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
           >
             <button className="modal-close" onClick={() => setIsModalOpen(false)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
