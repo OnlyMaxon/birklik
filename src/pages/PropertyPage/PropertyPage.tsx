@@ -127,18 +127,18 @@ export const PropertyPage: React.FC = () => {
       : ['B.e', 'Ç.a', 'Ç', 'C.a', 'C', 'Ş', 'B']
   const calendarCells = buildCalendarCells(calendarBaseDate)
   const oneDayMs = 24 * 60 * 60 * 1000
-  const selectedNights = React.useMemo(() => {
+  const selectedNights = (() => {
     if (!selectedCheckIn || !selectedCheckOut) return 0
     const start = new Date(selectedCheckIn)
     const end = new Date(selectedCheckOut)
     const diff = Math.ceil((end.getTime() - start.getTime()) / oneDayMs)
     return diff > 0 ? diff : 0
-  }, [selectedCheckIn, selectedCheckOut])
+  })()
   const selectedTotal = selectedNights * property.price.daily
-  const selectedRangeBusy = React.useMemo(() => {
+  const selectedRangeBusy = (() => {
     if (!selectedCheckIn || !selectedCheckOut || !property.unavailableFrom || !property.unavailableTo) return false
     return selectedCheckIn <= property.unavailableTo && selectedCheckOut >= property.unavailableFrom
-  }, [selectedCheckIn, selectedCheckOut, property.unavailableFrom, property.unavailableTo])
+  })()
   const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, language))
   const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, language))
   const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
