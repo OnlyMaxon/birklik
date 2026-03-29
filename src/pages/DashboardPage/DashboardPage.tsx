@@ -974,7 +974,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         const isPendingModeration = status === 'pending'
                         const statusLabel = isPendingModeration
                           ? (isEnglish ? 'Pending moderation' : isRussian ? 'На модерации' : 'Moderasiyada gözləyir')
-                          : (isCurrentlyActive ? (isEnglish ? 'Active' : isRussian ? 'Активен' : 'Aktiv') : (isEnglish ? 'Temporarily hidden' : isRussian ? 'Временно скрыт' : 'Müvəqqəti gizli'))
+                          : (isCurrentlyActive ? (isEnglish ? 'Active' : isRussian ? 'Активно' : 'Aktiv') : (isEnglish ? 'Temporarily hidden' : isRussian ? 'Временно скрыто' : 'Müvəqqəti gizli'))
 
                         return (
                           <div key={property.id} className="listing-item card">
@@ -999,20 +999,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
                               </p>
                               <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                                <strong>{isEnglish ? 'Status:' : isRussian ? 'Статус:' : 'Status:'}</strong> {statusLabel}
+                                <strong>Status:</strong> {statusLabel}
                               </p>
                               {!isPendingModeration && !isCurrentlyActive && property.unavailableFrom && property.unavailableTo && (
                                 <p style={{ fontSize: '0.84rem', color: '#8b5a10', marginTop: '0.15rem' }}>
-                                  <strong>{isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'}</strong> {property.unavailableFrom} - {property.unavailableTo}
+                                  <strong>Tarix:</strong> {property.unavailableFrom} - {property.unavailableTo}
                                 </p>
                               )}
                               {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (
                                 <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
-                                  {isEnglish
-                                    ? 'Press "Set active" to make listing visible again.'
-                                    : isRussian
-                                      ? 'Нажмите "Сделать активным", чтобы снова показывать объявление.'
-                                      : 'Yenidən aktiv etmək üçün "Aktiv et" düyməsini sıxın.'}
+                                  {isEnglish ? 'Click "Activate" to make it active again.' : isRussian ? 'Нажмите "Активировать" чтобы активировать снова.' : 'Yenidən aktiv etmək üçün "Aktiv et" düyməsini sıxın.'}
                                 </p>
                               )}
                             </div>
@@ -1020,11 +1016,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               <div className="action-buttons">
                                 {isPendingModeration ? null : isCurrentlyActive ? (
                                   <button className="btn btn-ghost btn-sm" onClick={() => handleOpenBusyModal(property)}>
-                                    {isEnglish ? 'Set inactive' : isRussian ? 'Сделать неактивным' : 'Qeyri-aktiv et'}
+                                    {isEnglish ? 'Hide' : isRussian ? 'Скрыть' : 'Qeyri-aktiv et'}
                                   </button>
                                 ) : (
                                   <button className="btn btn-accent btn-sm" onClick={() => handleSetActive(property.id)}>
-                                    {isEnglish ? 'Set active' : isRussian ? 'Сделать активным' : 'Aktiv et'}
+                                    {isEnglish ? 'Activate' : isRussian ? 'Активировать' : 'Aktiv et'}
                                   </button>
                                 )}
                                 <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>

@@ -147,7 +147,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
         </div>
 
-        <div className="search-field search-field-checkin">
+        <div className="search-field">
           <label>{isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş tarixi'}</label>
           <input
             type="date"
@@ -157,7 +157,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           />
         </div>
 
-        <div className="search-field search-field-checkout">
+        <div className="search-field">
           <label>{isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış tarixi'}</label>
           <input
             type="date"
@@ -168,7 +168,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           />
         </div>
 
-        <div className="search-field search-field-guests">
+        <div className="search-field">
           <label>{isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaq sayı'}</label>
           <select
             className="search-input"

@@ -138,34 +138,23 @@
   }
 
   .search-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem;
   }
 
-  .search-field-destination,
-  .search-field-guests {
+  .search-field-destination {
     grid-column: 1 / -1;
-  }
-
-  .search-suggestions {
-    max-height: 220px;
-    overflow-y: auto;
   }
 
   .search-input {
     font-size: 0.92rem;
-    min-height: 44px;
-    padding: 0.78rem 0.85rem 0.78rem 2.55rem;
-    border-radius: 12px;
+    min-height: 42px;
+    padding: 0.7rem 0.75rem 0.7rem 2.45rem;
+    border-radius: 10px;
   }
 
   .search-icon {
     left: 0.9rem;
-  }
-}
-
-@media (max-width: 430px) {
-  .search-grid {
-    grid-template-columns: 1fr;
   }
 }
 
