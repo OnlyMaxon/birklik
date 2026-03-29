@@ -191,7 +191,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <button type="submit" className="btn btn-accent search-submit-btn">
           {t.search.button}
         </button>
-        <button type="button" className="btn btn-ghost search-filters-btn" onClick={onFiltersOpen}>
+        <button type="button" className="btn btn-accent search-filters-btn" onClick={onFiltersOpen}>
           {t.search.filters}
         </button>
       </div>

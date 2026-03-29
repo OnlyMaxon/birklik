@@ -2,14 +2,14 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
-import { MODERATOR_EMAIL } from '../../config/constants'
+import { isModeratorEmail } from '../../config/constants'
 import './Header.css'
 
 export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage()
   const { isAuthenticated, user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = React.useState(false)
-  const isModerator = user?.email === MODERATOR_EMAIL
+  const isModerator = isModeratorEmail(user?.email)
 
   React.useEffect(() => {
     if (!menuOpen) {

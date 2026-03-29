@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
-import { MODERATOR_EMAIL } from '../../config/constants'
+import { isModeratorEmail } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
@@ -115,7 +115,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
 
-  const isTestAccount = user?.email === MODERATOR_EMAIL
+  const isTestAccount = isModeratorEmail(user?.email)
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
   const savedMessage = language === 'en'

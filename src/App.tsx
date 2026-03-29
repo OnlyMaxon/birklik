@@ -2,7 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Loading } from './components'
 import { useAuth } from './context'
-import { MODERATOR_EMAIL } from './config/constants'
+import { isModeratorEmail } from './config/constants'
 
 const HomePage = React.lazy(() => import('./pages/HomePage').then((mod) => ({ default: mod.HomePage })))
 const PropertyPage = React.lazy(() => import('./pages/PropertyPage').then((mod) => ({ default: mod.PropertyPage })))
@@ -52,7 +52,7 @@ const ModeratorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/login" replace />
   }
 
-  if (user?.email !== MODERATOR_EMAIL) {
+  if (!isModeratorEmail(user?.email)) {
     return <Navigate to="/dashboard" replace />
   }
 

@@ -4,7 +4,7 @@ import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
 import { approveProperty, getPendingProperties } from '../../services'
-import { MODERATOR_EMAIL } from '../../config/constants'
+import { isModeratorEmail } from '../../config/constants'
 import { Language, Property } from '../../types'
 import './ModerationPage.css'
 
@@ -28,7 +28,7 @@ export const ModerationPage: React.FC = () => {
     loadPendingListings()
   }, [loadPendingListings])
 
-  if (!isAuthenticated || user?.email !== MODERATOR_EMAIL) {
+  if (!isAuthenticated || !isModeratorEmail(user?.email)) {
     return <Navigate to="/dashboard" replace />
   }
 
