@@ -47,7 +47,7 @@ export const ModerationPage: React.FC = () => {
     setIsApprovingId(null)
   }
 
-  const getLocalizedText = (text: { az: string; en: string }) => text[language]
+  const getLocalizedText = (text: { az: string; en: string; ru?: string }) => text[language] || text.az || text.en
 
   return (
     <Layout>

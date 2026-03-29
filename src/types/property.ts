@@ -9,6 +9,7 @@ export type Amenity = 'pool' | 'parking' | 'wifi' | 'ac' | 'kitchen' | 'tv' | 'w
 export interface LocalizedText {
   az: string
   en: string
+  ru?: string
 }
 
 export interface PropertyPrice {
@@ -71,6 +72,8 @@ export interface User {
 
 export interface FilterState {
   search: string
+  checkIn: string
+  checkOut: string
   minPrice: number | null
   maxPrice: number | null
   rooms: number | null

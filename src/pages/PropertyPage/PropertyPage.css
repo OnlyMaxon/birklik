@@ -1,8 +1,8 @@
 .property-page {
   padding: 2rem 0;
   background:
-    radial-gradient(circle at 86% -8%, rgba(142, 202, 230, 0.2), transparent 30%),
-    linear-gradient(180deg, #f4f8ff 0%, #eaf1ff 100%);
+    radial-gradient(circle at 86% -8%, rgba(214, 177, 125, 0.18), transparent 30%),
+    linear-gradient(180deg, #faf6f0 0%, #f3ebe0 100%);
 }
 
 .breadcrumb {
@@ -37,16 +37,16 @@
 
 .property-info {
   padding: 1.6rem;
-  border: 1px solid rgba(16, 68, 140, 0.12);
+  border: 1px solid rgba(121, 99, 72, 0.2);
   border-radius: 20px;
-  background: linear-gradient(180deg, #fff, #f5f9ff);
-  box-shadow: 0 16px 34px rgba(9, 34, 82, 0.12);
+  background: linear-gradient(180deg, #fffefb, #f6eee3);
+  box-shadow: 0 16px 34px rgba(58, 43, 27, 0.12);
 }
 
 .property-title {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #173f77;
+  color: #342719;
   margin-bottom: 1rem;
 }
 
@@ -87,9 +87,9 @@
   gap: 1rem 1.4rem;
   flex-wrap: wrap;
   padding: 1.3rem;
-  background: linear-gradient(180deg, #f8fbff, #eef4ff);
+  background: linear-gradient(180deg, #fffaf3, #f4ebde);
   border-radius: 16px;
-  border: 1px solid rgba(18, 72, 146, 0.12);
+  border: 1px solid rgba(121, 99, 72, 0.18);
   margin-bottom: 1.5rem;
 }
 
@@ -122,7 +122,7 @@
 .property-section h3 {
   font-size: 1.125rem;
   font-weight: 800;
-  color: #1d59b8;
+  color: #6e5436;
   margin-bottom: 0.75rem;
 }
 
@@ -150,10 +150,10 @@
 }
 
 .extra-item {
-  border: 1px solid rgba(17, 66, 133, 0.12);
+  border: 1px solid rgba(121, 99, 72, 0.2);
   border-radius: 10px;
   padding: 0.3rem 0.55rem;
-  background: rgba(248, 251, 255, 0.85);
+  background: rgba(255, 252, 246, 0.9);
 }
 
 .property-city-line {
@@ -171,9 +171,9 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(17, 66, 133, 0.14);
-  background: rgba(31, 98, 199, 0.08);
-  color: #2d558d;
+  border: 1px solid rgba(121, 99, 72, 0.2);
+  background: rgba(183, 146, 93, 0.14);
+  color: #6e5436;
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0.25rem 0.58rem;
@@ -187,10 +187,10 @@
 
 .booking-card {
   padding: 1.4rem;
-  border: 1px solid rgba(16, 68, 140, 0.14);
+  border: 1px solid rgba(121, 99, 72, 0.2);
   border-radius: 20px;
-  background: linear-gradient(180deg, #ffffff, #f5f9ff);
-  box-shadow: 0 16px 34px rgba(9, 34, 82, 0.12);
+  background: linear-gradient(180deg, #fffefb, #f6eee3);
+  box-shadow: 0 16px 34px rgba(58, 43, 27, 0.12);
 }
 
 .price-section {
@@ -213,7 +213,7 @@
 .price-section .price-value {
   font-size: 1.125rem;
   font-weight: 800;
-  color: #1f62c7;
+  color: #6e5436;
 }
 
 .w-full {
@@ -229,13 +229,13 @@
   margin-top: 1rem;
   padding: 0.9rem;
   border-radius: 12px;
-  border: 1px solid rgba(17, 68, 140, 0.16);
-  background: linear-gradient(180deg, #f8fbff, #eef4ff);
+  border: 1px solid rgba(121, 99, 72, 0.2);
+  background: linear-gradient(180deg, #fffaf3, #f4ebde);
 }
 
 .availability-card h4 {
   font-size: 0.9rem;
-  color: #1c4a88;
+  color: #6e5436;
   margin-bottom: 0.4rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -257,7 +257,7 @@
 .availability-month {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #1f4f90;
+  color: #6e5436;
   margin-bottom: 0.35rem;
 }
 
@@ -270,7 +270,7 @@
 
 .availability-weekdays span {
   font-size: 0.68rem;
-  color: #6783ac;
+  color: #8c7a66;
   text-align: center;
   font-weight: 700;
 }
@@ -289,9 +289,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #284e83;
+  color: #5c4a36;
   background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(18, 70, 140, 0.08);
+  border: 1px solid rgba(121, 99, 72, 0.14);
 }
 
 .availability-day.outside {
@@ -299,7 +299,7 @@
 }
 
 .availability-day.busy {
-  background: linear-gradient(165deg, rgba(255, 183, 3, 0.3), rgba(244, 111, 66, 0.28));
+  background: linear-gradient(165deg, rgba(214, 177, 125, 0.34), rgba(168, 121, 64, 0.25));
   border-color: rgba(196, 108, 20, 0.28);
   color: #7c3e11;
   font-weight: 700;
@@ -314,18 +314,84 @@
 .availability-dates span {
   display: block;
   font-size: 0.74rem;
-  color: #5e79a1;
+  color: #8c7a66;
 }
 
 .availability-dates strong {
-  color: #173f77;
+  color: #342719;
   font-size: 0.88rem;
 }
 
 .availability-next {
   margin-top: 0.55rem;
-  color: #4a6288;
+  color: #6e5436;
   font-size: 0.82rem;
+}
+
+.availability-user-range {
+  margin-top: 0.7rem;
+  border-top: 1px dashed rgba(121, 99, 72, 0.28);
+  padding-top: 0.7rem;
+}
+
+.availability-range-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.availability-range-inputs span {
+  display: block;
+  font-size: 0.72rem;
+  color: #8c7a66;
+  margin-bottom: 0.2rem;
+}
+
+.availability-range-inputs input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(121, 99, 72, 0.26);
+  background: #fffdf8;
+  padding: 0.42rem 0.55rem;
+}
+
+.availability-total-box {
+  margin-top: 0.55rem;
+  border-radius: 10px;
+  border: 1px solid rgba(121, 99, 72, 0.25);
+  background: rgba(255, 251, 243, 0.9);
+  padding: 0.45rem 0.55rem;
+}
+
+.availability-total-box p {
+  margin: 0;
+  color: #6e5436;
+  font-size: 0.82rem;
+}
+
+.availability-total-box strong {
+  color: #342719;
+  font-size: 1rem;
+}
+
+.availability-range-warning {
+  margin-top: 0.45rem;
+  color: #99501b;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.owner-info-priority {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.owner-email {
+  margin-top: 0.4rem;
 }
 
 .owner-info {
@@ -358,131 +424,6 @@
 
 .owner-phone:hover {
   color: var(--accent-color);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(255, 183, 3, 0.26), transparent 34%),
-    radial-gradient(circle at 86% 14%, rgba(142, 202, 230, 0.22), transparent 34%),
-    rgba(6, 17, 39, 0.74);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  position: relative;
-  width: min(92vw, 440px);
-  max-width: 440px;
-  padding: 1.3rem 1.2rem 1.15rem;
-  max-height: 84vh;
-  overflow-y: auto;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  background:
-    radial-gradient(circle at 90% -10%, rgba(142, 202, 230, 0.22), transparent 36%),
-    linear-gradient(165deg, #ffffff 0%, #f3f8ff 100%);
-  box-shadow: 0 34px 64px rgba(6, 18, 45, 0.34);
-}
-
-.modal-content.card:hover {
-  transform: none;
-}
-
-.modal-header {
-  text-align: center;
-  margin-bottom: 0.95rem;
-  padding-top: 0.15rem;
-}
-
-.modal-title {
-  font-family: var(--font-display);
-  font-size: 1.34rem;
-  font-weight: 800;
-  color: #173f77;
-  margin: 0;
-}
-
-.modal-subtitle {
-  margin: 0.35rem 0 0;
-  color: #4e6a95;
-  font-size: 0.88rem;
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.modal-form .form-group {
-  margin-bottom: 0.62rem;
-}
-
-.modal-form .form-group label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #2f5389;
-  letter-spacing: 0.01em;
-}
-
-.modal-form input,
-.modal-form textarea {
-  border: 1px solid rgba(16, 71, 148, 0.2);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.84);
-  padding: 0.66rem 0.82rem;
-}
-
-.modal-form input:focus,
-.modal-form textarea:focus {
-  border-color: #2b6ad0;
-  box-shadow: 0 0 0 4px rgba(43, 106, 208, 0.12);
-}
-
-.modal-form textarea {
-  min-height: 84px;
-  resize: vertical;
-}
-
-.modal-close {
-  position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #4d6a96;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(17, 68, 140, 0.18);
-}
-
-.modal-close:hover {
-  color: #143666;
-  background: #fff;
-}
-
-.success-message {
-  text-align: center;
-  padding: 1.6rem 1.2rem;
-  color: var(--success);
-}
-
-.success-message svg {
-  margin-bottom: 1rem;
-}
-
-.success-message p {
-  color: var(--gray-700);
 }
 
 .not-found {
@@ -547,15 +488,6 @@
     grid-template-columns: 1fr;
   }
 
-  .modal-content {
-    width: calc(100vw - 1.2rem);
-    max-width: calc(100vw - 1.2rem);
-    padding: 1.05rem 0.95rem 0.95rem;
-  }
-
-  .modal-overlay {
-    backdrop-filter: none;
-  }
 }
 
 @media (max-width: 390px) {

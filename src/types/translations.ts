@@ -1,4 +1,4 @@
-export type Language = 'az' | 'en'
+export type Language = 'az' | 'en' | 'ru'
 
 export interface Translations {
   site: {

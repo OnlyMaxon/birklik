@@ -2,7 +2,7 @@ import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { useLanguage } from '../../context'
-import { Property, Language } from '../../types'
+import { Property, LocalizedText } from '../../types'
 import 'leaflet/dist/leaflet.css'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -32,7 +32,12 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
 }) => {
   const { language, t } = useLanguage()
 
-  const getLocalizedText = (text: Record<Language, string>) => text[language]
+  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
+
+  const mapActionLabels = {
+    google: language === 'en' ? 'Open in Google Maps' : language === 'ru' ? 'Открыть в Google Maps' : 'Google Maps-də aç',
+    waze: language === 'en' ? 'Open in Waze' : language === 'ru' ? 'Открыть в Waze' : 'Waze-də aç'
+  }
 
   const mapCenter: [number, number] = singleProperty && properties.length === 1 
     ? [properties[0].coordinates.lat, properties[0].coordinates.lng]
@@ -94,6 +99,26 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                   <p className="popup-price">
                     <strong>{property.price.daily} {property.price.currency}</strong> / {t.property.perNight}
                   </p>
+                  {singleProperty && (
+                    <div className="popup-map-actions">
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${property.coordinates.lat},${property.coordinates.lng}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="popup-map-link"
+                      >
+                        {mapActionLabels.google}
+                      </a>
+                      <a
+                        href={`https://waze.com/ul?ll=${property.coordinates.lat}%2C${property.coordinates.lng}&navigate=yes`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="popup-map-link"
+                      >
+                        {mapActionLabels.waze}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </Popup>

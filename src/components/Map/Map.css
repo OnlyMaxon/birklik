@@ -78,6 +78,30 @@
   font-weight: 700;
 }
 
+.popup-map-actions {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.popup-map-link {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(128, 97, 60, 0.28);
+  border-radius: 9px;
+  padding: 0.38rem 0.5rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #5b462d;
+  background: #fffaf3;
+}
+
+.popup-map-link:hover {
+  background: rgba(183, 146, 93, 0.15);
+  color: #422f1c;
+}
+
 .premium-price-marker-wrap {
   background: transparent;
   border: 0;

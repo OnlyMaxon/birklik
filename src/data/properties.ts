@@ -381,7 +381,7 @@ const includesAny = (values: string[] | undefined, selected: string[]): boolean 
   return selected.some((item) => values.includes(item))
 }
 
-export const getOptionLabel = (options: FilterOption[], key: string, language: 'az' | 'en'): string => {
+export const getOptionLabel = (options: FilterOption[], key: string, language: 'az' | 'en' | 'ru'): string => {
   const option = options.find((entry) => entry.key === key)
   if (!option) return key
   return language === 'en' ? option.en : option.az
@@ -392,6 +392,8 @@ export const filterProperties = (
   properties: Property[],
   filters: {
     search?: string
+    checkIn?: string
+    checkOut?: string
     type?: PropertyType | ''
     district?: District | ''
     minPrice?: number
@@ -405,6 +407,36 @@ export const filterProperties = (
     locationTags?: string[]
   }
 ): Property[] => {
+  const todayISO = new Date().toISOString().split('T')[0]
+
+  const intersectsRange = (
+    rangeStart: string,
+    rangeEnd: string,
+    targetStart: string,
+    targetEnd: string
+  ): boolean => {
+    return rangeStart <= targetEnd && rangeEnd >= targetStart
+  }
+
+  const isUnavailableForSelectedDates = (property: Property): boolean => {
+    const busyFrom = property.unavailableFrom
+    const busyTo = property.unavailableTo
+
+    if (!busyFrom || !busyTo || property.isActive !== false) {
+      return false
+    }
+
+    if (filters.checkIn && filters.checkOut) {
+      return intersectsRange(filters.checkIn, filters.checkOut, busyFrom, busyTo)
+    }
+
+    if (filters.checkIn) {
+      return filters.checkIn >= busyFrom && filters.checkIn <= busyTo
+    }
+
+    return busyTo >= todayISO
+  }
+
   const amenityAliases: Record<Amenity, string[]> = {
     pool: ['pool', 'hovuz', 'бассейн'],
     parking: ['parking', 'парковка', 'parkinq'],
@@ -421,6 +453,8 @@ export const filterProperties = (
   }
 
   return properties.filter(property => {
+    if (isUnavailableForSelectedDates(property)) return false
+
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()

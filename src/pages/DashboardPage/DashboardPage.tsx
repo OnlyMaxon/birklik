@@ -6,7 +6,7 @@ import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { propertyTypes, districts, amenitiesList, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
 import { MODERATOR_EMAIL } from '../../config/constants'
-import { PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
+import { PropertyType, District, Amenity, Property, ListingTier, LocationCategory, LocalizedText } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
@@ -162,7 +162,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
   }, [isAuthenticated, navigate])
 
-  const getLocalizedText = (text: Record<'az' | 'en', string>) => text[language]
+  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
 
   const loadListings = React.useCallback(async () => {
     if (!user) return
@@ -379,7 +379,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     const rooms = Number(newListing.rooms)
     const area = Number(newListing.area || 0)
     const normalizedAddress = newListing.listingTier === 'free' ? 'Lokasiya gizlidir' : newListing.address
-    const listingStatus = newListing.listingTier === 'free' ? 'active' : 'pending'
+    const listingStatus = 'pending'
 
     const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
       type: newListing.type,
@@ -419,7 +419,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ownerId: user.id,
       listingTier: newListing.listingTier,
       status: listingStatus,
-      isFeatured: newListing.listingTier === 'premium' && listingStatus === 'active',
+      isFeatured: false,
       isActive: true,
       city: newListing.city || 'Baku'
     }
@@ -945,7 +945,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       <path d="M9 12l2 2 4-4"/>
                       <path d="M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/>
                     </svg>
-                    {language === 'en' ? 'Moderation' : 'Moderasiya'}
+                    {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
                   </button>
                 )}
               </nav>
@@ -1348,12 +1348,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </div>
                         </div>
 
+                        {newListing.city === 'Baku' && (
                         <div className="form-group full-width location-tags-section">
                           <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'City locations' : 'Şəhərdaxili lokasiya seçimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
+                            <label>{language === 'en' ? 'City locations' : language === 'ru' ? 'Локации по городу' : 'Şəhərdaxili lokasiya seçimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
                             {newListing.locationTags.length > 0 && (
                               <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('locationTags')}>
-                                {language === 'en' ? 'Clear' : 'Təmizlə'}
+                                {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
                               </button>
                             )}
                           </div>
@@ -1404,6 +1405,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             )}
                           </div>
                         </div>
+                        )}
 
                         <div className="form-group full-width">
                           <label>{t.form.photos}</label>
@@ -1432,9 +1434,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         <div className="form-group full-width" style={{ backgroundColor: 'rgba(183, 146, 93, 0.14)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #b7925d' }}>
                           <p style={{ margin: 0, fontSize: '0.9rem', color: '#5e4830', lineHeight: '1.5' }}>
                             <strong>{isEnglish ? 'Note:' : 'Qeyd:'}</strong>{' '}
-                            {newListing.listingTier === 'free'
-                              ? (isEnglish ? 'Free plan listings are published immediately.' : 'Pulsuz paket elanları dərhal yayımlanır.')
-                              : (isEnglish ? 'Standard and Premium listings are sent to moderation and published after approval.' : 'Standart və Premium elanlar moderasiyaya göndərilir və təsdiqdən sonra yayımlanır.')}
+                            {isEnglish
+                              ? 'All listings, including Free plan, are sent to moderation and published after approval.'
+                              : language === 'ru'
+                                ? 'Все объявления, включая бесплатный тариф, отправляются на модерацию и публикуются после одобрения.'
+                                : 'Bütün elanlar, o cümlədən pulsuz paket, moderasiyaya göndərilir və təsdiqdən sonra yayımlanır.'}
                           </p>
                         </div>
                       </div>

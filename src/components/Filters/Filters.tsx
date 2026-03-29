@@ -101,13 +101,19 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
 
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
-  const moreButtonLabel = language === 'en' ? 'More' : 'Əlavə'
-  const nearTitle = language === 'en' ? 'Near' : 'Yaxında'
-  const cityLabel = language === 'en' ? 'City' : 'Şəhər'
-  const chooseLocationText = language === 'en' ? 'Choose city locations' : 'Şəhər daxilində seçim edin'
+  const moreButtonLabel = language === 'en' ? 'Extra filters' : language === 'ru' ? 'Доп. фильтры' : 'Əlavə filtrlər'
+  const nearTitle = language === 'en' ? 'Near' : language === 'ru' ? 'Рядом' : 'Yaxında'
+  const cityLabel = language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'
+  const chooseLocationText = language === 'en'
+    ? 'Choose city locations'
+    : language === 'ru'
+      ? 'Выберите локации по городу'
+      : 'Şəhər daxilində seçim edin'
   const searchPlaceholder = language === 'en'
     ? 'Search district, metro, landmark'
-    : 'Rayon, metro, nişangah axtarın'
+    : language === 'ru'
+      ? 'Поиск по району, метро, ориентиру'
+      : 'Rayon, metro, nişangah axtarın'
 
   const moreLabelMap = new Map(sortedMoreOptions.map((item) => [item.key, getLocalizedLabel(item)]))
   const nearLabelMap = new Map(sortedNearOptions.map((item) => [item.key, getLocalizedLabel(item)]))
@@ -267,12 +273,74 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 type="button"
                 className="selected-chip"
                 onClick={() => handleRemoveChip(chip)}
-                title={language === 'en' ? 'Remove filter' : 'Filtri sil'}
+                title={language === 'en' ? 'Remove filter' : language === 'ru' ? 'Удалить фильтр' : 'Filtri sil'}
               >
                 <span>{chip.label}</span>
                 <strong aria-hidden="true">×</strong>
               </button>
             ))}
+          </div>
+        )}
+
+        {filters.city === 'Baku' && (
+          <div className="filters-location-inline city-picker-block">
+            <div className="extended-header">
+              <h4>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></h4>
+              {filters.locationTags.length > 0 && (
+                <button type="button" className="section-clear-btn" onClick={() => clearSection('locationTags')}>
+                  {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
+                </button>
+              )}
+            </div>
+
+            <div className="city-picker-header">
+              <label>{t.search.district}</label>
+              <select
+                value={filters.district || ''}
+                onChange={(e) => handleChange('district', e.target.value as District || '')}
+              >
+                <option value="">{t.search.any}</option>
+                {districts.map((district) => (
+                  <option key={district} value={district}>{t.districts[district]}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="city-tabs" role="tablist" aria-label="Location category tabs">
+              {locationTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`city-tab ${filters.locationCategory === tab.key ? 'active' : ''}`}
+                  onClick={() => handleLocationCategoryChange(tab.key)}
+                >
+                  {language === 'en' ? tab.en : tab.az}
+                </button>
+              ))}
+            </div>
+
+            <input
+              type="search"
+              className="city-search-input"
+              placeholder={searchPlaceholder}
+              value={locationSearch}
+              onChange={(e) => setLocationSearch(e.target.value)}
+            />
+
+            <div className="city-option-list">
+              {filteredLocationOptions.length > 0 ? filteredLocationOptions.map((option) => (
+                <label key={option.key} className="city-option-item">
+                  <input
+                    type="checkbox"
+                    checked={filters.locationTags.includes(option.key)}
+                    onChange={() => toggleArrayValue('locationTags', option.key)}
+                  />
+                  <span>{getLocalizedLabel(option)}</span>
+                </label>
+              )) : (
+                <p className="empty-option-list">{language === 'en' ? 'No locations found.' : language === 'ru' ? 'Локации не найдены.' : 'Lokasiya tapılmadı.'}</p>
+              )}
+            </div>
           </div>
         )}
 
@@ -283,7 +351,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 <h4>{moreButtonLabel} <span className="count-pill">{filters.extraFilters.length}</span></h4>
                 {filters.extraFilters.length > 0 && (
                   <button type="button" className="section-clear-btn" onClick={() => clearSection('extraFilters')}>
-                    {language === 'en' ? 'Clear' : 'Təmizlə'}
+                    {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
                   </button>
                 )}
               </div>
@@ -318,7 +386,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 <h4>{nearTitle} <span className="count-pill">{filters.nearbyPlaces.length}</span></h4>
                 {filters.nearbyPlaces.length > 0 && (
                   <button type="button" className="section-clear-btn" onClick={() => clearSection('nearbyPlaces')}>
-                    {language === 'en' ? 'Clear' : 'Təmizlə'}
+                    {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
                   </button>
                 )}
               </div>
@@ -348,70 +416,12 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
               </div>
             </div>
 
-            <div className="extended-block city-picker-block">
-              <div className="extended-header">
-                <h4>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></h4>
-                {filters.locationTags.length > 0 && (
-                  <button type="button" className="section-clear-btn" onClick={() => clearSection('locationTags')}>
-                    {language === 'en' ? 'Clear' : 'Təmizlə'}
-                  </button>
-                )}
-              </div>
-              <div className="city-picker-header">
-                <label>{t.search.district}</label>
-                <select
-                  value={filters.district || ''}
-                  onChange={(e) => handleChange('district', e.target.value as District || '')}
-                >
-                  <option value="">{t.search.any}</option>
-                  {districts.map((district) => (
-                    <option key={district} value={district}>{t.districts[district]}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="city-tabs" role="tablist" aria-label="Location category tabs">
-                {locationTabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    className={`city-tab ${filters.locationCategory === tab.key ? 'active' : ''}`}
-                    onClick={() => handleLocationCategoryChange(tab.key)}
-                  >
-                    {language === 'en' ? tab.en : tab.az}
-                  </button>
-                ))}
-              </div>
-
-              <input
-                type="search"
-                className="city-search-input"
-                placeholder={searchPlaceholder}
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-              />
-
-              <div className="city-option-list">
-                {filteredLocationOptions.length > 0 ? filteredLocationOptions.map((option) => (
-                  <label key={option.key} className="city-option-item">
-                    <input
-                      type="checkbox"
-                      checked={filters.locationTags.includes(option.key)}
-                      onChange={() => toggleArrayValue('locationTags', option.key)}
-                    />
-                    <span>{getLocalizedLabel(option)}</span>
-                  </label>
-                )) : (
-                  <p className="empty-option-list">{language === 'en' ? 'No locations found.' : 'Lokasiya tapılmadı.'}</p>
-                )}
-              </div>
-            </div>
           </div>
         )}
 
         <div className="filters-actions">
           <button className="btn btn-ghost" onClick={resetAdvancedOnly}>
-            {language === 'en' ? 'Reset advanced' : 'Əlavə filtrləri təmizlə'}
+            {language === 'en' ? 'Reset advanced' : language === 'ru' ? 'Сбросить доп. фильтры' : 'Əlavə filtrləri təmizlə'}
           </button>
           <button className="btn btn-ghost" onClick={onClear}>
             {t.search.clearFilters}

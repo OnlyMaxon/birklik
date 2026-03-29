@@ -5,7 +5,7 @@ import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById } from '../../services'
-import { Language, Property } from '../../types'
+import { Property, LocalizedText } from '../../types'
 import './PropertyPage.css'
 
 interface CalendarCell {
@@ -44,13 +44,10 @@ const buildCalendarCells = (monthDate: Date): CalendarCell[] => {
 export const PropertyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { language, t } = useLanguage()
-  const [showContactForm, setShowContactForm] = React.useState(false)
-  const [contactSent, setContactSent] = React.useState(false)
   const [property, setProperty] = React.useState<Property | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
-  const modalSubtitle = language === 'en'
-    ? 'Leave your contact details and we will call you shortly.'
-    : 'Əlaqə məlumatlarınızı yazın, qısa müddətdə sizinlə əlaqə saxlayaq.'
+  const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
+  const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -69,13 +66,13 @@ export const PropertyPage: React.FC = () => {
     loadProperty()
   }, [id])
 
-  const getLocalizedText = (text: Record<Language, string>) => text[language]
+  const getLocalizedText = (text: LocalizedText) => text[language] || text.az || text.en || ''
 
   const formatDate = (value?: string) => {
     if (!value) return '-'
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return value
-    return new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'az-Latn-AZ').format(date)
+    return new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ').format(date)
   }
 
   const getTodayISO = () => new Date().toISOString().split('T')[0]
@@ -83,15 +80,6 @@ export const PropertyPage: React.FC = () => {
   const isOccupationExpired = (item: Property) => {
     if (!item.unavailableTo) return false
     return item.unavailableTo < getTodayISO()
-  }
-
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setContactSent(true)
-    setTimeout(() => {
-      setShowContactForm(false)
-      setContactSent(false)
-    }, 2000)
   }
 
   if (isLoading) {
@@ -117,25 +105,40 @@ export const PropertyPage: React.FC = () => {
   }
 
   const isAvailable = property.isActive !== false || isOccupationExpired(property)
-  const availabilityTitle = language === 'en' ? 'Availability calendar' : 'Mövcudluq təqvimi'
+  const availabilityTitle = language === 'en' ? 'Availability calendar' : language === 'ru' ? 'Календарь доступности' : 'Mövcudluq təqvimi'
   const availabilityNote = isAvailable
-    ? (language === 'en' ? 'Currently available for booking.' : 'Hazırda sifariş üçün açıqdır.')
-    : (language === 'en' ? 'Temporarily occupied and hidden from public listing.' : 'Müvəqqəti məşğuldur və ümumi siyahıda göstərilmir.')
+    ? (language === 'en' ? 'Currently available for booking.' : language === 'ru' ? 'Сейчас доступно для аренды.' : 'Hazırda sifariş üçün açıqdır.')
+    : (language === 'en' ? 'Temporarily occupied and hidden from public listing.' : language === 'ru' ? 'Временно занято и скрыто из общего списка.' : 'Müvəqqəti məşğuldur və ümumi siyahıda göstərilmir.')
   const availableFromNote = !isAvailable && property.unavailableTo
-    ? (language === 'en' ? `Available again from ${formatDate(property.unavailableTo)}.` : `${formatDate(property.unavailableTo)} tarixindən sonra yenidən boş olacaq.`)
+    ? (language === 'en' ? `Available again from ${formatDate(property.unavailableTo)}.` : language === 'ru' ? `Снова будет доступно с ${formatDate(property.unavailableTo)}.` : `${formatDate(property.unavailableTo)} tarixindən sonra yenidən boş olacaq.`)
     : ''
 
   const calendarBaseDate = property.unavailableFrom
     ? new Date(property.unavailableFrom)
     : new Date()
-  const monthLabel = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'az-Latn-AZ', {
+  const monthLabel = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ', {
     month: 'long',
     year: 'numeric'
   }).format(calendarBaseDate)
   const weekDayLabels = language === 'en'
     ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    : ['B.e', 'Ç.a', 'Ç', 'C.a', 'C', 'Ş', 'B']
+    : language === 'ru'
+      ? ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+      : ['B.e', 'Ç.a', 'Ç', 'C.a', 'C', 'Ş', 'B']
   const calendarCells = buildCalendarCells(calendarBaseDate)
+  const oneDayMs = 24 * 60 * 60 * 1000
+  const selectedNights = React.useMemo(() => {
+    if (!selectedCheckIn || !selectedCheckOut) return 0
+    const start = new Date(selectedCheckIn)
+    const end = new Date(selectedCheckOut)
+    const diff = Math.ceil((end.getTime() - start.getTime()) / oneDayMs)
+    return diff > 0 ? diff : 0
+  }, [selectedCheckIn, selectedCheckOut])
+  const selectedTotal = selectedNights * property.price.daily
+  const selectedRangeBusy = React.useMemo(() => {
+    if (!selectedCheckIn || !selectedCheckOut || !property.unavailableFrom || !property.unavailableTo) return false
+    return selectedCheckIn <= property.unavailableTo && selectedCheckOut >= property.unavailableFrom
+  }, [selectedCheckIn, selectedCheckOut, property.unavailableFrom, property.unavailableTo])
   const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, language))
   const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, language))
   const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
@@ -230,7 +233,7 @@ export const PropertyPage: React.FC = () => {
 
                 {moreLabels.length > 0 && (
                   <div className="property-section">
-                    <h3>{language === 'en' ? 'More' : 'Əlavə'}</h3>
+                    <h3>{language === 'en' ? 'More' : language === 'ru' ? 'Дополнительно' : 'Əlavə'}</h3>
                     <div className="amenities-grid">
                       {moreLabels.map((label) => (
                         <span key={label} className="amenity-item extra-item">
@@ -243,7 +246,7 @@ export const PropertyPage: React.FC = () => {
 
                 {nearLabels.length > 0 && (
                   <div className="property-section">
-                    <h3>{language === 'en' ? 'Near' : 'Yaxında'}</h3>
+                    <h3>{language === 'en' ? 'Near' : language === 'ru' ? 'Рядом' : 'Yaxında'}</h3>
                     <div className="amenities-grid">
                       {nearLabels.map((label) => (
                         <span key={label} className="amenity-item extra-item">
@@ -259,7 +262,7 @@ export const PropertyPage: React.FC = () => {
                   <p>{getLocalizedText(property.address)}</p>
                   {property.city && (
                     <p className="property-city-line">
-                      <strong>{language === 'en' ? 'City' : 'Şəhər'}:</strong> {property.city}
+                      <strong>{language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'}:</strong> {property.city}
                     </p>
                   )}
                   {locationLabels.length > 0 && (
@@ -299,13 +302,24 @@ export const PropertyPage: React.FC = () => {
                   </div>
                 </div>
 
-                <button 
-                  className="btn btn-accent btn-lg w-full"
-                  onClick={() => setShowContactForm(true)}
-                  disabled={!isAvailable}
-                >
-                  {isAvailable ? t.property.book : (language === 'en' ? 'Occupied' : 'Məşğul')}
-                </button>
+
+                <div className="owner-info owner-info-priority">
+                  <h4>{t.property.contact}</h4>
+                  <p className="owner-name">{property.owner.name}</p>
+                  <a href={`tel:${property.owner.phone}`} className="owner-phone">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    {property.owner.phone}
+                  </a>
+                  <a href={`mailto:${property.owner.email}`} className="owner-phone owner-email">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16v16H4z"/>
+                      <path d="m22 6-10 7L2 6"/>
+                    </svg>
+                    {property.owner.email}
+                  </a>
+                </div>
 
                 <div className="availability-card">
                   <h4>{availabilityTitle}</h4>
@@ -334,26 +348,50 @@ export const PropertyPage: React.FC = () => {
                   </div>
                   <div className="availability-dates">
                     <div>
-                      <span>{language === 'en' ? 'Busy from' : 'Məşğul başlanğıc'}</span>
+                      <span>{language === 'en' ? 'Busy from' : language === 'ru' ? 'Занято с' : 'Məşğul başlanğıc'}</span>
                       <strong>{formatDate(property.unavailableFrom)}</strong>
                     </div>
                     <div>
-                      <span>{language === 'en' ? 'Busy until' : 'Məşğul bitiş'}</span>
+                      <span>{language === 'en' ? 'Busy until' : language === 'ru' ? 'Занято до' : 'Məşğul bitiş'}</span>
                       <strong>{formatDate(property.unavailableTo)}</strong>
                     </div>
                   </div>
-                  {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
-                </div>
+                  <div className="availability-user-range">
+                    <div className="availability-range-inputs">
+                      <div>
+                        <span>{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş tarixi'}</span>
+                        <input type="date" value={selectedCheckIn} onChange={(e) => setSelectedCheckIn(e.target.value)} />
+                      </div>
+                      <div>
+                        <span>{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış tarixi'}</span>
+                        <input type="date" value={selectedCheckOut} min={selectedCheckIn || undefined} onChange={(e) => setSelectedCheckOut(e.target.value)} />
+                      </div>
+                    </div>
 
-                <div className="owner-info">
-                  <h4>{t.property.contact}</h4>
-                  <p className="owner-name">{property.owner.name}</p>
-                  <a href={`tel:${property.owner.phone}`} className="owner-phone">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    {property.owner.phone}
-                  </a>
+                    {selectedNights > 0 && (
+                      <div className="availability-total-box">
+                        <p>
+                          {language === 'en'
+                            ? `${selectedNights} night(s)`
+                            : language === 'ru'
+                              ? `${selectedNights} ночей`
+                              : `${selectedNights} gecə`}
+                        </p>
+                        <strong>{selectedTotal} {property.price.currency}</strong>
+                      </div>
+                    )}
+
+                    {selectedRangeBusy && (
+                      <p className="availability-range-warning">
+                        {language === 'en'
+                          ? 'Selected dates overlap with occupied period.'
+                          : language === 'ru'
+                            ? 'Выбранные даты пересекаются с занятым периодом.'
+                            : 'Seçilən tarixlər məşğul günlərlə üst-üstə düşür.'}
+                      </p>
+                    )}
+                  </div>
+                  {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
                 </div>
               </div>
             </div>
@@ -361,57 +399,6 @@ export const PropertyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Contact Modal */}
-      {showContactForm && (
-        <div className="modal-overlay" onClick={() => setShowContactForm(false)}>
-          <div className="modal-content card" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowContactForm(false)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6 6 18"/>
-                <path d="m6 6 12 12"/>
-              </svg>
-            </button>
-
-            {contactSent ? (
-              <div className="success-message">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <p>{t.messages.contactSuccess}</p>
-              </div>
-            ) : (
-              <>
-                <div className="modal-header">
-                  <h3 className="modal-title">{t.property.book}</h3>
-                  <p className="modal-subtitle">{modalSubtitle}</p>
-                </div>
-                <form onSubmit={handleContactSubmit} className="modal-form">
-                  <div className="form-group">
-                    <label>{t.auth.fullName}</label>
-                    <input type="text" required placeholder={language === 'en' ? 'Your full name' : 'Ad ve soyad'} />
-                  </div>
-                  <div className="form-group">
-                    <label>{t.auth.phone}</label>
-                    <input type="tel" required placeholder="+994 xx xxx xx xx" />
-                  </div>
-                  <div className="form-group">
-                    <label>{t.auth.email}</label>
-                    <input type="email" required placeholder="you@email.com" />
-                  </div>
-                  <div className="form-group">
-                    <label>{t.form.description}</label>
-                    <textarea rows={3} placeholder={language === 'en' ? 'Any extra details about your request' : 'İstəklə bağlı əlavə qeyd'}></textarea>
-                  </div>
-                  <button type="submit" className="btn btn-accent btn-lg w-full">
-                    {t.form.submit}
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </Layout>
   )
 }

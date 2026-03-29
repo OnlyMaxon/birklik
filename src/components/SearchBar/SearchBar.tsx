@@ -6,26 +6,75 @@ interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   onSearch?: () => void
+  cityValue?: string
+  onCitySelect?: (city: string) => void
+  checkInValue?: string
+  checkOutValue?: string
+  onDateChange?: (checkIn: string, checkOut: string) => void
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch }) => {
-  const { t, language } = useLanguage()
-  const [checkIn, setCheckIn] = React.useState('')
-  const [checkOut, setCheckOut] = React.useState('')
-  const [guests, setGuests] = React.useState('2')
+const CITY_SUGGESTIONS = ['Baku', 'Sumqayit', 'Gabala', 'Quba']
 
-  const isEnglish = language === 'en'
+export const SearchBar: React.FC<SearchBarProps> = ({
+  value,
+  onChange,
+  onSearch,
+  cityValue = '',
+  onCitySelect,
+  checkInValue = '',
+  checkOutValue = '',
+  onDateChange
+}) => {
+  const { t, language } = useLanguage()
+  const [checkIn, setCheckIn] = React.useState(checkInValue)
+  const [checkOut, setCheckOut] = React.useState(checkOutValue)
+  const [guests, setGuests] = React.useState('1')
+  const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    setCheckIn(checkInValue)
+  }, [checkInValue])
+
+  React.useEffect(() => {
+    setCheckOut(checkOutValue)
+  }, [checkOutValue])
+
+  React.useEffect(() => {
+    onDateChange?.(checkIn, checkOut)
+  }, [checkIn, checkOut, onDateChange])
+
+  const normalizedQuery = value.trim().toLowerCase()
+  const filteredCities = CITY_SUGGESTIONS.filter((city) => {
+    if (!normalizedQuery) return true
+    return city.toLowerCase().includes(normalizedQuery)
+  }).slice(0, 6)
+
+  const whereToLabel = language === 'en' ? 'Where to?' : language === 'ru' ? 'Куда?' : 'Hara?'
+  const checkInLabel = language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş tarixi'
+  const checkOutLabel = language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış tarixi'
+  const guestsLabel = language === 'en' ? 'Guests' : language === 'ru' ? 'Гости' : 'Qonaq sayı'
+  const suggestionsTitle = language === 'en'
+    ? 'Popular cities'
+    : language === 'ru'
+      ? 'Популярные города'
+      : 'Populyar şəhərlər'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSearch?.()
   }
 
+  const handlePickCity = (city: string) => {
+    onChange(city)
+    onCitySelect?.(city)
+    setIsSuggestOpen(false)
+  }
+
   return (
     <form className="search-bar" onSubmit={handleSubmit}>
       <div className="search-grid">
         <div className="search-field search-field-destination">
-          <label>{isEnglish ? 'Where to?' : 'Hara?'}</label>
+          <label>{whereToLabel}</label>
           <div className="search-input-wrapper">
             <svg
               className="search-icon"
@@ -48,12 +97,35 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch 
               placeholder={t.search.placeholder}
               value={value}
               onChange={(e) => onChange(e.target.value)}
+              onFocus={() => setIsSuggestOpen(true)}
+              onBlur={() => {
+                window.setTimeout(() => setIsSuggestOpen(false), 120)
+              }}
             />
+
+            {isSuggestOpen && filteredCities.length > 0 && (
+              <div className="search-suggestions" role="listbox">
+                <div className="search-suggestions-title">{suggestionsTitle}</div>
+                {filteredCities.map((city) => (
+                  <button
+                    key={city}
+                    type="button"
+                    className={`search-suggestion-item ${cityValue === city ? 'active' : ''}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      handlePickCity(city)
+                    }}
+                  >
+                    {city}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="search-field">
-          <label>{isEnglish ? 'Check-in' : 'Giriş tarixi'}</label>
+          <label>{checkInLabel}</label>
           <input
             type="date"
             className="search-input"
@@ -63,17 +135,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch 
         </div>
 
         <div className="search-field">
-          <label>{isEnglish ? 'Check-out' : 'Çıxış tarixi'}</label>
+          <label>{checkOutLabel}</label>
           <input
             type="date"
             className="search-input"
             value={checkOut}
+            min={checkIn || undefined}
             onChange={(e) => setCheckOut(e.target.value)}
           />
         </div>
 
         <div className="search-field">
-          <label>{isEnglish ? 'Guests' : 'Qonaq sayı'}</label>
+          <label>{guestsLabel}</label>
           <select
             className="search-input"
             value={guests}

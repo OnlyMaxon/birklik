@@ -139,6 +139,14 @@
   justify-content: flex-start;
 }
 
+.filters-location-inline {
+  margin-top: 0.95rem;
+  border: 1px solid rgba(121, 99, 72, 0.2);
+  border-radius: 14px;
+  padding: 0.9rem;
+  background: rgba(255, 252, 246, 0.82);
+}
+
 .filters-extended {
   margin-top: 0.95rem;
   border: 1px solid rgba(121, 99, 72, 0.2);

@@ -9,6 +9,8 @@ import './HomePage.css'
 
 const initialFilters: FilterState = {
   search: '',
+  checkIn: '',
+  checkOut: '',
   type: '',
   district: '',
   minPrice: null,
@@ -30,6 +32,7 @@ export const HomePage: React.FC = () => {
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
+  const resultsRef = React.useRef<HTMLElement | null>(null)
 
   React.useEffect(() => {
     const loadProperties = async () => {
@@ -65,6 +68,8 @@ export const HomePage: React.FC = () => {
   const filteredProperties = React.useMemo(() => {
     return filterProperties(properties, {
       search: filters.search,
+      checkIn: filters.checkIn || undefined,
+      checkOut: filters.checkOut || undefined,
       type: filters.type || undefined,
       district: filters.district || undefined,
       minPrice: filters.minPrice || undefined,
@@ -85,6 +90,10 @@ export const HomePage: React.FC = () => {
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
+  const handleSearchSubmit = () => {
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <Layout>
       <section className="hero">
@@ -95,12 +104,18 @@ export const HomePage: React.FC = () => {
             <SearchBar
               value={filters.search}
               onChange={(value) => setFilters({ ...filters, search: value })}
+              cityValue={filters.city}
+              onCitySelect={(city) => setFilters({ ...filters, city })}
+              checkInValue={filters.checkIn}
+              checkOutValue={filters.checkOut}
+              onDateChange={(checkIn, checkOut) => setFilters({ ...filters, checkIn, checkOut })}
+              onSearch={handleSearchSubmit}
             />
           </div>
         </div>
       </section>
 
-      <section id="premium-results" className="section properties-section">
+      <section id="premium-results" className="section properties-section" ref={resultsRef}>
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">{t.home.topListingsTitle}</h2>

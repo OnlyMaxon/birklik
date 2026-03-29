@@ -37,7 +37,8 @@ export const Header: React.FC = () => {
 
   const languages = [
     { code: 'az' as const, label: 'AZ' },
-    { code: 'en' as const, label: 'EN' }
+    { code: 'en' as const, label: 'EN' },
+    { code: 'ru' as const, label: 'RU' }
   ]
 
   return (
@@ -64,7 +65,7 @@ export const Header: React.FC = () => {
                 </Link>
                 {isModerator && (
                   <Link to="/dashboard/review" className="nav-link" onClick={() => setMenuOpen(false)}>
-                    {language === 'en' ? 'Moderation' : 'Moderasiya'}
+                    {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
                   </Link>
                 )}
                 <div className="user-menu">

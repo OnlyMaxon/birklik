@@ -64,7 +64,7 @@
 
 .premium-results-shell.with-map {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 34vw, 460px);
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 30vw, 420px);
   gap: 1.2rem;
   align-items: start;
 }
@@ -106,7 +106,13 @@
 }
 
 .premium-results-shell.with-map .premium-properties-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1320px) {
+  .premium-results-shell.with-map .premium-properties-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .premium-results-list::-webkit-scrollbar {
