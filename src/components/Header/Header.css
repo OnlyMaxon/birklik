@@ -65,8 +65,9 @@
   border-bottom-color: #e9c892;
 }
 
-.nav-highlight {
+.nav-link.active {
   color: #e9c892;
+  border-bottom-color: #e9c892;
 }
 
 .user-menu {

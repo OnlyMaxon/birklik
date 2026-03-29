@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { isModeratorEmail } from '../../config/constants'
@@ -41,6 +41,8 @@ export const Header: React.FC = () => {
     { code: 'ru' as const, label: 'RU' }
   ]
 
+  const getNavClass = ({ isActive }: { isActive: boolean }) => `nav-link${isActive ? ' active' : ''}`
+
   return (
     <header className="header">
       <div className="container">
@@ -51,22 +53,22 @@ export const Header: React.FC = () => {
           </Link>
 
           <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
-            <Link to="/" className="nav-link" onClick={() => setMenuOpen(false)}>
+            <NavLink to="/" end className={getNavClass} onClick={() => setMenuOpen(false)}>
               {t.nav.home}
-            </Link>
-            <Link to="/dashboard/add" className="nav-link nav-highlight" onClick={() => setMenuOpen(false)}>
+            </NavLink>
+            <NavLink to="/dashboard/add" className={getNavClass} onClick={() => setMenuOpen(false)}>
               {t.nav.addListing}
-            </Link>
+            </NavLink>
 
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" className="nav-link" onClick={() => setMenuOpen(false)}>
+                <NavLink to="/dashboard" end className={getNavClass} onClick={() => setMenuOpen(false)}>
                   {t.nav.dashboard}
-                </Link>
+                </NavLink>
                 {isModerator && (
-                  <Link to="/dashboard/review" className="nav-link" onClick={() => setMenuOpen(false)}>
+                  <NavLink to="/dashboard/review" className={getNavClass} onClick={() => setMenuOpen(false)}>
                     {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
-                  </Link>
+                  </NavLink>
                 )}
                 <div className="user-menu">
                   <span className="user-name">{user?.name}</span>
