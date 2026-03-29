@@ -35,8 +35,9 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const mapActionLabels = {
-    google: language === 'en' ? 'Open in Google Maps' : language === 'ru' ? 'Открыть в Google Maps' : 'Google Maps-də aç',
-    waze: language === 'en' ? 'Open in Waze' : language === 'ru' ? 'Открыть в Waze' : 'Waze-də aç'
+    google: language === 'en' ? 'Google Maps' : language === 'ru' ? 'Google Maps' : 'Google Maps',
+    waze: language === 'en' ? 'Waze' : language === 'ru' ? 'Waze' : 'Waze',
+    apple: language === 'en' ? 'Apple Maps' : language === 'ru' ? 'Apple Maps' : 'Apple Maps'
   }
 
   const mapCenter: [number, number] = singleProperty && properties.length === 1 
@@ -99,26 +100,35 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                   <p className="popup-price">
                     <strong>{property.price.daily} {property.price.currency}</strong> / {t.property.perNight}
                   </p>
-                  {singleProperty && (
-                    <div className="popup-map-actions">
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${property.coordinates.lat},${property.coordinates.lng}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="popup-map-link"
-                      >
-                        {mapActionLabels.google}
-                      </a>
-                      <a
-                        href={`https://waze.com/ul?ll=${property.coordinates.lat}%2C${property.coordinates.lng}&navigate=yes`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="popup-map-link"
-                      >
-                        {mapActionLabels.waze}
-                      </a>
-                    </div>
-                  )}
+                  <div className="popup-map-actions">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${property.coordinates.lat},${property.coordinates.lng}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="popup-map-link"
+                      title={language === 'en' ? 'Open in Google Maps' : language === 'ru' ? 'Открыть в Google Maps' : 'Google Maps-də aç'}
+                    >
+                      📍 {mapActionLabels.google}
+                    </a>
+                    <a
+                      href={`https://waze.com/ul?ll=${property.coordinates.lat}%2C${property.coordinates.lng}&navigate=yes`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="popup-map-link"
+                      title={language === 'en' ? 'Open in Waze' : language === 'ru' ? 'Открыть в Waze' : 'Waze-də aç'}
+                    >
+                      🗺️ {mapActionLabels.waze}
+                    </a>
+                    <a
+                      href={`maps://maps.apple.com/?ll=${property.coordinates.lat},${property.coordinates.lng}&q=${getLocalizedText(property.title)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="popup-map-link"
+                      title={language === 'en' ? 'Open in Apple Maps' : language === 'ru' ? 'Открыть в Apple Maps' : 'Apple Maps-də aç'}
+                    >
+                      🗺️ {mapActionLabels.apple}
+                    </a>
+                  </div>
                 </div>
               </div>
             </Popup>

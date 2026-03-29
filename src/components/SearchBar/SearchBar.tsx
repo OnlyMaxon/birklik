@@ -6,6 +6,7 @@ interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   onSearch?: () => void
+  onFiltersOpen?: () => void
   cityValue?: string
   onCitySelect?: (city: string) => void
   checkInValue?: string
@@ -26,6 +27,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
   onSearch,
+  onFiltersOpen,
   cityValue = '',
   onCitySelect,
   checkInValue = '',
@@ -183,9 +185,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </select>
         </div>
       </div>
-      <button type="submit" className="btn btn-accent search-submit-btn">
-        {t.search.button}
-      </button>
+      <div className="search-buttons">
+        <button type="submit" className="btn btn-accent search-submit-btn">
+          {t.search.button}
+        </button>
+        <button type="button" className="btn btn-ghost search-filters-btn" onClick={onFiltersOpen}>
+          {t.search.filters}
+        </button>
+      </div>
     </form>
   )
 }

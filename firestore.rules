@@ -18,7 +18,8 @@ service cloud.firestore {
 
       allow update, delete: if request.auth != null
           && (resource.data.ownerId == request.auth.uid
-              || request.auth.token.email == 'calilorucli42@gmail.com');
+              || request.auth.token.email == 'calilorucli42@gmail.com'
+              || request.auth.token.email == 'elgun.akhundov@gmail.com');
     }
   }
 }
