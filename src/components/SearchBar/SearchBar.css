@@ -102,15 +102,19 @@
 .search-dates-inputs {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
+  gap: 4px;
   min-height: 40px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .search-date-input-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .search-date-label-small {
@@ -123,11 +127,13 @@
 }
 
 .search-date-input {
-  font-size: 13px;
+  font-size: 12px;
   color-scheme: light;
   text-align: center;
   min-height: 40px;
-  padding: 8px 4px !important;
+  padding: 6px 2px !important;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-date-input::-webkit-calendar-picker-indicator {
@@ -165,7 +171,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #0052cc;
+  background: #b7925d;
   color: white;
   border: none;
   border-radius: 10px;
@@ -175,7 +181,7 @@
 }
 
 .search-btn-main:active {
-  background: #003fa3;
+  background: #9b7a48;
 }
 
 /* Mobile Optimizations */
@@ -282,6 +288,19 @@
   .search-guests-select {
     font-size: 14px;
     min-height: 36px;
+  }
+
+  .search-dates-inputs {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .search-date-input-wrapper {
+    width: 100%;
+  }
+
+  .search-date-divider {
+    display: none;
   }
 }
 
