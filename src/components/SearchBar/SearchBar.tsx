@@ -97,115 +97,106 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <form className="search-bar" onSubmit={handleSubmit}>
-      <div className="search-container">
-        {/* Location field */}
-        <div className="search-field search-field-location">
-          <div className="search-input-wrapper">
-            <svg
-              className="search-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
-            </svg>
-            <input
-              type="text"
-              className="search-input search-input-text"
-              placeholder={t.search.placeholder}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onFocus={() => setIsSuggestOpen(true)}
-              onBlur={() => window.setTimeout(() => setIsSuggestOpen(false), 120)}
-            />
+      {/* Location Input */}
+      <div className="search-location-wrapper">
+        <svg
+          className="search-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input
+          type="text"
+          className="search-input search-location"
+          placeholder={t.search.placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setIsSuggestOpen(true)}
+          onBlur={() => window.setTimeout(() => setIsSuggestOpen(false), 120)}
+        />
 
-            {isSuggestOpen && filteredCities.length > 0 && (
-              <div className="search-suggestions" role="listbox">
-                <div className="search-suggestions-title">
-                  {isEnglish ? 'Popular cities' : isRussian ? 'Популярные города' : 'Populyar şəhərlər'}
-                </div>
-                {filteredCities.map((city) => (
-                  <button
-                    key={city.value}
-                    type="button"
-                    className={`search-suggestion-item ${cityValue === city.value ? 'active' : ''}`}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      handlePickCity(city)
-                    }}
-                  >
-                    {getCityLabel(city)}
-                  </button>
-                ))}
-              </div>
-            )}
+        {isSuggestOpen && filteredCities.length > 0 && (
+          <div className="search-suggestions" role="listbox">
+            <div className="search-suggestions-title">
+              {isEnglish ? 'Popular cities' : isRussian ? 'Популярные города' : 'Populyar şəhərlər'}
+            </div>
+            {filteredCities.map((city) => (
+              <button
+                key={city.value}
+                type="button"
+                className={`search-suggestion-item ${cityValue === city.value ? 'active' : ''}`}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  handlePickCity(city)
+                }}
+              >
+                {getCityLabel(city)}
+              </button>
+            ))}
           </div>
+        )}
+      </div>
+
+      {/* Dates and Guests Row */}
+      <div className="search-dates-row">
+        <div className="search-date-field">
+          <label className="search-date-label">
+            {isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş'}
+          </label>
+          <input
+            type="date"
+            className="search-input search-date-input"
+            value={checkIn}
+            onChange={(e) => handleCheckInChange(e.target.value)}
+          />
         </div>
 
-        {/* Dates row */}
-        <div className="search-dates">
-          <div className="search-field search-field-date">
-            {!checkIn && (
-              <div className="search-placeholder">
-                {isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş'}
-              </div>
-            )}
-            <input
-              type="date"
-              className="search-input search-input-date"
-              value={checkIn}
-              onChange={(e) => handleCheckInChange(e.target.value)}
-              aria-label={isEnglish ? 'Check-in date' : isRussian ? 'Дата заезда' : 'Giriş tarixi'}
-              title={isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş'}
-            />
-          </div>
+        <div className="search-date-field">
+          <label className="search-date-label">
+            {isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış'}
+          </label>
+          <input
+            type="date"
+            className="search-input search-date-input"
+            value={checkOut}
+            min={checkIn || undefined}
+            onChange={(e) => handleCheckOutChange(e.target.value)}
+          />
+        </div>
 
-          <div className="search-field search-field-date">
-            {!checkOut && (
-              <div className="search-placeholder">
-                {isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış'}
-              </div>
-            )}
-            <input
-              type="date"
-              className="search-input search-input-date"
-              value={checkOut}
-              min={checkIn || undefined}
-              onChange={(e) => handleCheckOutChange(e.target.value)}
-              aria-label={isEnglish ? 'Check-out date' : isRussian ? 'Дата выезда' : 'Çıxış tarixi'}
-              title={isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış'}
-            />
-          </div>
-
-          <div className="search-field search-field-guests">
-            <select
-              className="search-input search-input-select"
-              value={guests}
-              onChange={(e) => handleGuestsChange(e.target.value)}
-              title={isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaq'}
-            >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5+</option>
-            </select>
-          </div>
+        <div className="search-guests-field">
+          <label className="search-date-label">
+            {isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaq'}
+          </label>
+          <select
+            className="search-input search-guests-select"
+            value={guests}
+            onChange={(e) => handleGuestsChange(e.target.value)}
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5+</option>
+          </select>
         </div>
       </div>
 
+      {/* Action Buttons */}
       <div className="search-actions">
-        <button type="submit" className="btn btn-accent search-btn-search">
+        <button type="submit" className="btn btn-primary search-btn">
           {t.search.button}
         </button>
-        <button type="button" className="btn btn-accent search-btn-filters" onClick={onFiltersOpen}>
+        <button type="button" className="btn btn-secondary search-btn" onClick={onFiltersOpen}>
           {t.search.filters}
         </button>
       </div>

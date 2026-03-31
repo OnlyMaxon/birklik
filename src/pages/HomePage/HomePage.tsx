@@ -109,14 +109,14 @@ export const HomePage: React.FC = () => {
           <div className="hero-search-shell">
             <SearchBar
               value={filters.search}
-              onChange={(value) => setFilters({ ...filters, search: value })}
+              onChange={(value: string) => setFilters({ ...filters, search: value })}
               cityValue={filters.city}
-              onCitySelect={(city) => setFilters({ ...filters, city })}
+              onCitySelect={(city: string) => setFilters({ ...filters, city })}
               checkInValue={filters.checkIn}
               checkOutValue={filters.checkOut}
               guestsValue={filters.guests}
-              onDateChange={(checkIn, checkOut) => setFilters({ ...filters, checkIn, checkOut })}
-              onGuestsChange={(guests) => setFilters({ ...filters, guests })}
+              onDateChange={(checkIn: string, checkOut: string) => setFilters({ ...filters, checkIn, checkOut })}
+              onGuestsChange={(guests: number) => setFilters({ ...filters, guests })}
               onSearch={handleSearchSubmit}
               onFiltersOpen={handleFiltersOpen}
             />
