@@ -4,7 +4,6 @@ import { useLanguage } from '../../context'
 import { cities } from '../../data'
 
 interface SearchBarProps {
-  value: string
   onChange: (value: string) => void
   onSearch?: () => void
   onFiltersOpen?: () => void
@@ -109,6 +108,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   const handleClearCity = () => {
+    console.log('Clear city button clicked')
     setCitySearchText('')
     onCitySelect?.('')
     onChange('')
@@ -138,7 +138,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               <button
                 type="button"
                 className="search-city-clear"
-                onClick={handleClearCity}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleClearCity()
+                }}
                 title={isEnglish ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
               >
                 ✕

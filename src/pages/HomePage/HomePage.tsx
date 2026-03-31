@@ -123,10 +123,12 @@ export const HomePage: React.FC = () => {
         <div className="container hero-content">
           <div className="hero-search-shell">
             <SearchBar
-              value={filters.search}
               onChange={(value: string) => setFilters({ ...filters, search: value })}
               cityValue={filters.city}
-              onCitySelect={(city: string) => setFilters({ ...filters, city })}
+              onCitySelect={(city: string) => {
+                console.log('HomePage clear action, city:', city)
+                setFilters({ ...filters, city })
+              }}
               checkInValue={filters.checkIn}
               checkOutValue={filters.checkOut}
               guestsValue={filters.guests}
