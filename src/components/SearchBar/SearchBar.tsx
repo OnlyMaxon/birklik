@@ -95,16 +95,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   const handlePickCity = (city: typeof cities[number]) => {
-    console.log('Picking city:', city.value)
     onCitySelect?.(city.value)
-    onChange('')
     setIsSuggestOpen(false)
   }
 
   const handleCityInputChange = (inputValue: string) => {
     onChange(inputValue)
-    // Очищаем выбранный город только если пользователь aktIVNO печатает текст
-    // Если поле пустое - город остается (пользователь просто стирает)
+    // Очищаем выбранный город только если пользователь начал печатать новый текст
     if (inputValue.trim() !== '') {
       onCitySelect?.('')
     }
