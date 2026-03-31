@@ -17,7 +17,6 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
 import { Property, PropertyType, Language } from '../types'
-import { mockProperties } from '../data'
 
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 12
@@ -121,22 +120,6 @@ export const getProperties = async (
         return matchesSearch(property, filters?.search)
       })
 
-    if (properties.length === 0) {
-      const fallbackProperties = mockProperties.filter(property => {
-        if (!isPubliclyVisible(property)) return false
-        if (isHiddenByAvailability(property)) return false
-        if (filters?.type && filters.type !== 'all' && property.type !== filters.type) return false
-        if (filters?.district && property.district !== filters.district) return false
-        if (filters?.minPrice && property.price.daily < filters.minPrice) return false
-        if (filters?.maxPrice && property.price.daily > filters.maxPrice) return false
-        if (filters?.minRooms && property.rooms < filters.minRooms) return false
-        if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
-        return matchesSearch(property, filters?.search)
-      })
-
-      return { properties: fallbackProperties, lastDoc: null }
-    }
-
     const newLastDoc = snapshot.docs.length > 0 
       ? snapshot.docs[snapshot.docs.length - 1] 
       : null
@@ -144,19 +127,7 @@ export const getProperties = async (
     return { properties, lastDoc: newLastDoc }
   } catch (error) {
     console.error('Error getting properties:', error)
-    const fallbackProperties = mockProperties.filter(property => {
-      if (!isPubliclyVisible(property)) return false
-      if (isHiddenByAvailability(property)) return false
-      if (filters?.type && filters.type !== 'all' && property.type !== filters.type) return false
-      if (filters?.district && property.district !== filters.district) return false
-      if (filters?.minPrice && property.price.daily < filters.minPrice) return false
-      if (filters?.maxPrice && property.price.daily > filters.maxPrice) return false
-      if (filters?.minRooms && property.rooms < filters.minRooms) return false
-      if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
-      return matchesSearch(property, filters?.search)
-    })
-
-    return { properties: fallbackProperties, lastDoc: null }
+    return { properties: [], lastDoc: null }
   }
 }
 

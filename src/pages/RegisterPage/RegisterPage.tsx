@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import '../LoginPage/AuthPages.css'
+import '../../styles/AuthPages.css'
 
 export const RegisterPage: React.FC = () => {
   const { t, language } = useLanguage()

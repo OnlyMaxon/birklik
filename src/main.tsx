@@ -4,7 +4,6 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { LanguageProvider, AuthProvider } from './context'
 import './styles/globals.css'
-import './styles/mobile-overrides.css'
 
 const ua = window.navigator.userAgent
 const isIOS = /iPhone|iPad|iPod/i.test(ua)

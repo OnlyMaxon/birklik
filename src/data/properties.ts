@@ -6,8 +6,6 @@ export interface FilterOption {
   en: string
 }
 
-export const mockProperties: Property[] = []
-
 export const propertyTypes: PropertyType[] = [
   'villa',
   'apartment',
