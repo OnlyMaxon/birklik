@@ -402,6 +402,20 @@
   color: #5a4a3d !important;
 }
 
+.ios-google input[type='date'] {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.ios-google input[type='date']::-webkit-datetime-edit {
+  display: none !important;
+}
+
+.ios-google input[type='date']::-webkit-calendar-picker-indicator {
+  color: #5a4a3d !important;
+  filter: invert(0.25) !important;
+}
+
 .ios-google .leaflet-map,
 .ios-google .gallery-main {
   border-color: rgba(78, 61, 43, 0.18) !important;
