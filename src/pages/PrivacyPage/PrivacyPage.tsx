@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLanguage } from '../../context'
+import { Layout } from '../../layouts'
 import './PrivacyPage.css'
 
 const privacyContent = {
@@ -139,12 +140,13 @@ export const PrivacyPage: React.FC = () => {
   const content = privacyContent[language as keyof typeof privacyContent] || privacyContent.en
 
   return (
-    <div className="privacy-page">
-      <div className="privacy-hero">
-        <h1>{content.title}</h1>
-      </div>
+    <Layout>
+      <div className="privacy-page">
+        <div className="privacy-hero">
+          <h1>{content.title}</h1>
+        </div>
 
-      <div className="privacy-content">
+        <div className="privacy-content">
         {content.sections.map((section, index) => (
           <section key={index} className="privacy-section">
             {section.title && <h2>{section.title}</h2>}
@@ -159,7 +161,8 @@ export const PrivacyPage: React.FC = () => {
             )}
           </section>
         ))}
+        </div>
       </div>
-    </div>
+    </Layout>
   )
 }

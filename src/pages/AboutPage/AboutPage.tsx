@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLanguage } from '../../context'
+import { Layout } from '../../layouts'
 import './AboutPage.css'
 
 const aboutContent = {
@@ -100,12 +101,13 @@ export const AboutPage: React.FC = () => {
   const content = aboutContent[language as keyof typeof aboutContent] || aboutContent.en
 
   return (
-    <div className="about-page">
-      <div className="about-hero">
-        <h1>{content.title}</h1>
-      </div>
+    <Layout>
+      <div className="about-page">
+        <div className="about-hero">
+          <h1>{content.title}</h1>
+        </div>
 
-      <div className="about-content">
+        <div className="about-content">
         {content.sections.map((section, index) => (
           <section key={index} className="about-section">
             {section.title && <h2>{section.title}</h2>}
@@ -120,7 +122,8 @@ export const AboutPage: React.FC = () => {
             )}
           </section>
         ))}
+        </div>
       </div>
-    </div>
+    </Layout>
   )
 }
