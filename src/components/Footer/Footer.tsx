@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="footer-links">
-            <Link to="/" className="footer-link">{t.footer.about}</Link>
+            <Link to="/about" className="footer-link">{t.footer.about}</Link>
             <Link to="/" className="footer-link">{t.footer.contact}</Link>
             <Link to="/dashboard/add" className="footer-link">{t.nav.addListing}</Link>
             <Link to="/terms" className="footer-link">{t.footer.terms}</Link>

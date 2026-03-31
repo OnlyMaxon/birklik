@@ -11,6 +11,7 @@ const RegisterPage = React.lazy(() => import('./pages/RegisterPage').then((mod) 
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then((mod) => ({ default: mod.TermsPage })))
+const AboutPage = React.lazy(() => import('./pages/AboutPage').then((mod) => ({ default: mod.AboutPage })))
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -109,6 +110,7 @@ function App() {
             </ModeratorRoute>
           } />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </React.Suspense>
