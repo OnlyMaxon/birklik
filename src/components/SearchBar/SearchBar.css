@@ -16,31 +16,18 @@
 /* Search Card Fields */
 .search-card-field {
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .search-field-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  min-width: 36px;
-  height: 36px;
-  background: #f5f2ed;
-  border-radius: 10px;
-  color: #6d6252;
-}
-
-.search-field-icon svg {
-  width: 20px;
-  height: 20px;
-  stroke: #6d6252;
+  display: none;
 }
 
 .search-field-content {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 .search-field-label {
@@ -199,11 +186,6 @@
     border-radius: 12px;
   }
 
-  .search-field-icon {
-    width: 36px;
-    height: 36px;
-  }
-
   .search-field-input {
     min-height: 38px;
     padding: 8px 10px;
@@ -230,16 +212,6 @@
 
   .search-card-field {
     gap: 10px;
-  }
-
-  .search-field-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .search-field-icon svg {
-    width: 20px;
-    height: 20px;
   }
 
   .search-field-input {
@@ -278,17 +250,6 @@
     padding: 10px 8px;
     gap: 8px;
     border-width: 2px;
-  }
-
-  .search-field-icon {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-  }
-
-  .search-field-icon svg {
-    width: 18px;
-    height: 18px;
   }
 
   .search-field-input {

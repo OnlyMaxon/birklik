@@ -97,11 +97,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     <form className="search-bar-card" onSubmit={handleSubmit}>
       {/* Location Field */}
       <div className="search-card-field search-location-field">
-        <div className="search-field-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2L6 8H4C2.9 8 2 8.9 2 10V20C2 21.1 2.9 22 4 22H20C21.1 22 22 21.1 22 20V10C22 8.9 21.1 8 20 8H18L12 2Z"/>
-          </svg>
-        </div>
         <div className="search-field-content">
           <div className="search-field-label">
             {isEnglish ? 'Where are you going?' : isRussian ? 'Куда ты идешь?' : 'Hara gedəcəksən?'}
@@ -139,12 +134,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Dates Field */}
       <div className="search-card-field search-dates-field">
-        <div className="search-field-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-        </div>
         <div className="search-field-content">
           <div className="search-dates-inputs">
             <div className="search-date-input-wrapper">
@@ -177,12 +166,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Guests Field */}
       <div className="search-card-field search-guests-field">
-        <div className="search-field-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
         <div className="search-field-content">
           <div className="search-field-label">
             {isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaqlar'}
