@@ -1,9 +1,9 @@
 .search-bar-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 16px;
+  padding: 14px 12px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.98);
   border: 3px solid #ffb703;
@@ -14,7 +14,7 @@
 /* Search Card Fields */
 .search-card-field {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -22,17 +22,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
   background: #f5f2ed;
   border-radius: 10px;
   color: #6d6252;
 }
 
 .search-field-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   stroke: #6d6252;
 }
 
@@ -57,8 +57,8 @@
 .search-field-input {
   width: 100%;
   min-height: 40px;
-  padding: 10px 12px;
-  font-size: 16px;
+  padding: 10px 10px;
+  font-size: 15px;
   font-weight: 500;
   border: 1px solid rgba(205, 186, 154, 0.4);
   border-radius: 8px;
@@ -113,7 +113,7 @@
 .search-dates-inputs {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   min-height: 40px;
 }
 
@@ -134,23 +134,24 @@
 }
 
 .search-date-input {
-  font-size: 16px;
+  font-size: 13px;
   color-scheme: light;
   text-align: center;
   min-height: 40px;
+  padding: 8px 4px !important;
 }
 
 .search-date-input::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .search-date-divider {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #6d6252;
-  padding: 0 4px;
+  padding: 0 3px;
 }
 
 /* Guests Field */
