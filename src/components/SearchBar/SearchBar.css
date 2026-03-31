@@ -114,16 +114,22 @@
 
 
 .search-field-date .search-input {
-  font-size: 0.9rem;
+  font-size: 0;
   letter-spacing: 0;
+  text-align: center;
+  padding: 0.54rem 0.36rem;
 }
 
 .search-field-date .search-input::-webkit-datetime-edit {
-  padding: 0;
+  display: none;
 }
 
 .search-field-date .search-input::-webkit-calendar-picker-indicator {
-  margin-left: 0.2rem;
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  filter: invert(0.3);
 }
 
 .search-buttons {
@@ -216,8 +222,8 @@
   }
 
   .search-field-date .search-input {
-    font-size: 0.72rem;
-    padding: 0.54rem 0.3rem;
+    font-size: 0;
+    padding: 0.48rem 0.24rem;
   }
 
   .search-icon {
@@ -269,8 +275,8 @@
   }
 
   .search-field-date .search-input {
-    font-size: 0.7rem;
-    padding: 0.48rem 0.22rem;
+    font-size: 0;
+    padding: 0.44rem 0.2rem;
   }
 
   .search-icon {
@@ -320,8 +326,8 @@
   }
 
   .search-field-date .search-input {
-    font-size: 0.68rem;
-    padding: 0.44rem 0.2rem;
+    font-size: 0;
+    padding: 0.4rem 0.18rem;
   }
 
   .search-icon {
