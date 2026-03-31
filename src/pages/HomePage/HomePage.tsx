@@ -96,10 +96,6 @@ export const HomePage: React.FC = () => {
     resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const handleFiltersOpen = () => {
-    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   return (
     <Layout>
       <section className="hero">
@@ -118,7 +114,6 @@ export const HomePage: React.FC = () => {
               onDateChange={(checkIn: string, checkOut: string) => setFilters({ ...filters, checkIn, checkOut })}
               onGuestsChange={(guests: number) => setFilters({ ...filters, guests })}
               onSearch={handleSearchSubmit}
-              onFiltersOpen={handleFiltersOpen}
             />
           </div>
         </div>
