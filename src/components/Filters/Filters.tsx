@@ -208,7 +208,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
           <div className="filter-group">
             <label>{cityLabel}</label>
             <select
-              className={filters.city ? 'filter-select-active' : ''}
               value={filters.city}
               onChange={(e) => {
                 const nextCity = e.target.value

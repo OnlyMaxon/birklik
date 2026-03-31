@@ -101,9 +101,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleCityInputChange = (inputValue: string) => {
     onChange(inputValue)
-    onCitySelect?.('')
-    // Open suggestions when typing in city field
-    setIsSuggestOpen(true)
+    // Не очищаем город, если пользователь просто стирает текст
+    // Город очищается только если пользователь что-то печатает
+    if (inputValue.trim() !== '') {
+      onCitySelect?.('')
+    }
   }
 
   const handleClearCity = () => {
@@ -125,16 +127,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               type="text"
               className="search-field-input"
               placeholder={t.search.placeholder}
-              value={value}
+              value={selectedCity ? getCityLabel(selectedCity) : value}
               onChange={(e) => handleCityInputChange(e.target.value)}
               onFocus={() => setIsSuggestOpen(true)}
               onBlur={() => window.setTimeout(() => setIsSuggestOpen(false), 120)}
             />
-            {selectedCity && !value && (
-              <div className="search-selected-city-display">
-                {getCityLabel(selectedCity)}
-              </div>
-            )}
             {selectedCity && (
               <button
                 type="button"

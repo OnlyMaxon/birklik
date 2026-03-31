@@ -262,13 +262,6 @@
   margin-right: 0.5rem;
 }
 
-.filter-select-active {
-  background-color: #f5f1eb !important;
-  border-color: #b7925d !important;
-  color: #b7925d !important;
-  font-weight: 600 !important;
-}
-
 .city-picker-header {
   display: grid;
   grid-template-columns: auto minmax(0, 220px);
