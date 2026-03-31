@@ -110,6 +110,47 @@
   color: #ffb703;
 }
 
+.terms-checkbox {
+  padding: 0.75rem;
+  background: #f9f7f3;
+  border-radius: 8px;
+  border: 1px solid #e8e4df;
+}
+
+.terms-checkbox label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  margin: 0;
+}
+
+.terms-checkbox input[type="checkbox"] {
+  margin-top: 0.25rem;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #b7925d;
+}
+
+.terms-checkbox span {
+  font-size: 0.95rem;
+  color: #2f2a24;
+  line-height: 1.5;
+}
+
+.terms-checkbox a {
+  color: #b7925d;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.terms-checkbox a:hover {
+  color: #9b7a48;
+  text-decoration: underline;
+}
+
 @media (max-width: 480px) {
   .auth-card {
     padding: 1.5rem;

@@ -16,6 +16,7 @@ export const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: ''
   })
+  const [agreeToTerms, setAgreeToTerms] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
 
@@ -82,6 +83,17 @@ export const RegisterPage: React.FC = () => {
           : language === 'ru'
             ? 'Пароль должен содержать минимум 6 символов'
             : 'Şifrə ən azı 6 simvoldan ibarət olmalıdır'
+      )
+      return
+    }
+
+    if (!agreeToTerms) {
+      setError(
+        language === 'en'
+          ? 'You must agree to the Terms and Conditions'
+          : language === 'ru'
+            ? 'Вы должны согласиться с Условиями использования'
+            : 'Siz Şərtlər və Şəraiti qəbul etməlisiniz'
       )
       return
     }
@@ -179,10 +191,34 @@ export const RegisterPage: React.FC = () => {
                 />
               </div>
 
+              <div className="form-group terms-checkbox">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={agreeToTerms}
+                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  />
+                  <span>
+                    {language === 'en'
+                      ? 'I agree to the '
+                      : language === 'ru'
+                        ? 'Я согласен с '
+                        : 'Mən '}
+                    <Link to="/terms">
+                      {language === 'en'
+                        ? 'Terms and Conditions'
+                        : language === 'ru'
+                          ? 'Условиями использования'
+                          : 'Şərtlər və Şəraiti'}
+                    </Link>
+                  </span>
+                </label>
+              </div>
+
               <button 
                 type="submit" 
                 className="btn btn-accent btn-lg w-full"
-                disabled={loading}
+                disabled={loading || !agreeToTerms}
               >
                 {loading ? t.messages.loading : t.auth.register}
               </button>
