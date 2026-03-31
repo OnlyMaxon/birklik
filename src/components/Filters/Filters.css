@@ -260,6 +260,13 @@
 
 .filter-chip input[type="checkbox"] {
   margin-right: 0.5rem;
+  appearance: checkbox;
+  -webkit-appearance: checkbox;
+  -moz-appearance: checkbox;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #9b7448;
 }
 
 .city-picker-header {
@@ -338,6 +345,14 @@
 
 .city-option-item input {
   width: auto;
+  appearance: checkbox;
+  -webkit-appearance: checkbox;
+  -moz-appearance: checkbox;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #9b7448;
+  margin-right: 0.45rem;
 }
 
 .empty-option-list {
