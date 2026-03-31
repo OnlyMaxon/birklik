@@ -275,8 +275,8 @@
 
 /* iPhone Google/Chrome shell safe mode */
 .ios-google body {
-  background: #edf4ff;
-  color: #17355f;
+  background: #f8f4f0;
+  color: #5a4a3d;
 }
 
 .ios-google .header,
@@ -291,13 +291,13 @@
 }
 
 .ios-google .header {
-  background: #0c2347 !important;
+  background: #2e241b !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
 .ios-google .hero-overlay {
-  background: linear-gradient(145deg, rgba(7, 20, 45, 0.95), rgba(11, 39, 80, 0.92)) !important;
+  background: linear-gradient(145deg, rgba(46, 36, 27, 0.95), rgba(78, 61, 43, 0.92)) !important;
 }
 
 .ios-google .hero-pattern {
@@ -305,11 +305,11 @@
 }
 
 .ios-google .properties-section {
-  background: #edf4ff !important;
+  background: #f8f4f0 !important;
 }
 
 .ios-google .plans-section {
-  background: linear-gradient(160deg, #0a1f45 0%, #0d2f67 100%) !important;
+  background: linear-gradient(160deg, #2e241b 0%, #4e3d2b 100%) !important;
 }
 
 .ios-google .cta-section,
@@ -327,7 +327,7 @@
 .ios-google .profile-card,
 .ios-google .auth-card {
   background: #ffffff !important;
-  border-color: rgba(19, 78, 158, 0.14) !important;
+  border-color: rgba(78, 61, 43, 0.14) !important;
 }
 
 .ios-google .property-card,
@@ -338,11 +338,11 @@
 .ios-google .property-info,
 .ios-google .add-listing-form,
 .ios-google .profile-card {
-  box-shadow: 0 8px 18px rgba(10, 33, 73, 0.12) !important;
+  box-shadow: 0 8px 18px rgba(46, 36, 27, 0.12) !important;
 }
 
 .ios-google .btn-primary {
-  background: linear-gradient(135deg, #1f62c7 0%, #3b82e8 100%) !important;
+  background: linear-gradient(135deg, #5a4a3d 0%, #7a6a5a 100%) !important;
   color: #ffffff !important;
 }
 
@@ -353,8 +353,8 @@
 
 .ios-google .btn-outline {
   background: #ffffff !important;
-  border-color: #1f62c7 !important;
-  color: #1f62c7 !important;
+  border-color: #5a4a3d !important;
+  color: #5a4a3d !important;
 }
 
 .ios-google .nav-link,
@@ -369,11 +369,11 @@
 .ios-google .listing-title,
 .ios-google .modal-title,
 .ios-google .auth-header h1 {
-  color: #173f77 !important;
+  color: #5a4a3d !important;
 }
 
 .ios-google .hero-title {
-  color: #f7fbff !important;
+  color: #f5f0eb !important;
 }
 
 .ios-google .hero-subtitle,
@@ -385,7 +385,7 @@
 }
 
 .ios-google .badge-primary {
-  background: #1f62c7 !important;
+  background: #5a4a3d !important;
   color: #ffffff !important;
 }
 
@@ -398,13 +398,13 @@
 .ios-google select,
 .ios-google textarea {
   background: #ffffff !important;
-  border-color: rgba(24, 83, 167, 0.24) !important;
-  color: #17355f !important;
+  border-color: rgba(78, 61, 43, 0.24) !important;
+  color: #5a4a3d !important;
 }
 
 .ios-google .leaflet-map,
 .ios-google .gallery-main {
-  border-color: rgba(16, 66, 136, 0.18) !important;
+  border-color: rgba(78, 61, 43, 0.18) !important;
 }
 
 .ios-google .property-image img,
