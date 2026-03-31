@@ -125,10 +125,7 @@ export const HomePage: React.FC = () => {
             <SearchBar
               onChange={(value: string) => setFilters({ ...filters, search: value })}
               cityValue={filters.city}
-              onCitySelect={(city: string) => {
-                console.log('HomePage clear action, city:', city)
-                setFilters({ ...filters, city })
-              }}
+              onCitySelect={(city: string) => setFilters({ ...filters, city })}
               checkInValue={filters.checkIn}
               checkOutValue={filters.checkOut}
               guestsValue={filters.guests}

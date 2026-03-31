@@ -108,11 +108,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   const handleClearCity = () => {
-    console.log('Clear city button clicked')
     setCitySearchText('')
     onCitySelect?.('')
-    onChange('')
-    setIsSuggestOpen(true)
+    setIsSuggestOpen(false)
   }
 
   return (
