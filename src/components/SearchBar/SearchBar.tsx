@@ -97,9 +97,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <form className="search-bar" onSubmit={handleSubmit}>
-      <div className="search-grid">
-        <div className="search-field search-field-destination">
-          <label>{isEnglish ? 'Where to?' : isRussian ? 'Куда?' : 'Hara?'}</label>
+      <div className="search-container">
+        {/* Location field */}
+        <div className="search-field search-field-location">
           <div className="search-input-wrapper">
             <svg
               className="search-icon"
@@ -118,7 +118,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             </svg>
             <input
               type="text"
-              className="search-input"
+              className="search-input search-input-text"
               placeholder={t.search.placeholder}
               value={value}
               onChange={(e) => onChange(e.target.value)}
@@ -149,49 +149,53 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
         </div>
 
-        <div className="search-field search-field-date">
-          <label>{isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş tarixi'}</label>
-          <input
-            type="date"
-            className="search-input"
-            value={checkIn}
-            onChange={(e) => handleCheckInChange(e.target.value)}
-            aria-label={isEnglish ? 'Check-in date' : isRussian ? 'Дата заезда' : 'Giriş tarixi'}
-          />
-        </div>
+        {/* Dates row */}
+        <div className="search-dates">
+          <div className="search-field search-field-date">
+            <input
+              type="date"
+              className="search-input search-input-date"
+              value={checkIn}
+              onChange={(e) => handleCheckInChange(e.target.value)}
+              aria-label={isEnglish ? 'Check-in date' : isRussian ? 'Дата заезда' : 'Giriş tarixi'}
+              title={isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş'}
+            />
+          </div>
 
-        <div className="search-field search-field-date">
-          <label>{isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış tarixi'}</label>
-          <input
-            type="date"
-            className="search-input"
-            value={checkOut}
-            min={checkIn || undefined}
-            onChange={(e) => handleCheckOutChange(e.target.value)}
-            aria-label={isEnglish ? 'Check-out date' : isRussian ? 'Дата выезда' : 'Çıxış tarixi'}
-          />
-        </div>
+          <div className="search-field search-field-date">
+            <input
+              type="date"
+              className="search-input search-input-date"
+              value={checkOut}
+              min={checkIn || undefined}
+              onChange={(e) => handleCheckOutChange(e.target.value)}
+              aria-label={isEnglish ? 'Check-out date' : isRussian ? 'Дата выезда' : 'Çıxış tarixi'}
+              title={isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış'}
+            />
+          </div>
 
-        <div className="search-field">
-          <label>{isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaq sayı'}</label>
-          <select
-            className="search-input"
-            value={guests}
-            onChange={(e) => handleGuestsChange(e.target.value)}
-          >
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5+</option>
-          </select>
+          <div className="search-field search-field-guests">
+            <select
+              className="search-input search-input-select"
+              value={guests}
+              onChange={(e) => handleGuestsChange(e.target.value)}
+              title={isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaq'}
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5+</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div className="search-buttons">
-        <button type="submit" className="btn btn-accent search-submit-btn">
+
+      <div className="search-actions">
+        <button type="submit" className="btn btn-accent search-btn-search">
           {t.search.button}
         </button>
-        <button type="button" className="btn btn-accent search-filters-btn" onClick={onFiltersOpen}>
+        <button type="button" className="btn btn-accent search-btn-filters" onClick={onFiltersOpen}>
           {t.search.filters}
         </button>
       </div>
