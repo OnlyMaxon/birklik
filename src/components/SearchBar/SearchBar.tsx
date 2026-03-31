@@ -1,6 +1,7 @@
 import React from 'react'
 import './SearchBar.css'
 import { useLanguage } from '../../context'
+import { cities } from '../../data'
 
 interface SearchBarProps {
   value: string
@@ -17,50 +18,8 @@ interface SearchBarProps {
   activeFilterCount?: number
 }
 
-const CITY_SUGGESTIONS = [
-  { value: 'Baku', az: 'Bakı', en: 'Baku', ru: 'Баку' },
-  { value: 'Ganja', az: 'Gəncə', en: 'Ganja', ru: 'Гянджа' },
-  { value: 'Sumqayit', az: 'Sumqayıt', en: 'Sumqayit', ru: 'Сумгайыт' },
-  { value: 'Quba', az: 'Quba', en: 'Quba', ru: 'Губа' },
-  { value: 'Shaki', az: 'Şəki', en: 'Shaki', ru: 'Шеки' },
-  { value: 'Lahij', az: 'Lahij', en: 'Lahij', ru: 'Лахиджь' },
-  { value: 'Gabala', az: 'Qəbələ', en: 'Gabala', ru: 'Габала' },
-  { value: 'Ismayilli', az: 'İsmayıllı', en: 'Ismayilli', ru: 'Исмаиллы' },
-  { value: 'Shamakhi', az: 'Şamaxı', en: 'Shamakhi', ru: 'Шамаха' },
-  { value: 'Balakan', az: 'Balakən', en: 'Balakan', ru: 'Балакан' },
-  { value: 'Zaqatala', az: 'Zaqatala', en: 'Zaqatala', ru: 'Загатала' },
-  { value: 'Oghuz', az: 'Oğuz', en: 'Oghuz', ru: 'Огуз' },
-  { value: 'Shaki District', az: 'Şəki Rayon', en: 'Shaki District', ru: 'Район Шеки' },
-  { value: 'Gakhistan', az: 'Qaxistan', en: 'Gakhistan', ru: 'Кахистан' },
-  { value: 'Khachmaz', az: 'Xaçmaz', en: 'Khachmaz', ru: 'Хачмаз' },
-  { value: 'Yardymly', az: 'Yardımly', en: 'Yardymly', ru: 'Ярдымлы' },
-  { value: 'Masally', az: 'Masallı', en: 'Masally', ru: 'Масаллы' },
-  { value: 'Lankaran', az: 'Lənkəran', en: 'Lankaran', ru: 'Ленкорань' },
-  { value: 'Lerik', az: 'Lerik', en: 'Lerik', ru: 'Лерик' },
-  { value: 'Astara', az: 'Astara', en: 'Astara', ru: 'Астара' },
-  { value: 'Jalilabad', az: 'Cəlilabad', en: 'Jalilabad', ru: 'Джалилабад' },
-  { value: 'Bilasuvar', az: 'Biləsuvar', en: 'Bilasuvar', ru: 'Биласувар' },
-  { value: 'Sabirabad', az: 'Sabirabd', en: 'Sabirabad', ru: 'Сабирабад' },
-  { value: 'Saatly', az: 'Saatly', en: 'Saatly', ru: 'Саатлы' },
-  { value: 'Imishli', az: 'İmişli', en: 'Imishli', ru: 'Имишли' },
-  { value: 'Agjabadi', az: 'Ağcəbədi', en: 'Agjabadi', ru: 'Агджабади' },
-  { value: 'Beylagan', az: 'Beyləqan', en: 'Beylagan', ru: 'Бейлеган' },
-  { value: 'Mingachevir', az: 'Mingəçevir', en: 'Mingachevir', ru: 'Мингечевир' },
-  { value: 'Yevlakh', az: 'Yevlax', en: 'Yevlakh', ru: 'Евлах' },
-  { value: 'Terter', az: 'Tərtar', en: 'Terter', ru: 'Тартар' },
-  { value: 'Goranboy', az: 'Göranboy', en: 'Goranboy', ru: 'Геранбой' },
-  { value: 'Dashkesan', az: 'Daşkəsən', en: 'Dashkesan', ru: 'Дашкесен' },
-  { value: 'Shamirvan', az: 'Şamirvan', en: 'Shamirvan', ru: 'Шамирван' },
-  { value: 'Shirvan', az: 'Şirvan', en: 'Shirvan', ru: 'Ширван' },
-  { value: 'Shusha', az: 'Şuşa', en: 'Shusha', ru: 'Шуша' },
-  { value: 'Lachin', az: 'Laçın', en: 'Lachin', ru: 'Лачин' },
-  { value: 'Kalbajar', az: 'Kəlbəcər', en: 'Kalbajar', ru: 'Кельбаджар' },
-  { value: 'Khojavend', az: 'Xocavənd', en: 'Khojavend', ru: 'Ходжавенд' },
-  { value: 'Khojavand', az: 'Xocavənd', en: 'Khojavand', ru: 'Ходжавенд' },
-  { value: 'Fuzuli', az: 'Füzuli', en: 'Fuzuli', ru: 'Физули' },
-  { value: 'Jabrayil', az: 'Cəbrayıl', en: 'Jabrayil', ru: 'Джебраил' },
-  { value: 'Naxchivan', az: 'Naxçıvan', en: 'Naxchivan', ru: 'Нахчыван' }
-]
+
+const cityFilterLimit = 6
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
@@ -102,17 +61,22 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setGuests(String(guestsValue || 1))
   }, [guestsValue])
 
-  const getCityLabel = (city: typeof CITY_SUGGESTIONS[number]) => {
+  const getCityLabel = (city: typeof cities[number]) => {
     if (isEnglish) return city.en
     if (isRussian) return city.ru
     return city.az
   }
 
+  // Find selected city if cityValue is set
+  const selectedCity = cityValue
+    ? cities.find((c) => c.value === cityValue)
+    : null
+
   const normalizedQuery = value.trim().toLowerCase()
-  const filteredCities = CITY_SUGGESTIONS.filter((city) => {
+  const filteredCities = cities.filter((city) => {
     if (!normalizedQuery) return true
     return [city.value, city.az, city.en, city.ru].some((label) => label.toLowerCase().includes(normalizedQuery))
-  }).slice(0, 6)
+  }).slice(0, cityFilterLimit)
 
   const handleCheckInChange = (nextCheckIn: string) => {
     setCheckIn(nextCheckIn)
@@ -129,10 +93,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     onGuestsChange?.(Number(nextGuests))
   }
 
-  const handlePickCity = (city: typeof CITY_SUGGESTIONS[number]) => {
-    onChange(getCityLabel(city))
+  const handlePickCity = (city: typeof cities[number]) => {
     onCitySelect?.(city.value)
+    onChange('')
     setIsSuggestOpen(false)
+  }
+
+  const handleCityInputChange = (inputValue: string) => {
+    onChange(inputValue)
+    onCitySelect?.('')
+  }
+
+  const handleClearCity = () => {
+    onCitySelect?.('')
+    onChange('')
+    setIsSuggestOpen(true)
   }
 
   return (
@@ -148,11 +123,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               type="text"
               className="search-field-input"
               placeholder={t.search.placeholder}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
+              value={selectedCity ? getCityLabel(selectedCity) : value}
+              onChange={(e) => handleCityInputChange(e.target.value)}
               onFocus={() => setIsSuggestOpen(true)}
               onBlur={() => window.setTimeout(() => setIsSuggestOpen(false), 120)}
             />
+            {selectedCity && (
+              <button
+                type="button"
+                className="search-city-clear"
+                onClick={handleClearCity}
+                title={isEnglish ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
+              >
+                ✕
+              </button>
+            )}
             {isSuggestOpen && filteredCities.length > 0 && (
               <div className="search-suggestions" role="listbox">
                 {filteredCities.map((city) => (

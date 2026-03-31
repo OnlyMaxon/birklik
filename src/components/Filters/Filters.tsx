@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '../../context'
 import { FilterState, PropertyType, District, LocationCategory } from '../../types'
-import { propertyTypes, districts, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
+import { propertyTypes, districts, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities } from '../../data'
 import './Filters.css'
 
 interface FiltersProps {
@@ -220,10 +220,11 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
               }}
             >
               <option value="">{t.search.any}</option>
-              <option value="Baku">Bakı</option>
-              <option value="Sumqayit">Sumqayıt</option>
-              <option value="Gabala">Qəbələ</option>
-              <option value="Quba">Quba</option>
+              {cities.map((city) => (
+                <option key={city.value} value={city.value}>
+                  {language === 'en' ? city.en : language === 'ru' ? city.ru : city.az}
+                </option>
+              ))}
             </select>
           </div>
 
