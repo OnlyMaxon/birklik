@@ -22,7 +22,6 @@ interface SearchBarProps {
 const cityFilterLimit = 6
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  value,
   onChange,
   onSearch,
   onFiltersOpen,
@@ -40,6 +39,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [checkOut, setCheckOut] = React.useState(checkOutValue)
   const [guests, setGuests] = React.useState(String(guestsValue || 1))
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
+  const [citySearchText, setCitySearchText] = React.useState('')
   const cityInputRef = React.useRef<HTMLInputElement>(null)
 
   const isEnglish = language === 'en'
@@ -71,9 +71,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   React.useEffect(() => {
     setGuests(String(guestsValue || 1))
-  }, [guestsValue])
+  }, [selectedCity])
 
-  const normalizedQuery = value.trim().toLowerCase()
+  const normalizedQuery = citySearchText.trim().toLowerCase()
   const filteredCities = cities.filter((city) => {
     if (!normalizedQuery) return true
     return [city.value, city.az, city.en, city.ru].some((label) => label.toLowerCase().includes(normalizedQuery))
@@ -100,6 +100,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   const handleCityInputChange = (inputValue: string) => {
+    setCitySearchText(inputValue)
     onChange(inputValue)
     // Очищаем выбранный город только если пользователь начал печатать новый текст
     if (inputValue.trim() !== '') {
@@ -108,6 +109,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   const handleClearCity = () => {
+    setCitySearchText('')
     onCitySelect?.('')
     onChange('')
     setIsSuggestOpen(true)
@@ -127,7 +129,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               type="text"
               className="search-field-input"
               placeholder={t.search.placeholder}
-              value={selectedCity ? getCityLabel(selectedCity) : value}
+              value={selectedCity ? getCityLabel(selectedCity) : citySearchText}
               onChange={(e) => handleCityInputChange(e.target.value)}
               onFocus={() => setIsSuggestOpen(true)}
               onBlur={() => window.setTimeout(() => setIsSuggestOpen(false), 120)}
