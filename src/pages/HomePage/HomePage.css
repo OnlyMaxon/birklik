@@ -251,6 +251,18 @@
   }
 }
 
+/* Ultra mobile - iPhone SE and smaller */
+@media (max-width: 380px) {
+  .hero-content {
+    padding: 1rem 0.5rem;
+  }
+
+  .hero-search-shell {
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .premium-properties-grid .property-card {
     animation: none;
