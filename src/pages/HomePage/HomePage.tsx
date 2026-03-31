@@ -29,6 +29,7 @@ export const HomePage: React.FC = () => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(true)
+  const [showFilters, setShowFilters] = React.useState(false)
   const [isDesktop, setIsDesktop] = React.useState(() => window.innerWidth >= 1024)
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
@@ -90,6 +91,24 @@ export const HomePage: React.FC = () => {
     setFilters(initialFilters)
   }
 
+  const handleFiltersOpen = () => {
+    setShowFilters(true)
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const activeFilterCount = [
+    filters.type,
+    filters.city,
+    filters.district,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.rooms,
+    filters.hasPool === null ? null : filters.hasPool
+  ].filter((item) => item !== null && item !== '').length + 
+  filters.extraFilters.length + 
+  filters.nearbyPlaces.length + 
+  filters.locationTags.length
+
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
 
   const handleSearchSubmit = () => {
@@ -114,6 +133,8 @@ export const HomePage: React.FC = () => {
               onDateChange={(checkIn: string, checkOut: string) => setFilters({ ...filters, checkIn, checkOut })}
               onGuestsChange={(guests: number) => setFilters({ ...filters, guests })}
               onSearch={handleSearchSubmit}
+              onFiltersOpen={handleFiltersOpen}
+              activeFilterCount={activeFilterCount}
             />
           </div>
         </div>
@@ -130,6 +151,9 @@ export const HomePage: React.FC = () => {
             onFilterChange={setFilters}
             onClear={handleClearFilters}
             hideTypeFilter={true}
+            hideFilterToggle={true}
+            isOpen={showFilters}
+            onOpenChange={setShowFilters}
             mapToggle={!isDesktop ? {
               active: showMap,
               label: mapLabel,

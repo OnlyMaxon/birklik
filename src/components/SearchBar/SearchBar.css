@@ -189,9 +189,57 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Search Button */
-.search-btn-main {
+/* Search Buttons */
+.search-actions-row {
+  display: flex;
+  gap: 8px;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.search-btn-filters {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #b7925d;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  white-space: nowrap;
+  position: relative;
+  -webkit-appearance: none;
+  -webkit-border-radius: 10px;
+}
+
+.search-btn-filters:active {
+  background: #9b7a48;
+}
+
+.search-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  color: white;
+}
+
+.search-btn-main {
+  flex: 1;
   padding: 14px 20px;
   font-size: 16px;
   font-weight: 700;
@@ -204,6 +252,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-height: 48px;
+  -webkit-appearance: none;
+  -webkit-border-radius: 10px;
 }
 
 .search-btn-main:active {
@@ -227,6 +277,12 @@
   .search-btn-main {
     padding: 12px 16px;
     font-size: 14px;
+    min-height: 44px;
+  }
+
+  .search-btn-filters {
+    padding: 12px 12px;
+    font-size: 12px;
     min-height: 44px;
   }
 
@@ -255,6 +311,12 @@
   .search-btn-main {
     padding: 10px;
     font-size: 13px;
+    min-height: 42px;
+  }
+
+  .search-btn-filters {
+    padding: 10px 8px;
+    font-size: 11px;
     min-height: 42px;
   }
 
@@ -305,10 +367,26 @@
     margin-bottom: 2px;
   }
 
+  .search-actions-row {
+    gap: 6px;
+  }
+
   .search-btn-main {
     padding: 8px;
-    font-size: 12px;
-    min-height: 40px;
+    font-size: 11px;
+    min-height: 38px;
+  }
+
+  .search-btn-filters {
+    padding: 8px 6px;
+    font-size: 10px;
+    min-height: 38px;
+  }
+
+  .search-filter-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
   }
 
   .search-guests-select {

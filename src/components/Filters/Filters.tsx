@@ -9,6 +9,9 @@ interface FiltersProps {
   onFilterChange: (filters: FilterState) => void
   onClear: () => void
   hideTypeFilter?: boolean
+  hideFilterToggle?: boolean
+  isOpen?: boolean
+  onOpenChange?: (isOpen: boolean) => void
   mapToggle?: {
     active: boolean
     label: string
@@ -25,13 +28,16 @@ const locationTabs: { key: LocationCategory; az: string; en: string; ru: string 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
-export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, mapToggle }) => {
+export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, hideFilterToggle = false, isOpen = false, onOpenChange, mapToggle }) => {
   const { t, language } = useLanguage()
     const isRussian = language === 'ru'
 
-  const [isOpen, setIsOpen] = React.useState(false)
   const [showMore, setShowMore] = React.useState(false)
   const [locationSearch, setLocationSearch] = React.useState('')
+
+  const handleToggleOpen = () => {
+    onOpenChange?.(!isOpen)
+  }
 
   const handleChange = (key: keyof FilterState, value: string | number | boolean | null) => {
     onFilterChange({ ...filters, [key]: value })
@@ -159,16 +165,18 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   return (
     <div className="filters-container">
       <div className="filters-top-row">
-        <button
-          className="filters-toggle btn btn-outline"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-          </svg>
-          {t.search.filters}
-          {totalActiveCount > 0 && <span className="filters-active-count">{totalActiveCount}</span>}
-        </button>
+        {!hideFilterToggle && (
+          <button
+            className="filters-toggle btn btn-outline"
+            onClick={handleToggleOpen}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            {t.search.filters}
+            {totalActiveCount > 0 && <span className="filters-active-count">{totalActiveCount}</span>}
+          </button>
+        )}
         {mapToggle && (
           <button className={`btn ${mapToggle.active ? 'btn-primary' : 'btn-outline'}`} onClick={mapToggle.onClick}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

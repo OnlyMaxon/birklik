@@ -8,6 +8,11 @@
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 1rem;
+  min-height: 40px;
+}
+
+.filters-top-row:empty {
+  display: none;
 }
 
 .filters-top-row .btn-outline {

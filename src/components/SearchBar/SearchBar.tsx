@@ -6,6 +6,7 @@ interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   onSearch?: () => void
+  onFiltersOpen?: () => void
   cityValue?: string
   onCitySelect?: (city: string) => void
   checkInValue?: string
@@ -13,6 +14,7 @@ interface SearchBarProps {
   guestsValue?: number | null
   onDateChange?: (checkIn: string, checkOut: string) => void
   onGuestsChange?: (guests: number) => void
+  activeFilterCount?: number
 }
 
 const CITY_SUGGESTIONS = [
@@ -26,13 +28,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
   onSearch,
+  onFiltersOpen,
   cityValue = '',
   onCitySelect,
   checkInValue = '',
   checkOutValue = '',
   guestsValue = 1,
   onDateChange,
-  onGuestsChange
+  onGuestsChange,
+  activeFilterCount = 0
 }) => {
   const { t, language } = useLanguage()
   const [checkIn, setCheckIn] = React.useState(checkInValue)
@@ -185,9 +189,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       </div>
 
       {/* Search Button */}
-      <button type="submit" className="search-btn-main">
-        {t.search.button}
-      </button>
+      <div className="search-actions-row">
+        <button
+          type="button"
+          className="search-btn-filters"
+          onClick={onFiltersOpen}
+          title={isEnglish ? 'Show filters' : isRussian ? 'Показать фильтры' : 'Filtirləri göstər'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          {isEnglish ? 'Filters' : isRussian ? 'Фильтры' : 'Filtrlər'}
+          {activeFilterCount > 0 && <span className="search-filter-badge">{activeFilterCount}</span>}
+        </button>
+        <button type="submit" className="search-btn-main">
+          {t.search.button}
+        </button>
+      </div>
     </form>
   )
 }
