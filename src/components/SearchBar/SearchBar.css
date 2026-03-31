@@ -84,6 +84,18 @@
   position: static;
 }
 
+.search-placeholder {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  right: 0.8rem;
+  font-size: 16px;
+  color: #a39f99;
+  font-weight: 500;
+  pointer-events: none;
+  text-align: center;
+}
+
 .search-input-select {
   cursor: pointer;
   appearance: none;
@@ -157,6 +169,7 @@
 .search-field-date,
 .search-field-guests {
   flex: 1;
+  position: relative;
 }
 
 .search-actions {

@@ -152,6 +152,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         {/* Dates row */}
         <div className="search-dates">
           <div className="search-field search-field-date">
+            {!checkIn && (
+              <div className="search-placeholder">
+                {isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş'}
+              </div>
+            )}
             <input
               type="date"
               className="search-input search-input-date"
@@ -163,6 +168,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
 
           <div className="search-field search-field-date">
+            {!checkOut && (
+              <div className="search-placeholder">
+                {isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış'}
+              </div>
+            )}
             <input
               type="date"
               className="search-input search-input-date"
