@@ -126,7 +126,10 @@ export const HomePage: React.FC = () => {
               value={filters.search}
               onChange={(value: string) => setFilters({ ...filters, search: value })}
               cityValue={filters.city}
-              onCitySelect={(city: string) => setFilters({ ...filters, city })}
+              onCitySelect={(city: string) => {
+                console.log('HomePage received city:', city)
+                setFilters({ ...filters, city })
+              }}
               checkInValue={filters.checkIn}
               checkOutValue={filters.checkOut}
               guestsValue={filters.guests}

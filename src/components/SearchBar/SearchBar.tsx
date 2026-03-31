@@ -40,9 +40,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [checkOut, setCheckOut] = React.useState(checkOutValue)
   const [guests, setGuests] = React.useState(String(guestsValue || 1))
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
+  const cityInputRef = React.useRef<HTMLInputElement>(null)
 
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
+
+  // Find and display selected city
+  const selectedCity = cityValue
+    ? cities.find((c) => c.value === cityValue)
+    : null
+
+  const getCityLabel = (city: typeof cities[number]) => {
+    if (isEnglish) return city.en
+    if (isRussian) return city.ru
+    return city.az
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,17 +72,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   React.useEffect(() => {
     setGuests(String(guestsValue || 1))
   }, [guestsValue])
-
-  const getCityLabel = (city: typeof cities[number]) => {
-    if (isEnglish) return city.en
-    if (isRussian) return city.ru
-    return city.az
-  }
-
-  // Find selected city if cityValue is set
-  const selectedCity = cityValue
-    ? cities.find((c) => c.value === cityValue)
-    : null
 
   const normalizedQuery = value.trim().toLowerCase()
   const filteredCities = cities.filter((city) => {
@@ -94,6 +95,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   const handlePickCity = (city: typeof cities[number]) => {
+    console.log('Picking city:', city.value)
     onCitySelect?.(city.value)
     onChange('')
     setIsSuggestOpen(false)
@@ -101,8 +103,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleCityInputChange = (inputValue: string) => {
     onChange(inputValue)
-    // Не очищаем город, если пользователь просто стирает текст
-    // Город очищается только если пользователь что-то печатает
+    // Очищаем выбранный город только если пользователь aktIVNO печатает текст
+    // Если поле пустое - город остается (пользователь просто стирает)
     if (inputValue.trim() !== '') {
       onCitySelect?.('')
     }
@@ -124,6 +126,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           </div>
           <div className="search-location-wrapper">
             <input
+              ref={cityInputRef}
               type="text"
               className="search-field-input"
               placeholder={t.search.placeholder}
@@ -151,6 +154,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     className={`search-suggestion-item ${cityValue === city.value ? 'active' : ''}`}
                     onMouseDown={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
+                      cityInputRef.current?.blur()
                       handlePickCity(city)
                     }}
                   >
