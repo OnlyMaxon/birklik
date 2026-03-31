@@ -1,0 +1,121 @@
+.terms-hero {
+  background: linear-gradient(135deg, #b7925d 0%, #9b7a48 100%);
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.terms-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.terms-last-updated {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.terms-content {
+  padding: 2rem 0;
+  min-height: 60vh;
+  margin-bottom: 3rem;
+}
+
+.terms-body {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 16px rgba(48, 35, 20, 0.08);
+}
+
+.terms-section {
+  margin-bottom: 2.5rem;
+}
+
+.terms-section:last-child {
+  margin-bottom: 0;
+}
+
+.terms-section-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2f2a24;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.section-number {
+  color: #b7925d;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.terms-section-content {
+  color: #4a3f35;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.terms-section-content p {
+  margin: 0.75rem 0;
+}
+
+.terms-section-content p:first-child {
+  margin-top: 0;
+}
+
+.bullet-point {
+  margin-left: 1.5rem;
+  padding-left: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .terms-title {
+    font-size: 1.75rem;
+  }
+
+  .terms-body {
+    padding: 1.5rem;
+  }
+
+  .terms-section {
+    margin-bottom: 1.75rem;
+  }
+
+  .terms-section-title {
+    font-size: 1.1rem;
+  }
+
+  .terms-section-content {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-hero {
+    padding: 2rem 0;
+  }
+
+  .terms-title {
+    font-size: 1.5rem;
+  }
+
+  .terms-body {
+    padding: 1rem;
+  }
+
+  .terms-section-title {
+    font-size: 1rem;
+    gap: 0.5rem;
+  }
+
+  .section-number {
+    min-width: 1.5rem;
+  }
+}
