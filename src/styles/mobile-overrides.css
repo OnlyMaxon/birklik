@@ -314,7 +314,7 @@
 
 .ios-google .cta-section,
 .ios-google .footer {
-  background: linear-gradient(160deg, #071937 0%, #0b244c 100%) !important;
+  background: linear-gradient(160deg, #2e241b 0%, #4e3d2b 100%) !important;
 }
 
 .ios-google .hero-type-card,
@@ -361,7 +361,7 @@
 .ios-google .footer-link,
 .ios-google .store-title,
 .ios-google .footer-store-title {
-  color: rgba(230, 240, 255, 0.94) !important;
+  color: #e9dcc8 !important;
 }
 
 .ios-google .property-title,
@@ -381,7 +381,7 @@
 .ios-google .app-download-box p,
 .ios-google .footer-app-panel p,
 .ios-google .footer-tagline {
-  color: rgba(224, 237, 255, 0.9) !important;
+  color: #e9dcc8 !important;
 }
 
 .ios-google .badge-primary {
