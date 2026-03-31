@@ -97,16 +97,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const fbUser = userCredential.user
 
-      // Update display name
+      // Update display name in Firebase Auth
       await updateProfile(fbUser, { displayName: name })
 
-      // Save additional user data to Firestore
+      // Save user data to Firestore
+      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a365d&color=fff`
       await setDoc(doc(db, 'users', fbUser.uid), {
         name,
         email,
         phone,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a365d&color=fff`,
+        avatar: avatarUrl,
         createdAt: new Date().toISOString()
+      })
+
+      // Immediately set user in state with correct name (don't wait for onAuthStateChanged)
+      setUser({
+        id: fbUser.uid,
+        name: name,
+        email: email,
+        phone: phone,
+        avatar: avatarUrl
       })
 
       return { success: true }
