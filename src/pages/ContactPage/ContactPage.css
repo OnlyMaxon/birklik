@@ -1,0 +1,259 @@
+.contact-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-hero {
+  background: linear-gradient(135deg, #b7925d 0%, #9b7448 100%);
+  color: white;
+  padding: 4rem 2rem;
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.contact-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.contact-content {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(48, 35, 20, 0.08);
+  margin: 2rem;
+  padding: 3rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact-intro {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #2f2a24;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.contact-item {
+  padding: 1.5rem;
+  background: #f9f7f3;
+  border-radius: 12px;
+  border-left: 4px solid #b7925d;
+}
+
+.contact-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #b7925d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.75rem 0;
+}
+
+.contact-link {
+  font-size: 1.05rem;
+  color: #2f2a24;
+  text-decoration: none;
+  font-weight: 500;
+  word-break: break-all;
+  transition: color 0.2s ease;
+}
+
+.contact-link:hover {
+  color: #b7925d;
+}
+
+.contact-value {
+  font-size: 1.05rem;
+  color: #2f2a24;
+  margin: 0;
+  font-weight: 500;
+}
+
+.contact-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e8e4df;
+}
+
+.contact-section:last-of-type {
+  border-bottom: none;
+}
+
+.contact-section h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #b7925d;
+  margin: 0 0 1.25rem 0;
+}
+
+.working-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.working-hours p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #2f2a24;
+  margin: 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.working-hours p:before {
+  content: '•';
+  color: #b7925d;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.social-item {
+  font-size: 1.05rem;
+  color: #2f2a24;
+  text-decoration: none;
+  padding: 1rem;
+  background: #f9f7f3;
+  border-radius: 8px;
+  border-left: 3px solid #b7925d;
+  transition: all 0.2s ease;
+  word-break: break-all;
+}
+
+.social-item:hover {
+  background: #f0ede8;
+  color: #b7925d;
+  padding-left: 1.25rem;
+}
+
+.contact-closing {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #2f2a24;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e8e4df;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .contact-hero {
+    padding: 3rem 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .contact-hero h1 {
+    font-size: 2rem;
+  }
+
+  .contact-content {
+    margin: 1.5rem;
+    padding: 2rem;
+  }
+
+  .contact-info {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .contact-item {
+    padding: 1.25rem;
+  }
+
+  .contact-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .social-item {
+    font-size: 0.95rem;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-hero {
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+  }
+
+  .contact-hero h1 {
+    font-size: 1.5rem;
+  }
+
+  .contact-content {
+    margin: 1rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .contact-intro {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .contact-info {
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .contact-item {
+    padding: 1rem;
+  }
+
+  .contact-label {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-link,
+  .contact-value {
+    font-size: 1rem;
+  }
+
+  .contact-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .contact-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .working-hours p {
+    font-size: 0.95rem;
+    padding-left: 1.25rem;
+  }
+
+  .social-item {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  .contact-closing {
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+}
