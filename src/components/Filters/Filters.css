@@ -254,6 +254,12 @@
 
 .filter-chip input {
   width: auto;
+  margin-right: 0.3rem;
+  cursor: pointer;
+}
+
+.filter-chip input[type="checkbox"] {
+  margin-right: 0.5rem;
 }
 
 .city-picker-header {

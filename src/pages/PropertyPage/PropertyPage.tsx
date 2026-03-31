@@ -292,14 +292,6 @@ export const PropertyPage: React.FC = () => {
                     <span className="price-label">{t.property.perNight}:</span>
                     <span className="price-value">{property.price.daily} {property.price.currency}</span>
                   </div>
-                  <div className="price-row">
-                    <span className="price-label">{t.property.perWeek}:</span>
-                    <span className="price-value">{property.price.weekly} {property.price.currency}</span>
-                  </div>
-                  <div className="price-row">
-                    <span className="price-label">{t.property.perMonth}:</span>
-                    <span className="price-value">{property.price.monthly} {property.price.currency}</span>
-                  </div>
                 </div>
 
                 <div className="owner-info owner-info-priority">

@@ -108,7 +108,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                       className="popup-map-link"
                       title={language === 'en' ? 'Open in Google Maps' : language === 'ru' ? 'Открыть в Google Maps' : 'Google Maps-də aç'}
                     >
-                      📍 {mapActionLabels.google}
+                      {mapActionLabels.google}
                     </a>
                     <a
                       href={`https://waze.com/ul?ll=${property.coordinates.lat}%2C${property.coordinates.lng}&navigate=yes`}
@@ -117,7 +117,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                       className="popup-map-link"
                       title={language === 'en' ? 'Open in Waze' : language === 'ru' ? 'Открыть в Waze' : 'Waze-də aç'}
                     >
-                      🗺️ {mapActionLabels.waze}
+                      {mapActionLabels.waze}
                     </a>
                     <a
                       href={`maps://maps.apple.com/?ll=${property.coordinates.lat},${property.coordinates.lng}&q=${getLocalizedText(property.title)}`}
@@ -126,7 +126,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                       className="popup-map-link"
                       title={language === 'en' ? 'Open in Apple Maps' : language === 'ru' ? 'Открыть в Apple Maps' : 'Apple Maps-də aç'}
                     >
-                      🗺️ {mapActionLabels.apple}
+                      {mapActionLabels.apple}
                     </a>
                   </div>
                 </div>
