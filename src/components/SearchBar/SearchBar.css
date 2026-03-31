@@ -162,6 +162,7 @@
   .search-buttons {
     grid-column: 1 / -1;
     gap: 0.3rem;
+    flex-direction: row;
   }
 
   .search-submit-btn,
@@ -178,14 +179,19 @@
   }
 
   .search-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.22rem;
+  }
+
+  .search-field-destination {
+    grid-column: 1 / -1;
   }
 
   .search-buttons {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.22rem;
+    grid-column: 1 / -1;
   }
 
   .search-submit-btn,
@@ -229,17 +235,23 @@
   }
 
   .search-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.18rem;
   }
 
+  .search-field-destination {
+    grid-column: 1 / -1;
+  }
+
   .search-buttons {
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.18rem;
+    grid-column: 1 / -1;
   }
 
   .search-submit-btn,
   .search-filters-btn {
+    flex: 1;
     height: 34px;
     padding: 0.4rem 0.5rem;
     font-size: 0.75rem;
@@ -248,7 +260,7 @@
   .search-input {
     font-size: 0.8rem;
     min-height: 34px;
-    padding: 0.48rem 0.55rem 0.48rem 2rem;
+    padding: 0.48rem 0.45rem 0.48rem 1.95rem;
   }
 
   .search-field label {
@@ -258,7 +270,7 @@
 
   .search-field-date .search-input {
     font-size: 0.7rem;
-    padding: 0.48rem 0.25rem;
+    padding: 0.48rem 0.22rem;
   }
 
   .search-icon {
@@ -276,16 +288,22 @@
   }
 
   .search-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.16rem;
+  }
+
+  .search-field-destination {
+    grid-column: 1 / -1;
   }
 
   .search-buttons {
     gap: 0.16rem;
+    grid-column: 1 / -1;
   }
 
   .search-submit-btn,
   .search-filters-btn {
+    flex: 1;
     height: 32px;
     padding: 0.35rem 0.45rem;
     font-size: 0.72rem;
@@ -294,7 +312,7 @@
   .search-input {
     font-size: 0.78rem;
     min-height: 32px;
-    padding: 0.44rem 0.5rem 0.44rem 1.95rem;
+    padding: 0.44rem 0.45rem 0.44rem 1.9rem;
   }
 
   .search-field label {
@@ -303,7 +321,7 @@
 
   .search-field-date .search-input {
     font-size: 0.68rem;
-    padding: 0.44rem 0.22rem;
+    padding: 0.44rem 0.2rem;
   }
 
   .search-icon {
