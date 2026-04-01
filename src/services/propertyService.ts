@@ -21,18 +21,6 @@ import { Property, PropertyType, Language } from '../types'
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 12
 
-const getTodayISO = (): string => new Date().toISOString().split('T')[0]
-
-const isOccupationExpired = (property: Property): boolean => {
-  if (!property.unavailableTo) return false
-  return property.unavailableTo < getTodayISO()
-}
-
-const isHiddenByAvailability = (property: Property): boolean => {
-  if (property.isActive !== false) return false
-  return !isOccupationExpired(property)
-}
-
 const isPubliclyVisible = (property: Property): boolean => {
   // Older records may not have status; treat them as active.
   if (!property.status) return true
@@ -115,7 +103,6 @@ export const getProperties = async (
       .map(mapDocToProperty)
       .filter(property => {
         if (!isPubliclyVisible(property)) return false
-        if (isHiddenByAvailability(property)) return false
         if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
         return matchesSearch(property, filters?.search)
       })
