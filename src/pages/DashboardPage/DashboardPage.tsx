@@ -218,7 +218,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     address: '',
     price: '',
     rooms: '',
-    guests: '',
+    minGuests: '',
+    maxGuests: '',
     area: '',
     amenities: [] as Amenity[],
     extraFeatures: [] as string[],
@@ -255,7 +256,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       address: '',
       price: '',
       rooms: '',
-      guests: '',
+      minGuests: '',
+      maxGuests: '',
       area: '',
       amenities: [],
       extraFeatures: [],
@@ -378,7 +380,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     const dailyPrice = Number(newListing.price)
     const rooms = Number(newListing.rooms)
-    const guests = Number(newListing.guests)
+    const minGuests = Number(newListing.minGuests)
+    const maxGuests = Number(newListing.maxGuests)
     const area = Number(newListing.area || 0)
     const normalizedAddress = newListing.listingTier === 'free' ? 'Lokasiya gizlidir' : newListing.address
     const listingStatus = 'pending'
@@ -393,7 +396,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         currency: 'AZN'
       },
       rooms,
-      guests,
+      minGuests,
+      maxGuests,
       area,
       amenities: newListing.amenities,
       extraFeatures: newListing.extraFeatures,
@@ -667,7 +671,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       address: property.address.az || property.address.en,
       price: String(property.price.daily || ''),
       rooms: String(property.rooms || ''),
-      guests: String(property.guests || ''),
+      minGuests: String(property.minGuests || ''),
+      maxGuests: String(property.maxGuests || ''),
       area: String(property.area || ''),
       amenities: property.amenities || [],
       extraFeatures: property.extraFeatures || [],
@@ -699,7 +704,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200',
         basePrice: 320,
         baseRooms: 5,
-        baseGuests: 8,
+        baseMinGuests: 2,
+        baseMaxGuests: 10,
         baseArea: 320,
         titleAz: 'Lüks villa',
         titleEn: 'Luxury villa',
@@ -719,7 +725,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200',
         basePrice: 130,
         baseRooms: 3,
-        baseGuests: 4,
+        baseMinGuests: 1,
+        baseMaxGuests: 4,
         baseArea: 95,
         titleAz: 'Dəniz mənzərəli mənzil',
         titleEn: 'Sea view apartment',
@@ -739,7 +746,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         image: 'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200',
         basePrice: 180,
         baseRooms: 4,
-        baseGuests: 6,
+        baseMinGuests: 2,
+        baseMaxGuests: 6,
         baseArea: 160,
         titleAz: 'Qəbələ bağ evi',
         titleEn: 'Gabala cottage',
@@ -759,7 +767,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200',
         basePrice: 210,
         baseRooms: 4,
-        baseGuests: 6,
+        baseMinGuests: 1,
+        baseMaxGuests: 6,
         baseArea: 210,
         titleAz: 'Novxanı istirahət evi',
         titleEn: 'Novkhani holiday house',
@@ -779,7 +788,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         image: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1200',
         basePrice: 260,
         baseRooms: 3,
-        baseGuests: 4,
+        baseMinGuests: 1,
+        baseMaxGuests: 4,
         baseArea: 140,
         titleAz: 'Şəhər mərkəzində penthaus',
         titleEn: 'City center penthouse',
@@ -794,7 +804,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const serial = index + 1
       const daily = template.basePrice + (index % 5) * 15
       const rooms = template.baseRooms + (index % 2)
-      const guests = template.baseGuests + (index % 3)
+      const minGuests = template.baseMinGuests
+      const maxGuests = Math.min(10, template.baseMaxGuests + (index % 3))
       const area = template.baseArea + (index % 4) * 12
 
       return {
@@ -819,7 +830,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
           currency: 'AZN'
         },
         rooms,
-        guests,
+        minGuests,
+        maxGuests,
         area,
         amenities: template.amenities,
         extraFeatures: template.extraFeatures,
@@ -1333,23 +1345,43 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         </div>
 
                         <div className="form-group">
-                          <label>{t.form.guests} *</label>
+                          <label>{t.form.minGuests} *</label>
                           <select
-                            value={newListing.guests}
-                            onChange={(e) => setNewListing({...newListing, guests: e.target.value})}
+                            value={newListing.minGuests}
+                            onChange={(e) => setNewListing({...newListing, minGuests: e.target.value})}
                             required
                           >
-                            <option value="">Select guests</option>
-                            <option value="1">1 guest / 1 qonaq / 1 взрослый</option>
-                            <option value="2">2 guests / 2 qonaq / 2 взрослых</option>
-                            <option value="3">3 guests / 3 qonaq / 3 взрослых</option>
-                            <option value="4">4 guests / 4 qonaq / 4 взрослых</option>
-                            <option value="5">5 guests / 5 qonaq / 5 взрослых</option>
-                            <option value="6">6 guests / 6 qonaq / 6 взрослых</option>
-                            <option value="7">7 guests / 7 qonaq / 7 взрослых</option>
-                            <option value="8">8 guests / 8 qonaq / 8 взрослых</option>
-                            <option value="9">9 guests / 9 qonaq / 9 взрослых</option>
-                            <option value="10">10+ guests / 10+ qonaq / 10+ взрослых</option>
+                            <option value="">Select min</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label>{t.form.maxGuests} *</label>
+                          <select
+                            value={newListing.maxGuests}
+                            onChange={(e) => setNewListing({...newListing, maxGuests: e.target.value})}
+                            required
+                          >
+                            <option value="">Select max</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10+</option>
                           </select>
                         </div>
 

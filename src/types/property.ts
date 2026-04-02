@@ -35,7 +35,8 @@ export interface Property {
   district: District
   price: PropertyPrice
   rooms: number
-  guests: number
+  minGuests: number
+  maxGuests: number
   area: number
   amenities: Amenity[]
   images: string[]
