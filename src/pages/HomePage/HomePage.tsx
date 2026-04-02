@@ -173,7 +173,12 @@ export const HomePage: React.FC = () => {
               <div className="premium-results-list">
                 <div className="properties-grid premium-properties-grid">
                   {filteredProperties.map((property) => (
-                    <PropertyCard key={property.id} property={property} />
+                    <PropertyCard 
+                      key={property.id} 
+                      property={property}
+                      checkIn={filters.checkIn}
+                      checkOut={filters.checkOut}
+                    />
                   ))}
                 </div>
               </div>

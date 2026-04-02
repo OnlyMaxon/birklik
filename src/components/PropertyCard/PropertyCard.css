@@ -141,6 +141,39 @@
   color: #6e5436;
 }
 
+.price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.price-nights {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #9b7448;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.price-per-night {
+  font-size: 0.65rem;
+  color: #6e5436;
+  font-weight: 500;
+}
+
+.price-total {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #342719;
+}
+
 .property-rating {
   display: flex;
   align-items: center;

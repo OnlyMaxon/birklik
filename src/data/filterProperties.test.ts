@@ -8,6 +8,7 @@ const baseProperty: Property = {
   district: 'mardakan',
   price: { daily: 250, weekly: 1500, monthly: 6000, currency: 'AZN' },
   rooms: 5,
+  guests: 8,
   area: 240,
   amenities: ['pool', 'parking', 'wifi', 'ac'],
   images: ['img.png'],
@@ -19,7 +20,7 @@ const baseProperty: Property = {
   city: 'Baku',
   extraFeatures: ['sauna', 'garage'],
   nearbyPlaces: ['sea', 'beach'],
-  locationCategory: 'landmark',
+  locationCategory: 'rayon',
   locationTags: ['port_baku']
 }
 
@@ -41,7 +42,7 @@ describe('filterProperties publication filtering', () => {
 
   it('filters by location category and selected location tags', () => {
     const result = filterProperties([baseProperty], {
-      locationCategory: 'landmark',
+      locationCategory: 'rayon',
       locationTags: ['port_baku']
     })
 

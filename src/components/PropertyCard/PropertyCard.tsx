@@ -6,12 +6,25 @@ import './PropertyCard.css'
 
 interface PropertyCardProps {
   property: Property
+  checkIn?: string
+  checkOut?: string
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
+export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, checkOut }) => {
   const { language, t } = useLanguage()
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
+
+  const calculateNights = () => {
+    if (!checkIn || !checkOut) return 0
+    const checkInDate = new Date(checkIn)
+    const checkOutDate = new Date(checkOut)
+    const diff = checkOutDate.getTime() - checkInDate.getTime()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  }
+
+  const nights = calculateNights()
+  const totalPrice = nights > 0 ? property.price.daily * nights : property.price.daily
 
   return (
     <Link to={`/property/${property.id}`} className="property-card card">
@@ -56,8 +69,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
 
         <div className="property-footer">
           <div className="property-price">
-            <span className="price-value">{property.price.daily} {property.price.currency}</span>
-            <span className="price-period">/{t.property.perNight}</span>
+            {nights > 0 && (
+              <div className="price-info">
+                <div className="price-nights">
+                  {nights} {language === 'en' ? 'night' : language === 'ru' ? 'ночь' : 'gecə'}{nights !== 1 ? 's' : ''}
+                </div>
+                <div className="price-breakdown">
+                  <span className="price-per-night">{property.price.daily} {property.price.currency}/{t.property.perNight}</span>
+                  <span className="price-total">{totalPrice} {property.price.currency}</span>
+                </div>
+              </div>
+            )}
+            {nights === 0 && (
+              <>
+                <span className="price-value">{property.price.daily} {property.price.currency}</span>
+                <span className="price-period">/{t.property.perNight}</span>
+              </>
+            )}
           </div>
           
           {property.rating && (

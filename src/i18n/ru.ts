@@ -113,6 +113,7 @@ export const ru: Translations = {
     price: 'Цена',
     address: 'Адрес',
     rooms: 'Количество комнат',
+    guests: 'Количество гостей',
     area: 'Площадь (м²)',
     photos: 'Фото',
     selectType: 'Выберите тип',

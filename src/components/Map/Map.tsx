@@ -1,5 +1,6 @@
 import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { useNavigate } from 'react-router-dom'
 import L from 'leaflet'
 import { useLanguage } from '../../context'
 import { Property, Language } from '../../types'
@@ -31,6 +32,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
   singleProperty = false
 }) => {
   const { language, t } = useLanguage()
+  const navigate = useNavigate()
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
@@ -74,7 +76,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
       <MapContainer 
         center={mapCenter} 
         zoom={mapZoom} 
-        scrollWheelZoom={false}
+        scrollWheelZoom={true}
         className="leaflet-map"
       >
         <TileLayer
@@ -100,6 +102,12 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                   <p className="popup-price">
                     <strong>{property.price.daily} {property.price.currency}</strong> / {t.property.perNight}
                   </p>
+                  <button 
+                    onClick={() => navigate(`/property/${property.id}`)}
+                    className="popup-view-button"
+                  >
+                    {language === 'en' ? 'View Listing' : language === 'ru' ? 'Просмотреть' : 'Elanı Göstər'}
+                  </button>
                   <div className="popup-map-actions">
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${property.coordinates.lat},${property.coordinates.lng}`}

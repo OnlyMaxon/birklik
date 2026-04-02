@@ -21,8 +21,7 @@ interface FiltersProps {
 
 const locationTabs: { key: LocationCategory; az: string; en: string; ru: string }[] = [
   { key: 'rayon', az: 'Rayon', en: 'District', ru: 'Район' },
-  { key: 'metro', az: 'Metro', en: 'Metro', ru: 'Метро' },
-  { key: 'landmark', az: 'Nişangah', en: 'Landmark', ru: 'Ориентир' }
+  { key: 'metro', az: 'Metro', en: 'Metro', ru: 'Метро' }
 ]
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
@@ -329,7 +328,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
         </div>
 
         <div className="more-toggle-wrap">
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowMore((prev) => !prev)}>
+          <button type="button" className="btn btn-accent btn-sm" onClick={() => setShowMore((prev) => !prev)}>
             {moreButtonLabel}
           </button>
         </div>

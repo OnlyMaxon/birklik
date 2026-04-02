@@ -2,7 +2,7 @@ export type PropertyType = 'villa' | 'apartment' | 'house' | 'cottage' | 'pentho
 
 export type District = 'mardakan' | 'novkhani' | 'buzovna' | 'bilgah' | 'zagulba' | 'pirshagi' | 'shuvalan' | 'baku' | 'nabran' | 'gabala'
 
-export type LocationCategory = 'rayon' | 'metro' | 'landmark'
+export type LocationCategory = 'rayon' | 'metro'
 
 export type Amenity = 'pool' | 'parking' | 'wifi' | 'ac' | 'kitchen' | 'tv' | 'washer' | 'garden' | 'bbq' | 'security' | 'beach' | 'gym'
 
@@ -35,6 +35,7 @@ export interface Property {
   district: District
   price: PropertyPrice
   rooms: number
+  guests: number
   area: number
   amenities: Amenity[]
   images: string[]

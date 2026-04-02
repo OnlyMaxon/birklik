@@ -253,20 +253,25 @@
 }
 
 .filter-chip input {
-  width: auto;
-  margin-right: 0.3rem;
   cursor: pointer;
 }
 
-.filter-chip input[type="checkbox"] {
-  margin-right: 0.5rem;
-  appearance: checkbox;
-  -webkit-appearance: checkbox;
-  -moz-appearance: checkbox;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #9b7448;
+/* Unified checkbox styling for all filters */
+input[type="checkbox"],
+.filter-chip input[type="checkbox"],
+.city-option-item input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  margin-right: 0.5rem !important;
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+  -moz-appearance: checkbox !important;
+  accent-color: #9b7448 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 .city-picker-header {
@@ -341,18 +346,6 @@
 
 .city-option-item:hover {
   background: rgba(184, 151, 93, 0.14);
-}
-
-.city-option-item input {
-  width: auto;
-  appearance: checkbox;
-  -webkit-appearance: checkbox;
-  -moz-appearance: checkbox;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #9b7448;
-  margin-right: 0.45rem;
 }
 
 .empty-option-list {

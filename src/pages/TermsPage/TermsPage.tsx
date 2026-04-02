@@ -129,12 +129,22 @@ Hosts have the right to:
         {
           number: '14',
           title: 'Contact and Payment Responsibility',
-          content: `For inquiries, please contact:
-Email: info@birklik.az
+          content: `**14. Contact and Payment Responsibility**
+**For inquiries:**
+**Email: info@birklik.az**
 
-If payments are made directly to the property owner and the user contacts the owner listed on the site to make the payment, birklik.az assumes no responsibility for such payments. The site only ensures security and trust for payments made through the platform.
+**14.1. birklik.az acts solely as an intermediary platform that enables communication between users (Host and Guest) and does not participate in any payment processes.**
 
-By accepting these terms, you confirm your full agreement with the rules of the birklik.az platform.`
+**14.2. All payments related to listings are made directly between the Host and the Guest.**
+
+**14.3. birklik.az shall not be held liable for:**
+**• the execution or failure of any payments**
+**• delays or refunds of payments**
+**• fraud, misrepresentation, or any financial disputes**
+
+**14.4. Users acknowledge and accept that they bear all risks associated with making payments.**
+
+**14.5. birklik.az does not receive, hold, or transfer funds and does not act as a financial intermediary between users.**`
         }
       ]
     },
@@ -259,13 +269,23 @@ Ev Sahibi hüquqludur:
         },
         {
           number: '14',
-          title: 'Əlaqə və ödənişlərin məsuliyyəti',
-          content: `Suallar üçün:
-Email: info@birklik.az
+          title: 'Əlaqə və ödənişlər üzrə məsuliyyət',
+          content: `**14. Əlaqə və ödənişlər üzrə məsuliyyət**
+**Suallar üçün:**
+**Email: info@birklik.az**
 
-Əgər ödənişlər birbaşa ev sahibinə həyata keçirilirsə və istifadəçi saytda göstərilən ev sahibi ilə əlaqə quraraq ödənişi həmin ev sahibinə yönəldirsə, bu halda birklik.az heç bir ödənişlə bağlı məsuliyyət daşımır. Sayt yalnız platforma üzərindən edilən ödənişlərdə təhlükəsizlik və etibar təmin edir.
+**14.1. birklik.az platforması istifadəçilər (Ev Sahibi və Kirayəçi) arasında yalnız əlaqə yaradılmasını təmin edən vasitəçi platformadır və heç bir ödəniş prosesində iştirak etmir.**
 
-Bu Şərtləri qəbul etməklə siz birklik.az platformasının qaydalarına tam razı olduğunuzu təsdiq edirsiniz.`
+**14.2. Platformada yerləşdirilən elanlar üzrə bütün ödənişlər birbaşa olaraq Ev Sahibi və Kirayəçi arasında həyata keçirilir.**
+
+**14.3. birklik.az heç bir halda aşağıdakılara görə məsuliyyət daşımır:**
+**• Ödənişlərin həyata keçirilməsi və ya keçirilməməsi**
+**• Ödənişlərin gecikməsi və ya qaytarılması**
+**• Aldadılma, dələduzluq və ya digər maliyyə mübahisələri**
+
+**14.4. İstifadəçilər ödəniş əməliyyatlarını həyata keçirərkən bütün riskləri öz üzərlərinə götürdüklərini qəbul edirlər.**
+
+**14.5. birklik.az heç bir ödənişi qəbul etmir, saxlamır və ya ötürmür və tərəflər arasında maliyyə vasitəçisi kimi çıxış etmir.**`
         }
       ]
     },
@@ -391,18 +411,40 @@ Bu Şərtləri qəbul etməklə siz birklik.az platformasının qaydalarına tam
         {
           number: '14',
           title: 'Контакты и ответственность за платежи',
-          content: `По вопросам обращайтесь:
-Электронная почта: info@birklik.az
+          content: `**14. Связь и ответственность за платежи**
+**По всем вопросам:**
+**Email: info@birklik.az**
 
-Если платежи осуществляются напрямую владельцу объекта, и пользователь связывается с указанным на сайте владельцем для передачи платежа, birklik.az не несет никакой ответственности за такие платежи. Сайт обеспечивает безопасность и надежность только для платежей, совершенных через платформу.
+**14.1. Платформа birklik.az выступает исключительно как посредник для установления связи между пользователями (Арендодателем и Арендатором) и не участвует в процессе оплаты.**
 
-Принятием настоящих условий вы подтверждаете свое полное согласие с правилами платформы birklik.az.`
+**14.2. Все платежи по размещённым объявлениям осуществляются напрямую между Арендодателем и Арендатором.**
+
+**14.3. birklik.az не несёт ответственности за:**
+**• осуществление или неосуществление платежей**
+**• задержки или возвраты платежей**
+**• мошенничество, обман или иные финансовые споры**
+
+**14.4. Пользователи принимают на себя все риски, связанные с осуществлением платежей.**
+
+**14.5. birklik.az не принимает, не хранит и не переводит денежные средства и не выступает в качестве платёжного посредника между сторонами.**`
         }
       ]
     }
   }
 
   const currentTerms = terms[language as keyof typeof terms] || terms.en
+
+  const renderContent = (text: string) => {
+    // Split by ** to find bold sections
+    const parts = text.split('**')
+    return parts.map((part, index) => {
+      // Odd indices are bold
+      if (index % 2 === 1) {
+        return <strong key={index}>{part}</strong>
+      }
+      return <span key={index}>{part}</span>
+    })
+  }
 
   return (
     <Layout>
@@ -425,7 +467,7 @@ Bu Şərtləri qəbul etməklə siz birklik.az platformasının qaydalarına tam
                 <div className="terms-section-content">
                   {section.content.split('\n').map((line, index) => (
                     <p key={index} className={line.startsWith('•') ? 'bullet-point' : ''}>
-                      {line}
+                      {renderContent(line)}
                     </p>
                   ))}
                 </div>

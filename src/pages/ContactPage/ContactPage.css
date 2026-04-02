@@ -113,14 +113,6 @@
   position: relative;
 }
 
-.working-hours p:before {
-  content: '•';
-  color: #b7925d;
-  font-weight: bold;
-  position: absolute;
-  left: 0;
-}
-
 .social-links {
   display: flex;
   flex-direction: column;

@@ -113,6 +113,7 @@ export const az: Translations = {
     price: "Qiymət",
     address: "Ünvan",
     rooms: "Otaq sayı",
+    guests: "Qonaq sayı",
     area: "Sahə (m²)",
     photos: "Şəkillər",
     selectType: "Növ seçin",

@@ -113,6 +113,7 @@ export interface Translations {
     price: string
     address: string
     rooms: string
+    guests: string
     area: string
     photos: string
     selectType: string

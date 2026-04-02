@@ -65,13 +65,6 @@
   margin-bottom: 0.75rem;
 }
 
-.about-list li:before {
-  content: '•';
-  color: #b7925d;
-  font-weight: bold;
-  margin-right: 0.75rem;
-}
-
 @media (max-width: 768px) {
   .about-hero {
     padding: 3rem 1.5rem;

@@ -439,3 +439,61 @@
   }
 }
 
+/* Date Range Button */
+.search-date-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fffcf7;
+  border: 1px solid rgba(205, 186, 154, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+.search-date-button:hover {
+  border-color: rgba(184, 143, 73, 0.6);
+  box-shadow: 0 0 0 3px rgba(187, 149, 82, 0.12);
+}
+
+.search-date-button svg {
+  flex-shrink: 0;
+  color: #9b7448;
+  width: 20px;
+  height: 20px;
+}
+
+.search-date-button-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+
+.search-date-button-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a7961;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.search-date-button-value {
+  font-size: 15px;
+  font-weight: 500;
+  color: #2f2a24;
+}
+
+.search-date-button-placeholder {
+  font-size: 15px;
+  font-weight: 500;
+  color: #ccc;
+}
+
+

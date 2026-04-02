@@ -2,6 +2,7 @@ import React from 'react'
 import './SearchBar.css'
 import { useLanguage } from '../../context'
 import { cities } from '../../data'
+import { DateRangePicker } from '../DateRangePicker'
 
 interface SearchBarProps {
   onChange: (value: string) => void
@@ -38,6 +39,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [checkOut, setCheckOut] = React.useState(checkOutValue)
   const [guests, setGuests] = React.useState(String(guestsValue || 1))
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
+  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false)
   const [citySearchText, setCitySearchText] = React.useState('')
   const cityInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -78,14 +80,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     return [city.value, city.az, city.en, city.ru].some((label) => label.toLowerCase().includes(normalizedQuery))
   }).slice(0, cityFilterLimit)
 
-  const handleCheckInChange = (nextCheckIn: string) => {
+  const handleCheckInChange = (nextCheckIn: string, nextCheckOut?: string) => {
     setCheckIn(nextCheckIn)
-    onDateChange?.(nextCheckIn, checkOut)
-  }
-
-  const handleCheckOutChange = (nextCheckOut: string) => {
-    setCheckOut(nextCheckOut)
-    onDateChange?.(checkIn, nextCheckOut)
+    const outDate = nextCheckOut !== undefined ? nextCheckOut : checkOut
+    setCheckOut(outDate)
+    onDateChange?.(nextCheckIn, outDate)
   }
 
   const handleGuestsChange = (nextGuests: string) => {
@@ -172,32 +171,36 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {/* Dates Field */}
       <div className="search-card-field search-dates-field">
         <div className="search-field-content">
-          <div className="search-dates-inputs">
-            <div className="search-date-input-wrapper">
-              <input
-                type="date"
-                className="search-field-input search-date-input"
-                value={checkIn}
-                onChange={(e) => handleCheckInChange(e.target.value)}
-              />
-              <span className="search-date-label-small">
-                {isEnglish ? 'Check-in' : isRussian ? 'Заезд' : 'Giriş'}
+          <button
+            type="button"
+            className="search-date-button"
+            onClick={() => setIsDatePickerOpen(true)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div className="search-date-button-text">
+              <span className="search-date-button-label">
+                {isEnglish ? 'When?' : isRussian ? 'Когда?' : 'Nə vaxt?'}
               </span>
+              {checkIn && checkOut ? (
+                <span className="search-date-button-value">
+                  {checkIn} → {checkOut}
+                </span>
+              ) : checkIn ? (
+                <span className="search-date-button-value">
+                  {checkIn}
+                </span>
+              ) : (
+                <span className="search-date-button-placeholder">
+                  {isEnglish ? 'Select dates' : isRussian ? 'Выберите даты' : 'Tarixləri seçin'}
+                </span>
+              )}
             </div>
-            <div className="search-date-divider">—</div>
-            <div className="search-date-input-wrapper">
-              <input
-                type="date"
-                className="search-field-input search-date-input"
-                value={checkOut}
-                min={checkIn || undefined}
-                onChange={(e) => handleCheckOutChange(e.target.value)}
-              />
-              <span className="search-date-label-small">
-                {isEnglish ? 'Check-out' : isRussian ? 'Выезд' : 'Çıxış'}
-              </span>
-            </div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -212,11 +215,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             value={guests}
             onChange={(e) => handleGuestsChange(e.target.value)}
           >
-            <option value="1">{isEnglish ? '1 guest' : isRussian ? '1 взрослый, 0 детей' : '1 qonaq'}</option>
-            <option value="2">{isEnglish ? '2 guests' : isRussian ? '2 взрослых, 0 детей' : '2 qonaq'}</option>
-            <option value="3">{isEnglish ? '3 guests' : isRussian ? '3 взрослых, 0 детей' : '3 qonaq'}</option>
-            <option value="4">{isEnglish ? '4 guests' : isRussian ? '4 взрослых, 0 детей' : '4 qonaq'}</option>
-            <option value="5">{isEnglish ? '5+ guests' : isRussian ? '5+ взрослых' : '5+ qonaq'}</option>
+            <option value="1">{isEnglish ? '1 guest' : isRussian ? '1 взрослый' : '1 qonaq'}</option>
+            <option value="2">{isEnglish ? '2 guests' : isRussian ? '2 взрослых' : '2 qonaq'}</option>
+            <option value="3">{isEnglish ? '3 guests' : isRussian ? '3 взрослых' : '3 qonaq'}</option>
+            <option value="4">{isEnglish ? '4 guests' : isRussian ? '4 взрослых' : '4 qonaq'}</option>
+            <option value="5">{isEnglish ? '5 guests' : isRussian ? '5 взрослых' : '5 qonaq'}</option>
+            <option value="6">{isEnglish ? '6 guests' : isRussian ? '6 взрослых' : '6 qonaq'}</option>
+            <option value="7">{isEnglish ? '7 guests' : isRussian ? '7 взрослых' : '7 qonaq'}</option>
+            <option value="8">{isEnglish ? '8 guests' : isRussian ? '8 взрослых' : '8 qonaq'}</option>
+            <option value="9">{isEnglish ? '9 guests' : isRussian ? '9 взрослых' : '9 qonaq'}</option>
+            <option value="10">{isEnglish ? '10+ guests' : isRussian ? '10+ взрослых' : '10+ qonaq'}</option>
           </select>
         </div>
       </div>
@@ -239,6 +247,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {t.search.button}
         </button>
       </div>
+
+      {isDatePickerOpen && (
+        <DateRangePicker
+          checkIn={checkIn}
+          checkOut={checkOut}
+          onDateChange={handleCheckInChange}
+          onClose={() => setIsDatePickerOpen(false)}
+          language={language as 'en' | 'az' | 'ru'}
+        />
+      )}
     </form>
   )
 }

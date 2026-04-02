@@ -89,6 +89,7 @@ export const getProperties = async (
     }
 
     // Add ordering and pagination
+    constraints.push(orderBy('isFeatured', 'desc'))
     constraints.push(orderBy('createdAt', 'desc'))
     constraints.push(limit(PAGE_SIZE))
 

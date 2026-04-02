@@ -80,6 +80,27 @@
   font-weight: 700;
 }
 
+.popup-view-button {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.3rem;
+  border: none;
+  border-radius: 7px;
+  background: #b7925d;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.popup-view-button:hover {
+  background: #9b7448;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(70, 53, 36, 0.2);
+}
+
 .popup-map-actions {
   margin-top: 0.25rem;
   display: grid;

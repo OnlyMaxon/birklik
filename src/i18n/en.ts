@@ -113,6 +113,7 @@ export const en: Translations = {
     price: "Price",
     address: "Address",
     rooms: "Number of Rooms",
+    guests: "Number of Guests",
     area: "Area (m²)",
     photos: "Photos",
     selectType: "Select Type",
