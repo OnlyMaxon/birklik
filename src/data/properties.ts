@@ -322,23 +322,23 @@ const metroLocationNames = [
   'Ulduz'
 ]
 
-// City to districts mapping
+// City to districts/regions mapping
 export const cityDistricts: Record<string, string[]> = {
   'Baku': ['mardakan', 'novkhani', 'buzovna', 'bilgah', 'zagulba', 'pirshagi', 'shuvalan', 'baku', 'nabran'],
-  'Shaki': ['Niс', 'Baş Layışı', 'İnçə', 'OrtaZəyid', 'Qəud', 'Baltali', 'Cuмay', 'Sorsu', 'Aşağı Göynik', 'Daşüz'],
-  'Gabala': ['Niс', 'Vandam', 'Bum', 'Laza', 'Durca', 'Hamzali', 'Mirzabəyli', 'Mixliquovaç', 'Soiquca', 'Tıkanlı'],
-  'Quba': ['Xinaliq', 'Qrız', 'Çaqireş', 'Tanğaaltı', 'Yerif', 'Budug', 'Alipan', 'Rüstov', 'Çek', 'Xaltan'],
-  'Lankaran': ['Haftoni', 'Xanbulançay', 'Garmatük', 'Girdani', 'Sağlakuça', 'Şixakaran', 'Separadi', 'Boladı', 'Nərbağı', 'Türzə'],
-  'Shamakhi': ['Dimirçi', 'Avaxıl', 'Pirqulu', 'Meysari', 'Madiyan', 'Madrasa', 'Çuxuryurd', 'Qaleybugurd', 'Nağaraxana', 'Sis'],
-  'Ismayilli': ['Lahiç', 'Basqal', 'İvanovka', 'Taliştən', 'Büyük', 'Tazəkənd', 'Qalaciq', 'Qurbanafandi', 'Diyalli', 'Direnli'],
-  'Naftalan': ['Boluslu', 'Tap Qaraqoyunlu', 'Borsufilu', 'Safikürd', 'Zeya', 'Xarxaput', 'Qaraçınar', 'Goran', 'Qazanbulaq', 'Ballіqaya'],
-  'Qusar': ['Laza', 'Əniq', 'Hil', 'Quzun', 'Sutu', 'Urva', 'Yasab', 'Qədəzeykur', 'Badirqala', 'BalaQusar'],
-  'Lerik': ['Hamarat', 'Mastail', 'Zuvand', 'Orand', 'Pirasora', 'Singadulan', 'Bilna', 'Vizazamin'],
-  'Shushi': ['Dasaltı', 'Turşsu', 'Malibəyli', 'Suşakand', 'Xalfali', 'Ünvanlı', 'Baş Qaladarası', 'Kiçik Qaladarası', 'Marzalar'],
-  'Goygol': ['Toğanalı', 'Çaylı', 'Mixaylovka', 'YeniZöda', 'Firmuzabad', 'Aqağ Ağcakand', 'Gümüşlü', 'Qal'],
-  'Nakhchivan': ['Badamlı', 'Sirab', 'Qarabağlar', 'Gülistən', 'Xəldan', 'Bilav', 'Nsirvaz', 'Qusqara', 'Üçtəpə', 'Şahbuz'],
-  'Mingachevir': ['Varvara', 'Zurnabad', 'Çaylı', 'Asan Ağcakand', 'Yerizod', 'Malbinası', 'Tanrivərdilər', 'Azərbaycan', 'Ordubad(Qadimşahər)'],
-  'Ganja': ['Hacıkənd', 'Zurnabad', 'Çaylı', 'Asan Ağcakand', 'Yerizod', 'Malbinası', 'Tanrivərdilər', 'Azərbaycan']
+  'Shaki': ['Kiş', 'Baş Layışı', 'İnçə', 'Orta Zəyzid', 'Oxud', 'Baltalı', 'Cumay', 'Şorsu', 'Aşağı Göynük', 'Daşüz'],
+  'Gabala': ['Nic', 'Vəndam', 'Bum', 'Laza', 'Durca', 'Həmzəli', 'Mirzəbəyli', 'Mixlıqovaq', 'Solquca', 'Tikanlı'],
+  'Quba': ['Xınalıq', 'Qrız', 'Qəçreş', 'Təngəaltı', 'Yerfi', 'Buduq', 'Alıpan', 'Rüstov', 'Cek', 'Xaltan'],
+  'Lankaran': ['Haftoni', 'Xanbulançay', 'Gərmətük', 'Girdəni', 'Şağlaküçə', 'Şıxakəran', 'Separadi', 'Boladi', 'Nərbağı', 'Türsə'],
+  'Shamakhi': ['Dəmirçi', 'Avaxıl', 'Pirqulu', 'Meysəri', 'Məlhəm', 'Mədrəsə', 'Çuxuryurd', 'Qaleybuğurd', 'Nağaraxana', 'Sis'],
+  'Ismayilli': ['Lahıc', 'Basqal', 'İvanovka', 'Talıstan', 'Buynuz', 'Topçu', 'Təzəkənd', 'Qalacıq', 'Diyallı', 'Qurbanəfəndi'],
+  'Naftalan': ['Boluslu', 'Tap Qaraqoyunlu', 'Borsunlu', 'Səfikürd', 'Zeyvə', 'Xarxaput', 'Qaraçinar', 'Goran', 'Qazanbulaq', 'Ballıqaya'],
+  'Qusar': ['Laza', 'Əniq', 'Hil', 'Quzun', 'Sudur', 'Urva', 'Yasab', 'Gədəzeyxur', 'Bədirqala', 'Bala Qusar'],
+  'Lerik': ['Hamarat', 'Mastail', 'Zuvand', 'Orand', 'Vov', 'Pirasora', 'Monidigah', 'Bilnə', 'Şingədulan', 'Vizazəmin'],
+  'Shushi': ['Daşaltı', 'Turşsu', 'Malıbəyli', 'Şuşakənd', 'Qeybalı', 'Xəlfəli', 'Ünvanlı', 'Baş Qaladərəsi', 'Kiçik Qaladərəsi', 'Mirzələr'],
+  'Goygol': ['Toğanalı', 'Çaylı', 'Mixaylovka', 'Yeni Zod', 'Gümüşlü', 'Firuzabad', 'Aşağı Ağcakənd', 'Azad', 'Quşqara', 'Üçtəpə'],
+  'Nakhchivan': ['Badamlı', 'Sirab', 'Qarabağlar', 'Gülüstan', 'Qal', 'Biləv', 'Nəsirvaz', 'Batabat', 'Ordubad (Qədim Şəhər)', 'Şahbuz'],
+  'Mingachevir': ['Varvara', 'Havarlı', 'Balçılı', 'Aran', 'Tanrıverdilər', 'Nemədabad', 'Yuxarı Bucaq', 'Aşağı Bucaq'],
+  'Ganja': ['Hacıkənd', 'Zurnabad', 'Çaylı', 'Aşağı Ağcakənd', 'Yeni Zod', 'Mixaylovka', 'Toğanalı', 'Azad', 'Çaykənd', 'Topalhəsənli']
 }
 
 export const cityLocationOptions: Record<LocationCategory, FilterOption[]> = {
