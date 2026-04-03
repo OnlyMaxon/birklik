@@ -87,5 +87,5 @@ export interface FilterState {
   locationTags: string[]
   checkIn: string
   checkOut: string
-  guests: number | null
+  guests: '1-10' | '10+' | null
 }

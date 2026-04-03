@@ -323,7 +323,7 @@ export const filterProperties = (
     search?: string
     checkIn?: string
     checkOut?: string
-    guests?: number
+    guests?: '1-10' | '10+'
     type?: PropertyType | ''
     district?: District | ''
     minPrice?: number
@@ -409,12 +409,21 @@ export const filterProperties = (
     // Rooms filter
     if (filters.rooms && property.rooms !== filters.rooms) return false
 
-    // Guests filter - check if property's minGuests/maxGuests range can accommodate selected guest count
+    // Guests filter - support two categories: 1-10 and 10+
+    // A property appears in both categories if it spans across the boundary
     if (filters.guests) {
       const minGuests = property.minGuests ?? 1
       const maxGuests = property.maxGuests ?? 10
-      // Property can accommodate the guest count if it's within the range
-      if (filters.guests < minGuests || filters.guests > maxGuests) return false
+
+      if (filters.guests === '1-10') {
+        // Show properties that can accommodate guests in 1-10 range
+        // Property must be able to take at least 1 guest and at most 10 guests
+        if (maxGuests < 1 || minGuests > 10) return false
+      } else if (filters.guests === '10+') {
+        // Show properties that can accommodate 10+ guests
+        // Property must be able to take at least 10 guests
+        if (maxGuests < 10) return false
+      }
     }
 
     // Pool filter

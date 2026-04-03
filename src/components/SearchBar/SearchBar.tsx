@@ -11,9 +11,9 @@ interface SearchBarProps {
   onCitySelect?: (city: string) => void
   checkInValue?: string
   checkOutValue?: string
-  guestsValue?: number | null
+  guestsValue?: '1-10' | '10+' | null
   onDateChange?: (checkIn: string, checkOut: string) => void
-  onGuestsChange?: (guests: number) => void
+  onGuestsChange?: (guests: '1-10' | '10+') => void
   activeFilterCount?: number
 }
 
@@ -28,7 +28,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onCitySelect,
   checkInValue = '',
   checkOutValue = '',
-  guestsValue = 1,
+  guestsValue = '1-10',
   onDateChange,
   onGuestsChange,
   activeFilterCount = 0
@@ -36,7 +36,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const { t, language } = useLanguage()
   const [checkIn, setCheckIn] = React.useState(checkInValue)
   const [checkOut, setCheckOut] = React.useState(checkOutValue)
-  const [guests, setGuests] = React.useState(String(guestsValue || 1))
+  const [guests, setGuests] = React.useState(guestsValue || '1-10')
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
   const [citySearchText, setCitySearchText] = React.useState('')
   const cityInputRef = React.useRef<HTMLInputElement>(null)
@@ -69,8 +69,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }, [checkOutValue])
 
   React.useEffect(() => {
-    setGuests(String(guestsValue || 1))
-  }, [selectedCity])
+    setGuests(guestsValue || '1-10')
+  }, [guestsValue])
 
   const normalizedQuery = citySearchText.trim().toLowerCase()
   const filteredCities = cities.filter((city) => {
@@ -79,8 +79,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }).slice(0, cityFilterLimit)
 
   const handleGuestsChange = (nextGuests: string) => {
-    setGuests(nextGuests)
-    onGuestsChange?.(Number(nextGuests))
+    setGuests(nextGuests as '1-10' | '10+')
+    onGuestsChange?.(nextGuests as '1-10' | '10+')
   }
 
   const handlePickCity = (city: typeof cities[number]) => {
@@ -200,16 +200,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             value={guests}
             onChange={(e) => handleGuestsChange(e.target.value)}
           >
-            <option value="1">{isEnglish ? '1 guest' : isRussian ? '1 взрослый' : '1 qonaq'}</option>
-            <option value="2">{isEnglish ? '2 guests' : isRussian ? '2 взрослых' : '2 qonaq'}</option>
-            <option value="3">{isEnglish ? '3 guests' : isRussian ? '3 взрослых' : '3 qonaq'}</option>
-            <option value="4">{isEnglish ? '4 guests' : isRussian ? '4 взрослых' : '4 qonaq'}</option>
-            <option value="5">{isEnglish ? '5 guests' : isRussian ? '5 взрослых' : '5 qonaq'}</option>
-            <option value="6">{isEnglish ? '6 guests' : isRussian ? '6 взрослых' : '6 qonaq'}</option>
-            <option value="7">{isEnglish ? '7 guests' : isRussian ? '7 взрослых' : '7 qonaq'}</option>
-            <option value="8">{isEnglish ? '8 guests' : isRussian ? '8 взрослых' : '8 qonaq'}</option>
-            <option value="9">{isEnglish ? '9 guests' : isRussian ? '9 взрослых' : '9 qonaq'}</option>
-            <option value="10">{isEnglish ? '10+ guests' : isRussian ? '10+ взрослых' : '10+ qonaq'}</option>
+            <option value="1-10">{isEnglish ? '1-10 guests' : isRussian ? '1-10 гостей' : '1-10 qonaq'}</option>
+            <option value="10+">{isEnglish ? '10+ guests' : isRussian ? '10+ гостей' : '10+ qonaq'}</option>
           </select>
         </div>
       </div>

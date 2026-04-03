@@ -130,7 +130,7 @@ export const HomePage: React.FC = () => {
               checkOutValue={filters.checkOut}
               guestsValue={filters.guests}
               onDateChange={(checkIn: string, checkOut: string) => setFilters({ ...filters, checkIn, checkOut })}
-              onGuestsChange={(guests: number) => setFilters({ ...filters, guests })}
+              onGuestsChange={(guests: '1-10' | '10+') => setFilters({ ...filters, guests })}
               onSearch={handleSearchSubmit}
               onFiltersOpen={handleFiltersOpen}
               activeFilterCount={activeFilterCount}
