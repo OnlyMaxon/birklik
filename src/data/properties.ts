@@ -323,7 +323,8 @@ export const filterProperties = (
     search?: string
     checkIn?: string
     checkOut?: string
-    guests?: '1-10' | '10+'
+    minGuests?: number
+    maxGuests?: number | string
     type?: PropertyType | ''
     district?: District | ''
     minPrice?: number
@@ -409,21 +410,18 @@ export const filterProperties = (
     // Rooms filter
     if (filters.rooms && property.rooms !== filters.rooms) return false
 
-    // Guests filter - support two categories: 1-10 and 10+
-    // A property appears in both categories if it spans across the boundary
-    if (filters.guests) {
-      const minGuests = property.minGuests ?? 1
-      const maxGuests = property.maxGuests ?? 10
+    // Guests filter - check if search range overlaps with property's min/max capability
+    if (filters.minGuests !== undefined || filters.maxGuests !== undefined) {
+      const searchMin = filters.minGuests ?? 1
+      const searchMaxRaw = filters.maxGuests ?? 10
+      const searchMax = searchMaxRaw === '10+' ? 999 : (typeof searchMaxRaw === 'string' ? Number(searchMaxRaw) : searchMaxRaw)
 
-      if (filters.guests === '1-10') {
-        // Show properties that can accommodate guests in 1-10 range
-        // Property must be able to take at least 1 guest and at most 10 guests
-        if (maxGuests < 1 || minGuests > 10) return false
-      } else if (filters.guests === '10+') {
-        // Show properties that can accommodate 10+ guests
-        // Property must be able to take at least 10 guests
-        if (maxGuests < 10) return false
-      }
+      const propMin = property.minGuests ?? 1
+      const propMax = property.maxGuests ?? 10
+
+      // Check if search range [searchMin, searchMax] overlaps with property range [propMin, propMax]
+      // Ranges overlap if: searchMin <= propMax AND searchMax >= propMin
+      if (searchMin > propMax || searchMax < propMin) return false
     }
 
     // Pool filter

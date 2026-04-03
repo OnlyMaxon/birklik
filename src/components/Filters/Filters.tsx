@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '../../context'
-import { FilterState, PropertyType, LocationCategory } from '../../types'
-import { propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities } from '../../data'
+import { FilterState, PropertyType } from '../../types'
+import { propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities, cityDistricts } from '../../data'
 import './Filters.css'
 
 interface FiltersProps {
@@ -18,11 +18,6 @@ interface FiltersProps {
     onClick: () => void
   }
 }
-
-const locationTabs: { key: LocationCategory; az: string; en: string; ru: string }[] = [
-  { key: 'rayon', az: 'Rayon', en: 'District', ru: 'Район' },
-  { key: 'metro', az: 'Metro', en: 'Metro', ru: 'Метро' }
-]
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
@@ -61,15 +56,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
     else handleChange('hasPool', null)
   }
 
-  const handleLocationCategoryChange = (category: LocationCategory) => {
-    onFilterChange({
-      ...filters,
-      locationCategory: category,
-      locationTags: []
-    })
-    setLocationSearch('')
-  }
-
   const getLocalizedLabel = React.useCallback((option: { az: string; en: string }) => {
     return language === 'en' ? option.en : option.az
   }, [language])
@@ -80,10 +66,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
 
   const sortedMoreOptions = React.useMemo(() => [...moreFilterOptions].sort(sortByLabel), [sortByLabel])
   const sortedNearOptions = React.useMemo(() => [...nearFilterOptions].sort(sortByLabel), [sortByLabel])
-  const activeLocationOptions = React.useMemo(
-    () => [...cityLocationOptions[filters.locationCategory]].sort(sortByLabel),
-    [filters.locationCategory, sortByLabel]
-  )
 
   const clearSection = (key: 'extraFilters' | 'nearbyPlaces' | 'locationTags') => {
     onFilterChange({ ...filters, [key]: [] })
@@ -99,12 +81,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
       locationTags: []
     })
   }
-
-  const filteredLocationOptions = activeLocationOptions.filter((item) => {
-    const query = locationSearch.toLowerCase().trim()
-    if (!query) return true
-    return item.az.toLowerCase().includes(query) || item.en.toLowerCase().includes(query)
-  })
 
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
@@ -219,22 +195,9 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
             </select>
           </div>
 
-          {filters.city === 'Baku' && (
+          {filters.city && cityDistricts[filters.city as keyof typeof cityDistricts] && (
             <div className="filter-group city-inline-filter">
               <label>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></label>
-
-              <div className="city-tabs" role="tablist" aria-label="Location category tabs">
-                {locationTabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    className={`city-tab ${filters.locationCategory === tab.key ? 'active' : ''}`}
-                    onClick={() => handleLocationCategoryChange(tab.key)}
-                  >
-                    {language === 'en' ? tab.en : isRussian ? tab.ru : tab.az}
-                  </button>
-                ))}
-              </div>
 
               <input
                 type="search"
@@ -245,17 +208,21 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
               />
 
               <div className="city-option-list">
-                {filteredLocationOptions.length > 0 ? filteredLocationOptions.map((option) => (
-                  <label key={option.key} className="city-option-item">
-                    <input
-                      type="checkbox"
-                      checked={filters.locationTags.includes(option.key)}
-                      onChange={() => toggleArrayValue('locationTags', option.key)}
-                    />
-                    <span>{getLocalizedLabel(option)}</span>
-                  </label>
-                )) : (
-                  <p className="empty-option-list">{language === 'en' ? 'No locations found.' : isRussian ? 'Локации не найдены.' : 'Lokasiya tapılmadı.'}</p>
+                {cityDistricts[filters.city as keyof typeof cityDistricts]
+                  ?.filter((district) =>
+                    !locationSearch || district.toLowerCase().includes(locationSearch.toLowerCase())
+                  )
+                  .map((district) => (
+                    <label key={district} className="city-option-item">
+                      <input
+                        type="checkbox"
+                        checked={filters.locationTags.includes(district)}
+                        onChange={() => toggleArrayValue('locationTags', district)}
+                      />
+                      <span>{district}</span>
+                    </label>
+                  )) || (
+                  <p className="empty-option-list">{language === 'en' ? 'No districts found.' : isRussian ? 'Районы не найдены.' : 'Rayon tapılmadı.'}</p>
                 )}
               </div>
             </div>

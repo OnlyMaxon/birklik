@@ -11,7 +11,8 @@ const initialFilters: FilterState = {
   search: '',
   checkIn: '',
   checkOut: '',
-  guests: null,
+  minGuests: null,
+  maxGuests: null,
   type: '',
   district: '',
   minPrice: null,
@@ -72,7 +73,8 @@ export const HomePage: React.FC = () => {
       search: filters.search,
       checkIn: filters.checkIn || undefined,
       checkOut: filters.checkOut || undefined,
-      guests: filters.guests || undefined,
+      minGuests: filters.minGuests || undefined,
+      maxGuests: filters.maxGuests || undefined,
       type: filters.type || undefined,
       district: filters.district || undefined,
       minPrice: filters.minPrice || undefined,
@@ -103,6 +105,8 @@ export const HomePage: React.FC = () => {
     filters.minPrice,
     filters.maxPrice,
     filters.rooms,
+    filters.minGuests,
+    filters.maxGuests,
     filters.hasPool === null ? null : filters.hasPool
   ].filter((item) => item !== null && item !== '').length + 
   filters.extraFilters.length + 
@@ -128,9 +132,11 @@ export const HomePage: React.FC = () => {
               onCitySelect={(city: string) => setFilters({ ...filters, city })}
               checkInValue={filters.checkIn}
               checkOutValue={filters.checkOut}
-              guestsValue={filters.guests}
+              minGuestsValue={filters.minGuests}
+              maxGuestsValue={filters.maxGuests}
               onDateChange={(checkIn: string, checkOut: string) => setFilters({ ...filters, checkIn, checkOut })}
-              onGuestsChange={(guests: '1-10' | '10+') => setFilters({ ...filters, guests })}
+              onMinGuestsChange={(guests: number) => setFilters({ ...filters, minGuests: guests })}
+              onMaxGuestsChange={(guests: number | string) => setFilters({ ...filters, maxGuests: guests })}
               onSearch={handleSearchSubmit}
               onFiltersOpen={handleFiltersOpen}
               activeFilterCount={activeFilterCount}

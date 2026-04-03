@@ -11,9 +11,11 @@ interface SearchBarProps {
   onCitySelect?: (city: string) => void
   checkInValue?: string
   checkOutValue?: string
-  guestsValue?: '1-10' | '10+' | null
+  minGuestsValue?: number | null
+  maxGuestsValue?: number | string | null
   onDateChange?: (checkIn: string, checkOut: string) => void
-  onGuestsChange?: (guests: '1-10' | '10+') => void
+  onMinGuestsChange?: (guests: number) => void
+  onMaxGuestsChange?: (guests: number | string) => void
   activeFilterCount?: number
 }
 
@@ -28,15 +30,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onCitySelect,
   checkInValue = '',
   checkOutValue = '',
-  guestsValue = '1-10',
+  minGuestsValue = null,
+  maxGuestsValue = null,
   onDateChange,
-  onGuestsChange,
+  onMinGuestsChange,
+  onMaxGuestsChange,
   activeFilterCount = 0
 }) => {
   const { t, language } = useLanguage()
   const [checkIn, setCheckIn] = React.useState(checkInValue)
   const [checkOut, setCheckOut] = React.useState(checkOutValue)
-  const [guests, setGuests] = React.useState(guestsValue || '1-10')
+  const [minGuests, setMinGuests] = React.useState(minGuestsValue?.toString() || '1')
+  const [maxGuests, setMaxGuests] = React.useState(
+    maxGuestsValue === '10+' ? '10+' : (maxGuestsValue?.toString() || '10')
+  )
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
   const [citySearchText, setCitySearchText] = React.useState('')
   const cityInputRef = React.useRef<HTMLInputElement>(null)
@@ -69,8 +76,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }, [checkOutValue])
 
   React.useEffect(() => {
-    setGuests(guestsValue || '1-10')
-  }, [guestsValue])
+    setMinGuests(minGuestsValue?.toString() || '1')
+  }, [minGuestsValue])
+
+  React.useEffect(() => {
+    setMaxGuests(maxGuestsValue === '10+' ? '10+' : (maxGuestsValue?.toString() || '10'))
+  }, [maxGuestsValue])
 
   const normalizedQuery = citySearchText.trim().toLowerCase()
   const filteredCities = cities.filter((city) => {
@@ -78,9 +89,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     return [city.value, city.az, city.en, city.ru].some((label) => label.toLowerCase().includes(normalizedQuery))
   }).slice(0, cityFilterLimit)
 
-  const handleGuestsChange = (nextGuests: string) => {
-    setGuests(nextGuests as '1-10' | '10+')
-    onGuestsChange?.(nextGuests as '1-10' | '10+')
+  const handleMinGuestsChange = (value: string) => {
+    setMinGuests(value)
+    onMinGuestsChange?.(Number(value))
+  }
+
+  const handleMaxGuestsChange = (value: string) => {
+    setMaxGuests(value)
+    onMaxGuestsChange?.(value === '10+' ? '10+' : Number(value))
   }
 
   const handlePickCity = (city: typeof cities[number]) => {
@@ -195,14 +211,54 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <div className="search-field-label">
             {isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaqlar'}
           </div>
-          <select
-            className="search-field-input search-guests-select"
-            value={guests}
-            onChange={(e) => handleGuestsChange(e.target.value)}
-          >
-            <option value="1-10">{isEnglish ? '1-10 guests' : isRussian ? '1-10 гостей' : '1-10 qonaq'}</option>
-            <option value="10+">{isEnglish ? '10+ guests' : isRussian ? '10+ гостей' : '10+ qonaq'}</option>
-          </select>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.75rem', color: '#999', marginBottom: '0.25rem' }}>
+                {isEnglish ? 'Min' : isRussian ? 'Мин' : 'Min'}
+              </div>
+              <select
+                className="search-field-input search-guests-select"
+                value={minGuests}
+                onChange={(e) => handleMinGuestsChange(e.target.value)}
+                style={{ width: '100%' }}
+              >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+            <span style={{ color: '#999', marginTop: '1rem' }}>-</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.75rem', color: '#999', marginBottom: '0.25rem' }}>
+                {isEnglish ? 'Max' : isRussian ? 'Макс' : 'Max'}
+              </div>
+              <select
+                className="search-field-input search-guests-select"
+                value={maxGuests}
+                onChange={(e) => handleMaxGuestsChange(e.target.value)}
+                style={{ width: '100%' }}
+              >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="10+">10+</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
