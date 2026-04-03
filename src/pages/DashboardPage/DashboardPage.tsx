@@ -59,13 +59,37 @@ const MapCenterUpdater: React.FC<{ coordinates: { lat: number; lng: number } }> 
   return null
 }
 
-const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange }) => {
+interface LocationPickerProps {
+  coordinates: { lat: number; lng: number }
+  onChange: (coords: { lat: number; lng: number }) => void
+  onAddressReverse?: (address: string) => void
+}
+
+const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange, onAddressReverse }) => {
   useMapEvents({
     click: (event) => {
-      onChange({
+      const newCoords = {
         lat: Number(event.latlng.lat.toFixed(6)),
         lng: Number(event.latlng.lng.toFixed(6))
-      })
+      }
+      onChange(newCoords)
+      
+      // Reverse geocode to get address
+      if (onAddressReverse) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newCoords.lat}&lon=${newCoords.lng}`)
+          .then(res => res.json())
+          .then(data => {
+            const address = data.address?.country === 'Azerbaijan' 
+              ? (data.address?.region || data.address?.city || data.address?.village || data.display_name || '')
+              : ''
+            if (address) {
+              onAddressReverse(address)
+            }
+          })
+          .catch(() => {
+            // Silently fail if reverse geocoding fails
+          })
+      }
     }
   })
 
@@ -1199,26 +1223,33 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               </button>
                             )}
                           </div>
-                          <div className="city-picker-form-header">
-                            <select
-                              value={newListing.district}
-                              onChange={(e) => setNewListing({ ...newListing, district: e.target.value as District })}
-                              required
-                            >
-                              <option value="">{t.form.selectDistrict}</option>
-                              {newListing.city && cityDistricts[newListing.city]
-                                ? cityDistricts[newListing.city].map((dist) => (
-                                  <option key={dist} value={dist}>{dist}</option>
-                                ))
-                                : null}
-                            </select>
-                            <input
-                              type="search"
-                              placeholder={language === 'en' ? 'Search district' : language === 'ru' ? 'Поиск по району' : 'Rayon axtarın'}
-                              value={locationTagsSearch}
-                              onChange={(e) => setLocationTagsSearch(e.target.value)}
-                            />
-                          </div>
+
+                          {newListing.city === 'Baku' && (
+                            <div className="city-category-toggle" style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
+                              <button
+                                type="button"
+                                className={`btn btn-sm ${newListing.locationCategory === 'rayon' ? 'btn-primary' : 'btn-outline'}`}
+                                onClick={() => setNewListing({ ...newListing, locationCategory: 'rayon', locationTags: [] })}
+                              >
+                                {language === 'en' ? 'Districts' : language === 'ru' ? 'Районы' : 'Rayonlar'}
+                              </button>
+                              <button
+                                type="button"
+                                className={`btn btn-sm ${newListing.locationCategory === 'metro' ? 'btn-primary' : 'btn-outline'}`}
+                                onClick={() => setNewListing({ ...newListing, locationCategory: 'metro', locationTags: [] })}
+                              >
+                                {language === 'en' ? 'Metro' : language === 'ru' ? 'Метро' : 'Metro'}
+                              </button>
+                            </div>
+                          )}
+
+                          <input
+                            type="search"
+                            placeholder={language === 'en' ? 'Search district' : language === 'ru' ? 'Поиск по району' : 'Rayon axtarın'}
+                            value={locationTagsSearch}
+                            onChange={(e) => setLocationTagsSearch(e.target.value)}
+                            style={{ marginBottom: '12px' }}
+                          />
 
                           <div className="city-option-list form-city-option-list">
                             {sortedLocationTagOptions.length > 0 ? sortedLocationTagOptions.map((option) => {
@@ -1286,6 +1317,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               <LocationPicker
                                 coordinates={listingCoordinates}
                                 onChange={setListingCoordinates}
+                                onAddressReverse={(address) => setNewListing({...newListing, address})}
                               />
                             </MapContainer>
                           </div>
