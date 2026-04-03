@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '../../context'
-import { FilterState, PropertyType, District, LocationCategory } from '../../types'
-import { propertyTypes, districts, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities } from '../../data'
+import { FilterState, PropertyType, LocationCategory } from '../../types'
+import { propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities } from '../../data'
 import './Filters.css'
 
 interface FiltersProps {
@@ -127,7 +127,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   )
 
   const selectedChips = [
-    ...(filters.district ? [{ id: `district-${filters.district}`, key: filters.district, label: `${t.search.district}: ${t.districts[filters.district as District]}`, group: 'district' as const }] : []),
     ...filters.extraFilters.map((key) => ({ id: `more-${key}`, key, label: moreLabelMap.get(key) || key, group: 'extraFilters' as const })),
     ...filters.nearbyPlaces.map((key) => ({ id: `near-${key}`, key, label: nearLabelMap.get(key) || key, group: 'nearbyPlaces' as const })),
     ...(filters.city ? [{ id: `city-${filters.city}`, key: filters.city, label: `${cityLabel}: ${filters.city}`, group: 'city' as const }] : []),
@@ -137,11 +136,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   const handleRemoveChip = (chip: typeof selectedChips[number]) => {
     if (chip.group === 'city') {
       onFilterChange({ ...filters, city: '' })
-      return
-    }
-
-    if (chip.group === 'district') {
-      onFilterChange({ ...filters, district: '' })
       return
     }
 
@@ -212,9 +206,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 const nextCity = e.target.value
                 onFilterChange({
                   ...filters,
-                  city: nextCity,
-                  locationTags: nextCity === 'Baku' ? filters.locationTags : [],
-                  district: nextCity === 'Baku' ? filters.district : ''
+                  city: nextCity
                 })
               }}
             >
@@ -230,18 +222,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
           {filters.city === 'Baku' && (
             <div className="filter-group city-inline-filter">
               <label>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></label>
-              <div className="city-picker-header">
-                <label>{t.search.district}</label>
-                <select
-                  value={filters.district || ''}
-                  onChange={(e) => handleChange('district', e.target.value as District || '')}
-                >
-                  <option value="">{t.search.any}</option>
-                  {districts.map((district) => (
-                    <option key={district} value={district}>{t.districts[district]}</option>
-                  ))}
-                </select>
-              </div>
 
               <div className="city-tabs" role="tablist" aria-label="Location category tabs">
                 {locationTabs.map((tab) => (
