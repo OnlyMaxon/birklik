@@ -319,3 +319,103 @@ export const approveProperty = async (id: string): Promise<boolean> => {
     return false
   }
 }
+
+// Add a comment to a property
+export const addCommentToProperty = async (
+  propertyId: string,
+  userId: string,
+  userName: string,
+  userAvatar: string | undefined,
+  text: string
+): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    const currentData = current.data() as Property
+    const comments = currentData.comments || []
+
+    const newComment = {
+      id: `${Date.now()}_${userId}`,
+      userId,
+      userName,
+      userAvatar,
+      text,
+      createdAt: new Date().toISOString()
+    }
+
+    await updateDoc(docRef, {
+      comments: [...comments, newComment],
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error adding comment:', error)
+    return false
+  }
+}
+
+// Toggle like on a property
+export const toggleLikeProperty = async (propertyId: string, userId: string): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    const currentData = current.data() as Property
+    const likes = currentData.likes || []
+    const isLiked = likes.includes(userId)
+
+    const updatedLikes = isLiked
+      ? likes.filter(id => id !== userId)
+      : [...likes, userId]
+
+    await updateDoc(docRef, {
+      likes: updatedLikes,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error toggling like:', error)
+    return false
+  }
+}
+
+// Delete a comment from a property
+export const deleteCommentFromProperty = async (
+  propertyId: string,
+  commentId: string
+): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    const currentData = current.data() as Property
+    const comments = currentData.comments || []
+
+    const updatedComments = comments.filter(comment => comment.id !== commentId)
+
+    await updateDoc(docRef, {
+      comments: updatedComments,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error deleting comment:', error)
+    return false
+  }
+}

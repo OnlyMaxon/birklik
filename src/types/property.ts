@@ -6,6 +6,16 @@ export type LocationCategory = 'rayon' | 'metro'
 
 export type Amenity = 'pool' | 'parking' | 'wifi' | 'ac' | 'kitchen' | 'tv' | 'washer' | 'garden' | 'bbq' | 'security' | 'beach' | 'gym'
 
+export interface Comment {
+  id: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  text: string
+  createdAt: string
+  updatedAt?: string
+}
+
 export interface LocalizedText {
   az: string
   en: string
@@ -47,6 +57,9 @@ export interface Property {
   owner: PropertyOwner
   rating?: number
   reviews?: number
+  // Likes and comments
+  likes?: string[] // Array of user IDs who liked this property
+  comments?: Comment[]
   // Firebase specific fields
   ownerId?: string
   listingTier?: ListingTier

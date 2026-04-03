@@ -1,10 +1,11 @@
 import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
+import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
-import { getPropertyById } from '../../services'
+import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty } from '../../services'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
 
@@ -44,10 +45,13 @@ const buildCalendarCells = (monthDate: Date): CalendarCell[] => {
 export const PropertyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { language, t } = useLanguage()
+  const { user, isAuthenticated } = useAuth()
   const [property, setProperty] = React.useState<Property | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
+  const [newComment, setNewComment] = React.useState('')
+  const [isPostingComment, setIsPostingComment] = React.useState(false)
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -80,6 +84,50 @@ export const PropertyPage: React.FC = () => {
   const isOccupationExpired = (item: Property) => {
     if (!item.unavailableTo) return false
     return item.unavailableTo < getTodayISO()
+  }
+
+  const handleAddComment = async () => {
+    if (!isAuthenticated || !user || !property || !newComment.trim()) return
+
+    setIsPostingComment(true)
+    const success = await addCommentToProperty(
+      property.id,
+      user.id,
+      user.name,
+      user.avatar,
+      newComment.trim()
+    )
+
+    if (success) {
+      setNewComment('')
+      // Reload property to show new comment
+      const updated = await getPropertyById(property.id)
+      setProperty(updated)
+    }
+
+    setIsPostingComment(false)
+  }
+
+  const handleToggleLike = async () => {
+    if (!isAuthenticated || !user || !property) return
+
+    const success = await toggleLikeProperty(property.id, user.id)
+    if (success) {
+      // Reload property to show like count
+      const updated = await getPropertyById(property.id)
+      setProperty(updated)
+    }
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!property || !user) return
+
+    const success = await deleteCommentFromProperty(property.id, commentId)
+    if (success) {
+      // Reload property
+      const updated = await getPropertyById(property.id)
+      setProperty(updated)
+    }
   }
 
   if (isLoading) {
@@ -384,6 +432,84 @@ export const PropertyPage: React.FC = () => {
                     )}
                   </div>
                   {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
+                </div>
+              </div>
+
+              {/* Likes and Comments Section */}
+              <div className="property-interactions-section" style={{ marginTop: '24px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+                {/* Likes */}
+                <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    onClick={handleToggleLike}
+                    disabled={!isAuthenticated}
+                    className={`btn btn-sm ${property.likes?.includes(user?.id || '') ? 'btn-primary' : 'btn-outline'}`}
+                    title={!isAuthenticated ? 'Sign in to like' : ''}
+                  >
+                    ❤️ {language === 'en' ? 'Like' : language === 'ru' ? 'Нравится' : 'Beğən'}
+                  </button>
+                  <span style={{ color: '#666' }}>
+                    {property.likes?.length || 0}
+                  </span>
+                </div>
+
+                {/* Comments */}
+                <div>
+                  <h4 style={{ marginBottom: '12px' }}>
+                    💬 {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Şərhlər'} ({property.comments?.length || 0})
+                  </h4>
+
+                  {isAuthenticated && (
+                    <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder={language === 'en' ? 'Add a comment...' : language === 'ru' ? 'Добавить комментарий...' : 'Şərh əlavə edin...'}
+                        style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                      />
+                      <button
+                        onClick={handleAddComment}
+                        disabled={isPostingComment || !newComment.trim()}
+                        className="btn btn-sm btn-primary"
+                      >
+                        {isPostingComment ? '...' : language === 'en' ? 'Post' : language === 'ru' ? 'Отправить' : 'Yolla'}
+                      </button>
+                    </div>
+                  )}
+
+                  {!isAuthenticated && (
+                    <p style={{ color: '#999', fontSize: '14px', marginBottom: '12px' }}>
+                      {language === 'en' ? 'Sign in to comment' : language === 'ru' ? 'Войдите чтобы комментировать' : 'Şərhləmək üçün daxil olun'}
+                    </p>
+                  )}
+
+                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    {property.comments && property.comments.length > 0 ? (
+                      property.comments.map(comment => (
+                        <div key={comment.id} style={{ marginBottom: '12px', padding: '10px', backgroundColor: 'white', borderRadius: '4px', borderLeft: '3px solid #1f62c7' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                            <strong style={{ color: '#333' }}>{comment.userName}</strong>
+                            {user?.id === comment.userId && (
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="btn btn-ghost btn-xs"
+                                title="Delete"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                          <p style={{ margin: '0 0 6px 0', color: '#555', fontSize: '14px' }}>{comment.text}</p>
+                          <p style={{ margin: '0', color: '#999', fontSize: '12px' }}>{formatDate(comment.createdAt)}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ color: '#999', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
+                        {language === 'en' ? 'No comments yet' : language === 'ru' ? 'Комментариев нет' : 'Henüz şərh yoxdur'}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
