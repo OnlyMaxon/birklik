@@ -71,7 +71,7 @@ export const ModerationPage: React.FC = () => {
             <div className="moderation-list">
               {pendingListings.map((listing) => (
                 <article key={listing.id} className="moderation-item card">
-                  <img src={listing.images[0]} alt={getLocalizedText(listing.title)} className="moderation-image" />
+                  <img src={listing.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(listing.title)} className="moderation-image" />
 
                   <div className="moderation-content">
                     <h3>{getLocalizedText(listing.title)}</h3>

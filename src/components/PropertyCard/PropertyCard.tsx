@@ -29,11 +29,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, c
   return (
     <Link to={`/property/${property.id}`} className="property-card card">
       <div className="property-image">
-        <img src={property.images[0]} alt={getLocalizedText(property.title)} loading="lazy" />
+        <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className="property-type-badge badge badge-primary">
           {t.propertyTypes[property.type]}
         </div>
-        {property.amenities.includes('pool') && (
+        {property.amenities?.includes('pool') && (
           <div className="property-pool-badge badge badge-accent">
             {t.amenities.pool}
           </div>
@@ -48,7 +48,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, c
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
             <circle cx="12" cy="10" r="3"/>
           </svg>
-          {t.districts[property.district]}
+          {t.districts[property.district] || property.district}
         </p>
 
         <div className="property-features">

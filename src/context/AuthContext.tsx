@@ -86,9 +86,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await signInWithEmailAndPassword(auth, email, password)
       return { success: true }
-    } catch (error: any) {
-      console.error('Login error:', error)
-      return { success: false, error: error.code || 'auth/unknown-error' }
+    } catch (error) {
+      const err = error as { code?: string; message?: string }
+      console.error('Login error:', err)
+      return { success: false, error: err.code || 'auth/unknown-error' }
     }
   }
 
@@ -120,9 +121,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
 
       return { success: true }
-    } catch (error: any) {
-      console.error('Registration error:', error)
-      return { success: false, error: error.code || 'auth/unknown-error' }
+    } catch (error) {
+      const err = error as { code?: string; message?: string }
+      console.error('Registration error:', err)
+      return { success: false, error: err.code || 'auth/unknown-error' }
     }
   }
 
@@ -172,7 +174,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return { success: true }
     } catch (error: any) {
-      console.error('Update profile error:', error)
+      const err = error as { code?: string; message?: string }
+      console.error('Update profile error:', err)
       return { success: false, error: error.code || 'auth/update-failed' }
     }
   }

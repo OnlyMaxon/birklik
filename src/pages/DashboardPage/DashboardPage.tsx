@@ -997,7 +997,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         return (
                           <div key={property.id} className="listing-item card">
                             <img 
-                              src={property.images[0]} 
+                              src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} 
                               alt={getLocalizedText(property.title)}
                               className="listing-image"
                             />

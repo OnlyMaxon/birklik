@@ -92,7 +92,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
             <Popup>
               <div className="map-popup">
                 <img 
-                  src={property.images[0]} 
+                  src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} 
                   alt={getLocalizedText(property.title)} 
                   className="popup-image"
                 />
