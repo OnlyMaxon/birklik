@@ -142,8 +142,8 @@ export const ru: Translations = {
     subtitle: 'Виллы, коттеджи и апартаменты по лучшим ценам'
   },
   pricing: {
-    free: 'Просто',
-    standard: 'Стандарт',
+    free: 'Стандарт',
+    standard: 'VIP',
     premium: 'Премиум',
     freeDesc: 'Для старта',
     standardDesc: 'Для малого бизнеса',

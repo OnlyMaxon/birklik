@@ -396,14 +396,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
-      setError(language === 'en' ? 'Maximum 4 images for Simple plan' : language === 'ru' ? 'Максимум 4 фото для тарифа Просто' : 'Sadə paket üçün maksimum 4 şəkil yükləmək olar')
+      setError(language === 'en' ? 'Maximum 4 images for Standard plan' : language === 'ru' ? 'Максимум 4 фото для тарифа Стандарт' : 'Standart paket üçün maksimum 4 şəkil yükləmək olar')
       setIsSubmitting(false)
       return
     }
 
     const descriptionWordCount = newListing.description.trim().split(/\s+/).filter(Boolean).length
     if (newListing.listingTier === 'free' && descriptionWordCount > 35) {
-      setError(language === 'en' ? 'Maximum 35 words for Simple plan' : language === 'ru' ? 'Максимум 35 слов для тарифа Просто' : 'Sadə paketdə təsvir maksimum 35 söz ola bilər')
+      setError(language === 'en' ? 'Maximum 35 words for Standard plan' : language === 'ru' ? 'Максимум 35 слов для тарифа Стандарт' : 'Standart paketdə təsvir maksimum 35 söz ola bilər')
       setIsSubmitting(false)
       return
     }
@@ -1297,7 +1297,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             value={newListing.address}
                             onChange={(e) => setNewListing({...newListing, address: e.target.value})}
                             required={newListing.listingTier !== 'free'}
-                            placeholder={newListing.listingTier === 'free' ? (language === 'en' ? 'Location is hidden for Simple plan' : language === 'ru' ? 'Локация скрыта для тарифа Просто' : 'Sadə paketdə lokasiya gizlədilir') : ''}
+                            placeholder={newListing.listingTier === 'free' ? (language === 'en' ? 'Location is hidden for Standard plan' : language === 'ru' ? 'Локация скрыта для тарифа Стандарт' : 'Standart paketdə lokasiya gizlədilir') : ''}
                           />
                         </div>
 
@@ -1537,7 +1537,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>{newListing.listingTier === 'free' ? (language === 'ru' ? 'Максимум 4 фото (тариф Просто)' : language === 'en' ? 'Maximum 4 photos (Simple plan)' : 'Maksimum 4 şəkil (Sadə paket)') : (language === 'en' ? 'Drag & drop or click to upload' : language === 'ru' ? 'Перетащите файлы или нажмите для загрузки' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
+                            <p>{newListing.listingTier === 'free' ? (language === 'ru' ? 'Максимум 4 фото (тариф Стандарт)' : language === 'en' ? 'Maximum 4 photos (Standard plan)' : 'Maksimum 4 şəkil (Standart paket)') : (language === 'en' ? 'Drag & drop or click to upload' : language === 'ru' ? 'Перетащите файлы или нажмите для загрузки' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
                             {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : language === 'ru' ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>}
                           </div>
                           {selectedFilePreviews.length > 0 && (

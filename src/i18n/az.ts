@@ -142,8 +142,8 @@ export const az: Translations = {
     subtitle: "Villalar, kotteclər və mənzillər — ən yaxşı qiymətlərlə"
   },
   pricing: {
-    free: "Sadə",
-    standard: "Standart",
+    free: "Standart",
+    standard: "VIP",
     premium: "Premium",
     freeDesc: "Başlamaq üçün",
     standardDesc: "Kiçik müəssisə üçün",

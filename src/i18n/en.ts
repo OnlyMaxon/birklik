@@ -142,8 +142,8 @@ export const en: Translations = {
     subtitle: "Villas, cottages and apartments — at the best prices"
   },
   pricing: {
-    free: "Simple",
-    standard: "Standard",
+    free: "Standard",
+    standard: "VIP",
     premium: "Premium",
     freeDesc: "Get started",
     standardDesc: "For small business",

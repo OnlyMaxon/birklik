@@ -436,9 +436,9 @@ export const PropertyPage: React.FC = () => {
               </div>
 
               {/* Likes and Comments Section */}
-              <div className="property-interactions-section" style={{ marginTop: '24px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+              <div className="property-interactions-section">
                 {/* Likes */}
-                <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="interactions-likes">
                   <button
                     onClick={handleToggleLike}
                     disabled={!isAuthenticated}
@@ -447,25 +447,24 @@ export const PropertyPage: React.FC = () => {
                   >
                     ❤️ {language === 'en' ? 'Like' : language === 'ru' ? 'Нравится' : 'Beğən'}
                   </button>
-                  <span style={{ color: '#666' }}>
+                  <span className="likes-count">
                     {property.likes?.length || 0}
                   </span>
                 </div>
 
                 {/* Comments */}
-                <div>
-                  <h4 style={{ marginBottom: '12px' }}>
+                <div className="interactions-comments">
+                  <h4>
                     💬 {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Şərhlər'} ({property.comments?.length || 0})
                   </h4>
 
                   {isAuthenticated && (
-                    <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+                    <div className="comments-input-area">
                       <input
                         type="text"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder={language === 'en' ? 'Add a comment...' : language === 'ru' ? 'Добавить комментарий...' : 'Şərh əlavə edin...'}
-                        style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                       />
                       <button
@@ -479,33 +478,33 @@ export const PropertyPage: React.FC = () => {
                   )}
 
                   {!isAuthenticated && (
-                    <p style={{ color: '#999', fontSize: '14px', marginBottom: '12px' }}>
+                    <p className="comments-sign-in-hint">
                       {language === 'en' ? 'Sign in to comment' : language === 'ru' ? 'Войдите чтобы комментировать' : 'Şərhləmək üçün daxil olun'}
                     </p>
                   )}
 
-                  <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <div className="comments-list">
                     {property.comments && property.comments.length > 0 ? (
                       property.comments.map(comment => (
-                        <div key={comment.id} style={{ marginBottom: '12px', padding: '10px', backgroundColor: 'white', borderRadius: '4px', borderLeft: '3px solid #1f62c7' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                            <strong style={{ color: '#333' }}>{comment.userName}</strong>
+                        <div key={comment.id} className="comment-item">
+                          <div className="comment-header">
+                            <span className="comment-author">{comment.userName}</span>
                             {user?.id === comment.userId && (
                               <button
                                 onClick={() => handleDeleteComment(comment.id)}
-                                className="btn btn-ghost btn-xs"
+                                className="comment-delete-btn"
                                 title="Delete"
                               >
                                 ✕
                               </button>
                             )}
                           </div>
-                          <p style={{ margin: '0 0 6px 0', color: '#555', fontSize: '14px' }}>{comment.text}</p>
-                          <p style={{ margin: '0', color: '#999', fontSize: '12px' }}>{formatDate(comment.createdAt)}</p>
+                          <p className="comment-text">{comment.text}</p>
+                          <p className="comment-date">{formatDate(comment.createdAt)}</p>
                         </div>
                       ))
                     ) : (
-                      <p style={{ color: '#999', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
+                      <p className="comments-empty">
                         {language === 'en' ? 'No comments yet' : language === 'ru' ? 'Комментариев нет' : 'Henüz şərh yoxdur'}
                       </p>
                     )}
