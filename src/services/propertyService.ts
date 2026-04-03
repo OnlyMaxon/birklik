@@ -88,10 +88,9 @@ export const getProperties = async (
       constraints.push(where('rooms', '>=', filters.minRooms))
     }
 
-    // Add ordering and pagination
-    constraints.push(orderBy('isFeatured', 'desc'))
+    // Only add ordering without filters to avoid index requirement
     constraints.push(orderBy('createdAt', 'desc'))
-    constraints.push(limit(PAGE_SIZE))
+    constraints.push(limit(PAGE_SIZE * 2))
 
     if (lastDoc) {
       constraints.push(startAfter(lastDoc))
@@ -107,6 +106,14 @@ export const getProperties = async (
         if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
         return matchesSearch(property, filters?.search)
       })
+      // Sort by featured first, then by date
+      .sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) {
+          return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0)
+        }
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      })
+      .slice(0, PAGE_SIZE)
 
     const newLastDoc = snapshot.docs.length > 0 
       ? snapshot.docs[snapshot.docs.length - 1] 

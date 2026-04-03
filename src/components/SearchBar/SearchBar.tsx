@@ -2,7 +2,6 @@ import React from 'react'
 import './SearchBar.css'
 import { useLanguage } from '../../context'
 import { cities } from '../../data'
-import { DateRangePicker } from '../DateRangePicker'
 
 interface SearchBarProps {
   onChange: (value: string) => void
@@ -39,7 +38,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [checkOut, setCheckOut] = React.useState(checkOutValue)
   const [guests, setGuests] = React.useState(String(guestsValue || 1))
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
-  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false)
   const [citySearchText, setCitySearchText] = React.useState('')
   const cityInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -79,13 +77,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     if (!normalizedQuery) return true
     return [city.value, city.az, city.en, city.ru].some((label) => label.toLowerCase().includes(normalizedQuery))
   }).slice(0, cityFilterLimit)
-
-  const handleCheckInChange = (nextCheckIn: string, nextCheckOut?: string) => {
-    setCheckIn(nextCheckIn)
-    const outDate = nextCheckOut !== undefined ? nextCheckOut : checkOut
-    setCheckOut(outDate)
-    onDateChange?.(nextCheckIn, outDate)
-  }
 
   const handleGuestsChange = (nextGuests: string) => {
     setGuests(nextGuests)
@@ -171,36 +162,30 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {/* Dates Field */}
       <div className="search-card-field search-dates-field">
         <div className="search-field-content">
-          <button
-            type="button"
-            className="search-date-button"
-            onClick={() => setIsDatePickerOpen(true)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            <div className="search-date-button-text">
-              <span className="search-date-button-label">
-                {isEnglish ? 'When?' : isRussian ? 'Когда?' : 'Nə vaxt?'}
-              </span>
-              {checkIn && checkOut ? (
-                <span className="search-date-button-value">
-                  {checkIn} → {checkOut}
-                </span>
-              ) : checkIn ? (
-                <span className="search-date-button-value">
-                  {checkIn}
-                </span>
-              ) : (
-                <span className="search-date-button-placeholder">
-                  {isEnglish ? 'Select dates' : isRussian ? 'Выберите даты' : 'Tarixləri seçin'}
-                </span>
-              )}
-            </div>
-          </button>
+          <div className="search-field-label">
+            {isEnglish ? 'When?' : isRussian ? 'Когда?' : 'Nə vaxt?'}
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <input
+              type="date"
+              value={checkIn}
+              onChange={(e) => {
+                setCheckIn(e.target.value)
+                onDateChange?.(e.target.value, checkOut)
+              }}
+              style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid #e0e0e0' }}
+            />
+            <span style={{ color: '#999' }}>→</span>
+            <input
+              type="date"
+              value={checkOut}
+              onChange={(e) => {
+                setCheckOut(e.target.value)
+                onDateChange?.(checkIn, e.target.value)
+              }}
+              style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid #e0e0e0' }}
+            />
+          </div>
         </div>
       </div>
 
@@ -247,16 +232,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           {t.search.button}
         </button>
       </div>
-
-      {isDatePickerOpen && (
-        <DateRangePicker
-          checkIn={checkIn}
-          checkOut={checkOut}
-          onDateChange={handleCheckInChange}
-          onClose={() => setIsDatePickerOpen(false)}
-          language={language as 'en' | 'az' | 'ru'}
-        />
-      )}
     </form>
   )
 }

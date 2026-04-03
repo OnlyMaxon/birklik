@@ -456,8 +456,13 @@ export const filterProperties = (
     // Rooms filter
     if (filters.rooms && property.rooms !== filters.rooms) return false
 
-    // Guests filter (uses rooms as a simple capacity proxy)
-    if (filters.guests && property.rooms < filters.guests) return false
+    // Guests filter - check if property's minGuests/maxGuests range can accommodate selected guest count
+    if (filters.guests) {
+      const minGuests = property.minGuests ?? 1
+      const maxGuests = property.maxGuests ?? 10
+      // Property can accommodate the guest count if it's within the range
+      if (filters.guests < minGuests || filters.guests > maxGuests) return false
+    }
 
     // Pool filter
     if (filters.hasPool === true && !property.amenities.includes('pool')) return false
@@ -477,7 +482,10 @@ export const filterProperties = (
       if (!allMoreMatched) return false
     }
 
-    if (!includesAny(property.nearbyPlaces, filters.nearbyPlaces || [])) return false
+    // Nearby places - only filter if specific places are selected
+    if (filters.nearbyPlaces && filters.nearbyPlaces.length > 0) {
+      if (!includesAny(property.nearbyPlaces, filters.nearbyPlaces)) return false
+    }
 
     if (filters.city) {
       if (!property.city) return false
