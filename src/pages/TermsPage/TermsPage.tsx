@@ -271,21 +271,22 @@ Ev Sahibi hüquqludur:
           number: '14',
           title: 'Əlaqə və ödənişlər üzrə məsuliyyət',
           content: `**14. Əlaqə və ödənişlər üzrə məsuliyyət**
-**Suallar üçün:**
-**Email: info@birklik.az**
 
-**14.1. birklik.az platforması istifadəçilər (Ev Sahibi və Kirayəçi) arasında yalnız əlaqə yaradılmasını təmin edən vasitəçi platformadır və heç bir ödəniş prosesində iştirak etmir.**
+Suallar üçün:
+Email: info@birklik.az
 
-**14.2. Platformada yerləşdirilən elanlar üzrə bütün ödənişlər birbaşa olaraq Ev Sahibi və Kirayəçi arasında həyata keçirilir.**
+14.1. birklik.az platforması istifadəçilər (Ev Sahibi və Kirayəçi) arasında yalnız əlaqə yaradılmasını təmin edən vasitəçi platformadır və heç bir ödəniş prosesində iştirak etmir.
 
-**14.3. birklik.az heç bir halda aşağıdakılara görə məsuliyyət daşımır:**
-**• Ödənişlərin həyata keçirilməsi və ya keçirilməməsi**
-**• Ödənişlərin gecikməsi və ya qaytarılması**
-**• Aldadılma, dələduzluq və ya digər maliyyə mübahisələri**
+14.2. Platformada yerləşdirilən elanlar üzrə bütün ödənişlər birbaşa olaraq Ev Sahibi və Kirayəçi arasında həyata keçirilir.
 
-**14.4. İstifadəçilər ödəniş əməliyyatlarını həyata keçirərkən bütün riskləri öz üzərlərinə götürdüklərini qəbul edirlər.**
+14.3. birklik.az heç bir halda aşağıdakılara görə məsuliyyət daşımır:
+• Ödənişlərin həyata keçirilməsi və ya keçirilməməsi
+• Ödənişlərin gecikməsi və ya qaytarılması
+• Aldadılma, dələduzluq və ya digər maliyyə mübahisələri
 
-**14.5. birklik.az heç bir ödənişi qəbul etmir, saxlamır və ya ötürmür və tərəflər arasında maliyyə vasitəçisi kimi çıxış etmir.**`
+14.4. İstifadəçilər ödəniş əməliyyatlarını həyata keçirərkən bütün riskləri öz üzərlərinə götürdüklərini qəbul edirlər.
+
+14.5. birklik.az heç bir ödənişi qəbul etmir, saxlamır və ya ötürmür və tərəflər arasında maliyyə vasitəçisi kimi çıxış etmir.`
         }
       ]
     },
