@@ -228,8 +228,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     locationTags: [] as string[],
     city: 'Baku',
     contactEmail: '',
-    contactPhone: '',
-    isPremium: false
+    contactPhone: ''
   })
 
   const selectedFilePreviews = React.useMemo(
@@ -266,8 +265,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       locationTags: [],
       city: 'Baku',
       contactEmail: user?.email || '',
-      contactPhone: user?.phone || '',
-      isPremium: false
+      contactPhone: user?.phone || ''
     })
     setSelectedFiles([])
     setEditingListingId(null)
@@ -426,7 +424,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ownerId: user.id,
       listingTier: newListing.listingTier,
       status: listingStatus,
-      isFeatured: newListing.isPremium || newListing.listingTier === 'premium',
+      isFeatured: newListing.listingTier === 'premium',
       isActive: true,
       city: newListing.city || 'Baku'
     }
@@ -681,8 +679,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       locationTags: property.locationTags || [],
       city: property.city || 'Baku',
       contactEmail: property.owner.email || user.email,
-      contactPhone: property.owner.phone || user.phone,
-      isPremium: property.isFeatured || property.listingTier === 'premium'
+      contactPhone: property.owner.phone || user.phone
     })
 
     setListingCoordinates(property.coordinates || DEFAULT_COORDINATES)
@@ -1114,31 +1111,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             </ul>
                           </button>
                         ))}
-                      </div>
-
-                      <div className="form-group premium-checkbox" style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f9f7f3', borderRadius: '8px', border: '1px solid #e8e4df' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', margin: 0 }}>
-                          <input
-                            type="checkbox"
-                            checked={newListing.isPremium}
-                            onChange={(e) => {
-                              const isPremium = e.target.checked
-                              setNewListing({
-                                ...newListing,
-                                isPremium,
-                                listingTier: isPremium ? 'premium' : 'free'
-                              })
-                            }}
-                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#b7925d' }}
-                          />
-                          <span style={{ fontSize: '1rem', color: '#2f2a24', fontWeight: '500' }}>
-                            {language === 'en'
-                              ? 'Make this listing VIP (Premium) - Appears first in search'
-                              : language === 'ru'
-                                ? 'Сделать объявление VIP (Премиум) - Будет впереди в поиске'
-                                : 'Bu elanı VIP (Premium) edin - Axtarışda əvvələ çıxacaq'}
-                          </span>
-                        </label>
                       </div>
 
                       <div className="form-grid">
