@@ -4,7 +4,7 @@ import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'rea
 import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities, cityDistricts } from '../../data'
+import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cities, cityDistricts } from '../../data'
 import { isModeratorEmail } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
@@ -29,11 +29,6 @@ const isOccupationExpired = (property: Property): boolean => {
   if (!property.unavailableTo) return false
   return property.unavailableTo < getTodayISO()
 }
-
-const locationTabs: { key: LocationCategory; az: string; en: string; ru: string }[] = [
-  { key: 'rayon', az: 'Rayon', en: 'District', ru: 'Район' },
-  { key: 'metro', az: 'Metro', en: 'Metro', ru: 'Метро' }
-]
 
 const isTestListing = (listing: Property): boolean => {
   const titleAz = listing.title?.az || ''
@@ -474,15 +469,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }))
   }
 
-  const handleLocationCategoryChange = (category: LocationCategory) => {
-    setNewListing(prev => ({
-      ...prev,
-      locationCategory: category,
-      locationTags: []
-    }))
-    setLocationTagsSearch('')
-  }
-
   const handlePoolSelection = (value: 'yes' | 'no') => {
     setNewListing(prev => {
       const hasPoolAmenity = prev.amenities.includes('pool')
@@ -499,18 +485,23 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
   }
 
-  const filteredLocationTagOptions = cityLocationOptions[newListing.locationCategory].filter((option) => {
-    const query = locationTagsSearch.trim().toLowerCase()
-    if (!query) return true
-    return option.az.toLowerCase().includes(query) || option.en.toLowerCase().includes(query)
-  })
+  const filteredLocationTagOptions = newListing.city && cityDistricts[newListing.city as keyof typeof cityDistricts]
+    ? cityDistricts[newListing.city as keyof typeof cityDistricts].filter((district) => {
+        const query = locationTagsSearch.trim().toLowerCase()
+        if (!query) return true
+        return district.toLowerCase().includes(query)
+      })
+    : []
 
-  const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string }) => {
+  const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string } | string) => {
+    if (typeof option === 'string') return option
     return language === 'en' ? option.en : option.az
   }, [language])
 
-  const sortByOptionLabel = React.useCallback((a: { az: string; en: string }, b: { az: string; en: string }) => {
-    return getLocalizedOptionLabel(a).localeCompare(getLocalizedOptionLabel(b), language === 'en' ? 'en' : 'az')
+  const sortByOptionLabel = React.useCallback((a: { az: string; en: string } | string, b: { az: string; en: string } | string) => {
+    const aLabel = typeof a === 'string' ? a : getLocalizedOptionLabel(a)
+    const bLabel = typeof b === 'string' ? b : getLocalizedOptionLabel(b)
+    return aLabel.localeCompare(bLabel, language === 'en' ? 'en' : 'az')
   }, [getLocalizedOptionLabel, language])
 
   const sortedMoreOptions = React.useMemo(() => [...moreFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
@@ -522,6 +513,32 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags') => {
     setNewListing(prev => ({ ...prev, [field]: [] }))
+  }
+
+  const handleMinGuestsChange = (value: string) => {
+    const newMin = Number(value)
+    setNewListing(prev => {
+      const currentMax = prev.maxGuests === '10+' ? 999 : Number(prev.maxGuests || 10)
+      
+      // If min is greater than max, update max to be equal to min
+      if (newMin > currentMax) {
+        return { ...prev, minGuests: value, maxGuests: value }
+      }
+      return { ...prev, minGuests: value }
+    })
+  }
+
+  const handleMaxGuestsChange = (value: string) => {
+    const newMax = value === '10+' ? 999 : Number(value)
+    setNewListing(prev => {
+      const currentMin = Number(prev.minGuests || 1)
+      
+      // If max is less than min, update min to be equal to max
+      if (newMax < currentMin) {
+        return { ...prev, maxGuests: value, minGuests: value === '10+' ? '10' : value }
+      }
+      return { ...prev, maxGuests: value }
+    })
   }
 
   React.useEffect(() => {
@@ -1164,11 +1181,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           <label>{language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *</label>
                           <select
                             value={newListing.city}
-                            onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
+                            onChange={(e) => setNewListing({ ...newListing, city: e.target.value, locationTags: [] })}
                             required
                           >
                             {cityOptions.map((city) => (
-                              <option key={city.value} value={city.value}>{language === 'en' ? city.en : language === 'ru' ? city.en : city.az}</option>
+                              <option key={city.value} value={city.value}>{language === 'en' ? city.en : language === 'ru' ? city.ru : city.az}</option>
                             ))}
                           </select>
                         </div>
@@ -1189,48 +1206,35 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               required
                             >
                               <option value="">{t.form.selectDistrict}</option>
-                              {(() => {
-                                const cityDistrictsList = cityDistricts[newListing.city]
-                                if (Array.isArray(cityDistrictsList)) {
-                                  return cityDistrictsList.map((dist) => (
-                                    <option key={dist} value={dist}>{dist}</option>
-                                  ))
-                                }
-                                return null
-                              })()}
+                              {newListing.city && cityDistricts[newListing.city]
+                                ? cityDistricts[newListing.city].map((dist) => (
+                                  <option key={dist} value={dist}>{dist}</option>
+                                ))
+                                : null}
                             </select>
                             <input
                               type="search"
-                              placeholder={language === 'en' ? 'Search district or metro' : language === 'ru' ? 'Поиск по району или метро' : 'Rayon və ya metro axtarın'}
+                              placeholder={language === 'en' ? 'Search district' : language === 'ru' ? 'Поиск по району' : 'Rayon axtarın'}
                               value={locationTagsSearch}
                               onChange={(e) => setLocationTagsSearch(e.target.value)}
                             />
                           </div>
 
-                          <div className="city-tabs form-city-tabs">
-                            {locationTabs.map((tab) => (
-                              <button
-                                type="button"
-                                key={tab.key}
-                                className={`city-tab ${newListing.locationCategory === tab.key ? 'active' : ''}`}
-                                onClick={() => handleLocationCategoryChange(tab.key)}
-                              >
-                                {language === 'en' ? tab.en : isRussian ? tab.ru : tab.az}
-                              </button>
-                            ))}
-                          </div>
-
                           <div className="city-option-list form-city-option-list">
-                            {sortedLocationTagOptions.length > 0 ? sortedLocationTagOptions.map((option) => (
-                              <label key={option.key} className="city-option-item">
-                                <input
-                                  type="checkbox"
-                                  checked={newListing.locationTags.includes(option.key)}
-                                  onChange={() => toggleStringField('locationTags', option.key)}
-                                />
-                                <span>{getLocalizedOptionLabel(option)}</span>
-                              </label>
-                            )) : (
+                            {sortedLocationTagOptions.length > 0 ? sortedLocationTagOptions.map((option) => {
+                              const key = typeof option === 'string' ? option : (option as any).key
+                              const label = typeof option === 'string' ? option : getLocalizedOptionLabel(option)
+                              return (
+                                <label key={key} className="city-option-item">
+                                  <input
+                                    type="checkbox"
+                                    checked={newListing.locationTags.includes(key)}
+                                    onChange={() => toggleStringField('locationTags', key)}
+                                  />
+                                  <span>{label}</span>
+                                </label>
+                              )
+                            }) : (
                               <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : language === 'ru' ? 'Локации не найдены.' : 'Lokasiya tapılmadı.'}</p>
                             )}
                           </div>
@@ -1271,7 +1275,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             <MapContainer
                               center={[listingCoordinates.lat, listingCoordinates.lng]}
                               zoom={13}
-                              scrollWheelZoom={false}
+                              scrollWheelZoom={true}
                               className="listing-location-map"
                             >
                               <TileLayer
@@ -1320,7 +1324,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           <label>{t.form.minGuests} *</label>
                           <select
                             value={newListing.minGuests}
-                            onChange={(e) => setNewListing({...newListing, minGuests: e.target.value})}
+                            onChange={(e) => handleMinGuestsChange(e.target.value)}
                             required
                           >
                             <option value="">Select min</option>
@@ -1341,7 +1345,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           <label>{t.form.maxGuests} *</label>
                           <select
                             value={newListing.maxGuests}
-                            onChange={(e) => setNewListing({...newListing, maxGuests: e.target.value})}
+                            onChange={(e) => handleMaxGuestsChange(e.target.value)}
                             required
                           >
                             <option value="">Select max</option>

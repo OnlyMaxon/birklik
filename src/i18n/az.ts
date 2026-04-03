@@ -63,7 +63,7 @@ export const az: Translations = {
   propertyTypes: {
     villa: "Villa",
     apartment: "Mənzil",
-    house: "Ev",
+    house: "Bağ evi",
     cottage: "Kottec",
     penthouse: "Penthaus"
   },

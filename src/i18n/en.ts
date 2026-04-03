@@ -63,7 +63,7 @@ export const en: Translations = {
   propertyTypes: {
     villa: "Villa",
     apartment: "Apartment",
-    house: "House",
+    house: "Bagh evi",
     cottage: "Cottage",
     penthouse: "Penthouse"
   },
