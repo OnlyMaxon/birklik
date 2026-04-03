@@ -90,13 +90,30 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }).slice(0, cityFilterLimit)
 
   const handleMinGuestsChange = (value: string) => {
+    const newMin = Number(value)
     setMinGuests(value)
-    onMinGuestsChange?.(Number(value))
+    onMinGuestsChange?.(newMin)
+    
+    // If min is greater than max, update max to be equal to min
+    const currentMax = maxGuests === '10+' ? 999 : Number(maxGuests)
+    if (newMin > currentMax) {
+      setMaxGuests(value)
+      onMaxGuestsChange?.(newMin)
+    }
   }
 
   const handleMaxGuestsChange = (value: string) => {
+    const newMax = value === '10+' ? 999 : Number(value)
+    const currentMin = Number(minGuests)
+    
     setMaxGuests(value)
-    onMaxGuestsChange?.(value === '10+' ? '10+' : Number(value))
+    onMaxGuestsChange?.(value === '10+' ? '10+' : newMax)
+    
+    // If max is less than min, update min to be equal to max
+    if (newMax < currentMin) {
+      setMinGuests(value === '10+' ? '10' : value)
+      onMinGuestsChange?.(newMax)
+    }
   }
 
   const handlePickCity = (city: typeof cities[number]) => {
