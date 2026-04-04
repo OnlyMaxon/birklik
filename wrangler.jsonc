@@ -1,5 +1,6 @@
 {
   "name": "birklik",
+  "type": "pages",
   "compatibility_date": "2026-04-04",
   "assets": {
     "directory": "./dist"
