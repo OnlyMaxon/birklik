@@ -86,6 +86,38 @@ export const PropertyPage: React.FC = () => {
     return item.unavailableTo < getTodayISO()
   }
 
+  // Handle calendar date click for range selection
+  const handleCalendarDateClick = (dateISO: string | undefined) => {
+    if (!dateISO) return
+
+    // If no check-in selected, set it
+    if (!selectedCheckIn) {
+      setSelectedCheckIn(dateISO)
+      return
+    }
+
+    // If no check-out selected, set it
+    if (!selectedCheckOut) {
+      // If clicked date is before check-in, swap them
+      if (dateISO < selectedCheckIn) {
+        setSelectedCheckOut(selectedCheckIn)
+        setSelectedCheckIn(dateISO)
+      } else {
+        setSelectedCheckOut(dateISO)
+      }
+      return
+    }
+
+    // If both selected, clicking a date starts new selection
+    setSelectedCheckIn(dateISO)
+    setSelectedCheckOut('')
+  }
+
+  const isDateInSelectedRange = (dateISO: string | undefined, checkIn: string, checkOut: string) => {
+    if (!dateISO) return false
+    return dateISO >= checkIn && dateISO <= checkOut
+  }
+
   const handleAddComment = async () => {
     if (!isAuthenticated || !user || !property || !newComment.trim()) return
 
@@ -374,14 +406,29 @@ export const PropertyPage: React.FC = () => {
                       const isBusy = !!cell.dateISO && !!property.unavailableFrom && !!property.unavailableTo
                         && cell.dateISO >= property.unavailableFrom
                         && cell.dateISO <= property.unavailableTo
+                      
+                      const isCheckIn = cell.dateISO === selectedCheckIn
+                      const isCheckOut = cell.dateISO === selectedCheckOut
+                      const isInRange = selectedCheckIn && selectedCheckOut && cell.dateISO && isDateInSelectedRange(cell.dateISO, selectedCheckIn, selectedCheckOut)
 
                       return (
-                        <span
+                        <button
                           key={`${cell.dateISO || 'empty'}-${index}`}
-                          className={`availability-day ${cell.inMonth ? '' : 'outside'} ${isBusy ? 'busy' : ''}`}
+                          onClick={() => handleCalendarDateClick(cell.dateISO)}
+                          disabled={isBusy || !cell.inMonth}
+                          className={`
+                            availability-day 
+                            ${cell.inMonth ? '' : 'outside'} 
+                            ${isBusy ? 'busy' : ''} 
+                            ${isCheckIn ? 'check-in' : ''} 
+                            ${isCheckOut ? 'check-out' : ''} 
+                            ${isInRange ? 'in-range' : ''}
+                            ${!isBusy && cell.inMonth ? 'selectable' : ''}
+                          `}
+                          type="button"
                         >
                           {cell.label}
-                        </span>
+                        </button>
                       )
                     })}
                   </div>
@@ -396,41 +443,43 @@ export const PropertyPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="availability-user-range">
+                  {selectedCheckIn && (
                     <div className="availability-range-inputs">
-                      <div>
-                        <span>{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş tarixi'}</span>
-                        <input type="date" value={selectedCheckIn} onChange={(e) => setSelectedCheckIn(e.target.value)} />
+                      <div className="selected-range-display">
+                        <span>{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş tarixi'}:</span>
+                        <strong>{formatDate(selectedCheckIn)}</strong>
                       </div>
-                      <div>
-                        <span>{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış tarixi'}</span>
-                        <input type="date" value={selectedCheckOut} min={selectedCheckIn || undefined} onChange={(e) => setSelectedCheckOut(e.target.value)} />
-                      </div>
+                      {selectedCheckOut && (
+                        <div className="selected-range-display">
+                          <span>{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış tarixi'}:</span>
+                          <strong>{formatDate(selectedCheckOut)}</strong>
+                        </div>
+                      )}
                     </div>
+                  )}
 
-                    {selectedNights > 0 && (
-                      <div className="availability-total-box">
-                        <p>
-                          {language === 'en'
-                            ? `${selectedNights} night(s)`
-                            : language === 'ru'
-                              ? `${selectedNights} ночей`
-                              : `${selectedNights} gecə`}
-                        </p>
-                        <strong>{selectedTotal} {property.price.currency}</strong>
-                      </div>
-                    )}
-
-                    {selectedRangeBusy && (
-                      <p className="availability-range-warning">
+                  {selectedNights > 0 && (
+                    <div className="availability-total-box">
+                      <p>
                         {language === 'en'
-                          ? 'Selected dates overlap with occupied period.'
+                          ? `${selectedNights} night(s)`
                           : language === 'ru'
-                            ? 'Выбранные даты пересекаются с занятым периодом.'
-                            : 'Seçilən tarixlər məşğul günlərlə üst-üstə düşür.'}
+                            ? `${selectedNights} ночей`
+                            : `${selectedNights} gecə`}
                       </p>
-                    )}
-                  </div>
+                      <strong>{selectedTotal} {property.price.currency}</strong>
+                    </div>
+                  )}
+
+                  {selectedRangeBusy && (
+                    <p className="availability-range-warning">
+                      {language === 'en'
+                        ? 'Selected dates overlap with occupied period.'
+                        : language === 'ru'
+                          ? 'Выбранные даты пересекаются с занятым периодом.'
+                          : 'Seçilən tarixlər məşğul günlərlə üst-üstə düşür.'}
+                    </p>
+                  )}
                   {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
                 </div>
               </div>

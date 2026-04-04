@@ -301,6 +301,18 @@
   color: #5c4a36;
   background: rgba(255, 255, 255, 0.74);
   border: 1px solid rgba(121, 99, 72, 0.14);
+  cursor: default;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.availability-day.selectable {
+  cursor: pointer;
+}
+
+.availability-day.selectable:hover:not(.busy) {
+  background: rgba(214, 177, 125, 0.2);
+  border-color: rgba(121, 99, 72, 0.3);
 }
 
 .availability-day.outside {
@@ -312,6 +324,27 @@
   border-color: rgba(196, 108, 20, 0.28);
   color: #7c3e11;
   font-weight: 700;
+  cursor: not-allowed;
+}
+
+.availability-day.in-range {
+  background: rgba(214, 177, 125, 0.3);
+  border-color: rgba(214, 177, 125, 0.5);
+  color: #5c4a36;
+}
+
+.availability-day.check-in,
+.availability-day.check-out {
+  background: linear-gradient(135deg, #d6b17d, #c4a16f);
+  border-color: #b8935f;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(214, 177, 125, 0.4);
+}
+
+.availability-day:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .availability-dates {
@@ -347,23 +380,28 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
+  margin-top: 0.7rem;
+  padding: 0.7rem;
+  background: rgba(214, 177, 125, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(214, 177, 125, 0.25);
 }
 
-.availability-range-inputs span {
-  display: block;
+.selected-range-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.selected-range-display span {
   font-size: 0.72rem;
   color: #8c7a66;
-  margin-bottom: 0.2rem;
+  font-weight: 600;
 }
 
-.availability-range-inputs input {
-  width: 100%;
-  min-width: 0;
-  border-radius: 10px;
-  border: 1px solid rgba(121, 99, 72, 0.26);
-  background: #fffdf8;
-  padding: 0.42rem 0.55rem;
-  font-size: 0.84rem;
+.selected-range-display strong {
+  font-size: 0.88rem;
+  color: #342719;
 }
 
 .availability-total-box {
