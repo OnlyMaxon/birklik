@@ -1,13 +1,30 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/assets/*", "/brand/*", "*.js", "*.css", "*.ico", "*.png", "*.jpg", "*.jpeg", "*.svg", "*.webp", "*.gif", "*.woff", "*.woff2", "*.ttf", "*.eot"],
+  "exclude": [
+    "/assets/*",
+    "/brand/*",
+    "*.js",
+    "*.css",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.svg",
+    "*.gif",
+    "*.ico",
+    "*.woff",
+    "*.woff2",
+    "*.ttf",
+    "*.eot",
+    "*.webp"
+  ],
   "rules": [
     {
       "role": "serve",
       "include": ["/assets/*", "/brand/*"],
       "cache": {
-        "default_ttl": 31536000
+        "default_ttl": 31536000,
+        "default_cache_control": "public, max-age=31536000, immutable"
       }
     },
     {

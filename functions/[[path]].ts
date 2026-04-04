@@ -1,27 +1,30 @@
 /**
  * Cloudflare Pages route handler for SPA
- * Default route for all requests - serves index.html for SPA
+ * Serves index.html for all non-file routes that return 404
  */
 
-export const onRequest: PagesFunction = async ({ request, next }) => {
+export const onRequest = async ({ request, next }) => {
   const url = new URL(request.url);
+  const pathname = url.pathname;
 
-  // For all requests that aren't files, check if file exists
-  // If not, return index.html for React Router
+  // First, try to get the requested resource
   const response = await next();
-  
-  // If 404 and not a file request, serve index.html
-  if (response.status === 404) {
-    const pathname = url.pathname;
-    
-    // Check if it looks like a file
-    if (!pathname.includes('.') && pathname !== '/') {
-      //  It's likely a route - serve index.html
+
+  // If it exists, return it as-is
+  if (response.status !== 404) {
+    return response;
+  }
+
+  // If it's a 404, check if it's a route (no file extension)
+  if (!pathname.includes('.')) {
+    try {
+      // It's a route - serve index.html instead
       const indexResponse = await next({
         request: new Request(new URL('/index.html', url))
       });
-      
-      if (indexResponse.ok) {
+
+      if (indexResponse.status === 200) {
+        // Return index.html with 200 status for SPA routing
         return new Response(indexResponse.body, {
           status: 200,
           headers: {
@@ -30,8 +33,12 @@ export const onRequest: PagesFunction = async ({ request, next }) => {
           }
         });
       }
+    } catch (error) {
+      console.error('[SPA Router] Error:', error);
     }
   }
-  
+
+  // Return the original 404
   return response;
 };
+
