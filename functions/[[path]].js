@@ -1,6 +1,6 @@
 /**
- * Cloudflare Pages function - catch all routes for SPA
- * Must be named [[path]].js or [[path]].ts to catch all routes
+ * Cloudflare Pages function - SPA routing handler
+ * Redirects all non-file routes to index.html for React Router handoff
  */
 
 export async function onRequest(context) {
@@ -8,51 +8,40 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // Only handle GET requests
-  if (request.method !== 'GET') {
-    return new Response('Method Not Allowed', { status: 405 });
-  }
-
-  // Skip static paths
-  if (pathname.startsWith('/assets/') || pathname.startsWith('/brand/')) {
+  // Skip static assets and files with extensions
+  if (
+    pathname.startsWith('/assets/') ||
+    pathname.startsWith('/brand/') ||
+    /\.[a-zA-Z0-9]+$/.test(pathname)
+  ) {
     return context.next();
   }
 
-  // If it has a file extension, it's a file - try to serve it
-  if (pathname.includes('.')) {
-    return context.next();
-  }
-
-  // It's a potential SPA route
+  // Try to serve the requested resource
   const response = await context.next();
 
-  // If the route exists, return it
+  // If it exists, return it
   if (response.status !== 404) {
     return response;
   }
 
-  // Route doesn't exist - serve index.html for React Router
-  try {
-    // Get the index.html file
-    const indexResponse = await context.env.ASSETS.fetch(
-      new URL('/index.html', url)
-    );
-
-    if (indexResponse.ok) {
-      // Return with 200 status for SPA routing
-      const buffer = await indexResponse.arrayBuffer();
-      return new Response(buffer, {
+  // If 404 and it's not a file request, serve index.html
+  if (!pathname.includes('.')) {
+    // Return index.html for SPA routing
+    return new Response(
+      await context.next({
+        request: new Request(new URL('/index.html', url))
+      }).then(r => r.text()),
+      {
         status: 200,
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600',
+          'Cache-Control': 'public, max-age=3600'
         }
-      });
-    }
-  } catch (error) {
-    console.error('[SPA] Error serving index.html:', error);
+      }
+    );
   }
 
-  // Return original 404 as fallback
   return response;
 }
+
