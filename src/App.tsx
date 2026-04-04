@@ -66,9 +66,14 @@ const ModeratorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function App() {
   const { isLoading } = useAuth()
   const location = useLocation()
-  const [showRouteLoader, setShowRouteLoader] = React.useState(true)
+  const [showRouteLoader, setShowRouteLoader] = React.useState(false)
+  const isInitialMount = React.useRef(true)
 
   React.useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
     setShowRouteLoader(true)
     const timeout = window.setTimeout(() => setShowRouteLoader(false), 420)
     return () => window.clearTimeout(timeout)
