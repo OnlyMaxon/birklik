@@ -1,9 +1,13 @@
 {
   "name": "birklik",
-  "main": "_worker.js",
   "compatibility_date": "2026-03-17",
-  "assets": {
-    "directory": "./dist"
+  "pages_build_configuration": {
+    "build": {
+      "command": "npm run build",
+      "cwd": "."
+    },
+    "preview_database_id": null,
+    "deployment_customization": {}
   },
   "vars": {
     "VITE_FIREBASE_API_KEY": "AIzaSyDdWTip4DznmrrFH9WdH4EqSKeByKMaMzI",
