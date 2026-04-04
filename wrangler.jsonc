@@ -2,6 +2,9 @@
   "name": "birklik",
   "type": "javascript",
   "compatibility_date": "2026-03-17",
+  "assets": {
+    "directory": "./dist"
+  },
   "vars": {
     "VITE_FIREBASE_API_KEY": "AIzaSyDdWTip4DznmrrFH9WdH4EqSKeByKMaMzI",
     "VITE_FIREBASE_AUTH_DOMAIN": "birklik-65289.firebaseapp.com",
@@ -11,3 +14,4 @@
     "VITE_FIREBASE_APP_ID": "1:695765296567:web:e4864e9226fb279686f432"
   }
 }
+
