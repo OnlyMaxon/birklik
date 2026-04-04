@@ -1,46 +1,56 @@
 /**
- * Cloudflare Worker for serving SPA with proper routing
+ * Cloudflare Pages function for SPA routing
+ * This handles all requests and serves index.html for non-asset routes
  */
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    
-    // For non-GET requests, pass through
-    if (request.method !== 'GET') {
-      return fetch(request);
-    }
 
-    const pathname = url.pathname;
+export async function onRequest(context) {
+  const { request } = context;
+  const url = new URL(request.url);
+  const pathname = url.pathname;
 
-    // Skip asset routes - they should be served as-is
-    if (pathname.startsWith('/assets/') || 
-        pathname.startsWith('/brand/') ||
-        /\.[a-zA-Z0-9]+$/.test(pathname)) { // Has file extension
-      return fetch(request);
-    }
-
-    // For all other GET requests (routes without file extensions),
-    // check if the file exists. If not, return index.html for SPA routing
-    try {
-      const response = await fetch(request);
-      
-      // If the asset exists, return it
-      if (response.status !== 404) {
-        return response;
-      }
-
-      // If it's a 404 and not a file request, serve index.html
-      if (!pathname.includes('.')) {
-        const indexUrl = new URL('/index.html', url.origin);
-        return fetch(new Request(indexUrl, { headers: request.headers }));
-      }
-
-      return response;
-    } catch (error) {
-      // On error, try to serve index.html for SPA routing
-      const indexUrl = new URL('/index.html', url.origin);
-      return fetch(new Request(indexUrl, { headers: request.headers }));
-    }
+  // Only handle GET requests
+  if (request.method !== 'GET') {
+    return new Response('Method not allowed', { status: 405 });
   }
-};
+
+  // For asset files and files with extensions, use default behavior  
+  if (pathname.startsWith('/assets/) ||
+      pathname.startsWith('/brand/') ||
+      /\.[a-zA-Z0-9]+$/.test(pathname)) {
+    return context.next();
+  }
+
+  // For routes (paths without file extension), serve index.html
+  try {
+    // Try to get the actual file first
+    const response = await context.next();
+    
+    if (response.status === 404 && !pathname.includes('.')) {
+      // It's a 404 and no file extension, so it's a route - serve index.html
+      const indexResponse = await context.next({
+        data: {},
+      });
+      
+      return new Response(indexResponse.body, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600'
+        }
+      });
+    }
+    
+    return response;
+  } catch (e) {
+    // On error, serve index.html
+    return new Response(await context.next().then(r => r.text()), {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    });
+  }
+}
+
 
