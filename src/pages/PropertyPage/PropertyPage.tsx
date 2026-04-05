@@ -367,13 +367,6 @@ export const PropertyPage: React.FC = () => {
             {/* Right Column - Booking Card */}
             <div className="property-sidebar">
               <div className="booking-card card">
-                <div className="price-section">
-                  <div className="price-row">
-                    <span className="price-label">{t.property.perNight}:</span>
-                    <span className="price-value">{property.price.daily} {property.price.currency}</span>
-                  </div>
-                </div>
-
                 <div className="owner-info owner-info-priority">
                   <h4>{t.property.contact}</h4>
                   <p className="owner-name">{property.owner.name}</p>
@@ -481,6 +474,13 @@ export const PropertyPage: React.FC = () => {
                     </p>
                   )}
                   {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
+
+                  <div className="price-section">
+                    <div className="price-row">
+                      <span className="price-label">{t.property.perNight}:</span>
+                      <span className="price-value">{property.price.daily} {property.price.currency}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
