@@ -1,9 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check moderator role
+    function isModerator() {
+      return request.auth != null && request.auth.token.moderator == true;
+    }
+
+    // Helper function to check property ownership
+    function isOwner(ownerId) {
+      return request.auth != null && request.auth.uid == ownerId;
+    }
+
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId
+        && !request.resource.data.keys().hasAny(['moderator', 'admin']);
+      allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
     match /properties/{propertyId} {
@@ -14,12 +27,31 @@ service cloud.firestore {
         && request.resource.data.type is string
         && request.resource.data.district is string
         && request.resource.data.price.daily is number
-        && request.resource.data.rooms is number;
+        && request.resource.data.rooms is number
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.status in ['pending', 'active', 'hidden'];
 
-      allow update, delete: if request.auth != null
-          && (resource.data.ownerId == request.auth.uid
-              || request.auth.token.email == 'calilorucli42@gmail.com'
-              || request.auth.token.email == 'elgun.akhundov@gmail.com');
+      allow update: if request.auth != null && (
+        (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'status']))
+        || isModerator()
+      );
+
+      allow delete: if request.auth != null && (
+        isOwner(resource.data.ownerId) || isModerator()
+      );
+    }
+
+    match /properties/{propertyId}/comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.createdAt is timestamp;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId
+        && !request.resource.data.keys().hasAny(['userId', 'createdAt']);
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.userId || isModerator()
+      );
     }
   }
 }

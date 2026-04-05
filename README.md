@@ -4,6 +4,12 @@
 
 Этот гайд покрывает полную миграцию проекта на Firebase и настройку проекта с нуля.
 
+## 📚 Documentation
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Project structure, services, setup requirements
+- **[SERVICES.md](./SERVICES.md)** - Available services and how to use them
+- **[SETUP_CUSTOM_CLAIMS.md](./SETUP_CUSTOM_CLAIMS.md)** - Firebase moderator role setup
+
 ## 1. Что уже реализовано в коде
 
 - Каталог объектов на главной загружается из Firestore.
