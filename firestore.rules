@@ -33,6 +33,7 @@ service cloud.firestore {
 
       allow update: if request.auth != null && (
         (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'status']))
+        || (request.resource.data.keys().size() == 1 && 'favorites' in request.resource.data)
         || isModerator()
       );
 

@@ -36,6 +36,7 @@ export interface Translations {
     perWeek: string
     perMonth: string
     rooms: string
+    guests: string
     description: string
     amenities: string
     location: string
@@ -165,7 +166,6 @@ export interface Translations {
     free_features: string
     standard_features: string
     premium_features: string
-    premium_highlight: string
   }
   support: {
     waitingForReview: string

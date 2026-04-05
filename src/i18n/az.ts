@@ -36,6 +36,7 @@ export const az: Translations = {
     perWeek: "həftə",
     perMonth: "ay",
     rooms: "otaq",
+    guests: "qonaq",
     description: "Təsvir",
     amenities: "Rahatlıqlar",
     location: "Məkan",
@@ -164,8 +165,7 @@ export const az: Translations = {
   pricing_info: {
     free_features: "4 foto, qısa təsvir, gizli lokasiya",
     standard_features: "20 foto, tam təsvir, lokasiya göstərilir",
-    premium_features: "Limitsiz foto, ana səhifədə 3 həftə prioritet",
-    premium_highlight: "✓ Ana səhifədə 3 həftə göstərilir"
+    premium_features: "✓ Limitsiz foto, ana səhifədə 3 həftə, görünən məkan"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",

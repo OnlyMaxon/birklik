@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
+import { useAuth } from '../../context'
+import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { Property, Language } from '../../types'
 import './PropertyCard.css'
 
@@ -8,10 +10,21 @@ interface PropertyCardProps {
   property: Property
   checkIn?: string
   checkOut?: string
+  onFavoriteToggle?: (propertyId: string, isFavorited: boolean) => void
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, checkOut }) => {
+export const PropertyCard: React.FC<PropertyCardProps> = ({ 
+  property, 
+  checkIn, 
+  checkOut,
+  onFavoriteToggle
+}) => {
   const { language, t } = useLanguage()
+  const { user, isAuthenticated } = useAuth()
+  const [isFavoriting, setIsFavoriting] = React.useState(false)
+  const [isFavorited, setIsFavorited] = React.useState(
+    isPropertyFavorited(property.favorites, user?.id ?? '')
+  )
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
@@ -23,12 +36,33 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, c
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
   }
 
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    if (!isAuthenticated || !user) {
+      alert(language === 'en' ? 'Please sign in to add favorites' : language === 'ru' ? 'Пожалуйста, войдите чтобы добавить в избранные' : 'Lütfen favorilere eklemek için giriş yapın')
+      return
+    }
+
+    setIsFavoriting(true)
+    try {
+      await toggleFavorite(property.id, user.id, isFavorited)
+      setIsFavorited(!isFavorited)
+      onFavoriteToggle?.(property.id, !isFavorited)
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      alert(language === 'en' ? 'Error updating favorites' : language === 'ru' ? 'Ошибка при обновлении избранных' : 'Favori güncellenirken hata oluştu')
+    } finally {
+      setIsFavoriting(false)
+    }
+  }
+
   const nights = calculateNights()
   const totalPrice = nights > 0 ? property.price.daily * nights : property.price.daily
 
   return (
-    <Link to={`/property/${property.id}`} className="property-card card">
-      <div className="property-image">
+    <div className="property-card card">
+      <Link to={`/property/${property.id}`} className="property-image">
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className="property-type-badge badge badge-primary">
           {t.propertyTypes[property.type]}
@@ -38,10 +72,21 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, c
             {t.amenities.pool}
           </div>
         )}
-      </div>
+      </Link>
+      
+      <button
+        onClick={handleFavoriteClick}
+        disabled={isFavoriting}
+        className={`property-favorite-btn ${isFavorited ? 'favorited' : ''}`}
+        title={!isAuthenticated ? (language === 'en' ? 'Sign in to favorite' : language === 'ru' ? 'Войдите чтобы добавить в избранные' : 'Favorilere eklemek için giriş yapın') : ''}
+      >
+        {isFavoriting ? '...' : isFavorited ? '❤️' : '🤍'}
+      </button>
       
       <div className="property-content">
-        <h3 className="property-title">{getLocalizedText(property.title)}</h3>
+        <Link to={`/property/${property.id}`} className="property-title-link">
+          <h3 className="property-title">{getLocalizedText(property.title)}</h3>
+        </Link>
         
         <p className="property-location">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,6 +109,15 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, c
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
             </svg>
             {property.area} {t.property.sqm}
+          </span>
+          <span className="feature">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {property.minGuests}-{property.maxGuests} {t.property.guests}
           </span>
         </div>
 
@@ -99,6 +153,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, checkIn, c
           )}
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

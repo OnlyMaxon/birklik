@@ -59,6 +59,7 @@ export interface Property {
   reviews?: number
   // Likes and comments
   likes?: string[] // Array of user IDs who liked this property
+  favorites?: string[] // Array of user IDs who favorited this property
   comments?: Comment[]
   // Firebase specific fields
   ownerId?: string

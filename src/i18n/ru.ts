@@ -36,6 +36,7 @@ export const ru: Translations = {
     perWeek: 'неделя',
     perMonth: 'месяц',
     rooms: 'комнат',
+    guests: 'гостей',
     description: 'Описание',
     amenities: 'Удобства',
     location: 'Локация',
@@ -164,8 +165,7 @@ export const ru: Translations = {
   pricing_info: {
     free_features: '4 фото, короткое описание, скрытая локация',
     standard_features: '20 фото, полное описание, видимая локация',
-    premium_features: 'Безлимит фото, приоритет 3 недели на главной',
-    premium_highlight: '✓ 3 недели в приоритете на главной'
+    premium_features: '✓ Безлимит фото, 3 недели на главной, видимая локация'
   },
   support: {
     waitingForReview: 'Объявление на проверке, с вами свяжется поддержка',

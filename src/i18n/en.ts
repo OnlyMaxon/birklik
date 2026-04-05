@@ -36,6 +36,7 @@ export const en: Translations = {
     perWeek: "week",
     perMonth: "month",
     rooms: "rooms",
+    guests: "guests",
     description: "Description",
     amenities: "Amenities",
     location: "Location",
@@ -164,8 +165,7 @@ export const en: Translations = {
   pricing_info: {
     free_features: "4 photos, short description, hidden location",
     standard_features: "20 photos, full description, location visible",
-    premium_features: "Unlimited photos, featured 3 weeks on homepage",
-    premium_highlight: "✓ Featured 3 weeks on homepage"
+    premium_features: "✓ Unlimited photos, featured 3 weeks on homepage, visible location"
   },
   support: {
     waitingForReview: "Listing pending - support team will contact you",

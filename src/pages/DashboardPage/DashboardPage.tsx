@@ -4,13 +4,15 @@ import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'rea
 import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cities, cityDistricts } from '../../data'
+import { FavoritesTab } from './FavoritesTab'
+import { CityLocationPicker } from '../../components'
+import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { isModeratorEmail } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
-type TabType = 'listings' | 'add' | 'profile'
+type TabType = 'listings' | 'add' | 'favorites' | 'profile'
 
 interface DashboardPageProps {
   initialTab?: TabType
@@ -137,7 +139,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
   const [listingCoordinates, setListingCoordinates] = React.useState(DEFAULT_COORDINATES)
   const [locationSearch, setLocationSearch] = React.useState('')
-  const [locationTagsSearch, setLocationTagsSearch] = React.useState('')
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
   const [locationSearchError, setLocationSearchError] = React.useState('')
   const [busyListingId, setBusyListingId] = React.useState<string | null>(null)
@@ -161,8 +162,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ? 'Объявление успешно сохранено'
     : 'Elan uğurla yadda saxlanıldı'
 
-  const cityOptions = cities
-
   const listingPlans = [
     {
       id: 'free' as ListingTier,
@@ -185,7 +184,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       title: t.pricing.premium,
       price: '30 AZN',
       period: t.pricing.perMonth,
-      perks: [t.pricing_info.premium_features, t.pricing_info.premium_highlight],
+      perks: [t.pricing_info.premium_features],
       emphasis: t.pricing.premiumDesc,
       highlighted: true
     }
@@ -309,7 +308,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setEditingListingId(null)
     setListingCoordinates(DEFAULT_COORDINATES)
     setLocationSearch('')
-    setLocationTagsSearch('')
     setLocationSearchError('')
   }, [user])
 
@@ -528,13 +526,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
   }
 
-  const filteredLocationTagOptions = newListing.city && cityDistricts[newListing.city as keyof typeof cityDistricts]
-    ? cityDistricts[newListing.city as keyof typeof cityDistricts].filter((district) => {
-        const query = locationTagsSearch.trim().toLowerCase()
-        if (!query) return true
-        return district.toLowerCase().includes(query)
-      })
-    : []
+
 
   const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string } | string) => {
     if (typeof option === 'string') return option
@@ -549,12 +541,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const sortedMoreOptions = React.useMemo(() => [...moreFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
   const sortedNearOptions = React.useMemo(() => [...nearFilterOptions].sort(sortByOptionLabel), [sortByOptionLabel])
-  const sortedLocationTagOptions = React.useMemo(() => [...filteredLocationTagOptions].sort(sortByOptionLabel), [filteredLocationTagOptions, sortByOptionLabel])
   const selectableAmenities = React.useMemo(() => amenitiesList.filter((amenity) => amenity !== 'beach'), [])
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
 
-  const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces' | 'locationTags') => {
+  const clearListingSection = (field: 'extraFeatures' | 'nearbyPlaces') => {
     setNewListing(prev => ({ ...prev, [field]: [] }))
   }
 
@@ -1008,6 +999,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   {t.dashboard.addListing}
                 </button>
                 <button
+                  className={`nav-item ${activeTab === 'favorites' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('favorites')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  {language === 'en' ? 'Favorites' : language === 'ru' ? 'Избранные' : 'Sevimlilər'}
+                </button>
+                <button
                   className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                   onClick={() => setActiveTab('profile')}
                 >
@@ -1220,75 +1220,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </select>
                         </div>
 
-                        <div className="form-group">
-                          <label>{language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *</label>
-                          <select
-                            value={newListing.city}
-                            onChange={(e) => setNewListing({ ...newListing, city: e.target.value, locationTags: [] })}
-                            required
-                          >
-                            {cityOptions.map((city) => (
-                              <option key={city.value} value={city.value}>{language === 'en' ? city.en : language === 'ru' ? city.ru : city.az}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="form-group full-width location-tags-section">
-                          <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'City locations' : language === 'ru' ? 'Локации по городу' : 'Şəhərdaxili lokasiya seçimi'} <span className="dashboard-count-pill">{newListing.locationTags.length}</span></label>
-                            {newListing.locationTags.length > 0 && (
-                              <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('locationTags')}>
-                                {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
-                              </button>
-                            )}
-                          </div>
-
-                          {newListing.city === 'Baku' && (
-                            <div className="city-category-toggle" style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
-                              <button
-                                type="button"
-                                className={`btn btn-sm ${newListing.locationCategory === 'rayon' ? 'btn-primary' : 'btn-outline'}`}
-                                onClick={() => setNewListing({ ...newListing, locationCategory: 'rayon', locationTags: [] })}
-                              >
-                                {language === 'en' ? 'Districts' : language === 'ru' ? 'Районы' : 'Rayonlar'}
-                              </button>
-                              <button
-                                type="button"
-                                className={`btn btn-sm ${newListing.locationCategory === 'metro' ? 'btn-primary' : 'btn-outline'}`}
-                                onClick={() => setNewListing({ ...newListing, locationCategory: 'metro', locationTags: [] })}
-                              >
-                                {language === 'en' ? 'Metro' : language === 'ru' ? 'Метро' : 'Metro'}
-                              </button>
-                            </div>
-                          )}
-
-                          <input
-                            type="search"
-                            placeholder={language === 'en' ? 'Search district' : language === 'ru' ? 'Поиск по району' : 'Rayon axtarın'}
-                            value={locationTagsSearch}
-                            onChange={(e) => setLocationTagsSearch(e.target.value)}
-                            style={{ marginBottom: '12px' }}
-                          />
-
-                          <div className="city-option-list form-city-option-list">
-                            {sortedLocationTagOptions.length > 0 ? sortedLocationTagOptions.map((option) => {
-                              const key = typeof option === 'string' ? option : (option as any).key
-                              const label = typeof option === 'string' ? option : getLocalizedOptionLabel(option)
-                              return (
-                                <label key={key} className="city-option-item">
-                                  <input
-                                    type="checkbox"
-                                    checked={newListing.locationTags.includes(key)}
-                                    onChange={() => toggleStringField('locationTags', key)}
-                                  />
-                                  <span>{label}</span>
-                                </label>
-                              )
-                            }) : (
-                              <p className="dashboard-empty-options">{language === 'en' ? 'No locations found.' : language === 'ru' ? 'Локации не найдены.' : 'Lokasiya tapılmadı.'}</p>
-                            )}
-                          </div>
-                        </div>
+                        <CityLocationPicker
+                          city={newListing.city}
+                          locationTags={newListing.locationTags}
+                          locationCategory={newListing.locationCategory}
+                          onCityChange={(city) => setNewListing({...newListing, city, locationTags: []})}
+                          onLocationTagsChange={(tags) => setNewListing({...newListing, locationTags: tags})}
+                          onLocationCategoryChange={(category) => setNewListing({...newListing, locationCategory: category, locationTags: []})}
+                        />
 
                         <div className="form-group full-width">
                           <label>{t.form.address} {newListing.listingTier === 'free' ? '' : '*'}</label>
@@ -1579,6 +1518,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   )}
                 </div>
               )}
+
+              {/* Favorites Tab */}
+              {activeTab === 'favorites' && <FavoritesTab />}
 
               {/* Profile Tab */}
               {activeTab === 'profile' && (
