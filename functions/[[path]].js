@@ -1,13 +1,12 @@
 export async function onRequest(context) {
-  const { request, env } = context;
-  const response = await env.ASSETS.fetch(request);
-
-  // Если файл не найден (404), отдаем содержимое index.html
+  const response = await context.next();
+  
+  // Если Cloudflare не нашел физический файл (вернул 404),
+  // мы принудительно отдаем index.html, но с кодом 200.
   if (response.status === 404) {
-    const url = new URL(request.url);
-    url.pathname = '/index.html';
-    return env.ASSETS.fetch(new Request(url.toString(), request));
+    const url = new URL('/index.html', context.request.url);
+    return context.env.ASSETS.fetch(url);
   }
-
+  
   return response;
 }
