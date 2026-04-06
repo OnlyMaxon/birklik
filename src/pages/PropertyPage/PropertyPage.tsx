@@ -6,6 +6,7 @@ import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews } from '../../services'
+import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { Booking } from '../../types'
 import { Language, Property } from '../../types'
@@ -50,6 +51,8 @@ export const PropertyPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth()
   const [property, setProperty] = React.useState<Property | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
+  const [isFavorited, setIsFavorited] = React.useState(false)
+  const [isFavoriting, setIsFavoriting] = React.useState(false)
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
@@ -69,6 +72,12 @@ export const PropertyPage: React.FC = () => {
       setIsLoading(true)
       const data = await getPropertyById(id)
       setProperty(data)
+      
+      // Check if favorited
+      if (data && user) {
+        const favorited = isPropertyFavorited(data.favorites || [], user.id)
+        setIsFavorited(favorited)
+      }
       
       // Increment views count
       if (data) {
@@ -204,6 +213,26 @@ export const PropertyPage: React.FC = () => {
     }
   }
 
+  const handleFavoriteClick = async () => {
+    if (!isAuthenticated || !user) {
+      alert(language === 'en' ? 'Please sign in to add favorites' : language === 'ru' ? 'Пожалуйста, войдите чтобы добавить в избранные' : 'Favorilere eklemek için giriş yapın')
+      return
+    }
+
+    if (!property) return
+
+    setIsFavoriting(true)
+    try {
+      await toggleFavorite(property.id, user.id, isFavorited)
+      setIsFavorited(!isFavorited)
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      alert(language === 'en' ? 'Error updating favorites' : language === 'ru' ? 'Ошибка при обновлении избранных' : 'Favori güncellenirken hata oluştu')
+    } finally {
+      setIsFavoriting(false)
+    }
+  }
+
   const handleDeleteComment = async (commentId: string) => {
     if (!property || !user) return
 
@@ -316,7 +345,20 @@ export const PropertyPage: React.FC = () => {
               />
 
               <div className="property-info card">
-                <h1 className="property-title">{getLocalizedText(property.title)}</h1>
+                <div className="property-header-top">
+                  <h1 className="property-title">{getLocalizedText(property.title)}</h1>
+                  <button
+                    onClick={handleFavoriteClick}
+                    disabled={isFavoriting}
+                    className={`favorite-btn ${isFavorited ? 'favorited' : ''}`}
+                    title={!isAuthenticated ? (language === 'en' ? 'Sign in to favorite' : language === 'ru' ? 'Войдите чтобы добавить в избранные' : 'Favorilere eklemek için giriş yapın') : ''}
+                    aria-label="Add to favorites"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  </button>
+                </div>
                 
                 <div className="property-meta">
                   <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
