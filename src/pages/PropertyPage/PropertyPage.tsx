@@ -286,7 +286,6 @@ export const PropertyPage: React.FC = () => {
         const ownerId = freshProperty?.ownerId
         
         if (ownerId && ownerId !== user.id) {
-          console.log('Sending favorite notification to:', ownerId)
           await createFavoriteNotification(ownerId, {
             userId: ownerId,
             type: 'favorite',
