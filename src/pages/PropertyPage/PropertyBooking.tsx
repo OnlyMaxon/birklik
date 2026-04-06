@@ -93,7 +93,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
     setIsBooking(true)
     try {
       await createBooking(booking)
-      setMessage({ type: 'success', text: language === 'en' ? 'Booking confirmed!' : language === 'ru' ? 'Бронь подтверждена!' : 'Rezervasyon təsdiqləndi!' })
+      setMessage({ type: 'success', text: language === 'en' ? 'Request sent!' : language === 'ru' ? 'Запрос отправлен!' : 'Sorgu gonderildi!' })
       setSelectedCheckIn('')
       setSelectedCheckOut('')
       onBookingSuccess?.()
@@ -112,7 +112,20 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
 
   const isCellDisabled = (dateISO?: string) => {
     if (!dateISO) return false
-    return dateISO < getTodayISO()
+    
+    // Блокировать прошлые даты
+    const today = getTodayISO()
+    if (dateISO < today) return true
+    
+    // Блокировать забронированные/недоступные даты
+    if (property.unavailableFrom && property.unavailableTo) {
+      const cellDate = dateISO
+      if (cellDate >= property.unavailableFrom && cellDate <= property.unavailableTo) {
+        return true
+      }
+    }
+    
+    return false
   }
 
   return (
