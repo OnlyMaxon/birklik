@@ -142,6 +142,40 @@
   color: var(--accent-color);
 }
 
+.property-meta .views-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #f0ebe3;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--accent-color);
+}
+
+.property-meta .views-badge svg {
+  color: var(--accent-color);
+}
+
+.property-meta .likes-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #c76666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #ffe7e7;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border-left: 3px solid #c76666;
+}
+
+.property-meta .likes-badge svg {
+  color: #c76666;
+}
+
 .property-features {
   display: flex;
   gap: 1rem 1.4rem;

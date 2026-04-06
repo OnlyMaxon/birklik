@@ -5,7 +5,7 @@ import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
-import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews } from '../../services'
+import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
@@ -172,6 +172,16 @@ export const PropertyPage: React.FC = () => {
         setHasBooked(true)
         setShowContactInfo(true)
         
+        // Auto-block the booked dates in calendar (mark as unavailable)
+        try {
+          await updateProperty(property.id, {
+            unavailableFrom: selectedCheckIn,
+            unavailableTo: selectedCheckOut
+          })
+        } catch (error) {
+          console.error('Error blocking dates:', error)
+        }
+        
         // Send booking notification to property owner
         if (property.ownerId) {
           await createBookingNotification(property.ownerId, {
@@ -270,19 +280,26 @@ export const PropertyPage: React.FC = () => {
       await toggleFavorite(property.id, user.id, isFavorited)
       
       // Send favorite notification to property owner (only if adding to favorites)
-      if (!isFavorited && property.ownerId && property.ownerId !== user.id) {
-        await createFavoriteNotification(property.ownerId, {
-          userId: property.ownerId,
-          type: 'favorite',
-          title: language === 'en' ? 'Added to Favorites' : language === 'ru' ? 'Добавлено в избранные' : 'Favorilərə Əlavə Edildi',
-          message: `${user.name} added your property to favorites`,
-          read: false,
-          propertyId: property.id,
-          favoriterName: user.name,
-          relatedId: property.id,
-          relatedUserId: user.id,
-          relatedUserName: user.name
-        })
+      if (!isFavorited) {
+        // Get fresh property data from Firestore to ensure we have ownerId
+        const freshProperty = await getPropertyById(property.id)
+        const ownerId = freshProperty?.ownerId
+        
+        if (ownerId && ownerId !== user.id) {
+          console.log('Sending favorite notification to:', ownerId)
+          await createFavoriteNotification(ownerId, {
+            userId: ownerId,
+            type: 'favorite',
+            title: language === 'en' ? 'Added to Favorites' : language === 'ru' ? 'Добавлено в избранные' : 'Favorilərə Əlavə Edildi',
+            message: `${user.name} added your property to favorites`,
+            read: false,
+            propertyId: property.id,
+            favoriterName: user.name,
+            relatedId: property.id,
+            relatedUserId: user.id,
+            relatedUserName: user.name
+          })
+        }
       }
       
       setIsFavorited(!isFavorited)
@@ -436,6 +453,23 @@ export const PropertyPage: React.FC = () => {
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                       </svg>
                       {property.rating} ({property.reviews})
+                    </span>
+                  )}
+                  {property.views && (
+                    <span className="views-badge">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      {property.views} {language === 'en' ? 'views' : language === 'ru' ? 'просмотров' : 'baxış'}
+                    </span>
+                  )}
+                  {property.likes && property.likes.length > 0 && (
+                    <span className="likes-badge">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                      </svg>
+                      {property.likes.length}
                     </span>
                   )}
                 </div>

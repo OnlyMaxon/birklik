@@ -115,6 +115,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             </svg>
             {property.area}m²
           </span>
+          {property.views !== undefined && (
+            <span className="feature views-count" title={language === 'en' ? 'Views' : language === 'ru' ? 'Просмотры' : 'Baxışlar'}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              {property.views}
+            </span>
+          )}
+          {property.likes && property.likes.length > 0 && (
+            <span className="feature likes-count" title={language === 'en' ? 'Likes' : language === 'ru' ? 'Нравится' : 'Bəyən'}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              {property.likes.length}
+            </span>
+          )}
         </div>
 
         <div className="property-footer">

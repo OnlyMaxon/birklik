@@ -477,7 +477,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       status: listingStatus,
       isFeatured: newListing.listingTier === 'premium',
       isActive: true,
-      city: newListing.city || 'Baku'
+      city: newListing.city || 'Baku',
+      views: 0,
+      likes: [],
+      favorites: [],
+      comments: []
     }
 
     if (editingListingId) {
@@ -936,7 +940,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
             phone: user.phone,
             email: user.email
           },
-          ownerId: user.id
+          ownerId: user.id,
+          views: 0,
+          likes: [],
+          favorites: [],
+          comments: []
         }
 
         await createProperty(propertyPayload, [])

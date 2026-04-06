@@ -197,6 +197,24 @@
   height: 12px;
 }
 
+.feature.views-count {
+  color: #d4a574;
+  font-weight: 600;
+}
+
+.feature.views-count svg {
+  color: #d4a574;
+}
+
+.feature.likes-count {
+  color: #c76666;
+  font-weight: 600;
+}
+
+.feature.likes-count svg {
+  color: #c76666;
+}
+
 .property-footer {
   display: flex;
   align-items: flex-end;
@@ -205,6 +223,24 @@
   border-top: 1px solid #f0ebe3;
   margin-top: auto;
   gap: 0.4rem;
+}
+
+.property-views {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  background: #f5f0e8;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #8b7355;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.property-views svg {
+  color: #b7925d;
+  flex-shrink: 0;
 }
 
 .property-price {
