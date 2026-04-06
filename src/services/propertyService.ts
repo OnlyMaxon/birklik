@@ -419,3 +419,27 @@ export const deleteCommentFromProperty = async (
     return false
   }
 }
+
+// Increment views count for a property
+export const incrementPropertyViews = async (propertyId: string): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    const currentViews = (current.data() as Property).views || 0
+
+    await updateDoc(docRef, {
+      views: currentViews + 1,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error incrementing views:', error)
+    return false
+  }
+}

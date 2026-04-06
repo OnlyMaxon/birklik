@@ -5,7 +5,7 @@ import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
-import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty } from '../../services'
+import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews } from '../../services'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
 
@@ -64,6 +64,12 @@ export const PropertyPage: React.FC = () => {
       setIsLoading(true)
       const data = await getPropertyById(id)
       setProperty(data)
+      
+      // Increment views count
+      if (data) {
+        await incrementPropertyViews(id)
+      }
+      
       setIsLoading(false)
     }
 
