@@ -26,12 +26,15 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.ownerId == request.auth.uid;
 
-      // Update: owner, favorites/views update, or moderator
+      // Update: owner, favorites/views/likes update, comments, or moderator
       allow update: if request.auth != null && (
         // Owner can update (except ownerId, createdAt, updatedAt)
-        (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'updatedAt']))
-        // Anyone authenticated can update favorites or views only
-        || (request.resource.data.keys().size() == 1 && ('favorites' in request.resource.data || 'views' in request.resource.data))
+        (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt']))
+        // Anyone authenticated can update views, likes, favorites, comments with updatedAt
+        || (request.resource.data.keys().hasOnly(['views', 'updatedAt']) && 'views' in request.resource.data)
+        || (request.resource.data.keys().hasOnly(['likes', 'updatedAt']) && 'likes' in request.resource.data)
+        || (request.resource.data.keys().hasOnly(['favorites', 'updatedAt']) && 'favorites' in request.resource.data)
+        || (request.resource.data.keys().hasOnly(['comments', 'updatedAt']) && 'comments' in request.resource.data)
         // Moderator can update anything
         || isModerator()
       );
