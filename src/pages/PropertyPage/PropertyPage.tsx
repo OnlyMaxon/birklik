@@ -8,6 +8,7 @@ import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLab
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
+import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
 import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
@@ -57,6 +58,7 @@ export const PropertyPage: React.FC = () => {
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
   const [hasBooked, setHasBooked] = React.useState(false)
+  const [showContactInfo, setShowContactInfo] = React.useState(false)
   const [isBooking, setIsBooking] = React.useState(false)
   const [newComment, setNewComment] = React.useState('')
   const [isPostingComment, setIsPostingComment] = React.useState(false)
@@ -168,6 +170,29 @@ export const PropertyPage: React.FC = () => {
       const result = await createBooking(booking)
       if (result) {
         setHasBooked(true)
+        setShowContactInfo(true)
+        
+        // Send booking notification to property owner
+        if (property.ownerId) {
+          await createBookingNotification(property.ownerId, {
+            userId: property.ownerId,
+            type: 'booking',
+            title: language === 'en' ? 'New Booking' : language === 'ru' ? 'Новое бронирование' : 'Yeni Sifariş',
+            message: `${user.name} booked your property for ${selectedNights} nights`,
+            read: false,
+            propertyId: property.id,
+            bookingId: result.id,
+            bookerName: user.name,
+            bookerEmail: user.email,
+            bookerPhone: user.phone,
+            checkInDate: selectedCheckIn,
+            checkOutDate: selectedCheckOut,
+            relatedId: property.id,
+            relatedUserId: user.id,
+            relatedUserName: user.name
+          })
+        }
+        
         alert(language === 'en' ? 'Booking confirmed!' : language === 'ru' ? 'Бронирование подтверждено!' : 'Sifariş təsdiq edildi!')
       } else {
         alert(language === 'en' ? 'Error creating booking' : language === 'ru' ? 'Ошибка при создании бронирования' : 'Sifariş yaratılma xətası')
@@ -197,6 +222,25 @@ export const PropertyPage: React.FC = () => {
       // Reload property to show new comment
       const updated = await getPropertyById(property.id)
       setProperty(updated)
+      
+      // Send comment notification to property owner
+      if (property.ownerId && property.ownerId !== user.id && updated?.comments) {
+        const lastComment = updated.comments[updated.comments.length - 1]
+        await createCommentNotification(property.ownerId, {
+          userId: property.ownerId,
+          type: 'comment',
+          title: language === 'en' ? 'New Comment' : language === 'ru' ? 'Новый комментарий' : 'Yeni Şərh',
+          message: `${user.name} commented: "${newComment.trim().substring(0, 50)}${newComment.trim().length > 50 ? '...' : ''}"`,
+          read: false,
+          propertyId: property.id,
+          commentId: lastComment?.id || '',
+          commenterName: user.name,
+          commentText: newComment.trim(),
+          relatedId: property.id,
+          relatedUserId: user.id,
+          relatedUserName: user.name
+        })
+      }
     }
 
     setIsPostingComment(false)
@@ -224,6 +268,23 @@ export const PropertyPage: React.FC = () => {
     setIsFavoriting(true)
     try {
       await toggleFavorite(property.id, user.id, isFavorited)
+      
+      // Send favorite notification to property owner (only if adding to favorites)
+      if (!isFavorited && property.ownerId && property.ownerId !== user.id) {
+        await createFavoriteNotification(property.ownerId, {
+          userId: property.ownerId,
+          type: 'favorite',
+          title: language === 'en' ? 'Added to Favorites' : language === 'ru' ? 'Добавлено в избранные' : 'Favorilərə Əlavə Edildi',
+          message: `${user.name} added your property to favorites`,
+          read: false,
+          propertyId: property.id,
+          favoriterName: user.name,
+          relatedId: property.id,
+          relatedUserId: user.id,
+          relatedUserName: user.name
+        })
+      }
+      
       setIsFavorited(!isFavorited)
     } catch (error) {
       console.error('Error toggling favorite:', error)
@@ -480,7 +541,7 @@ export const PropertyPage: React.FC = () => {
                   <h4>{t.property.contact}</h4>
                   <p className="owner-name">{property.owner.name}</p>
                   
-                  {hasBooked || selectedCheckIn && selectedCheckOut ? (
+                  {showContactInfo || hasBooked ? (
                     <>
                       <a href={`tel:${property.owner.phone}`} className="owner-phone">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

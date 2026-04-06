@@ -1,11 +1,13 @@
 import React from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { FavoritesTab } from './FavoritesTab'
 import { BookingsTab } from './BookingsTab'
+import { BookmarkedTab } from '../../components/BookmarkedTab'
+import { NotificationsTab } from '../../components/NotificationsTab'
 import { CityLocationPicker } from '../../components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { isModerator } from '../../config/constants'
@@ -13,7 +15,7 @@ import { Language, PropertyType, District, Amenity, Property, ListingTier, Locat
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
-type TabType = 'listings' | 'add' | 'favorites' | 'bookings' | 'profile'
+type TabType = 'listings' | 'add' | 'favorites' | 'bookings' | 'bookmarked' | 'notifications' | 'profile'
 
 interface DashboardPageProps {
   initialTab?: TabType
@@ -128,7 +130,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const { language, t } = useLanguage()
   const { user, isAuthenticated, firebaseUser, updateUserProfile } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = React.useState<TabType>(initialTab)
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab') as TabType | null
+  const [activeTab, setActiveTab] = React.useState<TabType>(tabParam || initialTab)
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
   const [listings, setListings] = React.useState<Property[]>([])
   const [isLoadingListings, setIsLoadingListings] = React.useState(false)
@@ -1028,6 +1032,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   {language === 'en' ? 'Bookings' : language === 'ru' ? 'Бронирования' : 'Bölmələr'}
                 </button>
                 <button
+                  className={`nav-item ${activeTab === 'bookmarked' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('bookmarked')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                  </svg>
+                  {language === 'en' ? 'Bookmarked' : language === 'ru' ? 'В закладках' : 'Əlamətlənmiş'}
+                </button>
+                <button
+                  className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('notifications')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                  {language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'}
+                </button>
+                <button
                   className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                   onClick={() => setActiveTab('profile')}
                 >
@@ -1550,6 +1573,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
               {/* Bookings Tab */}
               {activeTab === 'bookings' && <BookingsTab />}
+
+              {/* Bookmarked Properties Tab */}
+              {activeTab === 'bookmarked' && <BookmarkedTab />}
+
+              {/* Notifications Tab */}
+              {activeTab === 'notifications' && <NotificationsTab />}
 
               {/* Profile Tab */}
               {activeTab === 'profile' && (

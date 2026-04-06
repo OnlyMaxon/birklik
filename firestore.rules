@@ -19,6 +19,13 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
+    match /users/{userId}/notifications/{notificationId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
     match /properties/{propertyId} {
       allow read: if true;
 

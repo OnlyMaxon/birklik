@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { isModerator } from '../../config/constants'
+import { getUnreadNotificationsCount } from '../../services/notificationsService'
 import './Header.css'
 
 export const Header: React.FC = () => {
@@ -10,6 +11,7 @@ export const Header: React.FC = () => {
   const { isAuthenticated, user, firebaseUser, logout } = useAuth()
   const [menuOpen, setMenuOpen] = React.useState(false)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
+  const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0)
 
   React.useEffect(() => {
     const checkModerator = async () => {
@@ -20,6 +22,29 @@ export const Header: React.FC = () => {
     }
     checkModerator()
   }, [firebaseUser])
+
+  React.useEffect(() => {
+    const loadUnreadCount = async () => {
+      if (!isAuthenticated || !user?.id) {
+        setUnreadNotificationCount(0)
+        return
+      }
+
+      try {
+        const count = await getUnreadNotificationsCount(user.id)
+        setUnreadNotificationCount(count)
+      } catch (error) {
+        console.error('Error loading unread notifications count:', error)
+      }
+    }
+
+    loadUnreadCount()
+    // Reload count every 30 seconds when authenticated
+    const interval = isAuthenticated ? setInterval(loadUnreadCount, 30000) : undefined
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isAuthenticated, user?.id])
 
   React.useEffect(() => {
     if (!menuOpen) {
@@ -79,6 +104,15 @@ export const Header: React.FC = () => {
                     {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
                   </NavLink>
                 )}
+                <NavLink to="/dashboard?tab=notifications" className={`${getNavClass} notification-link`} onClick={() => setMenuOpen(false)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                  {unreadNotificationCount > 0 && (
+                    <span className="notification-badge">{unreadNotificationCount}</span>
+                  )}
+                </NavLink>
                 <div className="user-menu">
                   <span className="user-name">{user?.name}</span>
                   <button className="btn btn-ghost btn-sm" onClick={() => {
