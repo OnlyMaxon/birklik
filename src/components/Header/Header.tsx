@@ -45,14 +45,13 @@ export const Header: React.FC = () => {
 
   return (
     <header className="header">
-      <div className="container">
-        <div className="header-content">
-          <Link to="/" className="logo" onClick={() => setMenuOpen(false)}>
-            <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
-            <span className="logo-tagline">{t.site.tagline}</span>
-          </Link>
+      <div className="header-content">
+        <Link to="/" className="logo" onClick={() => setMenuOpen(false)}>
+          <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
+          <span className="logo-tagline">{t.site.tagline}</span>
+        </Link>
 
-          <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
+        <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
             <NavLink to="/" end className={getNavClass} onClick={() => setMenuOpen(false)}>
               {t.nav.home}
             </NavLink>
@@ -119,9 +118,8 @@ export const Header: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
 
-      <button
+        <button
         type="button"
         className={`mobile-menu-backdrop ${menuOpen ? 'show' : ''}`}
         aria-label="Close mobile menu"

@@ -1085,6 +1085,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   <span><strong>{property.views}</strong> {isEnglish ? 'views' : isRussian ? 'просмотров' : 'baxış'}</span>
                                 </p>
                               )}
+                              {property.unavailableFrom && property.unavailableTo && (
                                 <p style={{ fontSize: '0.84rem', color: '#8b5a10', marginTop: '0.15rem' }}>
                                   <strong>{isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'}</strong> {property.unavailableFrom} - {property.unavailableTo}
                                 </p>

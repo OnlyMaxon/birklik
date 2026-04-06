@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="footer">
-      <div className="container">
+      <div className="footer-content-wrapper">
         <div className="footer-app-panel">
           <div className="footer-app-copy">
             <p className="footer-app-kicker">Birklik.az</p>

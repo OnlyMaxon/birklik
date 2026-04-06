@@ -105,3 +105,18 @@ export interface FilterState {
   minGuests: number | null
   maxGuests: number | string | null
 }
+
+export interface Booking {
+  id: string
+  propertyId: string
+  userId: string
+  userName: string
+  userEmail: string
+  userPhone: string
+  checkInDate: string
+  checkOutDate: string
+  nights: number
+  totalPrice: number
+  createdAt: string
+  status: 'active' | 'cancelled'
+}

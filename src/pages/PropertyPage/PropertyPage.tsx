@@ -6,6 +6,8 @@ import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews } from '../../services'
+import { createBooking, hasUserBookedProperty } from '../../services'
+import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
 
@@ -50,6 +52,9 @@ export const PropertyPage: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true)
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
+  const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
+  const [hasBooked, setHasBooked] = React.useState(false)
+  const [isBooking, setIsBooking] = React.useState(false)
   const [newComment, setNewComment] = React.useState('')
   const [isPostingComment, setIsPostingComment] = React.useState(false)
 
@@ -70,11 +75,17 @@ export const PropertyPage: React.FC = () => {
         await incrementPropertyViews(id)
       }
       
+      // Check if user has already booked
+      if (isAuthenticated && user) {
+        const booked = await hasUserBookedProperty(user.id, id)
+        setHasBooked(booked)
+      }
+      
       setIsLoading(false)
     }
 
     loadProperty()
-  }, [id])
+  }, [id, isAuthenticated, user])
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
@@ -122,6 +133,42 @@ export const PropertyPage: React.FC = () => {
   const isDateInSelectedRange = (dateISO: string | undefined, checkIn: string, checkOut: string) => {
     if (!dateISO) return false
     return dateISO >= checkIn && dateISO <= checkOut
+  }
+
+  const handleMakeBooking = async () => {
+    if (!isAuthenticated || !user || !property || !selectedCheckIn || !selectedCheckOut) {
+      alert(language === 'en' ? 'Please select dates and sign in' : language === 'ru' ? 'Пожалуйста, выберите даты и войдите' : 'Lütfen tarix seçin və daxil olun')
+      return
+    }
+
+    setIsBooking(true)
+    try {
+      const booking: Omit<Booking, 'id' | 'createdAt'> = {
+        propertyId: property.id,
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        userPhone: user.phone,
+        checkInDate: selectedCheckIn,
+        checkOutDate: selectedCheckOut,
+        nights: selectedNights,
+        totalPrice: selectedTotal,
+        status: 'active'
+      }
+
+      const result = await createBooking(booking)
+      if (result) {
+        setHasBooked(true)
+        alert(language === 'en' ? 'Booking confirmed!' : language === 'ru' ? 'Бронирование подтверждено!' : 'Sifariş təsdiq edildi!')
+      } else {
+        alert(language === 'en' ? 'Error creating booking' : language === 'ru' ? 'Ошибка при создании бронирования' : 'Sifariş yaratılma xətası')
+      }
+    } catch (error) {
+      console.error('Error making booking:', error)
+      alert(language === 'en' ? 'Error making booking' : language === 'ru' ? 'Ошибка при бронировании' : 'Sifariş xətası')
+    } finally {
+      setIsBooking(false)
+    }
   }
 
   const handleAddComment = async () => {
@@ -199,19 +246,33 @@ export const PropertyPage: React.FC = () => {
     ? (language === 'en' ? `Available again from ${formatDate(property.unavailableTo)}.` : language === 'ru' ? `Снова будет доступно с ${formatDate(property.unavailableTo)}.` : `${formatDate(property.unavailableTo)} tarixindən sonra yenidən boş olacaq.`)
     : ''
 
-  const calendarBaseDate = property.unavailableFrom
-    ? new Date(property.unavailableFrom)
-    : new Date()
   const monthLabel = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ', {
     month: 'long',
     year: 'numeric'
-  }).format(calendarBaseDate)
+  }).format(displayMonth)
+  
+  const handlePrevMonth = () => {
+    setDisplayMonth(prev => {
+      const newMonth = new Date(prev)
+      newMonth.setMonth(newMonth.getMonth() - 1)
+      return newMonth
+    })
+  }
+
+  const handleNextMonth = () => {
+    setDisplayMonth(prev => {
+      const newMonth = new Date(prev)
+      newMonth.setMonth(newMonth.getMonth() + 1)
+      return newMonth
+    })
+  }
+
   const weekDayLabels = language === 'en'
     ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     : language === 'ru'
       ? ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
       : ['B.e', 'Ç.a', 'Ç', 'C.a', 'C', 'Ş', 'B']
-  const calendarCells = buildCalendarCells(calendarBaseDate)
+  const calendarCells = buildCalendarCells(displayMonth)
   const oneDayMs = 24 * 60 * 60 * 1000
   const selectedNights = (() => {
     if (!selectedCheckIn || !selectedCheckOut) return 0
@@ -376,25 +437,52 @@ export const PropertyPage: React.FC = () => {
                 <div className="owner-info owner-info-priority">
                   <h4>{t.property.contact}</h4>
                   <p className="owner-name">{property.owner.name}</p>
-                  <a href={`tel:${property.owner.phone}`} className="owner-phone">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    {property.owner.phone}
-                  </a>
-                  <a href={`mailto:${property.owner.email}`} className="owner-phone owner-email">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 4h16v16H4z"/>
-                      <path d="m22 6-10 7L2 6"/>
-                    </svg>
-                    {property.owner.email}
-                  </a>
+                  
+                  {hasBooked || selectedCheckIn && selectedCheckOut ? (
+                    <>
+                      <a href={`tel:${property.owner.phone}`} className="owner-phone">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                        {property.owner.phone}
+                      </a>
+                      <a href={`mailto:${property.owner.email}`} className="owner-phone owner-email">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 4h16v16H4z"/>
+                          <path d="m22 6-10 7L2 6"/>
+                        </svg>
+                        {property.owner.email}
+                      </a>
+                    </>
+                  ) : (
+                    <p style={{ fontSize: '0.9rem', color: '#9b7448', marginTop: '0.5rem' }}>
+                      {language === 'en' ? 'Contact info will appear after booking' : language === 'ru' ? 'Контактная информация появится после бронирования' : 'Məlumata bron etdikdən sonra nəzər salacaq'}
+                    </p>
+                  )}
                 </div>
 
                 <div className="availability-card">
                   <h4>{availabilityTitle}</h4>
                   <p className={`availability-state ${isAvailable ? 'available' : 'busy'}`}>{availabilityNote}</p>
-                  <div className="availability-month">{monthLabel}</div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <button 
+                      type="button"
+                      onClick={handlePrevMonth}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.3rem 0.5rem', fontSize: '1.2rem', color: '#7a6b5d' }}
+                    >
+                      ←
+                    </button>
+                    <div className="availability-month">{monthLabel}</div>
+                    <button 
+                      type="button"
+                      onClick={handleNextMonth}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.3rem 0.5rem', fontSize: '1.2rem', color: '#7a6b5d' }}
+                    >
+                      →
+                    </button>
+                  </div>
+
                   <div className="availability-weekdays">
                     {weekDayLabels.map((label) => (
                       <span key={label}>{label}</span>
@@ -467,6 +555,35 @@ export const PropertyPage: React.FC = () => {
                             : `${selectedNights} gecə`}
                       </p>
                       <strong>{selectedTotal} {property.price.currency}</strong>
+                    </div>
+                  )}
+
+                  {selectedNights > 0 && !selectedRangeBusy && !hasBooked && (
+                    <button
+                      type="button"
+                      onClick={handleMakeBooking}
+                      disabled={isBooking || !isAuthenticated}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        marginTop: '1rem',
+                        backgroundColor: isAuthenticated ? '#b7925d' : '#ccc',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        cursor: isAuthenticated && !isBooking ? 'pointer' : 'not-allowed',
+                        transition: 'background-color 0.3s'
+                      }}
+                    >
+                      {isBooking ? (language === 'en' ? 'Booking...' : language === 'ru' ? 'Бронирование...' : 'Sifariş edilir...') : (language === 'en' ? 'Book Now' : language === 'ru' ? 'Забронировать' : 'Bron Et')}
+                    </button>
+                  )}
+
+                  {hasBooked && (
+                    <div style={{ width: '100%', padding: '0.75rem 1rem', marginTop: '1rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold' }}>
+                      {language === 'en' ? '✓ Booked' : language === 'ru' ? '✓ Забронировано' : '✓ Bron edildi'}
                     </div>
                   )}
 

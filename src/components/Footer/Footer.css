@@ -5,8 +5,31 @@
     radial-gradient(circle at 88% 10%, rgba(255, 245, 228, 0.12), transparent 30%),
     linear-gradient(160deg, #2e241b 0%, #4e3d2b 100%);
   color: #e9dcc8;
-  padding: 2rem 0 1rem;
+  padding: 0;
   margin-top: auto;
+  width: 100%;
+}
+
+.footer-content-wrapper {
+  width: 100%;
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 2rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+@media (min-width: 640px) {
+  .footer-content-wrapper {
+    padding: 2rem 1.5rem 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .footer-content-wrapper {
+    padding: 2rem 1.25rem 1rem;
+  }
 }
 
 .footer-app-panel {
