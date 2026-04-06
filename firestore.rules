@@ -26,13 +26,12 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.ownerId == request.auth.uid;
 
-      // Update permissions
+      // Update: owner OR any authenticated user for views/likes/favorites/comments
       allow update: if request.auth != null && (
-        // Owner can update (except critical fields)
+        // Owner can update anything except critical fields
         (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt']))
-        // Anyone can update user-generated fields: views, likes, favorites, comments
-        || (!request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'type', 'district', 'title', 'description', 'price', 'images']) && 
-            request.resource.data.keys().hasAny(['views', 'likes', 'favorites', 'comments']))
+        // Any authenticated user can update views, likes, favorites, comments
+        || (request.resource.data.keys().hasAny(['views', 'likes', 'favorites', 'comments']))
         // Moderator can update anything
         || isModerator()
       );
@@ -50,7 +49,7 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;
       
-      // Update: only comment author, or can update specific fields
+      // Update: only comment author or moderator
       allow update: if request.auth != null && (
         request.auth.uid == resource.data.userId
         || isModerator()
