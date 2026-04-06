@@ -23,6 +23,10 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
   const { language } = useLanguage()
   const [locationSearch, setLocationSearch] = React.useState('')
 
+  React.useEffect(() => {
+    setLocationSearch('')
+  }, [city])
+
   const handleCityChange = (newCity: string) => {
     onCityChange(newCity)
     onLocationTagsChange([])
