@@ -64,27 +64,25 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
       }))
 
   return (
-    <>
+    <div className="form-group full-width">
       {/* City Select */}
-      <div className="form-group">
-        <label>
-          {language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *
-        </label>
-        <select value={city} onChange={(e) => handleCityChange(e.target.value)} required>
-          <option value="">
-            {language === 'en' ? 'Select a city' : language === 'ru' ? 'Выберите город' : 'Şəhər seçin'}
+      <label>
+        {language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *
+      </label>
+      <select value={city} onChange={(e) => handleCityChange(e.target.value)} required style={{ marginBottom: city ? '1.5rem' : 0 }}>
+        <option value="">
+          {language === 'en' ? 'Select a city' : language === 'ru' ? 'Выберите город' : 'Şəhər seçin'}
+        </option>
+        {cities.map((cityObj) => (
+          <option key={cityObj.value} value={cityObj.value}>
+            {getCityLabel(cityObj)}
           </option>
-          {cities.map((cityObj) => (
-            <option key={cityObj.value} value={cityObj.value}>
-              {getCityLabel(cityObj)}
-            </option>
-          ))}
-        </select>
-      </div>
+        ))}
+      </select>
 
       {/* Location Tags - only show if city selected and it has locations */}
       {city && (cityDistricts[city as keyof typeof cityDistricts] || city === 'Baku') && (
-        <div className="form-group full-width location-tags-section">
+        <div className="location-tags-section-inner">
           <div className="dashboard-section-head">
             <label>
               {language === 'en'
@@ -157,6 +155,6 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
