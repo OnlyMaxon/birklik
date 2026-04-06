@@ -158,49 +158,36 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
       </div>
 
       <div className={`filters-panel ${isOpen ? 'open' : ''}`}>
-        <div className="filters-grid">
-          {!hideTypeFilter && (
-            <div className="filter-group">
-              <label>{t.search.propertyType}</label>
-              <select 
-                value={filters.type || ''} 
-                onChange={(e) => handleChange('type', e.target.value as PropertyType || '')}
-              >
-                <option value="">{t.search.any}</option>
-                {propertyTypes.map(type => (
-                  <option key={type} value={type}>{t.propertyTypes[type]}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="filter-group">
-            <label>{cityLabel}</label>
-            <select
-              value={filters.city}
-              onChange={(e) => {
-                const nextCity = e.target.value
-                onFilterChange({
-                  ...filters,
-                  city: nextCity,
-                  locationTags: [],
-                  locationCategory: 'rayon'
-                })
-                setLocationSearch('')
-              }}
-            >
-              <option value="">{t.search.any}</option>
-              {cities.map((city) => (
-                <option key={city.value} value={city.value}>
-                  {language === 'en' ? city.en : language === 'ru' ? city.ru : city.az}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* City & Locations Section */}
+        <div className="filter-group full-width" style={{ marginBottom: '1.5rem' }}>
+          <label>{cityLabel}</label>
+          <select
+            value={filters.city}
+            onChange={(e) => {
+              const nextCity = e.target.value
+              onFilterChange({
+                ...filters,
+                city: nextCity,
+                locationTags: [],
+                locationCategory: 'rayon'
+              })
+              setLocationSearch('')
+            }}
+            style={{ marginBottom: filters.city ? '1.5rem' : 0 }}
+          >
+            <option value="">{t.search.any}</option>
+            {cities.map((city) => (
+              <option key={city.value} value={city.value}>
+                {language === 'en' ? city.en : language === 'ru' ? city.ru : city.az}
+              </option>
+            ))}
+          </select>
 
           {filters.city && (cityDistricts[filters.city as keyof typeof cityDistricts] || filters.city === 'Baku') && (
-            <div className="filter-group city-inline-filter">
-              <label>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></label>
+            <div className="location-tags-section-inner">
+              <div className="dashboard-section-head">
+                <label>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></label>
+              </div>
 
               {filters.city === 'Baku' && (
                 <div className="city-category-toggle" style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
@@ -233,6 +220,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 placeholder={searchPlaceholder}
                 value={locationSearch}
                 onChange={(e) => setLocationSearch(e.target.value)}
+                style={{ marginBottom: '12px' }}
               />
 
               <div className="city-option-list">
@@ -268,6 +256,23 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                   <p className="empty-option-list">{language === 'en' ? 'No districts found.' : isRussian ? 'Районы не найдены.' : 'Rayon tapılmadı.'}</p>
                 )}
               </div>
+            </div>
+          )}
+        </div>
+
+        <div className="filters-grid">
+          {!hideTypeFilter && (
+            <div className="filter-group">
+              <label>{t.search.propertyType}</label>
+              <select 
+                value={filters.type || ''} 
+                onChange={(e) => handleChange('type', e.target.value as PropertyType || '')}
+              >
+                <option value="">{t.search.any}</option>
+                {propertyTypes.map(type => (
+                  <option key={type} value={type}>{t.propertyTypes[type]}</option>
+                ))}
+              </select>
             </div>
           )}
 
