@@ -121,7 +121,7 @@ function App() {
           } />
           <Route path="/dashboard/add" element={
             <ProtectedRoute>
-              <DashboardPage initialTab="add" />
+              <DashboardPage />
             </ProtectedRoute>
           } />
           <Route path="/dashboard/review" element={
