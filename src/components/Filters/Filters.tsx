@@ -1,7 +1,8 @@
 import React from 'react'
 import { useLanguage } from '../../context'
 import { FilterState, PropertyType } from '../../types'
-import { propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions, cities, cityDistricts } from '../../data'
+import { propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions } from '../../data'
+import { CityLocationPicker } from '../CityLocationPicker'
 import './Filters.css'
 
 interface FiltersProps {
@@ -27,7 +28,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
     const isRussian = language === 'ru'
 
   const [showMore, setShowMore] = React.useState(false)
-  const [locationSearch, setLocationSearch] = React.useState('')
 
   const handleToggleOpen = () => {
     onOpenChange?.(!isOpen)
@@ -87,12 +87,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   const moreButtonLabel = language === 'en' ? 'More filters' : isRussian ? 'Доп. фильтры' : 'Əlavə filtrlər'
   const nearTitle = language === 'en' ? 'Near' : isRussian ? 'Рядом' : 'Yaxında'
   const cityLabel = language === 'en' ? 'City' : isRussian ? 'Город' : 'Şəhər'
-  const chooseLocationText = language === 'en' ? 'Choose city locations' : isRussian ? 'Выберите локации по городу' : 'Şəhər daxilində seçim edin'
-  const searchPlaceholder = language === 'en'
-    ? 'Search district, metro, landmark'
-    : isRussian
-      ? 'Поиск по району, метро, ориентиру'
-      : 'Rayon, metro, nişangah axtarın'
 
   const moreLabelMap = new Map(sortedMoreOptions.map((item) => [item.key, getLocalizedLabel(item)]))
   const nearLabelMap = new Map(sortedNearOptions.map((item) => [item.key, getLocalizedLabel(item)]))
@@ -158,6 +152,18 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
       </div>
 
       <div className={`filters-panel ${isOpen ? 'open' : ''}`}>
+        {/* City & Locations Section */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <CityLocationPicker
+            city={filters.city}
+            locationTags={filters.locationTags}
+            locationCategory={filters.locationCategory}
+            onCityChange={(city) => onFilterChange({ ...filters, city, locationTags: [], locationCategory: 'rayon' })}
+            onLocationTagsChange={(tags) => onFilterChange({ ...filters, locationTags: tags })}
+            onLocationCategoryChange={(category) => onFilterChange({ ...filters, locationCategory: category, locationTags: [] })}
+          />
+        </div>
+
         <div className="filters-grid">
           {!hideTypeFilter && (
             <div className="filter-group">
@@ -171,103 +177,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                   <option key={type} value={type}>{t.propertyTypes[type]}</option>
                 ))}
               </select>
-            </div>
-          )}
-
-          <div className="filter-group">
-            <label>{cityLabel}</label>
-            <select
-              value={filters.city}
-              onChange={(e) => {
-                const nextCity = e.target.value
-                onFilterChange({
-                  ...filters,
-                  city: nextCity,
-                  locationTags: [],
-                  locationCategory: 'rayon'
-                })
-                setLocationSearch('')
-              }}
-            >
-              <option value="">{t.search.any}</option>
-              {cities.map((city) => (
-                <option key={city.value} value={city.value}>
-                  {language === 'en' ? city.en : language === 'ru' ? city.ru : city.az}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {filters.city && (cityDistricts[filters.city as keyof typeof cityDistricts] || filters.city === 'Baku') && (
-            <div className="filter-group city-inline-filter">
-              <label>{chooseLocationText} <span className="count-pill">{filters.locationTags.length}</span></label>
-
-              {filters.city === 'Baku' && (
-                <div className="city-category-toggle" style={{ marginBottom: '12px', display: 'flex', gap: '8px' }}>
-                  <button
-                    type="button"
-                    className={`btn btn-sm ${filters.locationCategory === 'rayon' ? 'btn-primary' : 'btn-outline'}`}
-                    onClick={() => {
-                      onFilterChange({ ...filters, locationCategory: 'rayon', locationTags: [] })
-                      setLocationSearch('')
-                    }}
-                  >
-                    {language === 'en' ? 'Districts' : isRussian ? 'Районы' : 'Rayonlar'}
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn btn-sm ${filters.locationCategory === 'metro' ? 'btn-primary' : 'btn-outline'}`}
-                    onClick={() => {
-                      onFilterChange({ ...filters, locationCategory: 'metro', locationTags: [] })
-                      setLocationSearch('')
-                    }}
-                  >
-                    {language === 'en' ? 'Metro' : isRussian ? 'Метро' : 'Metro'}
-                  </button>
-                </div>
-              )}
-
-              <input
-                type="search"
-                className="city-search-input"
-                placeholder={searchPlaceholder}
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-              />
-
-              <div className="city-option-list">
-                {filters.city === 'Baku'
-                  ? cityLocationOptions[filters.locationCategory]
-                      ?.filter((option) =>
-                        !locationSearch || option.az.toLowerCase().includes(locationSearch.toLowerCase()) || option.en.toLowerCase().includes(locationSearch.toLowerCase())
-                      )
-                      .map((option) => (
-                        <label key={option.key} className="city-option-item">
-                          <input
-                            type="checkbox"
-                            checked={filters.locationTags.includes(option.key)}
-                            onChange={() => toggleArrayValue('locationTags', option.key)}
-                          />
-                          <span>{language === 'en' ? option.en : option.az}</span>
-                        </label>
-                      ))
-                  : cityDistricts[filters.city as keyof typeof cityDistricts]
-                      ?.filter((district) =>
-                        !locationSearch || district.toLowerCase().includes(locationSearch.toLowerCase())
-                      )
-                      .map((district) => (
-                        <label key={district} className="city-option-item">
-                          <input
-                            type="checkbox"
-                            checked={filters.locationTags.includes(district)}
-                            onChange={() => toggleArrayValue('locationTags', district)}
-                          />
-                          <span>{district}</span>
-                        </label>
-                      )) || (
-                  <p className="empty-option-list">{language === 'en' ? 'No districts found.' : isRussian ? 'Районы не найдены.' : 'Rayon tapılmadı.'}</p>
-                )}
-              </div>
             </div>
           )}
 
