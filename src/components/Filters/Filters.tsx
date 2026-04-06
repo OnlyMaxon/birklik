@@ -182,8 +182,11 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 const nextCity = e.target.value
                 onFilterChange({
                   ...filters,
-                  city: nextCity
+                  city: nextCity,
+                  locationTags: [],
+                  locationCategory: 'rayon'
                 })
+                setLocationSearch('')
               }}
             >
               <option value="">{t.search.any}</option>
