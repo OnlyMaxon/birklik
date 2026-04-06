@@ -35,3 +35,7 @@ Thumbs.db
 
 # Testing
 coverage/
+
+# Firebase Admin SDK & Scripts
+serviceAccountKey.json
+set-moderator.js
