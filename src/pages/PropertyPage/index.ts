@@ -1,1 +1,5 @@
 export { PropertyPage } from './PropertyPage'
+export { PropertyHeader } from './PropertyHeader'
+export { PropertyDetails } from './PropertyDetails'
+export { PropertyBooking } from './PropertyBooking'
+export { PropertyComments } from './PropertyComments'

@@ -9,6 +9,14 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024 // 5MB
 
+/**
+ * Validate a property image file for upload (type, size, filename)
+ * @param {File} file - Image file to validate
+ * @returns {FileValidationResult} Validation result with valid flag and optional error message
+ * @example
+ * const result = validatePropertyImage(imageFile)
+ * if (!result.valid) console.error(result.error)
+ */
 export const validatePropertyImage = (file: File): FileValidationResult => {
   // Check file type
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -38,6 +46,14 @@ export const validatePropertyImage = (file: File): FileValidationResult => {
   return { valid: true }
 }
 
+/**
+ * Validate user avatar file (stricter than property images)
+ * @param {File} file - Avatar file to validate
+ * @returns {FileValidationResult} Validation result with valid flag and optional error message
+ * @example
+ * const result = validateAvatar(avatarFile)
+ * if (result.valid) await uploadAvatar(avatarFile)
+ */
 export const validateAvatar = (file: File): FileValidationResult => {
   // Check file type
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -58,6 +74,15 @@ export const validateAvatar = (file: File): FileValidationResult => {
   return { valid: true }
 }
 
+/**
+ * Validate multiple files in batch (all must pass individual checks)
+ * @param {FileList | File[]} files - Array of files to validate
+ * @param {boolean} [isAvatar=false] - If true, applies stricter avatar validation
+ * @returns {FileValidationResult} Validation result for entire batch
+ * @example
+ * const result = validateMultipleFiles(fileList)
+ * if (result.valid) await batchUpload(fileList)
+ */
 export const validateMultipleFiles = (files: FileList | File[], isAvatar = false): FileValidationResult => {
   const fileArray = Array.from(files)
 

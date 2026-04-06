@@ -2,14 +2,24 @@ import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
-import { isModeratorEmail } from '../../config/constants'
+import { isModerator } from '../../config/constants'
 import './Header.css'
 
 export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, firebaseUser, logout } = useAuth()
   const [menuOpen, setMenuOpen] = React.useState(false)
-  const isModerator = isModeratorEmail(user?.email)
+  const [isModeratorUser, setIsModeratorUser] = React.useState(false)
+
+  React.useEffect(() => {
+    const checkModerator = async () => {
+      if (firebaseUser) {
+        const token = await firebaseUser.getIdTokenResult()
+        setIsModeratorUser(isModerator(token))
+      }
+    }
+    checkModerator()
+  }, [firebaseUser])
 
   React.useEffect(() => {
     if (!menuOpen) {
@@ -64,7 +74,7 @@ export const Header: React.FC = () => {
                 <NavLink to="/dashboard" end className={getNavClass} onClick={() => setMenuOpen(false)}>
                   {t.nav.dashboard}
                 </NavLink>
-                {isModerator && (
+                {isModeratorUser && (
                   <NavLink to="/dashboard/review" className={getNavClass} onClick={() => setMenuOpen(false)}>
                     {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
                   </NavLink>

@@ -4,17 +4,31 @@ import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
 import { approveProperty, getPendingProperties } from '../../services'
-import { isModeratorEmail } from '../../config/constants'
+import { isModerator } from '../../config/constants'
 import { Language, Property } from '../../types'
 import './ModerationPage.css'
 
 export const ModerationPage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth()
+  const { isAuthenticated, firebaseUser } = useAuth()
   const { language, t } = useLanguage()
   const [pendingListings, setPendingListings] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [isApprovingId, setIsApprovingId] = React.useState<string | null>(null)
+  const [isModeratorUser, setIsModeratorUser] = React.useState(false)
+  const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [error, setError] = React.useState('')
+
+  // Check if user is moderator
+  React.useEffect(() => {
+    const checkModerator = async () => {
+      if (firebaseUser) {
+        const token = await firebaseUser.getIdTokenResult()
+        setIsModeratorUser(isModerator(token))
+      }
+      setTokenLoaded(true)
+    }
+    checkModerator()
+  }, [firebaseUser])
 
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)
@@ -25,10 +39,16 @@ export const ModerationPage: React.FC = () => {
   }, [])
 
   React.useEffect(() => {
-    loadPendingListings()
-  }, [loadPendingListings])
+    if (tokenLoaded && isModeratorUser) {
+      loadPendingListings()
+    }
+  }, [tokenLoaded, isModeratorUser, loadPendingListings])
 
-  if (!isAuthenticated || !isModeratorEmail(user?.email)) {
+  if (!tokenLoaded) {
+    return <Loading fullScreen message="Loading..." brand />
+  }
+
+  if (!isAuthenticated || !isModeratorUser) {
     return <Navigate to="/dashboard" replace />
   }
 

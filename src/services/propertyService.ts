@@ -17,6 +17,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
 import { Property, PropertyType, Language } from '../types'
+import { buildQueryConstraints, PaginationOptions, AdvancedFilters, formatPaginationResult, PaginationResult } from './paginationHelper'
 
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 12
@@ -63,7 +64,17 @@ const matchesSearch = (property: Property, searchTerm?: string, lang: Language =
   )
 }
 
-// Get all properties with optional filters and pagination
+/**
+ * Retrieve paginated properties list with optional filtering and sorting
+ * @param {PropertyFilters} [filters] - Optional filter criteria (type, district, price range, rooms, search)
+ * @param {DocumentSnapshot} [lastDoc] - Cursor for pagination, obtained from previous query
+ * @returns {Promise<{ properties: Property[]; lastDoc: DocumentSnapshot | null }>} Array of properties and cursor for next page
+ * @throws {Error} On Firestore query failure or network error
+ * @example
+ * const { properties, lastDoc } = await getProperties(
+ *   { type: 'apartment', minPrice: 100, maxPrice: 500 }
+ * )
+ */
 export const getProperties = async (
   filters?: PropertyFilters,
   lastDoc?: DocumentSnapshot
@@ -126,7 +137,15 @@ export const getProperties = async (
   }
 }
 
-// Get a single property by ID
+/**
+ * Fetch a single property by its Firestore document ID
+ * @param {string} id - The unique property document identifier
+ * @returns {Promise<Property | null>} Property object or null if not found
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const property = await getPropertyById('prop_123')
+ * if (property) console.log(property.title)
+ */
 export const getPropertyById = async (id: string): Promise<Property | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id)
@@ -142,7 +161,46 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
   }
 }
 
-// Get properties by owner ID
+/**
+ * Advanced server-side pagination with optimized Firestore queries
+ * @param {AdvancedFilters} [filters] - Composite filter criteria (status, type, district, price, rooms, etc)
+ * @param {PaginationOptions} [pagination] - Pagination options (pageSize, cursor, sortBy)
+ * @returns {Promise<PaginationResult<Property>>} Paginated results with metadata (hasMore, cursor, total)
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const result = await getPropertiesAdvanced(
+ *   { type: 'apartment', minPrice: 50, maxPrice: 500, status: 'active' },
+ *   { pageSize: 20, sortBy: 'priceAsc' }
+ * )
+ */
+export const getPropertiesAdvanced = async (
+  filters?: AdvancedFilters,
+  pagination?: PaginationOptions
+): Promise<PaginationResult<Property>> => {
+  try {
+    const constraints = buildQueryConstraints(filters, pagination)
+    const q = query(collection(db, COLLECTION_NAME), ...constraints)
+    const snapshot = await getDocs(q)
+
+    const properties = snapshot.docs.map(mapDocToProperty)
+    const lastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null
+    const pageSize = pagination?.pageSize || 12
+
+    return formatPaginationResult(properties, lastDoc, pageSize)
+  } catch (error) {
+    console.error('Error getting advanced properties:', error)
+    return { items: [], cursor: null, hasMore: false, pageSize: pagination?.pageSize || 12, totalInPage: 0 }
+  }
+}
+
+/**
+ * Retrieve all properties owned by a specific user
+ * @param {string} ownerId - The user/owner Firestore ID
+ * @returns {Promise<Property[]>} Array of properties owned by user, ordered by creation date (newest first)
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const myProperties = await getPropertiesByOwner('user_456')
+ */
 export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]> => {
   try {
     const q = query(
@@ -159,7 +217,79 @@ export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]>
   }
 }
 
-// Create a new property
+/**
+ * Get featured properties for homepage showcase
+ * @param {number} [limit] - Maximum number of featured properties to return (default: 6)
+ * @returns {Promise<Property[]>} Array of featured properties, ordered by date
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const featured = await getFeaturedProperties(6)
+ */
+export const getFeaturedProperties = async (maxLimit: number = 6): Promise<Property[]> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('status', '==', 'active'),
+      where('isFeatured', '==', true),
+      orderBy('createdAt', 'desc'),
+      limit(maxLimit)
+    )
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map(mapDocToProperty)
+  } catch (error) {
+    console.error('Error getting featured properties:', error)
+    return []
+  }
+}
+
+/**
+ * Search properties by location (district) with optional amenities filter
+ * @param {string} district - District name to search (e.g., 'baku', 'mardakan')
+ * @param {string[]} [amenities] - Optional amenity filters to include
+ * @returns {Promise<Property[]>} Matching properties, ordered by featured status then creation date
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const properties = await getPropertiesByLocation('baku', ['pool', 'wifi'])
+ */
+export const getPropertiesByLocation = async (
+  district: string,
+  amenities?: string[]
+): Promise<Property[]> => {
+  try {
+    const constraints: QueryConstraint[] = [
+      where('status', '==', 'active'),
+      where('district', '==', district.toLowerCase())
+    ]
+
+    if (amenities && amenities.length > 0) {
+      constraints.push(where('amenities', 'array-contains-any', amenities))
+    }
+
+    constraints.push(orderBy('isFeatured', 'desc'))
+    constraints.push(orderBy('createdAt', 'desc'))
+
+    const q = query(collection(db, COLLECTION_NAME), ...constraints)
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map(mapDocToProperty)
+  } catch (error) {
+    console.error('Error searching properties by location:', error)
+    return []
+  }
+}
+
+/**
+ * Create a new property listing with optional image uploads
+ * @param {Omit<Property, 'id' | 'createdAt' | 'updatedAt'>} property - Property data (excluding id, timestamps)
+ * @param {File[]} [imageFiles] - Optional image files to upload to Firebase Storage
+ * @returns {Promise<Property | null>} Created property with id and timestamps, or null on failure
+ * @throws {Error} On Firestore write or image upload failure
+ * @example
+ * const newProp = await createProperty({
+ *   title: { az: 'Apartment', en: 'Apartment' },
+ *   price: { daily: 50 },
+ *   ownerId: 'user_123'
+ * })
+ */
 export const createProperty = async (
   property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>,
   imageFiles?: File[]
@@ -189,7 +319,16 @@ export const createProperty = async (
   }
 }
 
-// Update a property
+/**
+ * Update property fields with optional new image uploads
+ * @param {string} id - Property Firestore document ID
+ * @param {Partial<Property>} updates - Partial property object with fields to update
+ * @param {File[]} [newImageFiles] - Optional new image files to upload and append
+ * @returns {Promise<boolean>} True on success, false on failure
+ * @throws {Error} On Firestore update or image upload failure
+ * @example
+ * const success = await updateProperty('prop_789', { price: { daily: 75 } })
+ */
 export const updateProperty = async (
   id: string,
   updates: Partial<Property>,
@@ -222,7 +361,14 @@ export const updateProperty = async (
   }
 }
 
-// Delete a property
+/**
+ * Delete a property and all associated images from Firestore and Storage
+ * @param {string} id - Property Firestore document ID
+ * @returns {Promise<boolean>} True on success, false on failure
+ * @throws {Error} On Firestore delete or image deletion failure
+ * @example
+ * const deleted = await deleteProperty('prop_999')
+ */
 export const deleteProperty = async (id: string): Promise<boolean> => {
   try {
     // Get property to delete images
@@ -239,7 +385,14 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
   }
 }
 
-// Upload property images to Firebase Storage
+/**
+ * Upload property images to Firebase Storage
+ * @param {File[]} files - Array of image files to upload
+ * @returns {Promise<string[]>} Array of download URLs for uploaded images
+ * @throws {Error} On storage upload failure (individual errors logged to console)
+ * @example
+ * const urls = await uploadPropertyImages([imageFile1, imageFile2])
+ */
 export const uploadPropertyImages = async (files: File[]): Promise<string[]> => {
   const urls: string[] = []
 
@@ -260,7 +413,14 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
   return urls
 }
 
-// Delete property images from Firebase Storage
+/**
+ * Delete property images from Firebase Storage by URL
+ * @param {string[]} urls - Array of Firebase Storage download URLs to delete
+ * @returns {Promise<void>}
+ * @throws {Error} On storage delete failure (individual errors logged to console)
+ * @example
+ * await deletePropertyImages(['https://firebasestorage.googleapis.com/...',...])
+ */
 export const deletePropertyImages = async (urls: string[]): Promise<void> => {
   for (const url of urls) {
     try {
@@ -276,7 +436,13 @@ export const deletePropertyImages = async (urls: string[]): Promise<void> => {
   }
 }
 
-// Get all listings waiting for moderation
+/**
+ * Retrieve all properties awaiting moderator approval
+ * @returns {Promise<Property[]>} Array of pending properties, ordered by creation date (newest first)
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const pendingList = await getPendingProperties()
+ */
 export const getPendingProperties = async (): Promise<Property[]> => {
   try {
     const q = query(
@@ -294,7 +460,14 @@ export const getPendingProperties = async (): Promise<Property[]> => {
   }
 }
 
-// Approve listing and make it publicly visible
+/**
+ * Approve a pending property and make it publicly visible
+ * @param {string} id - Property Firestore document ID
+ * @returns {Promise<boolean>} True on success, false if property not found or update fails
+ * @throws {Error} On Firestore update failure
+ * @example
+ * const approved = await approveProperty('prop_456')
+ */
 export const approveProperty = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id)
@@ -320,7 +493,18 @@ export const approveProperty = async (id: string): Promise<boolean> => {
   }
 }
 
-// Add a comment to a property
+/**
+ * Add a comment to a property
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} userId - User Firestore ID making the comment
+ * @param {string} userName - Display name of the commenter
+ * @param {string | undefined} userAvatar - Optional URL to user's avatar image
+ * @param {string} text - Comment text content
+ * @returns {Promise<boolean>} True on success, false if property not found or update fails
+ * @throws {Error} On Firestore update failure
+ * @example
+ * const added = await addCommentToProperty('prop_789', 'user_123', 'John', 'https://...', 'Nice place!')
+ */
 export const addCommentToProperty = async (
   propertyId: string,
   userId: string,
@@ -360,7 +544,15 @@ export const addCommentToProperty = async (
   }
 }
 
-// Toggle like on a property
+/**
+ * Toggle like status for a property by a user
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} userId - User Firestore ID performing the like toggle
+ * @returns {Promise<boolean>} True on success, false if property not found or update fails
+ * @throws {Error} On Firestore update failure
+ * @example
+ * const toggled = await toggleLikeProperty('prop_111', 'user_456')
+ */
 export const toggleLikeProperty = async (propertyId: string, userId: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, propertyId)
@@ -390,7 +582,15 @@ export const toggleLikeProperty = async (propertyId: string, userId: string): Pr
   }
 }
 
-// Delete a comment from a property
+/**
+ * Delete a comment from a property
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} commentId - Comment ID to delete
+ * @returns {Promise<boolean>} True on success, false if property not found or update fails
+ * @throws {Error} On Firestore update failure
+ * @example
+ * const deleted = await deleteCommentFromProperty('prop_222', 'comment_123')
+ */
 export const deleteCommentFromProperty = async (
   propertyId: string,
   commentId: string
@@ -420,7 +620,14 @@ export const deleteCommentFromProperty = async (
   }
 }
 
-// Increment views count for a property
+/**
+ * Increment the view count for a property
+ * @param {string} propertyId - Property Firestore document ID
+ * @returns {Promise<boolean>} True on success, false if property not found or update fails
+ * @throws {Error} On Firestore update or increment failure
+ * @example
+ * const incremented = await incrementPropertyViews('prop_333')
+ */
 export const incrementPropertyViews = async (propertyId: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, propertyId)

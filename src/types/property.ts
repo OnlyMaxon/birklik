@@ -14,6 +14,8 @@ export interface Comment {
   text: string
   createdAt: string
   updatedAt?: string
+  parentCommentId?: string // Optional: for nested replies
+  replies?: Comment[] // Optional: nested reply comments
 }
 
 export interface LocalizedText {

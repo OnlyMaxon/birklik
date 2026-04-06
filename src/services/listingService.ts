@@ -20,7 +20,17 @@ import { Property } from '../types'
 interface CreateListingPayload extends Omit<Property, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export const listingService = {
-  // Get listings by owner
+  /**
+   * Retrieve all listings created by a specific user/owner
+   * @param {string} userId - User Firestore ID
+   * @param {Object} [options] - Query options
+   * @param {number} [options.limit] - Maximum number of listings to return
+   * @param {DocumentSnapshot} [options.startAfter] - Cursor for pagination
+   * @returns {Promise<(Property & { id: string })[]>} Array of user's listings
+   * @throws {Error} On Firestore query failure
+   * @example
+   * const listings = await listingService.getListingsByOwner('user_123')
+   */
   async getListingsByOwner(userId: string, options?: { limit?: number; startAfter?: DocumentSnapshot }) {
     try {
       const constraints: QueryConstraint[] = [where('ownerId', '==', userId)]
@@ -45,7 +55,16 @@ export const listingService = {
     }
   },
 
-  // Get all listings (for browse)
+  /**
+   * Retrieve all active listings (for public browse)
+   * @param {Object} [options] - Query options
+   * @param {number} [options.limit] - Maximum number of listings to return
+   * @param {DocumentSnapshot} [options.startAfter] - Cursor for pagination
+   * @returns {Promise<(Property & { id: string })[]>} Array of active listings
+   * @throws {Error} On Firestore query failure
+   * @example
+   * const listings = await listingService.getAllListings({ limit: 20 })
+   */
   async getAllListings(options?: { limit?: number; startAfter?: DocumentSnapshot }) {
     try {
       const constraints: QueryConstraint[] = [where('status', '==', 'active')]
@@ -70,7 +89,18 @@ export const listingService = {
     }
   },
 
-  // Create listing
+  /**
+   * Create a new listing (property) with pending status awaiting moderator approval
+   * @param {CreateListingPayload} payload - Property data for new listing
+   * @returns {Promise<string>} ID of created listing
+   * @throws {Error} On Firestore write failure
+   * @example
+   * const listingId = await listingService.createListing({
+   *   title: { az: 'Apartment', en: 'Apartment' },
+   *   price: { daily: 100 },
+   *   ownerId: 'user_123'
+   * })
+   */
   async createListing(payload: CreateListingPayload) {
     try {
       const docRef = await addDoc(collection(db, 'properties'), {
@@ -87,7 +117,15 @@ export const listingService = {
     }
   },
 
-  // Update listing
+  /**
+   * Update an existing listing with partial property data
+   * @param {string} propertyId - Property Firestore document ID
+   * @param {Partial<Property>} updates - Partial property object with fields to update
+   * @returns {Promise<void>}
+   * @throws {Error} On Firestore update failure
+   * @example
+   * await listingService.updateListing('prop_456', { price: { daily: 120 } })
+   */
   async updateListing(propertyId: string, updates: Partial<Property>) {
     try {
       const docRef = doc(db, 'properties', propertyId)
@@ -101,7 +139,14 @@ export const listingService = {
     }
   },
 
-  // Delete listing
+  /**
+   * Delete a listing and all associated data
+   * @param {string} propertyId - Property Firestore document ID
+   * @returns {Promise<void>}
+   * @throws {Error} On Firestore delete failure
+   * @example
+   * await listingService.deleteListing('prop_789')
+   */
   async deleteListing(propertyId: string) {
     try {
       const docRef = doc(db, 'properties', propertyId)
@@ -112,7 +157,15 @@ export const listingService = {
     }
   },
 
-  // Upload property image
+  /**
+   * Upload a single property image to Firebase Storage
+   * @param {string} propertyId - Property Firestore document ID
+   * @param {File} file - Image file to upload
+   * @returns {Promise<string>} Download URL of the uploaded image
+   * @throws {Error} On storage upload failure
+   * @example
+   * const url = await listingService.uploadPropertyImage('prop_111', imageFile)
+   */
   async uploadPropertyImage(propertyId: string, file: File): Promise<string> {
     try {
       const fileName = `${Date.now()}_${file.name}`
@@ -128,7 +181,14 @@ export const listingService = {
     }
   },
 
-  // Delete property image
+  /**
+   * Delete a property image from Firebase Storage
+   * @param {string} imageUrl - Firebase Storage download URL or path
+   * @returns {Promise<void>}
+   * @throws {Error} On storage delete failure
+   * @example
+   * await listingService.deletePropertyImage('https://firebasestorage.googleapis.com/...')
+   */
   async deletePropertyImage(imageUrl: string) {
     try {
       const imageRef = ref(storage, imageUrl)
@@ -139,7 +199,15 @@ export const listingService = {
     }
   },
 
-  // Batch upload images
+  /**
+   * Upload multiple property images in batch
+   * @param {string} propertyId - Property Firestore document ID
+   * @param {File[]} files - Array of image files to upload
+   * @returns {Promise<string[]>} Array of download URLs for uploaded images
+   * @throws {Error} On storage upload failure for any file
+   * @example
+   * const urls = await listingService.batchUploadImages('prop_222', [file1, file2])
+   */
   async batchUploadImages(propertyId: string, files: File[]): Promise<string[]> {
     try {
       const urls: string[] = []

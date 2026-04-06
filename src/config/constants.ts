@@ -1,22 +1,26 @@
-// NOTE: Currently uses email-based moderation check for backward compatibility.
-// Should be migrated to Firebase custom claims (moderator: true) in production.
+// Moderator role is now determined via Firebase custom claims
 // To set up custom claims:
 // 1. Go to Firebase Console → Authentication
 // 2. Select user → Custom Claims (JSON)
 // 3. Add: { "moderator": true }
+//
+// Usage: const token = await firebaseUser.getIdTokenResult()
+//        isModerator(token)
 
-const MODERATOR_EMAILS = [
-	'calilorucli42@gmail.com',
-	'elgun.akhundov@gmail.com'
-]
+import { IdTokenResult } from 'firebase/auth'
 
-export const isModeratorEmail = (email?: string | null): boolean => {
-	if (!email) return false
-	const normalized = email.toLowerCase()
-	return MODERATOR_EMAILS.includes(normalized)
+/**
+ * Check if user is a moderator via Firebase custom claims
+ * @param token Firebase ID token result containing claims
+ * @returns true if user has moderator: true in custom claims
+ */
+export const isModerator = (token?: IdTokenResult | null): boolean => {
+	if (!token) return false
+	return token?.claims?.moderator === true
 }
 
-export const isModerator = (token?: any): boolean => {
-	if (!token) return false
-	return token.moderator === true
+// DEPRECATED: Use isModerator(token) instead
+export const isModeratorEmail = (_email?: string | null): boolean => {
+	console.warn('isModeratorEmail is deprecated. Use isModerator(token) instead.')
+	return false
 }

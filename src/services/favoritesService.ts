@@ -2,7 +2,15 @@ import { db } from '../config/firebase'
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
 
 /**
- * Toggle favorite status for a property
+ * Toggle favorite status for a property for a user (add or remove from favorites)
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} userId - User Firestore ID
+ * @param {boolean} isFavorited - Current favorite status (true if currently favorited)
+ * @returns {Promise<boolean>} True on success
+ * @throws {Error} On Firestore update failure
+ * @example
+ * await toggleFavorite('prop_123', 'user_456', false) // Add to favorites
+ * await toggleFavorite('prop_123', 'user_456', true) // Remove from favorites
  */
 export const toggleFavorite = async (
   propertyId: string,
@@ -32,7 +40,11 @@ export const toggleFavorite = async (
 }
 
 /**
- * Get all favorited properties for a user
+ * Get all favorited properties for a user (stub implementation)
+ * @returns {Promise<any[]>} Empty array (favorites are fetched via parent component queries)
+ * @throws {Error} On logic failure
+ * @example
+ * const favorites = await getUserFavorites()
  */
 export const getUserFavorites = async () => {
   try {
@@ -48,7 +60,12 @@ export const getUserFavorites = async () => {
 }
 
 /**
- * Check if a property is favorited by user
+ * Check if a property is favorited by a user
+ * @param {string[] | undefined} propertyFavorites - Array of user IDs that favorited the property
+ * @param {string} userId - User Firestore ID to check
+ * @returns {boolean} True if property is favorited by user
+ * @example
+ * const isFavored = isPropertyFavorited(['user_123', 'user_456'], 'user_123') // true
  */
 export const isPropertyFavorited = (
   propertyFavorites: string[] | undefined,
@@ -58,7 +75,11 @@ export const isPropertyFavorited = (
 }
 
 /**
- * Get favorite count for a property
+ * Get the count of users who favorited a property
+ * @param {string[] | undefined} favorites - Array of user IDs that favorited the property
+ * @returns {number} Number of favorites (0 if undefined)
+ * @example
+ * const count = getFavoriteCount(['user_123', 'user_456']) // 2
  */
 export const getFavoriteCount = (favorites: string[] | undefined): number => {
   return favorites?.length ?? 0

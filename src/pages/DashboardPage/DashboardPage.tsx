@@ -5,14 +5,15 @@ import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { FavoritesTab } from './FavoritesTab'
+import { BookingsTab } from './BookingsTab'
 import { CityLocationPicker } from '../../components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
-import { isModeratorEmail } from '../../config/constants'
+import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
-type TabType = 'listings' | 'add' | 'favorites' | 'profile'
+type TabType = 'listings' | 'add' | 'favorites' | 'bookings' | 'profile'
 
 interface DashboardPageProps {
   initialTab?: TabType
@@ -125,13 +126,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange, 
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'listings' }) => {
   const { language, t } = useLanguage()
-  const { user, isAuthenticated, updateUserProfile } = useAuth()
+  const { user, isAuthenticated, firebaseUser, updateUserProfile } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = React.useState<TabType>(initialTab)
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
   const [listings, setListings] = React.useState<Property[]>([])
   const [isLoadingListings, setIsLoadingListings] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [isTestAccount, setIsTestAccount] = React.useState(false)
   const [error, setError] = React.useState('')
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([])
   const [hasTestData, setHasTestData] = React.useState(false)
@@ -153,7 +155,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
 
-  const isTestAccount = isModeratorEmail(user?.email)
+  // Check if user is moderator
+  React.useEffect(() => {
+    const checkModerator = async () => {
+      if (firebaseUser) {
+        const token = await firebaseUser.getIdTokenResult()
+        setIsTestAccount(isModerator(token))
+      }
+    }
+    checkModerator()
+  }, [firebaseUser])
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
   const savedMessage = language === 'en'
@@ -1008,6 +1019,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   {language === 'en' ? 'Favorites' : language === 'ru' ? 'Избранные' : 'Sevimlilər'}
                 </button>
                 <button
+                  className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('bookings')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z" />
+                  </svg>
+                  {language === 'en' ? 'Bookings' : language === 'ru' ? 'Бронирования' : 'Bölmələr'}
+                </button>
+                <button
                   className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                   onClick={() => setActiveTab('profile')}
                 >
@@ -1527,6 +1547,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
               {/* Favorites Tab */}
               {activeTab === 'favorites' && <FavoritesTab />}
+
+              {/* Bookings Tab */}
+              {activeTab === 'bookings' && <BookingsTab />}
 
               {/* Profile Tab */}
               {activeTab === 'profile' && (
