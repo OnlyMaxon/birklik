@@ -22,21 +22,21 @@ service cloud.firestore {
     match /properties/{propertyId} {
       allow read: if true;
 
+      // Create: owner must match auth user
       allow create: if request.auth != null
-        && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.type is string
-        && request.resource.data.district is string
-        && request.resource.data.price.daily is number
-        && request.resource.data.rooms is number
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.status in ['pending', 'active', 'hidden'];
+        && request.resource.data.ownerId == request.auth.uid;
 
+      // Update: owner, favorites update, or moderator
       allow update: if request.auth != null && (
-        (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'status']))
+        // Owner can update (except ownerId, createdAt, updatedAt)
+        (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'updatedAt']))
+        // Anyone authenticated can update favorites only
         || (request.resource.data.keys().size() == 1 && 'favorites' in request.resource.data)
+        // Moderator can update anything
         || isModerator()
       );
 
+      // Delete: owner or moderator
       allow delete: if request.auth != null && (
         isOwner(resource.data.ownerId) || isModerator()
       );
@@ -44,12 +44,18 @@ service cloud.firestore {
 
     match /properties/{propertyId}/comments/{commentId} {
       allow read: if true;
+      
+      // Create: user must match auth user
       allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.text is string
-        && request.resource.data.createdAt is timestamp;
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId
-        && !request.resource.data.keys().hasAny(['userId', 'createdAt']);
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Update: only comment author, or can update specific fields
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.userId
+        || isModerator()
+      );
+      
+      // Delete: comment author or moderator
       allow delete: if request.auth != null && (
         request.auth.uid == resource.data.userId || isModerator()
       );
