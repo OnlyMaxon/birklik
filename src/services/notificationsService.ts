@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, CommentNotification, FavoriteNotification, ReplyNotification } from '../types'
+import { Notification, BookingNotification, CommentNotification, FavoriteNotification } from '../types'
 
 const COLLECTION_NAME = 'users'
 const NOTIFICATIONS_SUBCOLLECTION = 'notifications'
@@ -112,29 +112,6 @@ export const createFavoriteNotification = async (
 }
 
 /**
- * Create reply notification for original commenter
- * @param {string} userId - Original commenter's user ID
- * @param {ReplyNotification} notificationData - Reply notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createReplyNotification = async (
-  userId: string,
-  notificationData: Omit<ReplyNotification, 'id' | 'createdAt'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, userId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    console.error('Error creating reply notification:', error)
-    return null
-  }
-}
-
-/**
  * Mark notification as read
  * @param {string} userId - User Firestore ID
  * @param {string} notificationId - Notification ID
@@ -164,27 +141,6 @@ export const deleteNotification = async (userId: string, notificationId: string)
     return true
   } catch (error) {
     console.error('Error deleting notification:', error)
-    return false
-  }
-}
-
-/**
- * Mark all notifications as read
- * @param {string} userId - User Firestore ID
- * @returns {Promise<boolean>} True on success, false on error
- */
-export const markAllNotificationsAsRead = async (userId: string): Promise<boolean> => {
-  try {
-    const notifications = await getUserNotifications(userId)
-    const unreadNotifications = notifications.filter(n => !n.read)
-    
-    for (const notification of unreadNotifications) {
-      await markNotificationAsRead(userId, notification.id)
-    }
-    
-    return true
-  } catch (error) {
-    console.error('Error marking all notifications as read:', error)
     return false
   }
 }

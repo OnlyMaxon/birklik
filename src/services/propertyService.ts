@@ -162,38 +162,6 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
 }
 
 /**
- * Advanced server-side pagination with optimized Firestore queries
- * @param {AdvancedFilters} [filters] - Composite filter criteria (status, type, district, price, rooms, etc)
- * @param {PaginationOptions} [pagination] - Pagination options (pageSize, cursor, sortBy)
- * @returns {Promise<PaginationResult<Property>>} Paginated results with metadata (hasMore, cursor, total)
- * @throws {Error} On Firestore query failure
- * @example
- * const result = await getPropertiesAdvanced(
- *   { type: 'apartment', minPrice: 50, maxPrice: 500, status: 'active' },
- *   { pageSize: 20, sortBy: 'priceAsc' }
- * )
- */
-export const getPropertiesAdvanced = async (
-  filters?: AdvancedFilters,
-  pagination?: PaginationOptions
-): Promise<PaginationResult<Property>> => {
-  try {
-    const constraints = buildQueryConstraints(filters, pagination)
-    const q = query(collection(db, COLLECTION_NAME), ...constraints)
-    const snapshot = await getDocs(q)
-
-    const properties = snapshot.docs.map(mapDocToProperty)
-    const lastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null
-    const pageSize = pagination?.pageSize || 12
-
-    return formatPaginationResult(properties, lastDoc, pageSize)
-  } catch (error) {
-    console.error('Error getting advanced properties:', error)
-    return { items: [], cursor: null, hasMore: false, pageSize: pagination?.pageSize || 12, totalInPage: 0 }
-  }
-}
-
-/**
  * Retrieve all properties owned by a specific user
  * @param {string} ownerId - The user/owner Firestore ID
  * @returns {Promise<Property[]>} Array of properties owned by user, ordered by creation date (newest first)
@@ -213,66 +181,6 @@ export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]>
     return snapshot.docs.map(mapDocToProperty)
   } catch (error) {
     console.error('Error getting user properties:', error)
-    return []
-  }
-}
-
-/**
- * Get featured properties for homepage showcase
- * @param {number} [limit] - Maximum number of featured properties to return (default: 6)
- * @returns {Promise<Property[]>} Array of featured properties, ordered by date
- * @throws {Error} On Firestore query failure
- * @example
- * const featured = await getFeaturedProperties(6)
- */
-export const getFeaturedProperties = async (maxLimit: number = 6): Promise<Property[]> => {
-  try {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where('status', '==', 'active'),
-      where('isFeatured', '==', true),
-      orderBy('createdAt', 'desc'),
-      limit(maxLimit)
-    )
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map(mapDocToProperty)
-  } catch (error) {
-    console.error('Error getting featured properties:', error)
-    return []
-  }
-}
-
-/**
- * Search properties by location (district) with optional amenities filter
- * @param {string} district - District name to search (e.g., 'baku', 'mardakan')
- * @param {string[]} [amenities] - Optional amenity filters to include
- * @returns {Promise<Property[]>} Matching properties, ordered by featured status then creation date
- * @throws {Error} On Firestore query failure
- * @example
- * const properties = await getPropertiesByLocation('baku', ['pool', 'wifi'])
- */
-export const getPropertiesByLocation = async (
-  district: string,
-  amenities?: string[]
-): Promise<Property[]> => {
-  try {
-    const constraints: QueryConstraint[] = [
-      where('status', '==', 'active'),
-      where('district', '==', district.toLowerCase())
-    ]
-
-    if (amenities && amenities.length > 0) {
-      constraints.push(where('amenities', 'array-contains-any', amenities))
-    }
-
-    constraints.push(orderBy('isFeatured', 'desc'))
-    constraints.push(orderBy('createdAt', 'desc'))
-
-    const q = query(collection(db, COLLECTION_NAME), ...constraints)
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map(mapDocToProperty)
-  } catch (error) {
-    console.error('Error searching properties by location:', error)
     return []
   }
 }

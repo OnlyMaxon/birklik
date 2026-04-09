@@ -52,6 +52,7 @@ const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 interface LocationPickerProps {
   coordinates: { lat: number; lng: number }
   onChange: (coords: { lat: number; lng: number }) => void
+  onAddressReverse?: (address: string) => void
 }
 
 const MapCenterUpdater: React.FC<{ coordinates: { lat: number; lng: number } }> = ({ coordinates }) => {
@@ -62,12 +63,6 @@ const MapCenterUpdater: React.FC<{ coordinates: { lat: number; lng: number } }> 
   }, [coordinates, map])
 
   return null
-}
-
-interface LocationPickerProps {
-  coordinates: { lat: number; lng: number }
-  onChange: (coords: { lat: number; lng: number }) => void
-  onAddressReverse?: (address: string) => void
 }
 
 const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange, onAddressReverse }) => {

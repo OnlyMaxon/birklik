@@ -40,26 +40,6 @@ export const toggleFavorite = async (
 }
 
 /**
- * Get all favorited properties for a user (stub implementation)
- * @returns {Promise<any[]>} Empty array (favorites are fetched via parent component queries)
- * @throws {Error} On logic failure
- * @example
- * const favorites = await getUserFavorites()
- */
-export const getUserFavorites = async () => {
-  try {
-    // Since we store favorites by property ID, we need to query properties
-    // where the favorites array contains the userId
-    // This requires a collection query in a real implementation
-    // For now, return empty - this will be fetched via parent component
-    return []
-  } catch (error) {
-    console.error('Error getting favorites:', error)
-    throw error
-  }
-}
-
-/**
  * Check if a property is favorited by a user
  * @param {string[] | undefined} propertyFavorites - Array of user IDs that favorited the property
  * @param {string} userId - User Firestore ID to check
