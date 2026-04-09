@@ -79,6 +79,7 @@ export interface Property {
   createdAt?: string
   updatedAt?: string
   city?: string
+  premiumExpiresAt?: string // ISO date when premium status expires (3 weeks from creation)
 }
 
 export interface User {

@@ -461,5 +461,20 @@ export const filterProperties = (
     }
 
     return true
+  }).sort((a, b) => {
+    // Premium first: check if premium is still active (not expired)
+    const now = new Date().toISOString()
+    const aIsPremium = a.premiumExpiresAt && a.premiumExpiresAt > now ? 1 : 0
+    const bIsPremium = b.premiumExpiresAt && b.premiumExpiresAt > now ? 1 : 0
+
+    // If both are premium or both are not, sort by creation date (newest first)
+    if (aIsPremium === bIsPremium) {
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      return bDate - aDate
+    }
+
+    // Premium comes first
+    return bIsPremium - aIsPremium
   })
 }

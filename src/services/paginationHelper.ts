@@ -93,21 +93,27 @@ export const buildQueryConstraints = (
   }
 
   // Sorting - must come after where clauses
+  // Premium listings always come first if still active (premiumExpiresAt > now)
   const sortBy = pagination.sortBy || 'featured'
   switch (sortBy) {
     case 'newest':
+      constraints.push(orderBy('premiumExpiresAt', 'desc'))
       constraints.push(orderBy('createdAt', 'desc'))
       break
     case 'oldest':
+      constraints.push(orderBy('premiumExpiresAt', 'desc'))
       constraints.push(orderBy('createdAt', 'asc'))
       break
     case 'priceAsc':
+      constraints.push(orderBy('premiumExpiresAt', 'desc'))
       constraints.push(orderBy('price.daily', 'asc'))
       break
     case 'priceDesc':
+      constraints.push(orderBy('premiumExpiresAt', 'desc'))
       constraints.push(orderBy('price.daily', 'desc'))
       break
     case 'featured':
+      constraints.push(orderBy('premiumExpiresAt', 'desc'))
       constraints.push(orderBy('isFeatured', 'desc'))
       constraints.push(orderBy('createdAt', 'desc'))
       break

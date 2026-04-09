@@ -60,6 +60,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   const nights = calculateNights()
   const totalPrice = nights > 0 ? property.price.daily * nights : property.price.daily
 
+  // Check if premium is still active
+  const isPremium = property.premiumExpiresAt ? new Date(property.premiumExpiresAt).getTime() > Date.now() : false
+
   return (
     <div className="property-card card">
       <Link to={`/property/${property.id}`} className="property-image">
@@ -68,6 +71,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           <div className="property-type-badge badge badge-primary">
             {t.propertyTypes[property.type]}
           </div>
+          {isPremium && (
+            <div className="property-premium-badge badge badge-premium" title={language === 'en' ? 'Premium listing' : language === 'ru' ? 'Премиум объявление' : 'Premium elan'}>
+              <span>⭐</span> Premium
+            </div>
+          )}
           {property.amenities?.includes('pool') && (
             <div className="property-pool-badge badge badge-accent">
               💧 {t.amenities.pool}

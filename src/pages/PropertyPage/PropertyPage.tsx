@@ -9,6 +9,7 @@ import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommen
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
+import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
 import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
@@ -439,6 +440,11 @@ export const PropertyPage: React.FC = () => {
                 
                 <div className="property-meta">
                   <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
+                  {isPremiumActive(property.premiumExpiresAt) && (
+                    <span className="badge badge-premium" title={language === 'en' ? `Premium listing - ${getPremiumRemainingDays(property.premiumExpiresAt)} days remaining` : language === 'ru' ? `Премиум объявление - осталось ${getPremiumRemainingDays(property.premiumExpiresAt)} дней` : `Premium elan - ${getPremiumRemainingDays(property.premiumExpiresAt)} gün qalıb`}>
+                      ⭐ Premium
+                    </span>
+                  )}
                   <span className="location">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
