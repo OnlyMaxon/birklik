@@ -17,7 +17,6 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
 import { Property, PropertyType, Language, Comment } from '../types'
-import { buildQueryConstraints, PaginationOptions, AdvancedFilters, formatPaginationResult, PaginationResult } from './paginationHelper'
 
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 12
