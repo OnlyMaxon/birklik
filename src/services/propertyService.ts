@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
-import { Property, PropertyType, Language } from '../types'
+import { Property, PropertyType, Language, Comment } from '../types'
 import { buildQueryConstraints, PaginationOptions, AdvancedFilters, formatPaginationResult, PaginationResult } from './paginationHelper'
 
 const COLLECTION_NAME = 'properties'
@@ -648,5 +648,50 @@ export const incrementPropertyViews = async (propertyId: string): Promise<boolea
   } catch (error) {
     console.error('Error incrementing views:', error)
     return false
+  }
+}
+
+/**
+ * Get all comments from all properties for moderation
+ * @returns Promise<Array<{ comment; propertyId; propertyTitle; }>>
+ */
+export interface CommentWithProperty {
+  comment: Comment
+  propertyId: string
+  propertyTitle: string
+}
+
+export const getAllCommentsForModeration = async (): Promise<CommentWithProperty[]> => {
+  try {
+    const querySnapshot = await getDocs(
+      query(
+        collection(db, COLLECTION_NAME),
+        where('status', '==', 'active'),
+        limit(500) // Get active properties
+      )
+    )
+
+    const allComments: CommentWithProperty[] = []
+
+    for (const propertyDoc of querySnapshot.docs) {
+      const property = propertyDoc.data() as Property
+      const comments = property.comments || []
+
+      for (const comment of comments) {
+        allComments.push({
+          comment,
+          propertyId: propertyDoc.id,
+          propertyTitle: property.title?.az || property.title?.en || 'Unknown'
+        })
+      }
+    }
+
+    // Sort by newest first
+    return allComments.sort((a, b) =>
+      new Date(b.comment.createdAt).getTime() - new Date(a.comment.createdAt).getTime()
+    )
+  } catch (error) {
+    console.error('Error getting comments for moderation:', error)
+    return []
   }
 }
