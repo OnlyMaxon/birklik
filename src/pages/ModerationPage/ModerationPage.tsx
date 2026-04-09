@@ -96,13 +96,44 @@ export const ModerationPage: React.FC = () => {
   return (
     <Layout>
       <section className="moderation-page">
-        <div className="container moderation-container">
-          <div className="moderation-header">
-            <h1>{language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}</h1>
-            <p>{language === 'en' ? 'Review pending listings and comments.' : language === 'ru' ? 'Проверьте ожидающие объявления и комментарии.' : 'Gözləyən elanları və şərhləri yoxlayın.'}</p>
-          </div>
+        <div className="container moderation-layout">
+          {/* Left Sidebar Menu */}
+          <aside className="moderation-sidebar">
+            <div className="sidebar-section">
+              <h3>{language === 'en' ? 'Dashboard' : language === 'ru' ? 'Панель' : 'Panel'}</h3>
+              <nav className="sidebar-nav">
+                <Link to="/dashboard" className="sidebar-link">
+                  {language === 'en' ? 'My Listings' : language === 'ru' ? 'Мои публикации' : 'Mənim elanlarım'}
+                </Link>
+                <Link to="/dashboard?tab=bookmarks" className="sidebar-link">
+                  {language === 'en' ? 'Bookmarked' : language === 'ru' ? 'Избранные' : 'Əlaqələndirilmişlər'}
+                </Link>
+                <Link to="/dashboard?tab=notifications" className="sidebar-link">
+                  {language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'}
+                </Link>
+              </nav>
+            </div>
 
-          {/* Tabs */}
+            {isModeratorUser && (
+              <div className="sidebar-section">
+                <h3>{language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}</h3>
+                <nav className="sidebar-nav">
+                  <Link to="/dashboard/review" className="sidebar-link active">
+                    {language === 'en' ? 'Review Content' : language === 'ru' ? 'Проверить контент' : 'Kontenti yoxla'}
+                  </Link>
+                </nav>
+              </div>
+            )}
+          </aside>
+
+          {/* Right Content */}
+          <div className="moderation-content-wrapper">
+            <div className="moderation-header">
+              <h1>{language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}</h1>
+              <p>{language === 'en' ? 'Review pending listings and comments.' : language === 'ru' ? 'Проверьте ожидающие объявления и комментарии.' : 'Gözləyən elanları və şərhləri yoxlayın.'}</p>
+            </div>
+
+            {/* Tabs */}
           <div className="moderation-tabs">
             <button
               className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`}
@@ -210,6 +241,7 @@ export const ModerationPage: React.FC = () => {
               </div>
             )
           )}
+          </div>
         </div>
       </section>
     </Layout>
