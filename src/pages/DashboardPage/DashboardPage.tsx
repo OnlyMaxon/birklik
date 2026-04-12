@@ -1315,6 +1315,24 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                 <div className="tab-content fade-in">
                   <h2>{editingListingId ? t.dashboard.edit : t.dashboard.addListing}</h2>
                   {error && <div className="error-message">{error}</div>}
+                  {!newListing.listingTier && !error && (
+                    <div style={{
+                      padding: '12px 16px',
+                      backgroundColor: '#fff3cd',
+                      color: '#856404',
+                      border: '1px solid #ffeeba',
+                      borderRadius: '6px',
+                      marginBottom: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '18px' }}>⚠️</span>
+                      <span style={{ fontWeight: '500' }}>
+                        {language === 'en' ? 'Please select a listing plan (Free, Standard, or Premium)' : language === 'ru' ? 'Пожалуйста, выберите тариф (Бесплатный, Стандарт или Премиум)' : 'Lütfən bir paket seçin (Pulsuz, Standart və ya Premium)'}
+                      </span>
+                    </div>
+                  )}
 
                   {showAddSuccess ? (
                     <div className="success-state">
@@ -1327,7 +1345,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   ) : (
                     <form onSubmit={handleAddListing} className="add-listing-form card">
                       <div className="listing-plans-header">
-                        <h3>{t.home.plansTitle}</h3>
+                        <h3>
+                          {t.home.plansTitle}
+                          {newListing.listingTier ? (
+                            <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#28a745', fontWeight: 'normal' }}>
+                              ✓ {newListing.listingTier === 'free' ? t.pricing.free : newListing.listingTier === 'standard' ? t.pricing.standard : t.pricing.premium}
+                            </span>
+                          ) : (
+                            <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#dc3545', fontWeight: 'bold' }}>
+                              ({language === 'en' ? 'Required' : language === 'ru' ? 'Обязательно' : 'Zəruri'})
+                            </span>
+                          )}
+                        </h3>
                         <p>{t.home.plansSubtitle}</p>
                       </div>
 
@@ -1338,7 +1367,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             key={plan.id}
                             className={`listing-plan-card ${newListing.listingTier === plan.id ? 'selected' : ''} ${plan.highlighted ? 'highlighted' : ''}`}
                             onClick={() => setNewListing({ ...newListing, listingTier: plan.id })}
+                            style={{
+                              border: newListing.listingTier === plan.id ? '2px solid #28a745' : '2px solid transparent',
+                              transition: 'all 0.3s ease'
+                            }}
                           >
+                            {newListing.listingTier === plan.id && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '8px',
+                                right: '8px',
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: '24px',
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                fontWeight: 'bold'
+                              }}>
+                                ✓
+                              </div>
+                            )}
                             <div className="listing-plan-head">
                               <h4>{plan.title}</h4>
                               <div className="listing-plan-price">

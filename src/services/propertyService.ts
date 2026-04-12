@@ -210,8 +210,13 @@ export const createProperty = async (
 
     const now = new Date().toISOString()
 
-    const propertyData: Omit<Property, 'id'> = {
-      ...property,
+    // Clean up undefined values - Firestore doesn't accept undefined
+    const cleanedProperty = Object.fromEntries(
+      Object.entries(property).filter(([_, value]) => value !== undefined)
+    ) as Omit<Property, 'id' | 'createdAt' | 'updatedAt'>
+
+    const propertyData = {
+      ...cleanedProperty,
       images: imageUrls.length > 0 ? imageUrls : property.images,
       createdAt: now,
       updatedAt: now,
@@ -252,8 +257,13 @@ export const updateProperty = async (
       newImageUrls = await uploadPropertyImages(newImageFiles)
     }
 
+    // Clean up undefined values - Firestore doesn't accept undefined
+    const cleanedUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    ) as Partial<Property>
+
     const updateData = {
-      ...updates,
+      ...cleanedUpdates,
       ...(newImageUrls.length > 0 && { 
         images: [...(updates.images || currentData?.images || []), ...newImageUrls]
       }),
