@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
-import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
+import { confirmPasswordReset, verifyPasswordResetCode, applyActionCode } from 'firebase/auth'
 import { auth } from '../../config/firebase'
 import '../../styles/AuthPages.css'
 
@@ -22,11 +22,80 @@ export const ResetPasswordPage: React.FC = () => {
   const [validating, setValidating] = React.useState(true)
   const [isCodeValid, setIsCodeValid] = React.useState(false)
   const [email, setEmail] = React.useState('')
+  const [isEmailVerification, setIsEmailVerification] = React.useState(false)
+
+  // Handle email verification
+  const handleEmailVerification = async () => {
+    if (!oobCode) {
+      setError(
+        language === 'en'
+          ? 'Invalid verification link'
+          : language === 'ru'
+            ? 'Неверная ссылка подтверждения'
+            : 'Doğrulama bağlantısı düzgün deyil'
+      )
+      setValidating(false)
+      return
+    }
+
+    try {
+      // Apply the action code (this confirms the email)
+      await applyActionCode(auth, oobCode)
+      
+      // If user is currently logged in, reload to update emailVerified status
+      if (auth.currentUser) {
+        await auth.currentUser.reload()
+      }
+
+      setSuccess(true)
+      setValidating(false)
+      
+      // Redirect after 3 seconds
+      setTimeout(() => {
+        if (auth.currentUser) {
+          navigate('/dashboard')
+        } else {
+          navigate('/login')
+        }
+      }, 3000)
+    } catch (err: any) {
+      let errorMsg = language === 'en' ? 'Invalid or expired link' : language === 'ru' ? 'Недействительная или просроченная ссылка' : 'Doğrulama bağlantısı ya da sürəsi bitib'
+      
+      if (err.code === 'auth/expired-action-code') {
+        errorMsg = language === 'en' ? 'Verification link has expired' : language === 'ru' ? 'Ссылка подтверждения истекла' : 'Doğrulama bağlantısının müddəti bitib'
+      } else if (err.code === 'auth/invalid-action-code') {
+        errorMsg = language === 'en' ? 'Invalid verification link' : language === 'ru' ? 'Неверная ссылка подтверждения' : 'Doğrulama bağlantısı düzgün deyil'
+      }
+      
+      setError(errorMsg)
+      setValidating(false)
+    }
+  }
 
   // Validate reset code on mount
   React.useEffect(() => {
     const validateCode = async () => {
-      if (!oobCode || mode !== 'resetPassword') {
+      if (!oobCode) {
+        setError(
+          language === 'en'
+            ? 'Invalid reset link'
+            : language === 'ru'
+              ? 'Неверная ссылка восстановления'
+              : 'Sıfırlama bağlantısı düzgün deyil'
+        )
+        setValidating(false)
+        return
+      }
+
+      // Check if this is email verification
+      if (mode === 'emailVerification') {
+        setIsEmailVerification(true)
+        handleEmailVerification()
+        return
+      }
+
+      // Handle password reset
+      if (mode !== 'resetPassword') {
         setError(
           language === 'en'
             ? 'Invalid reset link'
@@ -85,6 +154,12 @@ export const ResetPasswordPage: React.FC = () => {
 
     try {
       await confirmPasswordReset(auth, oobCode!, password)
+      
+      // Reload user if logged in
+      if (auth.currentUser) {
+        await auth.currentUser.reload()
+      }
+      
       setSuccess(true)
       setPassword('')
       setConfirmPassword('')
@@ -117,7 +192,100 @@ export const ResetPasswordPage: React.FC = () => {
           <div className="auth-container">
             <div className="auth-card card">
               <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>{language === 'en' ? 'Validating reset link...' : language === 'ru' ? 'Проверка ссылки восстановления...' : 'Sıfırlama bağlantısı yoxlanılır...'}</p>
+                <p>{isEmailVerification ? (language === 'en' ? 'Verifying email...' : language === 'ru' ? 'Проверка почты...' : 'Email yoxlanılır...') : (language === 'en' ? 'Validating reset link...' : language === 'ru' ? 'Проверка ссылки восстановления...' : 'Sıfırlama bağlantısı yoxlanılır...')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  // Email verification success page
+  if (isEmailVerification && success) {
+    return (
+      <Layout>
+        <div className="auth-page">
+          <div className="auth-container">
+            <div className="auth-card card">
+              <div className="auth-header">
+                <h1>{language === 'en' ? 'Email Verified' : language === 'ru' ? 'Почта подтверждена' : 'Email doğrulandı'}</h1>
+              </div>
+
+              <div style={{
+                backgroundColor: '#e8f5e9',
+                border: '1px solid #4caf50',
+                color: '#2e7d32',
+                padding: '1.5rem',
+                borderRadius: '6px',
+                textAlign: 'center',
+                marginBottom: '1.5rem'
+              }}>
+                <p style={{ margin: 0, fontSize: '1.1rem' }}>
+                  ✓ {language === 'en'
+                    ? 'Your email has been successfully verified!'
+                    : language === 'ru'
+                      ? 'Ваша почта успешно подтверждена!'
+                      : 'Sizin e-poçt uğurlu şəkildə doğrulandı!'}
+                </p>
+              </div>
+
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ marginBottom: '1rem', color: '#666' }}>
+                  {language === 'en'
+                    ? 'Redirecting to dashboard...'
+                    : language === 'ru'
+                      ? 'Перенаправление на кабинет...'
+                      : 'Panel əyir yönləndirmə edilir...'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  // Email verification error page
+  if (isEmailVerification && !success) {
+    return (
+      <Layout>
+        <div className="auth-page">
+          <div className="auth-container">
+            <div className="auth-card card">
+              <div className="auth-header">
+                <h1>{language === 'en' ? 'Email Verification' : language === 'ru' ? 'Подтверждение почты' : 'Email doğrulaması'}</h1>
+              </div>
+
+              <div style={{
+                backgroundColor: '#ffebee',
+                border: '1px solid #f44336',
+                color: '#c62828',
+                padding: '1.5rem',
+                borderRadius: '6px',
+                textAlign: 'center',
+                marginBottom: '1.5rem'
+              }}>
+                <p style={{ margin: 0, fontSize: '1rem' }}>✕ {error}</p>
+              </div>
+
+              <div style={{ textAlign: 'center' }}>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="btn btn-accent btn-lg"
+                  style={{
+                    backgroundColor: '#b7925d',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {language === 'en' ? 'Back to Login' : language === 'ru' ? 'На страницу входа' : 'Giriş səhifəsinə qayıt'}
+                </button>
               </div>
             </div>
           </div>
