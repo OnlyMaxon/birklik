@@ -7,7 +7,7 @@ import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
-import { createBooking, hasUserBookedProperty } from '../../services'
+import { createBooking, hasUserBookedProperty, cancelBooking } from '../../services'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
 import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
 import { Booking } from '../../types'
@@ -57,6 +57,7 @@ export const PropertyPage: React.FC = () => {
   const [isFavoriting, setIsFavoriting] = React.useState(false)
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
+  const [lastBookingId, setLastBookingId] = React.useState<string | null>(null)
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
   const [hasBooked, setHasBooked] = React.useState(false)
   const [showContactInfo, setShowContactInfo] = React.useState(false)
@@ -116,8 +117,27 @@ export const PropertyPage: React.FC = () => {
   }
 
   // Handle calendar date click for range selection
+  const handleCancelBooking = async () => {
+    if (!lastBookingId) return
+    try {
+      const success = await cancelBooking(lastBookingId)
+      if (success) {
+        setHasBooked(false)
+        setLastBookingId(null)
+        setSelectedCheckIn('')
+        setSelectedCheckOut('')
+        alert(language === 'en' ? 'Booking cancelled' : language === 'ru' ? 'Бронирование отменено' : 'Rezervasyon ləğv edildi')
+      }
+    } catch (error) {
+      console.error('Cancel error:', error)
+      alert(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Ошибка отмены' : 'İptal edilə bilmədi')
+    }
+  }
+
   const handleCalendarDateClick = (dateISO: string | undefined) => {
     if (!dateISO) return
+    const today = getTodayISO()
+    if (dateISO < today) return
 
     // If no check-in selected, set it
     if (!selectedCheckIn) {
@@ -147,6 +167,20 @@ export const PropertyPage: React.FC = () => {
     return dateISO >= checkIn && dateISO <= checkOut
   }
 
+  const isCellDisabled = (dateISO?: string) => {
+    if (!dateISO) return false
+    const today = getTodayISO()
+    // Block past dates
+    if (dateISO < today) return true
+    // Block booked dates
+    if (property?.unavailableFrom && property?.unavailableTo) {
+      if (dateISO >= property.unavailableFrom && dateISO <= property.unavailableTo) {
+        return true
+      }
+    }
+    return false
+  }
+
   const handleMakeBooking = async () => {
     if (!isAuthenticated || !user || !property || !selectedCheckIn || !selectedCheckOut) {
       alert(language === 'en' ? 'Please select dates and sign in' : language === 'ru' ? 'Пожалуйста, выберите даты и войдите' : 'Lütfen tarix seçin və daxil olun')
@@ -171,6 +205,7 @@ export const PropertyPage: React.FC = () => {
       const result = await createBooking(booking)
       if (result) {
         setHasBooked(true)
+        setLastBookingId(result.id)
         setShowContactInfo(true)
         
         // Auto-block the booked dates in calendar (mark as unavailable)
@@ -632,6 +667,7 @@ export const PropertyPage: React.FC = () => {
                   </div>
                   <div className="availability-calendar-grid">
                     {calendarCells.map((cell, index) => {
+                      const isDisabled = isCellDisabled(cell.dateISO)
                       const isBusy = !!cell.dateISO && !!property.unavailableFrom && !!property.unavailableTo
                         && cell.dateISO >= property.unavailableFrom
                         && cell.dateISO <= property.unavailableTo
@@ -643,8 +679,8 @@ export const PropertyPage: React.FC = () => {
                       return (
                         <button
                           key={`${cell.dateISO || 'empty'}-${index}`}
-                          onClick={() => handleCalendarDateClick(cell.dateISO)}
-                          disabled={isBusy || !cell.inMonth}
+                          onClick={() => !isDisabled && handleCalendarDateClick(cell.dateISO)}
+                          disabled={isDisabled || !cell.inMonth}
                           className={`
                             availability-day 
                             ${cell.inMonth ? '' : 'outside'} 
@@ -652,7 +688,7 @@ export const PropertyPage: React.FC = () => {
                             ${isCheckIn ? 'check-in' : ''} 
                             ${isCheckOut ? 'check-out' : ''} 
                             ${isInRange ? 'in-range' : ''}
-                            ${!isBusy && cell.inMonth ? 'selectable' : ''}
+                            ${!isDisabled && cell.inMonth ? 'selectable' : ''}
                           `}
                           type="button"
                         >
@@ -707,13 +743,13 @@ export const PropertyPage: React.FC = () => {
                       disabled={isBooking || !isAuthenticated}
                       style={{
                         width: '100%',
-                        padding: '0.75rem 1rem',
-                        marginTop: '1rem',
+                        padding: '0.5rem 0.75rem',
+                        marginTop: '0.75rem',
                         backgroundColor: isAuthenticated ? '#b7925d' : '#ccc',
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
-                        fontSize: '1rem',
+                        fontSize: '0.9rem',
                         fontWeight: 'bold',
                         cursor: isAuthenticated && !isBooking ? 'pointer' : 'not-allowed',
                         transition: 'background-color 0.3s'
@@ -724,8 +760,28 @@ export const PropertyPage: React.FC = () => {
                   )}
 
                   {hasBooked && (
-                    <div style={{ width: '100%', padding: '0.75rem 1rem', marginTop: '1rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold' }}>
-                      {language === 'en' ? '✓ Booked' : language === 'ru' ? '✓ Забронировано' : '✓ Bron edildi'}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                      <div style={{ flex: 1, padding: '0.5rem 0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                        {language === 'en' ? '✓ Booked' : language === 'ru' ? '✓ Забронировано' : '✓ Bron edildi'}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCancelBooking}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 0.75rem',
+                          backgroundColor: '#5b8fc4',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '0.9rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.3s'
+                        }}
+                      >
+                        {language === 'en' ? 'Cancel Booking' : language === 'ru' ? 'Отменить' : 'Ləğv et'}
+                      </button>
                     </div>
                   )}
 
