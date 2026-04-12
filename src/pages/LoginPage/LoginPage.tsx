@@ -23,7 +23,11 @@ export const LoginPage: React.FC = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard')
+      const fbUser = auth.currentUser
+      // Only redirect if authenticated AND email is verified
+      if (fbUser?.emailVerified) {
+        navigate('/dashboard')
+      }
     }
   }, [isAuthenticated, navigate])
 
@@ -62,7 +66,13 @@ export const LoginPage: React.FC = () => {
     const result = await login(email, password)
     
     if (result.success) {
-      navigate('/dashboard')
+      // Check if email is verified
+      const fbUser = auth.currentUser
+      if (fbUser && !fbUser.emailVerified) {
+        navigate('/verify-email')
+      } else {
+        navigate('/dashboard')
+      }
     } else {
       setError(getErrorMessage(result.error || ''))
     }
