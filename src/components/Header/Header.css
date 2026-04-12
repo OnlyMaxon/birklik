@@ -87,6 +87,13 @@
   border-bottom-color: #e9c892;
 }
 
+.nav-link.active ~ .user-menu button,
+.nav-link.active ~ * .user-menu button {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 .notification-link {
   position: relative;
   display: flex;
@@ -129,6 +136,25 @@
   margin-left: 0.35rem;
 }
 
+.user-menu button {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.user-menu button:active,
+.user-menu button:focus {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.user-menu button:focus-visible {
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
 .user-name {
   color: rgba(255, 247, 234, 0.96);
   font-weight: 600;
@@ -153,6 +179,9 @@
 
 .header .btn-ghost {
   color: #f2e4cc;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .header .btn-ghost:hover {
@@ -162,13 +191,21 @@
 
 .header .btn-ghost:active,
 .header .btn-ghost:focus {
-  background-color: transparent;
+  background-color: transparent !important;
   outline: none !important;
+  box-shadow: none !important;
 }
 
 .header .btn-ghost:focus-visible {
   outline: none !important;
   outline-offset: 0;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.header .btn-ghost:visited {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .language-switcher {
@@ -380,6 +417,25 @@
     background: rgba(255, 248, 236, 0.08);
   }
 
+  .user-menu button {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .user-menu button:active,
+  .user-menu button:focus {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .user-menu button:focus-visible {
+    outline: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
   .user-name {
     color: rgba(255, 255, 255, 0.88);
   }
@@ -388,6 +444,22 @@
     width: 100%;
     justify-content: center;
     margin-top: 0.4rem;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .nav .btn:active,
+  .nav .btn:focus {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .nav .btn:focus-visible {
+    outline: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
   }
 }
 
