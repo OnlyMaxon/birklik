@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage, useAuth } from '../../context'
 import { Property, Booking } from '../../types'
-import { createBooking } from '../../services'
+import { createBooking, cancelBooking } from '../../services'
 
 interface CalendarCell {
   label: string
@@ -57,8 +57,28 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
   const [isBooking, setIsBooking] = React.useState(false)
   const [message, setMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [lastBookingId, setLastBookingId] = React.useState<string | null>(null)
 
   const getTodayISO = () => new Date().toISOString().split('T')[0]
+
+  const handleCancelBooking = async () => {
+    if (!lastBookingId) return
+    
+    try {
+      const success = await cancelBooking(lastBookingId)
+      if (success) {
+        setMessage({ type: 'success', text: language === 'en' ? 'Booking cancelled' : language === 'ru' ? 'Бронирование отменено' : 'Rezervasyon ləğv edildi' })
+        setLastBookingId(null)
+        onBookingSuccess?.()
+        setTimeout(() => setMessage(null), 3000)
+      } else {
+        setMessage({ type: 'error', text: language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Ошибка отмены' : 'İptal edilə bilmədi' })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: language === 'en' ? 'Cancellation error' : language === 'ru' ? 'Ошибка отмены' : 'İptal xətası' })
+      console.error('Cancel error:', error)
+    }
+  }
 
   const handleBookProperty = async () => {
     if (!isAuthenticated || !user || !selectedCheckIn || !selectedCheckOut) {
@@ -92,7 +112,10 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
 
     setIsBooking(true)
     try {
-      await createBooking(booking)
+      const createdBooking = await createBooking(booking)
+      if (createdBooking?.id) {
+        setLastBookingId(createdBooking.id)
+      }
       setMessage({ type: 'success', text: language === 'en' ? 'Request sent!' : language === 'ru' ? 'Запрос отправлен!' : 'Sorgu gonderildi!' })
       setSelectedCheckIn('')
       setSelectedCheckOut('')
@@ -192,6 +215,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       <div style={{ marginBottom: '1.5rem' }}>
         <input
           type="date"
+          min={getTodayISO()}
           value={selectedCheckIn}
           onChange={e => setSelectedCheckIn(e.target.value)}
           style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', marginBottom: '0.75rem', fontSize: '0.95rem' }}
@@ -199,6 +223,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
         />
         <input
           type="date"
+          min={getTodayISO()}
           value={selectedCheckOut}
           onChange={e => setSelectedCheckOut(e.target.value)}
           style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', marginBottom: '0.75rem', fontSize: '0.95rem' }}
@@ -219,24 +244,46 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       )}
 
       {/* Book Button */}
-      <button
-        onClick={handleBookProperty}
-        disabled={!isAuthenticated || !selectedCheckIn || !selectedCheckOut || isBooking}
-        style={{
-          width: '100%',
-          padding: '0.75rem',
-          background: isAuthenticated ? '#27ae60' : '#bdc3c7',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          fontSize: '1rem',
-          fontWeight: 600,
-          cursor: isAuthenticated && selectedCheckIn && selectedCheckOut ? 'pointer' : 'not-allowed',
-          transition: 'opacity 0.3s'
-        }}
-      >
-        {isAuthenticated ? (isBooking ? '...' : language === 'en' ? 'Confirm Booking' : language === 'ru' ? 'Подтвердить' : 'Təsdiqlə') : language === 'en' ? 'Sign in to book' : language === 'ru' ? 'Войдите, чтобы забронировать' : 'Rezerv etmək üçün daxil olun'}
-      </button>
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <button
+          onClick={handleBookProperty}
+          disabled={!isAuthenticated || !selectedCheckIn || !selectedCheckOut || isBooking}
+          style={{
+            flex: 1,
+            padding: '0.75rem',
+            background: isAuthenticated ? '#27ae60' : '#bdc3c7',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '1rem',
+            fontWeight: 600,
+            cursor: isAuthenticated && selectedCheckIn && selectedCheckOut ? 'pointer' : 'not-allowed',
+            transition: 'opacity 0.3s'
+          }}
+        >
+          {isAuthenticated ? (isBooking ? '...' : language === 'en' ? 'Confirm Booking' : language === 'ru' ? 'Подтвердить' : 'Təsdiqlə') : language === 'en' ? 'Sign in to book' : language === 'ru' ? 'Войдите, чтобы забронировать' : 'Rezerv etmək üçün daxil olun'}
+        </button>
+        
+        {lastBookingId && (
+          <button
+            onClick={handleCancelBooking}
+            style={{
+              flex: 1,
+              padding: '0.75rem',
+              background: '#e74c3c',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '1rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'opacity 0.3s'
+            }}
+          >
+            {language === 'en' ? 'Cancel Booking' : language === 'ru' ? 'Отменить' : 'Ləğv et'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }
