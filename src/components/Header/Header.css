@@ -349,8 +349,9 @@
   .nav {
     position: fixed;
     top: var(--header-height);
-    left: 0.65rem;
-    right: 0.65rem;
+    left: 50%;
+    width: calc(100% - 1.3rem);
+    max-width: calc(100% - 1.3rem);
     bottom: auto;
     max-height: calc(100dvh - 88px);
     background: linear-gradient(170deg, #3d3124 0%, #2d241b 100%);
@@ -360,7 +361,7 @@
     gap: 0.25rem;
     border-radius: 16px;
     border: 1px solid rgba(236, 219, 191, 0.24);
-    transform: translateY(-16px) scale(0.98);
+    transform: translateX(-50%) translateY(-16px) scale(0.98);
     opacity: 0;
     visibility: hidden;
     transition: transform 0.24s ease, opacity 0.24s ease, visibility 0.24s;
@@ -370,7 +371,7 @@
   }
 
   .nav-open {
-    transform: translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0) scale(1);
     opacity: 1;
     visibility: visible;
   }
