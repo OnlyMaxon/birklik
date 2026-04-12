@@ -163,12 +163,12 @@
 .header .btn-ghost:active,
 .header .btn-ghost:focus {
   background-color: transparent;
-  outline: none;
+  outline: none !important;
 }
 
 .header .btn-ghost:focus-visible {
-  outline: 2px solid rgba(217, 174, 95, 0.4);
-  outline-offset: 2px;
+  outline: none !important;
+  outline-offset: 0;
 }
 
 .language-switcher {
