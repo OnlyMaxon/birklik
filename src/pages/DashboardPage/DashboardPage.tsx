@@ -273,7 +273,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     nearbyPlaces: [] as string[],
     locationCategory: 'rayon' as LocationCategory,
     locationTags: [] as string[],
-    city: 'Baku',
+    city: '',
     contactEmail: '',
     contactPhone: ''
   })

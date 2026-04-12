@@ -70,8 +70,12 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
       }))
 
   React.useEffect(() => {
-    console.log('[CityLocationPicker] filteredLocations:', filteredLocations, 'city:', city, 'locationCategory:', locationCategory)
-  }, [city, locationCategory, filteredLocations, locationSearch])
+    console.log('[CityLocationPicker] city/category changed:', city, locationCategory)
+  }, [city, locationCategory])
+
+  React.useEffect(() => {
+    console.log('[CityLocationPicker] filteredLocations:', filteredLocations.length, 'entries for city:', city)
+  }, [filteredLocations, city])
 
   return (
     <div className="form-group full-width">
@@ -97,7 +101,7 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
 
       {/* Location Tags - only show if city selected and it has locations */}
       {city && (cityDistricts[city as keyof typeof cityDistricts] || city === 'Baku') && (
-        <div className="location-tags-section-inner">
+        <div key={`locations-${city}-${locationCategory}`} className="location-tags-section-inner">
           <div className="dashboard-section-head">
             <label>
               {language === 'en'
