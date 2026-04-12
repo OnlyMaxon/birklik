@@ -1,6 +1,7 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
 import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification } from '../types'
+import * as logger from './logger'
 
 const COLLECTION_NAME = 'users'
 const NOTIFICATIONS_SUBCOLLECTION = 'notifications'
@@ -20,7 +21,7 @@ export const getUserNotifications = async (userId: string): Promise<Notification
       ...doc.data()
     })) as Notification[]
   } catch (error) {
-    console.error('Error getting notifications:', error)
+    logger.error('Error getting notifications:', error)
     return []
   }
 }
@@ -37,7 +38,7 @@ export const getUnreadNotificationsCount = async (userId: string): Promise<numbe
     const snapshot = await getDocs(q)
     return snapshot.size
   } catch (error) {
-    console.error('Error getting unread count:', error)
+    logger.error('Error getting unread count:', error)
     return 0
   }
 }
@@ -60,7 +61,7 @@ export const createBookingNotification = async (
     })
     return docRef.id
   } catch (error) {
-    console.error('Error creating booking notification:', error)
+    logger.error('Error creating booking notification:', error)
     return null
   }
 }
@@ -83,7 +84,7 @@ export const createCommentNotification = async (
     })
     return docRef.id
   } catch (error) {
-    console.error('Error creating comment notification:', error)
+    logger.error('Error creating comment notification:', error)
     return null
   }
 }
@@ -106,7 +107,7 @@ export const createFavoriteNotification = async (
     })
     return docRef.id
   } catch (error) {
-    console.error('Error creating favorite notification:', error)
+    logger.error('Error creating favorite notification:', error)
     return null
   }
 }
@@ -123,7 +124,7 @@ export const markNotificationAsRead = async (userId: string, notificationId: str
     await updateDoc(notificationRef, { read: true })
     return true
   } catch (error) {
-    console.error('Error marking notification as read:', error)
+    logger.error('Error marking notification as read:', error)
     return false
   }
 }
@@ -140,7 +141,7 @@ export const deleteNotification = async (userId: string, notificationId: string)
     await deleteDoc(notificationRef)
     return true
   } catch (error) {
-    console.error('Error deleting notification:', error)
+    logger.error('Error deleting notification:', error)
     return false
   }
 }
@@ -163,7 +164,7 @@ export const createPremiumNotification = async (
     })
     return docRef.id
   } catch (error) {
-    console.error('Error creating premium notification:', error)
+    logger.error('Error creating premium notification:', error)
     return null
   }
 }

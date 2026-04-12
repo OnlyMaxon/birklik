@@ -2,6 +2,7 @@ import React from 'react'
 import { useLanguage, useAuth } from '../../context'
 import { Property, Comment } from '../../types'
 import { addCommentToProperty, deleteCommentFromProperty } from '../../services'
+import * as logger from '../../services/logger'
 
 interface PropertyCommentsProps {
   property: Property
@@ -37,7 +38,7 @@ export const PropertyComments: React.FC<PropertyCommentsProps> = ({ property, on
       setTimeout(() => setMessage(null), 3000)
     } catch (error) {
       setMessage({ type: 'error', text: language === 'en' ? 'Error posting comment' : language === 'ru' ? 'Ошибка при добавлении комментария' : 'Şərh əlavə edərkən xəta' })
-      console.error('Error posting comment:', error)
+      logger.error('Error posting comment:', error)
     } finally {
       setIsPostingComment(false)
     }
@@ -50,7 +51,7 @@ export const PropertyComments: React.FC<PropertyCommentsProps> = ({ property, on
       await deleteCommentFromProperty(property.id, commentId)
       onCommentAdded?.()
     } catch (error) {
-      console.error('Error deleting comment:', error)
+      logger.error('Error deleting comment:', error)
     }
   }
 

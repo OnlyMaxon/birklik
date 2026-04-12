@@ -1,4 +1,5 @@
 import { db } from '../config/firebase'
+import * as logger from './logger'
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
 
 /**
@@ -34,7 +35,7 @@ export const toggleFavorite = async (
     
     return true
   } catch (error) {
-    console.error('Error toggling favorite:', error)
+    logger.error('Error toggling favorite:', error)
     throw error
   }
 }

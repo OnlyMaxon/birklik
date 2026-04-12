@@ -2,6 +2,8 @@ import React from 'react'
 import { useLanguage, useAuth } from '../../context'
 import { Property, Booking } from '../../types'
 import { createBooking, cancelBooking } from '../../services'
+import { getCsrfToken } from '../../services/csrfService'
+import * as logger from '../../services/logger'
 
 interface CalendarCell {
   label: string
@@ -76,7 +78,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       }
     } catch (error) {
       setMessage({ type: 'error', text: language === 'en' ? 'Cancellation error' : language === 'ru' ? 'Ошибка отмены' : 'İptal xətası' })
-      console.error('Cancel error:', error)
+      logger.error('Cancel error:', error)
     }
   }
 
@@ -112,7 +114,8 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
 
     setIsBooking(true)
     try {
-      const createdBooking = await createBooking(booking)
+      const csrfToken = getCsrfToken()
+      const createdBooking = await createBooking(booking, csrfToken)
       if (createdBooking?.id) {
         setLastBookingId(createdBooking.id)
       }
@@ -123,7 +126,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       setTimeout(() => setMessage(null), 3000)
     } catch (error) {
       setMessage({ type: 'error', text: language === 'en' ? 'Booking error' : language === 'ru' ? 'Ошибка бронирования' : 'Rezervasyon xətası' })
-      console.error('Booking error:', error)
+      logger.error('Booking error:', error)
     } finally {
       setIsBooking(false)
     }

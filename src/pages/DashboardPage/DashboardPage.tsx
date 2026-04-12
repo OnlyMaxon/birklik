@@ -13,6 +13,7 @@ import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '../../services'
 import './DashboardPage.css'
+import * as logger from '../../services/logger'
 
 type TabType = 'listings' | 'add' | 'favorites' | 'bookings' | 'notifications' | 'profile'
 
@@ -777,7 +778,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       await loadListings()
       alert(language === 'en' ? 'Premium extended for 3 more weeks!' : language === 'ru' ? 'Премиум продлен еще на 3 недели!' : 'Premium 3 həftə daha uzadıldı!')
     } catch (error) {
-      console.error('Error extending premium:', error)
+      logger.error('Error extending premium:', error)
       alert(language === 'en' ? 'Failed to extend premium' : language === 'ru' ? 'Не удалось продлить премиум' : 'Premium uzada bilmədi')
     }
   }

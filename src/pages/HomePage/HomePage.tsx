@@ -42,7 +42,10 @@ export const HomePage: React.FC = () => {
       setIsLoading(true)
       setError('')
 
-      const result = await getProperties()
+      // Pass city filter to server if selected to reduce initial data load
+      const result = await getProperties(
+        filters.city ? { city: filters.city } : undefined
+      )
       if (result.properties.length === 0) {
         setError('')
       }
@@ -51,7 +54,7 @@ export const HomePage: React.FC = () => {
     }
 
     loadProperties()
-  }, [])
+  }, [filters.city])
 
   React.useEffect(() => {
     const onResize = () => {

@@ -11,6 +11,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { auth, db, storage } from '../config/firebase'
 import { User } from '../types'
+import * as logger from '../services/logger'
 
 interface AuthContextType {
   user: User | null
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             })
           }
         } catch (error) {
-          console.error('Error fetching user data:', error)
+          logger.error('Error fetching user data:', error)
           setUser({
             id: fbUser.uid,
             name: fbUser.displayName || 'User',
@@ -88,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true }
     } catch (error) {
       const err = error as { code?: string; message?: string }
-      console.error('Login error:', err)
+      logger.error('Login error:', err)
       return { success: false, error: err.code || 'auth/unknown-error' }
     }
   }
@@ -123,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true }
     } catch (error) {
       const err = error as { code?: string; message?: string }
-      console.error('Registration error:', err)
+      logger.error('Registration error:', err)
       return { success: false, error: err.code || 'auth/unknown-error' }
     }
   }
@@ -132,7 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await signOut(auth)
     } catch (error) {
-      console.error('Logout error:', error)
+      logger.error('Logout error:', error)
     }
   }
 
@@ -175,7 +176,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: true }
     } catch (error: any) {
       const err = error as { code?: string; message?: string }
-      console.error('Update profile error:', err)
+      logger.error('Update profile error:', err)
       return { success: false, error: error.code || 'auth/update-failed' }
     }
   }

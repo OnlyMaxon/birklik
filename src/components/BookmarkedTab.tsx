@@ -7,6 +7,7 @@ import { Loading } from './Loading'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import './TabsStyle.css'
+import * as logger from '../services/logger'
 
 export const BookmarkedTab: React.FC = () => {
   const { language } = useLanguage()
@@ -37,7 +38,7 @@ export const BookmarkedTab: React.FC = () => {
 
         setBookmarkedProperties(properties)
       } catch (error) {
-        console.error('Error loading bookmarked properties:', error)
+        logger.error('Error loading bookmarked properties:', error)
       } finally {
         setIsLoading(false)
       }

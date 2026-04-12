@@ -5,6 +5,7 @@ import { useAuth } from '../../context'
 import { isModerator } from '../../config/constants'
 import { getUnreadNotificationsCount } from '../../services/notificationsService'
 import './Header.css'
+import * as logger from '../../services/logger'
 
 export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage()
@@ -34,7 +35,7 @@ export const Header: React.FC = () => {
         const count = await getUnreadNotificationsCount(user.id)
         setUnreadNotificationCount(count)
       } catch (error) {
-        console.error('Error loading unread notifications count:', error)
+        logger.error('Error loading unread notifications count:', error)
       }
     }
 

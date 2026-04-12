@@ -17,6 +17,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
 import { Property, PropertyType, Language, Comment } from '../types'
+import * as logger from './logger'
 
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 12
@@ -30,6 +31,7 @@ const isPubliclyVisible = (property: Property): boolean => {
 export interface PropertyFilters {
   type?: PropertyType | 'all'
   district?: string
+  city?: string
   minPrice?: number
   maxPrice?: number
   minRooms?: number
@@ -81,12 +83,18 @@ export const getProperties = async (
   try {
     const constraints: QueryConstraint[] = []
 
+    // Status filter - only active properties
+    constraints.push(where('status', '==', 'active'))
+
     // Add filters
     if (filters?.type && filters.type !== 'all') {
       constraints.push(where('type', '==', filters.type))
     }
     if (filters?.district) {
       constraints.push(where('district', '==', filters.district))
+    }
+    if (filters?.city) {
+      constraints.push(where('city', '==', filters.city))
     }
     if (filters?.minPrice) {
       constraints.push(where('price.daily', '>=', filters.minPrice))
@@ -131,7 +139,7 @@ export const getProperties = async (
 
     return { properties, lastDoc: newLastDoc }
   } catch (error) {
-    console.error('Error getting properties:', error)
+    logger.error('Error getting properties:', error)
     return { properties: [], lastDoc: null }
   }
 }
@@ -155,7 +163,7 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
     }
     return null
   } catch (error) {
-    console.error('Error getting property:', error)
+    logger.error('Error getting property:', error)
     return null
   }
 }
@@ -179,7 +187,7 @@ export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]>
 
     return snapshot.docs.map(mapDocToProperty)
   } catch (error) {
-    console.error('Error getting user properties:', error)
+    logger.error('Error getting user properties:', error)
     return []
   }
 }
@@ -226,7 +234,7 @@ export const createProperty = async (
     const docRef = await addDoc(collection(db, COLLECTION_NAME), propertyData)
     return { id: docRef.id, ...propertyData } as Property
   } catch (error) {
-    console.error('Error creating property:', error)
+    logger.error('Error creating property:', error)
     return null
   }
 }
@@ -273,7 +281,7 @@ export const updateProperty = async (
     await updateDoc(docRef, updateData)
     return true
   } catch (error) {
-    console.error('Error updating property:', error)
+    logger.error('Error updating property:', error)
     return false
   }
 }
@@ -297,7 +305,7 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
     await deleteDoc(doc(db, COLLECTION_NAME, id))
     return true
   } catch (error) {
-    console.error('Error deleting property:', error)
+    logger.error('Error deleting property:', error)
     return false
   }
 }
@@ -323,7 +331,7 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
       const url = await getDownloadURL(storageRef)
       urls.push(url)
     } catch (error) {
-      console.error('Error uploading image:', error)
+      logger.error('Error uploading image:', error)
     }
   }
 
@@ -348,7 +356,7 @@ export const deletePropertyImages = async (urls: string[]): Promise<void> => {
         await deleteObject(storageRef)
       }
     } catch (error) {
-      console.error('Error deleting image:', error)
+      logger.error('Error deleting image:', error)
     }
   }
 }
@@ -372,7 +380,7 @@ export const getPendingProperties = async (): Promise<Property[]> => {
       .map(mapDocToProperty)
       .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
   } catch (error) {
-    console.error('Error getting pending properties:', error)
+    logger.error('Error getting pending properties:', error)
     return []
   }
 }
@@ -405,7 +413,7 @@ export const approveProperty = async (id: string): Promise<boolean> => {
 
     return true
   } catch (error) {
-    console.error('Error approving property:', error)
+    logger.error('Error approving property:', error)
     return false
   }
 }
@@ -456,7 +464,7 @@ export const addCommentToProperty = async (
 
     return true
   } catch (error) {
-    console.error('Error adding comment:', error)
+    logger.error('Error adding comment:', error)
     return false
   }
 }
@@ -494,7 +502,7 @@ export const toggleLikeProperty = async (propertyId: string, userId: string): Pr
 
     return true
   } catch (error) {
-    console.error('Error toggling like:', error)
+    logger.error('Error toggling like:', error)
     return false
   }
 }
@@ -532,7 +540,7 @@ export const deleteCommentFromProperty = async (
 
     return true
   } catch (error) {
-    console.error('Error deleting comment:', error)
+    logger.error('Error deleting comment:', error)
     return false
   }
 }
@@ -563,7 +571,7 @@ export const incrementPropertyViews = async (propertyId: string): Promise<boolea
 
     return true
   } catch (error) {
-    console.error('Error incrementing views:', error)
+    logger.error('Error incrementing views:', error)
     return false
   }
 }
@@ -608,7 +616,7 @@ export const getAllCommentsForModeration = async (): Promise<CommentWithProperty
       new Date(b.comment.createdAt).getTime() - new Date(a.comment.createdAt).getTime()
     )
   } catch (error) {
-    console.error('Error getting comments for moderation:', error)
+    logger.error('Error getting comments for moderation:', error)
     return []
   }
 }

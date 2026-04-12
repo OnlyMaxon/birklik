@@ -16,6 +16,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
 import { Property } from '../types'
+import * as logger from './logger'
 
 interface CreateListingPayload extends Omit<Property, 'id' | 'createdAt' | 'updatedAt'> {}
 
@@ -50,7 +51,7 @@ export const listingService = {
         ...doc.data()
       })) as (Property & { id: string })[]
     } catch (error) {
-      console.error('Error fetching listings:', error)
+      logger.error('Error fetching listings:', error)
       throw error
     }
   },
@@ -84,7 +85,7 @@ export const listingService = {
         ...doc.data()
       })) as (Property & { id: string })[]
     } catch (error) {
-      console.error('Error fetching all listings:', error)
+      logger.error('Error fetching all listings:', error)
       throw error
     }
   },
@@ -112,7 +113,7 @@ export const listingService = {
 
       return docRef.id
     } catch (error) {
-      console.error('Error creating listing:', error)
+      logger.error('Error creating listing:', error)
       throw error
     }
   },
@@ -134,7 +135,7 @@ export const listingService = {
         updatedAt: serverTimestamp()
       })
     } catch (error) {
-      console.error('Error updating listing:', error)
+      logger.error('Error updating listing:', error)
       throw error
     }
   },
@@ -152,7 +153,7 @@ export const listingService = {
       const docRef = doc(db, 'properties', propertyId)
       await deleteDoc(docRef)
     } catch (error) {
-      console.error('Error deleting listing:', error)
+      logger.error('Error deleting listing:', error)
       throw error
     }
   },
@@ -176,7 +177,7 @@ export const listingService = {
 
       return downloadUrl
     } catch (error) {
-      console.error('Error uploading image:', error)
+      logger.error('Error uploading image:', error)
       throw error
     }
   },
@@ -194,7 +195,7 @@ export const listingService = {
       const imageRef = ref(storage, imageUrl)
       await deleteObject(imageRef)
     } catch (error) {
-      console.error('Error deleting image:', error)
+      logger.error('Error deleting image:', error)
       throw error
     }
   },
@@ -219,7 +220,7 @@ export const listingService = {
 
       return urls
     } catch (error) {
-      console.error('Error batch uploading images:', error)
+      logger.error('Error batch uploading images:', error)
       throw error
     }
   }

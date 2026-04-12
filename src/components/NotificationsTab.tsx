@@ -5,6 +5,7 @@ import { Notification } from '../types'
 import { getUserNotifications, markNotificationAsRead, deleteNotification } from '../services/notificationsService'
 import { Loading } from './Loading'
 import './TabsStyle.css'
+import * as logger from '../services/logger'
 
 export const NotificationsTab: React.FC = () => {
   const { language } = useLanguage()
@@ -21,7 +22,7 @@ export const NotificationsTab: React.FC = () => {
         const data = await getUserNotifications(user.id)
         setNotifications(data)
       } catch (error) {
-        console.error('Error loading notifications:', error)
+        logger.error('Error loading notifications:', error)
       } finally {
         setIsLoading(false)
       }

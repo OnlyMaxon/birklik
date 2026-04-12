@@ -8,11 +8,13 @@ import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLab
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
+import { getCsrfToken } from '../../services/csrfService'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
 import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
 import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
+import * as logger from '../../services/logger'
 
 interface CalendarCell {
   label: string
@@ -130,7 +132,26 @@ export const PropertyPage: React.FC = () => {
   const handleCalendarDateClick = (dateISO: string | undefined) => {
     if (!dateISO) return
     const today = getTodayISO()
-    if (dateISO < today) return
+    if (dateISO < today) {
+      setNotificationMessage(language === 'en' 
+        ? 'Cannot select past dates' 
+        : language === 'ru' 
+          ? 'Нельзя выбирать прошлые даты' 
+          : 'Keçmiş tarixləri seçə bilməzsiniz')
+      setShowNotification(true)
+      return
+    }
+
+    // Check if date is booked
+    if (isCellDisabled(dateISO)) {
+      setNotificationMessage(language === 'en' 
+        ? 'This date is not available' 
+        : language === 'ru' 
+          ? 'Эта дата недоступна' 
+          : 'Bu tarix mövcud deyil')
+      setShowNotification(true)
+      return
+    }
 
     // If no check-in selected, set it
     if (!selectedCheckIn) {
@@ -195,7 +216,8 @@ export const PropertyPage: React.FC = () => {
         status: 'active'
       }
 
-      const result = await createBooking(booking)
+      const csrfToken = getCsrfToken()
+      const result = await createBooking(booking, csrfToken)
       if (result) {
         setHasBooked(true)
         setShowContactInfo(true)
@@ -216,7 +238,7 @@ export const PropertyPage: React.FC = () => {
             unavailableTo: selectedCheckOut
           })
         } catch (error) {
-          console.error('Error blocking dates:', error)
+          logger.error('Error blocking dates:', error)
         }
         
         // Send booking notification to property owner
@@ -244,7 +266,7 @@ export const PropertyPage: React.FC = () => {
         setShowNotification(true)
       }
     } catch (error) {
-      console.error('Error making booking:', error)
+      logger.error('Error making booking:', error)
       setNotificationMessage(language === 'en' ? 'Error making booking' : language === 'ru' ? 'Ошибка при бронировании' : 'Sifariş xətası')
       setShowNotification(true)
     } finally {
@@ -340,7 +362,7 @@ export const PropertyPage: React.FC = () => {
       
       setIsFavorited(!isFavorited)
     } catch (error) {
-      console.error('Error toggling favorite:', error)
+      logger.error('Error toggling favorite:', error)
       alert(language === 'en' ? 'Error updating favorites' : language === 'ru' ? 'Ошибка при обновлении избранных' : 'Favori güncellenirken hata oluştu')
     } finally {
       setIsFavoriting(false)

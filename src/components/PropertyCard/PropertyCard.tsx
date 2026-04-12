@@ -5,6 +5,7 @@ import { useAuth } from '../../context'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { Property, Language } from '../../types'
 import './PropertyCard.css'
+import * as logger from '../../services/logger'
 
 interface PropertyCardProps {
   property: Property
@@ -50,7 +51,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       setIsFavorited(!isFavorited)
       onFavoriteToggle?.(property.id, !isFavorited)
     } catch (error) {
-      console.error('Error toggling favorite:', error)
+      logger.error('Error toggling favorite:', error)
       alert(language === 'en' ? 'Error updating favorites' : language === 'ru' ? 'Ошибка при обновлении избранных' : 'Favori güncellenirken hata oluştu')
     } finally {
       setIsFavoriting(false)

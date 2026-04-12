@@ -1,25 +1,45 @@
 import { db } from '../config/firebase'
 import { collection, doc, addDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore'
 import { Booking } from '../types'
+import { validateCsrfToken } from './csrfService'
+import * as logger from './logger'
 
 const COLLECTION_NAME = 'bookings'
 
 /**
- * Create a new booking record
+ * Create a new booking record with CSRF protection
  * @param {Omit<Booking, 'id' | 'createdAt'>} booking - Booking data (excluding id and creation timestamp)
+ * @param {string} csrfToken - CSRF token for validation
  * @returns {Promise<Booking | null>} Created booking with id and timestamp, or null on failure
- * @throws {Error} On Firestore write failure
+ * @throws {Error} On Firestore write failure, CSRF validation failure, or if booking conflicts with existing booking
  * @example
  * const booking = await createBooking({
  *   propertyId: 'prop_123',
  *   userId: 'user_456',
- *   startDate: '2024-04-01',
- *   endDate: '2024-04-05',
- *   totalPrice: 250
- * })
+ *   checkInDate: '2024-04-01',
+ *   checkOutDate: '2024-04-05',
+ *   totalPrice: 250,
+ *   userName: 'John',
+ *   userEmail: 'john@example.com',
+ *   userPhone: '+1234567890',
+ *   nights: 4
+ * }, csrfToken)
  */
-export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking | null> => {
+export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, csrfToken: string): Promise<Booking | null> => {
   try {
+    // Validate CSRF token
+    if (!validateCsrfToken(csrfToken)) {
+      logger.error('CSRF token validation failed')
+      return null
+    }
+
+    // Check for date conflicts before creating booking
+    const hasConflict = await checkBookingConflict(booking.propertyId, booking.checkInDate, booking.checkOutDate)
+    if (hasConflict) {
+      logger.error('Booking conflict: dates are already booked for this property')
+      return null
+    }
+
     const now = new Date().toISOString()
 
     const bookingData = {
@@ -31,7 +51,7 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>):
     const docRef = await addDoc(collection(db, COLLECTION_NAME), bookingData)
     return { id: docRef.id, ...bookingData } as Booking
   } catch (error) {
-    console.error('Error creating booking:', error)
+    logger.error('Error creating booking:', error)
     return null
   }
 }
@@ -57,8 +77,48 @@ export const getPropertyBookings = async (propertyId: string): Promise<Booking[]
       ...(doc.data() as Omit<Booking, 'id'>)
     }))
   } catch (error) {
-    console.error('Error getting property bookings:', error)
+    logger.error('Error getting property bookings:', error)
     return []
+  }
+}
+
+/**
+ * Check if a booking conflicts with existing bookings for the same property
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} checkInDate - Proposed check-in date (ISO string)
+ * @param {string} checkOutDate - Proposed check-out date (ISO string)
+ * @returns {Promise<boolean>} True if there's a date conflict, false otherwise
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const hasConflict = await checkBookingConflict('prop_123', '2024-04-01', '2024-04-05')
+ */
+export const checkBookingConflict = async (propertyId: string, checkInDate: string, checkOutDate: string): Promise<boolean> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('propertyId', '==', propertyId),
+      where('status', '==', 'active')
+    )
+    const snapshot = await getDocs(q)
+
+    const proposedCheckIn = new Date(checkInDate).getTime()
+    const proposedCheckOut = new Date(checkOutDate).getTime()
+
+    for (const doc of snapshot.docs) {
+      const booking = doc.data() as Omit<Booking, 'id'>
+      const existingCheckIn = new Date(booking.checkInDate).getTime()
+      const existingCheckOut = new Date(booking.checkOutDate).getTime()
+
+      // Check for overlap: proposed range overlaps if it starts before existing ends AND ends after existing starts
+      if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
+        return true
+      }
+    }
+
+    return false
+  } catch (error) {
+    logger.error('Error checking booking conflict:', error)
+    return false
   }
 }
 
@@ -83,7 +143,7 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
       ...(doc.data() as Omit<Booking, 'id'>)
     }))
   } catch (error) {
-    console.error('Error getting user bookings:', error)
+    logger.error('Error getting user bookings:', error)
     return []
   }
 }
@@ -102,7 +162,7 @@ export const cancelBooking = async (bookingId: string): Promise<boolean> => {
     await deleteDoc(docRef)
     return true
   } catch (error) {
-    console.error('Error cancelling booking:', error)
+    logger.error('Error cancelling booking:', error)
     return false
   }
 }
@@ -127,7 +187,7 @@ export const hasUserBookedProperty = async (userId: string, propertyId: string):
     const snapshot = await getDocs(q)
     return snapshot.docs.length > 0
   } catch (error) {
-    console.error('Error checking booking:', error)
+    logger.error('Error checking booking:', error)
     return false
   }
 }

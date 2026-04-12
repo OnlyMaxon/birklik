@@ -5,6 +5,7 @@ import { Layout } from '../../layouts'
 import { sendEmailVerification } from 'firebase/auth'
 import { auth } from '../../config/firebase'
 import '../../styles/AuthPages.css'
+import * as logger from '../../services/logger'
 
 export const RegisterPage: React.FC = () => {
   const { t, language } = useLanguage()
@@ -120,7 +121,7 @@ export const RegisterPage: React.FC = () => {
           })
         }
       } catch (err) {
-        console.error('Error sending verification email:', err)
+        logger.error('Error sending verification email:', err)
       }
       
       // Redirect to verify email page

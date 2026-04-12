@@ -10,6 +10,7 @@ import {
   arrayRemove
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
+import * as logger from './logger'
 
 export interface Comment {
   id: string
@@ -47,7 +48,7 @@ export const commentsService = {
 
       return docRef.id
     } catch (error) {
-      console.error('Error adding comment:', error)
+      logger.error('Error adding comment:', error)
       throw new Error('Failed to add comment. Please try again.')
     }
   },
@@ -69,7 +70,7 @@ export const commentsService = {
         ...doc.data()
       } as Comment))
     } catch (error) {
-      console.error('Error fetching comments:', error)
+      logger.error('Error fetching comments:', error)
       throw new Error('Failed to load comments.')
     }
   },
@@ -92,7 +93,7 @@ export const commentsService = {
         updatedAt: serverTimestamp()
       })
     } catch (error) {
-      console.error('Error updating comment:', error)
+      logger.error('Error updating comment:', error)
       throw new Error('Failed to update comment.')
     }
   },
@@ -111,7 +112,7 @@ export const commentsService = {
       const docRef = doc(db, `properties/${propertyId}/comments/${commentId}`)
       await deleteDoc(docRef)
     } catch (error) {
-      console.error('Error deleting comment:', error)
+      logger.error('Error deleting comment:', error)
       throw new Error('Failed to delete comment.')
     }
   },
@@ -141,7 +142,7 @@ export const commentsService = {
         })
       }
     } catch (error) {
-      console.error('Error toggling like:', error)
+      logger.error('Error toggling like:', error)
       throw new Error('Failed to toggle like.')
     }
   }

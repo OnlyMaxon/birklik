@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from 'fireb
 import { db } from '../../config/firebase'
 import { getUserBookings } from '../../services'
 import { Loading } from '../../components'
+import * as logger from '../../services/logger'
 
 interface BookingWithProperty extends Booking {
   propertyTitle?: string
@@ -62,14 +63,14 @@ export const BookingsTab: React.FC = () => {
             propertyImage: property?.images?.[0]
           })
         } catch (err) {
-          console.error(`Error loading property ${booking.propertyId}:`, err)
+          logger.error(`Error loading property ${booking.propertyId}:`, err)
           bookingsWithDetails.push(booking)
         }
       }
 
       setMyBookings(bookingsWithDetails)
     } catch (err) {
-      console.error('Error loading my bookings:', err)
+      logger.error('Error loading my bookings:', err)
       setError(t.loading)
     }
   }, [user?.id, language])
@@ -113,7 +114,7 @@ export const BookingsTab: React.FC = () => {
 
       setIncomingRequests(allBookings)
     } catch (err) {
-      console.error('Error loading booking requests:', err)
+      logger.error('Error loading booking requests:', err)
     }
   }, [user?.id, language])
 
@@ -138,7 +139,7 @@ export const BookingsTab: React.FC = () => {
       await deleteDoc(doc(db, 'bookings', bookingId))
       setMyBookings(prev => prev.filter(b => b.id !== bookingId))
     } catch (err) {
-      console.error('Error canceling booking:', err)
+      logger.error('Error canceling booking:', err)
       setError(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Не удалось отменить бронирование' : 'Bölməni ləğv etmək olmadı')
     } finally {
       setIsCanceling(null)

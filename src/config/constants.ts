@@ -8,6 +8,7 @@
 //        isModerator(token)
 
 import { IdTokenResult } from 'firebase/auth'
+import * as logger from '../services/logger'
 
 /**
  * Check if user is a moderator via Firebase custom claims
@@ -21,6 +22,6 @@ export const isModerator = (token?: IdTokenResult | null): boolean => {
 
 // DEPRECATED: Use isModerator(token) instead
 export const isModeratorEmail = (_email?: string | null): boolean => {
-	console.warn('isModeratorEmail is deprecated. Use isModerator(token) instead.')
+	logger.warn('isModeratorEmail is deprecated. Use isModerator(token) instead.')
 	return false
 }

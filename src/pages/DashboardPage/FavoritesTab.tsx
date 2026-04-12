@@ -4,6 +4,7 @@ import { PropertyCard } from '../../components'
 import { Property } from '../../types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../../config/firebase'
+import * as logger from '../../services/logger'
 
 export const FavoritesTab: React.FC = () => {
   const { language } = useLanguage()
@@ -34,7 +35,7 @@ export const FavoritesTab: React.FC = () => {
 
         setFavorites(favoritedProperties)
       } catch (err) {
-        console.error('Error loading favorites:', err)
+        logger.error('Error loading favorites:', err)
         setError(
           language === 'en'
             ? 'Error loading favorites'

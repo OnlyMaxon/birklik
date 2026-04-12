@@ -15,7 +15,7 @@ const MAX_AVATAR_SIZE = 5 * 1024 * 1024 // 5MB
  * @returns {FileValidationResult} Validation result with valid flag and optional error message
  * @example
  * const result = validatePropertyImage(imageFile)
- * if (!result.valid) console.error(result.error)
+ * if (!result.valid) logger.error(result.error)
  */
 export const validatePropertyImage = (file: File): FileValidationResult => {
   // Check file type

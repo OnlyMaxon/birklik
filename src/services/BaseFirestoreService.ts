@@ -11,6 +11,7 @@ import {
   QueryConstraint
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
+import * as logger from './logger'
 
 /**
  * Base Firestore Service - Provides reusable CRUD operations for any Firestore collection
@@ -50,7 +51,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       }
       return null
     } catch (error) {
-      console.error(`Error getting ${this.collectionName}:`, error)
+      logger.error(`Error getting ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -77,7 +78,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
         ...doc.data()
       })) as unknown as T[]
     } catch (error) {
-      console.error(`Error querying ${this.collectionName}:`, error)
+      logger.error(`Error querying ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -97,7 +98,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
         ...doc.data()
       })) as unknown as T[]
     } catch (error) {
-      console.error(`Error getting all ${this.collectionName}:`, error)
+      logger.error(`Error getting all ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -121,7 +122,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
         ...doc.data()
       })) as unknown as T[]
     } catch (error) {
-      console.error(`Error finding ${this.collectionName} by ${field}:`, error)
+      logger.error(`Error finding ${this.collectionName} by ${field}:`, error)
       throw error
     }
   }
@@ -143,7 +144,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       const docRef = await addDoc(collection(db, this.collectionName), data)
       return { id: docRef.id, ...data } as unknown as T
     } catch (error) {
-      console.error(`Error creating ${this.collectionName}:`, error)
+      logger.error(`Error creating ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -164,7 +165,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       const updated = await this.getById(id)
       return updated || ({ id, ...data } as unknown as T)
     } catch (error) {
-      console.error(`Error setting ${this.collectionName}:`, error)
+      logger.error(`Error setting ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -184,7 +185,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       await updateDoc(docRef, updates as any)
       return true
     } catch (error) {
-      console.error(`Error updating ${this.collectionName}:`, error)
+      logger.error(`Error updating ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -203,7 +204,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       await deleteDoc(docRef)
       return true
     } catch (error) {
-      console.error(`Error deleting ${this.collectionName}:`, error)
+      logger.error(`Error deleting ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -228,7 +229,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       }
       return created
     } catch (error) {
-      console.error(`Error batch creating ${this.collectionName}:`, error)
+      logger.error(`Error batch creating ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -249,7 +250,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       const snapshot = await getDocs(q)
       return snapshot.docs.length
     } catch (error) {
-      console.error(`Error counting ${this.collectionName}:`, error)
+      logger.error(`Error counting ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -269,7 +270,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       }
       return true
     } catch (error) {
-      console.error(`Error batch deleting ${this.collectionName}:`, error)
+      logger.error(`Error batch deleting ${this.collectionName}:`, error)
       throw error
     }
   }
@@ -288,7 +289,7 @@ export class BaseFirestoreService<T extends Record<string, any>> {
       const docSnap = await getDoc(docRef)
       return docSnap.exists()
     } catch (error) {
-      console.error(`Error checking existence in ${this.collectionName}:`, error)
+      logger.error(`Error checking existence in ${this.collectionName}:`, error)
       throw error
     }
   }

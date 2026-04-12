@@ -69,15 +69,29 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow read: if request.auth != null;
+      // Read: user can read their own bookings OR property owner can read bookings for their properties
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId
+        || isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
+      );
       
+      // Create: user booking must be created by the authenticated user
       allow create: if request.auth != null 
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'active'
+        && request.resource.data.keys().hasAny(['propertyId', 'checkInDate', 'checkOutDate', 'totalPrice', 'nights', 'userName', 'userEmail', 'userPhone']);
       
-      allow update: if request.auth != null;
+      // Update: only user or property owner can update, and only status field
+      allow update: if request.auth != null && (
+        (request.auth.uid == resource.data.userId && request.resource.data.status != resource.data.status)
+        || (isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId) && request.resource.data.status != resource.data.status)
+      );
       
+      // Delete: user can cancel their own booking, or property owner/moderator can delete
       allow delete: if request.auth != null && (
-        request.auth.uid == resource.data.userId || isModerator()
+        request.auth.uid == resource.data.userId 
+        || isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
+        || isModerator()
       );
     }
   }
