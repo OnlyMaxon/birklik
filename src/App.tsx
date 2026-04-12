@@ -20,8 +20,36 @@ const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage').then((mod) =>
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, firebaseUser } = useAuth()
+  const [emailVerified, setEmailVerified] = React.useState<boolean | null>(null)
+  const [checkingEmail, setCheckingEmail] = React.useState(true)
 
-  if (isLoading) {
+  React.useEffect(() => {
+    const checkEmailVerification = async () => {
+      if (!firebaseUser) {
+        setCheckingEmail(false)
+        return
+      }
+
+      try {
+        // Reload user to get latest emailVerified status
+        await firebaseUser.reload()
+        setEmailVerified(firebaseUser.emailVerified)
+      } catch (error) {
+        console.error('Error checking email verification:', error)
+        setEmailVerified(firebaseUser.emailVerified)
+      } finally {
+        setCheckingEmail(false)
+      }
+    }
+
+    if (isAuthenticated && firebaseUser) {
+      checkEmailVerification()
+    } else {
+      setCheckingEmail(false)
+    }
+  }, [firebaseUser, isAuthenticated])
+
+  if (isLoading || checkingEmail) {
     return <Loading fullScreen message="Loading..." brand />
   }
 
@@ -30,7 +58,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   // Check if email is verified
-  if (!firebaseUser?.emailVerified) {
+  if (emailVerified === false) {
     return <Navigate to="/verify-email" replace />
   }
 
