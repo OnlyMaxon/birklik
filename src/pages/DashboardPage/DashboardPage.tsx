@@ -280,6 +280,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   React.useEffect(() => {
     console.log('[DashboardPage] newListing.city updated to:', newListing.city)
+    console.log('[DashboardPage] full newListing:', newListing)
   }, [newListing.city])
 
   const selectedFilePreviews = React.useMemo(
@@ -1280,7 +1281,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           city={newListing.city}
                           locationTags={newListing.locationTags}
                           locationCategory={newListing.locationCategory}
-                          onCityChange={(city) => setNewListing({...newListing, city, locationTags: []})}
+                          onCityChange={(city) => {
+                            console.log('[DashboardPage] onCityChange callback fired with:', city)
+                            setNewListing({...newListing, city, locationTags: []})
+                          }}
                           onLocationTagsChange={(tags) => setNewListing({...newListing, locationTags: tags})}
                           onLocationCategoryChange={(category) => setNewListing({...newListing, locationCategory: category, locationTags: []})}
                         />

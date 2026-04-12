@@ -32,7 +32,9 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
 
   const handleCityChange = (newCity: string) => {
     console.log('[CityLocationPicker] handleCityChange called with:', newCity)
+    console.log('[CityLocationPicker] About to call onCityChange callback')
     onCityChange(newCity)
+    console.log('[CityLocationPicker] Called onCityChange, now resetting tags')
     onLocationTagsChange([])
     setLocationSearch('')
   }
