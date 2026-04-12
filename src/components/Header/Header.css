@@ -160,6 +160,17 @@
   color: #fff8eb;
 }
 
+.header .btn-ghost:active,
+.header .btn-ghost:focus {
+  background-color: transparent;
+  outline: none;
+}
+
+.header .btn-ghost:focus-visible {
+  outline: 2px solid rgba(217, 174, 95, 0.4);
+  outline-offset: 2px;
+}
+
 .language-switcher {
   display: flex;
   gap: 0.22rem;
