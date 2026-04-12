@@ -8,10 +8,10 @@ import { FavoritesTab } from './FavoritesTab'
 import { BookingsTab } from './BookingsTab'
 import { BookmarkedTab } from '../../components/BookmarkedTab'
 import { NotificationsTab } from '../../components/NotificationsTab'
-import { CityLocationPicker } from '../../components'
+import { Filters } from '../../components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { isModerator } from '../../config/constants'
-import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
+import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, FilterState } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
 import './DashboardPage.css'
 
@@ -256,6 +256,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   }, [activeTab, user, loadListings])
 
   // Form state for adding listing
+  const initialFilters: FilterState = {
+    search: '',
+    checkIn: '',
+    checkOut: '',
+    minGuests: null,
+    maxGuests: null,
+    type: '',
+    district: '',
+    minPrice: null,
+    maxPrice: null,
+    rooms: null,
+    hasPool: null,
+    extraFilters: [],
+    nearbyPlaces: [],
+    city: 'Baku',
+    locationCategory: 'rayon',
+    locationTags: []
+  }
+
+  const [dashboardFilters, setDashboardFilters] = React.useState<FilterState>(initialFilters)
+
   const [newListing, setNewListing] = React.useState({
     title: '',
     description: '',
@@ -314,12 +335,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       contactEmail: user?.email || '',
       contactPhone: user?.phone || ''
     })
+    setDashboardFilters(initialFilters)
     setSelectedFiles([])
     setEditingListingId(null)
     setListingCoordinates(DEFAULT_COORDINATES)
     setLocationSearch('')
     setLocationSearchError('')
-  }, [user])
+  }, [user, initialFilters])
 
   React.useEffect(() => {
     if (activeTab === 'add' && !editingListingId && user) {
@@ -745,6 +767,26 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       city: property.city || 'Baku',
       contactEmail: property.owner.email || user.email,
       contactPhone: property.owner.phone || user.phone
+    })
+
+    // Sync filters state with the property data
+    setDashboardFilters({
+      search: '',
+      checkIn: '',
+      checkOut: '',
+      minGuests: property.minGuests || null,
+      maxGuests: property.maxGuests || null,
+      type: property.type,
+      district: property.district,
+      minPrice: null,
+      maxPrice: null,
+      rooms: property.rooms || null,
+      hasPool: (property.amenities || []).includes('pool') ? true : false,
+      extraFilters: property.extraFeatures || [],
+      nearbyPlaces: property.nearbyPlaces || [],
+      city: property.city || 'Baku',
+      locationCategory: property.locationCategory || 'rayon',
+      locationTags: property.locationTags || []
     })
 
     setListingCoordinates(property.coordinates || DEFAULT_COORDINATES)
@@ -1272,13 +1314,38 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </select>
                         </div>
 
-                        <CityLocationPicker
-                          city={newListing.city}
-                          locationTags={newListing.locationTags}
-                          locationCategory={newListing.locationCategory}
-                          onCityChange={(city) => setNewListing({...newListing, city, locationTags: []})}
-                          onLocationTagsChange={(tags) => setNewListing({...newListing, locationTags: tags})}
-                          onLocationCategoryChange={(category) => setNewListing({...newListing, locationCategory: category, locationTags: []})}
+                        <Filters
+                          filters={dashboardFilters}
+                          onFilterChange={(updatedFilters) => {
+                            setDashboardFilters(updatedFilters)
+                            setNewListing({
+                              ...newListing,
+                              city: updatedFilters.city,
+                              locationTags: updatedFilters.locationTags,
+                              locationCategory: updatedFilters.locationCategory,
+                              extraFeatures: updatedFilters.extraFilters,
+                              nearbyPlaces: updatedFilters.nearbyPlaces,
+                              type: updatedFilters.type as PropertyType | '',
+                              district: updatedFilters.district as District | '',
+                              rooms: updatedFilters.rooms ? String(updatedFilters.rooms) : ''
+                            })
+                          }}
+                          onClear={() => {
+                            setDashboardFilters(initialFilters)
+                            setNewListing(prev => ({
+                              ...prev,
+                              city: 'Baku',
+                              locationTags: [],
+                              locationCategory: 'rayon',
+                              extraFeatures: [],
+                              nearbyPlaces: [],
+                              type: '',
+                              district: '',
+                              rooms: ''
+                            }))
+                          }}
+                          hideFilterToggle={true}
+                          isOpen={true}
                         />
 
                         <div className="form-group full-width">
