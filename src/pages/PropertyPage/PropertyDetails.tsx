@@ -53,10 +53,15 @@ export const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, lang
             <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600 }}>{property.rooms}</p>
           </div>
         )}
-        {property.maxGuests && (
+        {(property.minGuests || property.maxGuests) && (
           <div style={{ padding: '1rem', background: '#f8f9fa', borderRadius: '8px', textAlign: 'center' }}>
             <p style={{ margin: '0 0 0.5rem 0', color: '#666', fontSize: '0.9rem' }}>{guestsLabel}</p>
-            <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600 }}>{property.maxGuests}</p>
+            <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600 }}>
+              {property.minGuests && property.maxGuests 
+                ? `${property.minGuests}-${property.maxGuests}`
+                : property.maxGuests || property.minGuests
+              }
+            </p>
           </div>
         )}
         {property.type && (

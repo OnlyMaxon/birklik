@@ -117,6 +117,20 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             </svg>
             {property.rooms}
           </span>
+          {property.minGuests || property.maxGuests ? (
+            <span className="feature" title={language === 'en' ? 'Guests' : language === 'ru' ? 'Гости' : 'Qonaqlar'}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              {property.minGuests && property.maxGuests 
+                ? `${property.minGuests}-${property.maxGuests}`
+                : property.maxGuests || property.minGuests
+              }
+            </span>
+          ) : null}
           <span className="feature">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>

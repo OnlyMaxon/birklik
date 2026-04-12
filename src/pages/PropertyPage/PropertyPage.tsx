@@ -762,7 +762,7 @@ export const PropertyPage: React.FC = () => {
                   {hasBooked && (
                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
                       <div style={{ flex: 1, padding: '0.5rem 0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        {language === 'en' ? '✓ Booked' : language === 'ru' ? '✓ Забронировано' : '✓ Bron edildi'}
+                        {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
                       </div>
                       <button
                         type="button"
