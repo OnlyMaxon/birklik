@@ -23,18 +23,10 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
   const { language } = useLanguage()
   const [locationSearch, setLocationSearch] = React.useState('')
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('[CityLocationPicker] city prop is NOW:', city, 'locationCategory:', locationCategory)
-    console.log('[CityLocationPicker] cityDistricts[city]:', cityDistricts[city as keyof typeof cityDistricts])
-    console.log('[CityLocationPicker] cityLocationOptions:', cityLocationOptions)
-  }, [city, locationCategory])
+
 
   const handleCityChange = (newCity: string) => {
-    console.log('[CityLocationPicker] handleCityChange called with:', newCity)
-    console.log('[CityLocationPicker] About to call onCityChange callback')
     onCityChange(newCity)
-    console.log('[CityLocationPicker] Called onCityChange, now resetting tags')
     onLocationTagsChange([])
     setLocationSearch('')
   }
@@ -73,13 +65,7 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
         az: district
       }))
 
-  React.useEffect(() => {
-    console.log('[CityLocationPicker] city/category changed:', city, locationCategory)
-  }, [city, locationCategory])
 
-  React.useEffect(() => {
-    console.log('[CityLocationPicker] filteredLocations:', filteredLocations.length, 'entries for city:', city)
-  }, [filteredLocations, city])
 
   return (
     <div className="form-group full-width">
@@ -88,7 +74,6 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
         {language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *
       </label>
       <select 
-        key={`city-select-${city}`}
         value={city || ''} 
         onChange={(e) => handleCityChange(e.target.value)} 
         required 
@@ -105,7 +90,7 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
 
       {/* Location Tags - only show if city selected and it has locations */}
       {city && (cityDistricts[city as keyof typeof cityDistricts] || city === 'Baku') && (
-        <div key={`locations-${city}-${locationCategory}`} className="location-tags-section-inner">
+        <div className="location-tags-section-inner">
           <div className="dashboard-section-head">
             <label>
               {language === 'en'
