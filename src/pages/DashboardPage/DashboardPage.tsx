@@ -278,6 +278,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     contactPhone: ''
   })
 
+  React.useEffect(() => {
+    console.log('[DashboardPage] newListing.city updated to:', newListing.city)
+  }, [newListing.city])
+
   const selectedFilePreviews = React.useMemo(
     () => selectedFiles.map((file) => ({
       name: file.name,

@@ -25,7 +25,9 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
 
   // Debug logging
   React.useEffect(() => {
-    console.log('[CityLocationPicker] city prop changed:', city, 'locationCategory:', locationCategory)
+    console.log('[CityLocationPicker] city prop is NOW:', city, 'locationCategory:', locationCategory)
+    console.log('[CityLocationPicker] cityDistricts[city]:', cityDistricts[city as keyof typeof cityDistricts])
+    console.log('[CityLocationPicker] cityLocationOptions:', cityLocationOptions)
   }, [city, locationCategory])
 
   const handleCityChange = (newCity: string) => {
