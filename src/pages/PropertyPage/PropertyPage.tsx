@@ -7,7 +7,7 @@ import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
-import { createBooking, hasUserBookedProperty, cancelBooking } from '../../services'
+import { createBooking, hasUserBookedProperty } from '../../services'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
 import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
 import { Booking } from '../../types'
@@ -57,13 +57,22 @@ export const PropertyPage: React.FC = () => {
   const [isFavoriting, setIsFavoriting] = React.useState(false)
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
-  const [lastBookingId, setLastBookingId] = React.useState<string | null>(null)
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
   const [hasBooked, setHasBooked] = React.useState(false)
   const [showContactInfo, setShowContactInfo] = React.useState(false)
   const [isBooking, setIsBooking] = React.useState(false)
   const [newComment, setNewComment] = React.useState('')
   const [isPostingComment, setIsPostingComment] = React.useState(false)
+  const [showNotification, setShowNotification] = React.useState(false)
+  const [notificationMessage, setNotificationMessage] = React.useState('')
+
+  // Auto-hide notification after 3 seconds
+  React.useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => setShowNotification(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showNotification])
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -117,22 +126,6 @@ export const PropertyPage: React.FC = () => {
   }
 
   // Handle calendar date click for range selection
-  const handleCancelBooking = async () => {
-    if (!lastBookingId) return
-    try {
-      const success = await cancelBooking(lastBookingId)
-      if (success) {
-        setHasBooked(false)
-        setLastBookingId(null)
-        setSelectedCheckIn('')
-        setSelectedCheckOut('')
-        alert(language === 'en' ? 'Booking cancelled' : language === 'ru' ? 'Бронирование отменено' : 'Rezervasyon ləğv edildi')
-      }
-    } catch (error) {
-      console.error('Cancel error:', error)
-      alert(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Ошибка отмены' : 'İptal edilə bilmədi')
-    }
-  }
 
   const handleCalendarDateClick = (dateISO: string | undefined) => {
     if (!dateISO) return
@@ -205,8 +198,16 @@ export const PropertyPage: React.FC = () => {
       const result = await createBooking(booking)
       if (result) {
         setHasBooked(true)
-        setLastBookingId(result.id)
         setShowContactInfo(true)
+        
+        // Show toast notification
+        const notifMsg = language === 'en' 
+          ? 'Your booking has been added to your cabinet' 
+          : language === 'ru' 
+            ? 'Ваше бронирование добавлено в ваш кабинет' 
+            : 'Sizin sifariş siz kabinetinizə əlavə edildI'
+        setNotificationMessage(notifMsg)
+        setShowNotification(true)
         
         // Auto-block the booked dates in calendar (mark as unavailable)
         try {
@@ -238,14 +239,14 @@ export const PropertyPage: React.FC = () => {
             relatedUserName: user.name
           })
         }
-        
-        alert(language === 'en' ? 'Booking confirmed!' : language === 'ru' ? 'Бронирование подтверждено!' : 'Sifariş təsdiq edildi!')
       } else {
-        alert(language === 'en' ? 'Error creating booking' : language === 'ru' ? 'Ошибка при создании бронирования' : 'Sifariş yaratılma xətası')
+        setNotificationMessage(language === 'en' ? 'Error creating booking' : language === 'ru' ? 'Ошибка при создании бронирования' : 'Sifariş yaratılma xətası')
+        setShowNotification(true)
       }
     } catch (error) {
       console.error('Error making booking:', error)
-      alert(language === 'en' ? 'Error making booking' : language === 'ru' ? 'Ошибка при бронировании' : 'Sifariş xətası')
+      setNotificationMessage(language === 'en' ? 'Error making booking' : language === 'ru' ? 'Ошибка при бронировании' : 'Sifariş xətası')
+      setShowNotification(true)
     } finally {
       setIsBooking(false)
     }
@@ -437,6 +438,40 @@ export const PropertyPage: React.FC = () => {
 
   return (
     <Layout>
+      {/* Toast Notification */}
+      {showNotification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#2e7d32',
+          color: 'white',
+          padding: '1rem 1.5rem',
+          borderRadius: '6px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+          zIndex: 1000,
+          animation: 'slideDown 0.3s ease-out',
+          maxWidth: '90%',
+          textAlign: 'center',
+          fontSize: '0.95rem',
+          fontWeight: '500'
+        }}>
+          {notificationMessage}
+        </div>
+      )}
+      <style>{`
+        @keyframes slideDown {
+          from {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
       <div className="property-page">
         <div className="container">
           {/* Breadcrumb */}
@@ -736,7 +771,7 @@ export const PropertyPage: React.FC = () => {
                     </div>
                   )}
 
-                  {selectedNights > 0 && !selectedRangeBusy && !hasBooked && (
+                  {selectedCheckIn && selectedCheckOut && selectedNights > 0 && !selectedRangeBusy && !hasBooked && (
                     <button
                       type="button"
                       onClick={handleMakeBooking}
@@ -755,33 +790,13 @@ export const PropertyPage: React.FC = () => {
                         transition: 'background-color 0.3s'
                       }}
                     >
-                      {isBooking ? (language === 'en' ? 'Booking...' : language === 'ru' ? 'Бронирование...' : 'Sifariş edilir...') : (language === 'en' ? 'Book Now' : language === 'ru' ? 'Забронировать' : 'Bron Et')}
+                      {isBooking ? (language === 'en' ? 'Booking...' : language === 'ru' ? 'Бронирование...' : 'Sifariş edilir...') : (language === 'en' ? 'Send Request' : language === 'ru' ? 'Отправить запрос' : 'Sorğu göndər')}
                     </button>
                   )}
 
                   {hasBooked && (
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-                      <div style={{ flex: 1, padding: '0.5rem 0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleCancelBooking}
-                        style={{
-                          flex: 1,
-                          padding: '0.5rem 0.75rem',
-                          backgroundColor: '#5b8fc4',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          fontSize: '0.9rem',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.3s'
-                        }}
-                      >
-                        {language === 'en' ? 'Cancel Booking' : language === 'ru' ? 'Отменить' : 'Ləğv et'}
-                      </button>
+                    <div style={{ padding: '0.5rem 0.75rem', marginTop: '0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                      {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
                     </div>
                   )}
 
