@@ -94,8 +94,14 @@ export const HomePage: React.FC = () => {
   }
 
   const handleFiltersOpen = () => {
-    setShowFilters(true)
-    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (!showFilters) {
+      // Если фильтры закрыты, открыть и прокрутить
+      setShowFilters(true)
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      // Если фильтры открыты, закрыть без прокрутки
+      setShowFilters(false)
+    }
   }
 
   const activeFilterCount = [
