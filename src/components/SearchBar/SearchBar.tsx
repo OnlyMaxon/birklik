@@ -46,7 +46,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   )
   const [isSuggestOpen, setIsSuggestOpen] = React.useState(false)
   const [citySearchText, setCitySearchText] = React.useState('')
+  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false)
+  const [tempCheckIn, setTempCheckIn] = React.useState(checkInValue)
+  const [tempCheckOut, setTempCheckOut] = React.useState(checkOutValue)
   const cityInputRef = React.useRef<HTMLInputElement>(null)
+  const datePickerRef = React.useRef<HTMLDivElement>(null)
 
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
@@ -136,6 +140,26 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setIsSuggestOpen(false)
   }
 
+  // Get today's date in YYYY-MM-DD format
+  const getTodayISO = (): string => new Date().toISOString().split('T')[0]
+
+  // Confirm date selection from picker
+  const handleDatePickerConfirm = () => {
+    setCheckIn(tempCheckIn)
+    setCheckOut(tempCheckOut)
+    onDateChange?.(tempCheckIn, tempCheckOut)
+    setIsDatePickerOpen(false)
+  }
+
+  // Cancel date selection
+  const handleDatePickerCancel = () => {
+    setTempCheckIn(checkIn)
+    setTempCheckOut(checkOut)
+    setIsDatePickerOpen(false)
+  }
+
+  const today = getTodayISO()
+
   return (
     <form className="search-bar-card" onSubmit={handleSubmit}>
       {/* Location Field */}
@@ -198,27 +222,140 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <div className="search-field-label">
             {isEnglish ? 'When?' : isRussian ? 'Когда?' : 'Nə vaxt?'}
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <input
-              type="date"
-              value={checkIn}
-              onChange={(e) => {
-                setCheckIn(e.target.value)
-                onDateChange?.(e.target.value, checkOut)
+          <button
+            type="button"
+            className="search-date-picker-button"
+            onClick={() => {
+              setTempCheckIn(checkIn)
+              setTempCheckOut(checkOut)
+              setIsDatePickerOpen(true)
+            }}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              backgroundColor: '#f5f5f5',
+              cursor: 'pointer',
+              fontSize: '0.95rem',
+              fontWeight: '500',
+              color: checkIn && checkOut ? '#2d2420' : '#999'
+            }}
+          >
+            {checkIn && checkOut 
+              ? `${checkIn.split('-').reverse().join('.')} → ${checkOut.split('-').reverse().join('.')}`
+              : (isEnglish ? 'Select dates' : isRussian ? 'Выберите даты' : 'Tarixləri seçin')
+            }
+          </button>
+
+          {/* Date Picker Modal */}
+          {isDatePickerOpen && (
+            <div 
+              className="search-date-picker-modal"
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'flex-end',
+                zIndex: 1000
               }}
-              style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid #e0e0e0' }}
-            />
-            <span style={{ color: '#999' }}>→</span>
-            <input
-              type="date"
-              value={checkOut}
-              onChange={(e) => {
-                setCheckOut(e.target.value)
-                onDateChange?.(checkIn, e.target.value)
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  handleDatePickerCancel()
+                }
               }}
-              style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid #e0e0e0' }}
-            />
-          </div>
+            >
+              <div
+                ref={datePickerRef}
+                style={{
+                  backgroundColor: 'white',
+                  width: '100%',
+                  maxWidth: '500px',
+                  borderRadius: '16px 16px 0 0',
+                  padding: '1.5rem',
+                  maxHeight: '80vh',
+                  overflowY: 'auto'
+                }}
+              >
+                {/* Simple mini calendar picker */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem' }}>
+                    {isEnglish ? 'Check-in date' : isRussian ? 'Дата заезда' : 'Giriş tarixi'}
+                  </label>
+                  <input
+                    type="date"
+                    value={tempCheckIn}
+                    onChange={(e) => setTempCheckIn(e.target.value)}
+                    min={today}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      fontSize: '1rem'
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem' }}>
+                    {isEnglish ? 'Check-out date' : isRussian ? 'Дата выезда' : 'Çıxış tarixi'}
+                  </label>
+                  <input
+                    type="date"
+                    value={tempCheckOut}
+                    onChange={(e) => setTempCheckOut(e.target.value)}
+                    min={tempCheckIn || today}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      fontSize: '1rem'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleDatePickerCancel}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      backgroundColor: '#f5f5f5',
+                      cursor: 'pointer',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {isEnglish ? 'Cancel' : isRussian ? 'Отмена' : 'Ləğv et'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDatePickerConfirm}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      border: 'none',
+                      borderRadius: '8px',
+                      backgroundColor: '#b7925d',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {isEnglish ? 'Apply' : isRussian ? 'Применить' : 'Tətbiq et'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
