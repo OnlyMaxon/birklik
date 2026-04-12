@@ -1324,7 +1324,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
               {activeTab === 'add' && (
                 <div className="tab-content fade-in">
                   <h2>{editingListingId ? t.dashboard.edit : t.dashboard.addListing}</h2>
-                  {error && <div className="error-message">{error}</div>}
                   {!newListing.listingTier && !error && (
                     <div style={{
                       padding: '12px 16px',
@@ -1747,6 +1746,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </p>
                         </div>
                       </div>
+
+                      {error && <div className="error-message" style={{ marginBottom: '1.5rem' }}>{error}</div>}
 
                       <div className="form-actions">
                         <button type="button" className="btn btn-ghost" onClick={() => {
