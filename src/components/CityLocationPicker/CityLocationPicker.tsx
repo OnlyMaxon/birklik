@@ -23,7 +23,13 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
   const { language } = useLanguage()
   const [locationSearch, setLocationSearch] = React.useState('')
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('[CityLocationPicker] city prop changed:', city, 'locationCategory:', locationCategory)
+  }, [city, locationCategory])
+
   const handleCityChange = (newCity: string) => {
+    console.log('[CityLocationPicker] handleCityChange called with:', newCity)
     onCityChange(newCity)
     onLocationTagsChange([])
     setLocationSearch('')
@@ -63,13 +69,22 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
         az: district
       }))
 
+  React.useEffect(() => {
+    console.log('[CityLocationPicker] filteredLocations:', filteredLocations, 'city:', city, 'locationCategory:', locationCategory)
+  }, [city, locationCategory, filteredLocations, locationSearch])
+
   return (
     <div className="form-group full-width">
       {/* City Select */}
       <label>
         {language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'} *
       </label>
-      <select value={city} onChange={(e) => handleCityChange(e.target.value)} required style={{ marginBottom: city ? '1.5rem' : 0 }}>
+      <select 
+        key={`city-select-${city}`}
+        value={city || ''} 
+        onChange={(e) => handleCityChange(e.target.value)} 
+        required 
+        style={{ marginBottom: city ? '1.5rem' : 0 }}>
         <option value="">
           {language === 'en' ? 'Select a city' : language === 'ru' ? 'Выберите город' : 'Şəhər seçin'}
         </option>
