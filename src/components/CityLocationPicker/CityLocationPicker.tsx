@@ -36,11 +36,33 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
     setLocationSearch('')
   }
 
-  const handleLocationToggle = (tag: string) => {
-    const updated = locationTags.includes(tag)
-      ? locationTags.filter((t) => t !== tag)
-      : [...locationTags, tag]
-    onLocationTagsChange(updated)
+  const handleLocationToggle = (tag: string, category: LocationCategory) => {
+    // For Baku: only allow 1 rayon + 1 metro (mutually exclusive within category)
+    // For other cities: only allow 1 rayon
+    if (city === 'Baku') {
+      // Get all rayons and metros currently selected
+      const rayonOptions = cityLocationOptions['rayon'] || []
+      const metroOptions = cityLocationOptions['metro'] || []
+      
+      const selectedRayons = locationTags.filter(t => rayonOptions.some(opt => opt.key === t))
+      const selectedMetros = locationTags.filter(t => metroOptions.some(opt => opt.key === t))
+
+      if (category === 'rayon') {
+        // When selecting a rayon, deselect any other rayon and keep metro
+        const newRayons = selectedRayons.includes(tag) ? [] : [tag]
+        const updated = [...newRayons, ...selectedMetros]
+        onLocationTagsChange(updated)
+      } else {
+        // When selecting metro, deselect any other metro and keep rayon
+        const newMetros = selectedMetros.includes(tag) ? [] : [tag]
+        const updated = [...selectedRayons, ...newMetros]
+        onLocationTagsChange(updated)
+      }
+    } else {
+      // For other cities: only rayons allowed, max 1
+      const updated = locationTags.includes(tag) ? [] : [tag]
+      onLocationTagsChange(updated)
+    }
   }
 
   const getCityLabel = (cityObj: { value: string; en: string; ru: string; az: string }) => {
@@ -176,7 +198,7 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
                 <input
                   type="checkbox"
                   checked={locationTags.includes(option.key)}
-                  onChange={() => handleLocationToggle(option.key)}
+                  onChange={() => handleLocationToggle(option.key, locationCategory)}
                 />
                 <span>{getLocationLabel(option)}</span>
               </label>

@@ -431,7 +431,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     // Validate location/district selection
     if (!newListing.locationTags || newListing.locationTags.length === 0) {
-      setError(language === 'en' ? 'Please select a location (district/metro)' : language === 'ru' ? 'Выберите локацию (район/метро)' : 'Lokasiya seçin (rayon/metro)')
+      if (newListing.city === 'Baku') {
+        setError(language === 'en' ? 'Please select a district or metro' : language === 'ru' ? 'Выберите район или метро' : 'Rayon yoxsa metro seçin')
+      } else {
+        setError(language === 'en' ? 'Please select a district' : language === 'ru' ? 'Выберите район' : 'Rayon seçin')
+      }
       setIsSubmitting(false)
       return
     }
@@ -466,6 +470,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
       setError(language === 'en' ? 'Maximum 4 images for Standard plan' : language === 'ru' ? 'Максимум 4 фото для тарифа Стандарт' : 'Standart paket üçün maksimum 4 şəkil yükləmək olar')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (selectedFiles.length < 2) {
+      setError(language === 'en' ? 'Please add at least 2 photos' : language === 'ru' ? 'Пожалуйста добавьте минимум 2 фотографии' : 'Lütfən ən azı 2 foto əlavə edin')
       setIsSubmitting(false)
       return
     }
