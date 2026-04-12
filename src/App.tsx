@@ -8,6 +8,7 @@ const HomePage = React.lazy(() => import('./pages/HomePage').then((mod) => ({ de
 const PropertyPage = React.lazy(() => import('./pages/PropertyPage').then((mod) => ({ default: mod.PropertyPage })))
 const LoginPage = React.lazy(() => import('./pages/LoginPage').then((mod) => ({ default: mod.LoginPage })))
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage').then((mod) => ({ default: mod.RegisterPage })))
+const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage').then((mod) => ({ default: mod.ResetPasswordPage })))
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then((mod) => ({ default: mod.TermsPage })))
@@ -114,6 +115,7 @@ function App() {
               <RegisterPage />
             </AuthRoute>
           } />
+          <Route path="/auth/action" element={<ResetPasswordPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <DashboardPage />
