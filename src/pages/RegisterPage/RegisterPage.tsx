@@ -2,6 +2,8 @@ import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
+import { sendEmailVerification } from 'firebase/auth'
+import { auth } from '../../config/firebase'
 import '../../styles/AuthPages.css'
 
 export const RegisterPage: React.FC = () => {
@@ -108,7 +110,21 @@ export const RegisterPage: React.FC = () => {
     )
     
     if (result.success) {
-      navigate('/dashboard')
+      // Send verification email
+      try {
+        const user = auth.currentUser
+        if (user) {
+          await sendEmailVerification(user, {
+            url: `${window.location.origin}/dashboard`,
+            handleCodeInApp: true
+          })
+        }
+      } catch (err) {
+        console.error('Error sending verification email:', err)
+      }
+      
+      // Redirect to verify email page
+      navigate('/verify-email')
     } else {
       setError(getErrorMessage(result.error || ''))
     }

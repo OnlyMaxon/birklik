@@ -9,6 +9,7 @@ const PropertyPage = React.lazy(() => import('./pages/PropertyPage').then((mod) 
 const LoginPage = React.lazy(() => import('./pages/LoginPage').then((mod) => ({ default: mod.LoginPage })))
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage').then((mod) => ({ default: mod.RegisterPage })))
 const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage').then((mod) => ({ default: mod.ResetPasswordPage })))
+const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage').then((mod) => ({ default: mod.VerifyEmailPage })))
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then((mod) => ({ default: mod.TermsPage })))
@@ -18,7 +19,7 @@ const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage').then((mod) =>
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, firebaseUser } = useAuth()
 
   if (isLoading) {
     return <Loading fullScreen message="Loading..." brand />
@@ -26,6 +27,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  // Check if email is verified
+  if (!firebaseUser?.emailVerified) {
+    return <Navigate to="/verify-email" replace />
   }
 
   return <>{children}</>
@@ -115,6 +121,7 @@ function App() {
               <RegisterPage />
             </AuthRoute>
           } />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/auth/action" element={<ResetPasswordPage />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
