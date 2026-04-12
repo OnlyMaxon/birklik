@@ -7,7 +7,7 @@ import { ImageGallery, PropertyMap, Loading } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
-import { createBooking, hasUserBookedProperty, cancelBooking } from '../../services'
+import { createBooking, hasUserBookedProperty } from '../../services'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
 import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
 import { Booking } from '../../types'
@@ -57,13 +57,14 @@ export const PropertyPage: React.FC = () => {
   const [isFavoriting, setIsFavoriting] = React.useState(false)
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
-  const [lastBookingId, setLastBookingId] = React.useState<string | null>(null)
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
   const [hasBooked, setHasBooked] = React.useState(false)
   const [showContactInfo, setShowContactInfo] = React.useState(false)
   const [isBooking, setIsBooking] = React.useState(false)
   const [newComment, setNewComment] = React.useState('')
   const [isPostingComment, setIsPostingComment] = React.useState(false)
+  const [showNotification, setShowNotification] = React.useState(false)
+  const [notificationMessage, setNotificationMessage] = React.useState('')
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -117,22 +118,7 @@ export const PropertyPage: React.FC = () => {
   }
 
   // Handle calendar date click for range selection
-  const handleCancelBooking = async () => {
-    if (!lastBookingId) return
-    try {
-      const success = await cancelBooking(lastBookingId)
-      if (success) {
-        setHasBooked(false)
-        setLastBookingId(null)
-        setSelectedCheckIn('')
-        setSelectedCheckOut('')
-        alert(language === 'en' ? 'Booking cancelled' : language === 'ru' ? 'Бронирование отменено' : 'Rezervasyon ləğv edildi')
-      }
-    } catch (error) {
-      console.error('Cancel error:', error)
-      alert(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Ошибка отмены' : 'İptal edilə bilmədi')
-    }
-  }
+
 
   const handleCalendarDateClick = (dateISO: string | undefined) => {
     if (!dateISO) return
@@ -205,8 +191,13 @@ export const PropertyPage: React.FC = () => {
       const result = await createBooking(booking)
       if (result) {
         setHasBooked(true)
-        setLastBookingId(result.id)
+
         setShowContactInfo(true)
+        
+        // Show notification
+        setNotificationMessage(language === 'en' ? 'Your booking has been added to your account' : language === 'ru' ? 'Ваше бронирование добавлено в ваш кабинет' : 'Sizin sifariş hesabınıza əlavə edildi')
+        setShowNotification(true)
+        setTimeout(() => setShowNotification(false), 3000)
         
         // Auto-block the booked dates in calendar (mark as unavailable)
         try {
@@ -238,8 +229,6 @@ export const PropertyPage: React.FC = () => {
             relatedUserName: user.name
           })
         }
-        
-        alert(language === 'en' ? 'Booking confirmed!' : language === 'ru' ? 'Бронирование подтверждено!' : 'Sifariş təsdiq edildi!')
       } else {
         alert(language === 'en' ? 'Error creating booking' : language === 'ru' ? 'Ошибка при создании бронирования' : 'Sifariş yaratılma xətası')
       }
@@ -437,6 +426,17 @@ export const PropertyPage: React.FC = () => {
 
   return (
     <Layout>
+      {/* Notification Toast */}
+      {showNotification && (
+        <div className="booking-notification">
+          <div className="notification-content">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '0.5rem', flexShrink: 0 }}>
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>{notificationMessage}</span>
+          </div>
+        </div>
+      )}
       <div className="property-page">
         <div className="container">
           {/* Breadcrumb */}
@@ -760,28 +760,8 @@ export const PropertyPage: React.FC = () => {
                   )}
 
                   {hasBooked && (
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-                      <div style={{ flex: 1, padding: '0.5rem 0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleCancelBooking}
-                        style={{
-                          flex: 1,
-                          padding: '0.5rem 0.75rem',
-                          backgroundColor: '#5b8fc4',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          fontSize: '0.9rem',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.3s'
-                        }}
-                      >
-                        {language === 'en' ? 'Cancel Booking' : language === 'ru' ? 'Отменить' : 'Ləğv et'}
-                      </button>
+                    <div style={{ padding: '0.5rem 0.75rem', marginTop: '0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                      {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
                     </div>
                   )}
 
