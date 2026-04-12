@@ -276,7 +276,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #b7925d;
+  background: #8b6f47;
   color: white;
   border: none;
   border-radius: 10px;
@@ -285,10 +285,17 @@
   min-height: 48px;
   -webkit-appearance: none;
   -webkit-border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(139, 111, 71, 0.3);
+}
+
+.search-btn-main:hover {
+  background: #7a603f;
+  box-shadow: 0 4px 12px rgba(139, 111, 71, 0.4);
 }
 
 .search-btn-main:active {
-  background: #9b7a48;
+  background: #6a5035;
+  box-shadow: 0 2px 4px rgba(139, 111, 71, 0.3);
 }
 
 /* Mobile Optimizations */

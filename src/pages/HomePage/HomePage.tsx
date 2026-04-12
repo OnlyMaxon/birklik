@@ -35,10 +35,12 @@ export const HomePage: React.FC = () => {
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
+  const [isPullRefreshing, setIsPullRefreshing] = React.useState(false)
   const resultsRef = React.useRef<HTMLElement | null>(null)
+  const [touchStartY, setTouchStartY] = React.useState(0)
 
   React.useEffect(() => {
-    const loadProperties = async () => {
+    const loadPropertiesAsync = async () => {
       setIsLoading(true)
       setError('')
 
@@ -50,8 +52,47 @@ export const HomePage: React.FC = () => {
       setIsLoading(false)
     }
 
-    loadProperties()
+    loadPropertiesAsync()
   }, [])
+
+  // Pull-to-refresh functionality
+  React.useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      setTouchStartY(e.touches[0].clientY)
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentY = e.touches[0].clientY
+      const diff = currentY - touchStartY
+
+      // Only trigger if user pulls down from top of page
+      if (diff > 80 && window.scrollY === 0 && !isPullRefreshing) {
+        setIsPullRefreshing(true)
+        
+        const loadPropertiesAsync = async () => {
+          setIsLoading(true)
+          setError('')
+          const result = await getProperties()
+          if (result.properties.length === 0) {
+            setError('')
+          }
+          setProperties(result.properties)
+          setIsLoading(false)
+          setTimeout(() => setIsPullRefreshing(false), 600)
+        }
+        
+        loadPropertiesAsync()
+      }
+    }
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [touchStartY, isPullRefreshing])
 
   React.useEffect(() => {
     const onResize = () => {
