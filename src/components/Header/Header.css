@@ -349,30 +349,29 @@
   .nav {
     position: fixed;
     top: var(--header-height);
-    left: 50%;
-    transform: translateX(-50%) translateY(-16px) scale(0.98);
-    width: calc(100% - 1.5rem);
-    max-width: 100%;
+    left: 0.75rem;
+    right: 0.75rem;
     bottom: auto;
     max-height: calc(100dvh - 88px);
     background: linear-gradient(170deg, #3d3124 0%, #2d241b 100%);
     flex-direction: column;
     align-items: stretch;
     padding: 1rem;
-    margin: 0;
     gap: 0.5rem;
     border-radius: 16px;
     border: 1px solid rgba(236, 219, 191, 0.24);
+    transform: translateY(-16px) scale(0.98);
     opacity: 0;
     visibility: hidden;
     transition: transform 0.24s ease, opacity 0.24s ease, visibility 0.24s;
     box-shadow: var(--shadow-lg);
     overflow-y: auto;
     z-index: 150;
+    margin: 0 auto;
   }
 
   .nav-open {
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
     opacity: 1;
     visibility: visible;
   }
