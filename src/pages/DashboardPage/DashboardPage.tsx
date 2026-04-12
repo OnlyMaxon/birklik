@@ -9,7 +9,7 @@ import { BookingsTab } from './BookingsTab'
 import { BookmarkedTab } from '../../components/BookmarkedTab'
 import { NotificationsTab } from '../../components/NotificationsTab'
 import { CityLocationPicker } from '../../components'
-import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, districts } from '../../data'
+import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '../../services'
@@ -420,16 +420,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    // Validate district
-    if (!newListing.district) {
-      setError(language === 'en' ? 'Please select a district' : language === 'ru' ? 'Выберите район' : 'Rayon seçin')
-      setIsSubmitting(false)
-      return
-    }
+
 
     // Validate city
     if (!newListing.city) {
       setError(language === 'en' ? 'Please select a city' : language === 'ru' ? 'Выберите город' : 'Şəhər seçin')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate location/district selection
+    if (!newListing.locationTags || newListing.locationTags.length === 0) {
+      setError(language === 'en' ? 'Please select a location (district/metro)' : language === 'ru' ? 'Выберите локацию (район/метро)' : 'Lokasiya seçin (rayon/metro)')
       setIsSubmitting(false)
       return
     }
@@ -496,9 +498,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     const normalizedAddress = newListing.listingTier === 'free' ? 'Lokasiya gizlidir' : newListing.address
     const listingStatus = 'pending'
 
+    // Use first location tag as district
+    const selectedDistrict = (newListing.locationTags && newListing.locationTags.length > 0) 
+      ? (newListing.locationTags[0] as District)
+      : 'baku' // Default fallback
+
     const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
       type: newListing.type,
-      district: newListing.district,
+      district: selectedDistrict,
       price: {
         daily: dailyPrice,
         weekly: dailyPrice * 6,
@@ -1392,20 +1399,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             <option value="">{t.form.selectType}</option>
                             {propertyTypes.map(type => (
                               <option key={type} value={type}>{t.propertyTypes[type]}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="form-group">
-                          <label>{language === 'en' ? 'District' : language === 'ru' ? 'Район' : 'Rayon'} *</label>
-                          <select
-                            value={newListing.district}
-                            onChange={(e) => setNewListing({...newListing, district: e.target.value as District})}
-                            required
-                          >
-                            <option value="">{language === 'en' ? 'Select district' : language === 'ru' ? 'Выберите район' : 'Rayon seçin'}</option>
-                            {districts.map(district => (
-                              <option key={district} value={district}>{district}</option>
                             ))}
                           </select>
                         </div>
