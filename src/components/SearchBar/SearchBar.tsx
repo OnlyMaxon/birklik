@@ -308,13 +308,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             style={{
               width: '100%',
               padding: '0.75rem',
-              border: '1px solid #e0e0e0',
+              border: '1px solid #b7925d',
               borderRadius: '8px',
-              backgroundColor: '#f5f5f5',
+              backgroundColor: '#fff5eb',
               cursor: 'pointer',
               fontSize: '0.95rem',
-              fontWeight: '500',
-              color: checkIn && checkOut ? '#2d2420' : '#999'
+              fontWeight: '600',
+              color: checkIn && checkOut ? '#b7925d' : '#999',
+              transition: 'all 0.3s ease'
             }}
           >
             {checkIn && checkOut 
