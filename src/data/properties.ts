@@ -453,11 +453,9 @@ export const filterProperties = (
     }
 
     if (filters.locationTags && filters.locationTags.length > 0) {
+      // Check if property has any of the selected location tags
+      // This works regardless of locationCategory - user can select from any category
       if (!includesAny(property.locationTags, filters.locationTags)) return false
-
-      if (filters.locationCategory && property.locationCategory && property.locationCategory !== filters.locationCategory) {
-        return false
-      }
     }
 
     return true

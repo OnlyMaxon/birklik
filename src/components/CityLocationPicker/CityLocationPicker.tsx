@@ -33,7 +33,6 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
 
   const handleCategoryChange = (category: LocationCategory) => {
     onLocationCategoryChange?.(category)
-    onLocationTagsChange([])
     setLocationSearch('')
   }
 
@@ -53,12 +52,34 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
   }
 
   const filteredLocations = city === 'Baku'
-    ? cityLocationOptions[locationCategory]
-        ?.filter((option) =>
+    ? (() => {
+        // For Baku, show locations from current category but also include selected tags from other categories
+        const currentCategoryOptions = cityLocationOptions[locationCategory]?.filter((option) =>
           !locationSearch ||
           option.az.toLowerCase().includes(locationSearch.toLowerCase()) ||
           option.en.toLowerCase().includes(locationSearch.toLowerCase())
         ) || []
+        
+        // Also get the other category to find selected tags
+        const otherCategory = locationCategory === 'rayon' ? 'metro' : 'rayon'
+        const otherCategoryOptions = cityLocationOptions[otherCategory] || []
+        
+        // Find any selected tags from the other category
+        const selectedFromOther = locationTags.filter(tag => 
+          otherCategoryOptions.some(opt => opt.key === tag)
+        )
+        
+        // Combine: show current category options + any selected from other category
+        const combined = [...currentCategoryOptions]
+        selectedFromOther.forEach(tag => {
+          if (!combined.find(opt => opt.key === tag)) {
+            const foundOption = otherCategoryOptions.find(opt => opt.key === tag)
+            if (foundOption) combined.push(foundOption)
+          }
+        })
+        
+        return combined
+      })()
     : (cityDistricts[city as keyof typeof cityDistricts] || []).map((district) => ({
         key: district,
         en: district,

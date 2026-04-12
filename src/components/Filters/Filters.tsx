@@ -160,7 +160,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
             locationCategory={filters.locationCategory}
             onCityChange={(city) => onFilterChange({ ...filters, city, locationTags: [], locationCategory: 'rayon' })}
             onLocationTagsChange={(tags) => onFilterChange({ ...filters, locationTags: tags })}
-            onLocationCategoryChange={(category) => onFilterChange({ ...filters, locationCategory: category, locationTags: [] })}
+            onLocationCategoryChange={(category) => onFilterChange({ ...filters, locationCategory: category })}
           />
         </div>
 

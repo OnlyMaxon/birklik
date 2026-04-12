@@ -9,7 +9,7 @@ import { BookingsTab } from './BookingsTab'
 import { BookmarkedTab } from '../../components/BookmarkedTab'
 import { NotificationsTab } from '../../components/NotificationsTab'
 import { CityLocationPicker } from '../../components'
-import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
+import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, districts } from '../../data'
 import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '../../services'
@@ -396,12 +396,57 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const handleAddListing = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!user || !newListing.type || !newListing.district) {
+    setIsSubmitting(true)
+    setError('')
+
+    // Check if user is authenticated
+    if (!user) {
+      setError(language === 'en' ? 'Please sign in to add a listing' : language === 'ru' ? 'Пожалуйста, войдите чтобы добавить объявление' : 'Elan əlavə etmək üçün giriş yapın')
+      setIsSubmitting(false)
       return
     }
 
-    setIsSubmitting(true)
-    setError('')
+    // Validate title
+    if (!newListing.title.trim()) {
+      setError(language === 'en' ? 'Please enter a title' : language === 'ru' ? 'Введите заголовок' : 'Başlıq daxil edin')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate type
+    if (!newListing.type) {
+      setError(language === 'en' ? 'Please select property type' : language === 'ru' ? 'Выберите тип недвижимости' : 'Mülk tipini seçin')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate district
+    if (!newListing.district) {
+      setError(language === 'en' ? 'Please select a district' : language === 'ru' ? 'Выберите район' : 'Rayon seçin')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate city
+    if (!newListing.city) {
+      setError(language === 'en' ? 'Please select a city' : language === 'ru' ? 'Выберите город' : 'Şəhər seçin')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate price
+    if (!newListing.price || Number(newListing.price) <= 0) {
+      setError(language === 'en' ? 'Please enter a valid price' : language === 'ru' ? 'Введите корректную цену' : 'Doğru qiyməti daxil edin')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate rooms
+    if (!newListing.rooms || Number(newListing.rooms) <= 0) {
+      setError(language === 'en' ? 'Please enter number of rooms' : language === 'ru' ? 'Укажите количество комнат' : 'Otaq sayını daxil edin')
+      setIsSubmitting(false)
+      return
+    }
 
     // Validate contact information
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -432,6 +477,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     if (newListing.listingTier !== 'free' && !newListing.address.trim()) {
       setError('Standart və Premium paketdə ünvan daxil edilməlidir')
+      setIsSubmitting(false)
+      return
+    }
+
+    // Validate coordinates are set
+    if (!listingCoordinates.lat || !listingCoordinates.lng) {
+      setError(language === 'en' ? 'Please set location on map' : language === 'ru' ? 'Установите место на карте' : 'Xəritədə yeri qeyd edin')
       setIsSubmitting(false)
       return
     }
@@ -497,14 +549,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     if (editingListingId) {
       const updated = await updateProperty(editingListingId, propertyPayload, selectedFiles)
       if (!updated) {
-        setError(t.messages.error)
+        setError(language === 'en' ? 'Failed to update listing. Please try again.' : language === 'ru' ? 'Не удалось обновить объявление. Попробуйте еще раз.' : 'Elanı yeniləmə uğursuz oldu. Lütfən yenidən cəhd edin.')
         setIsSubmitting(false)
         return
       }
     } else {
       const created = await createProperty(propertyPayload, selectedFiles)
       if (!created) {
-        setError(t.messages.error)
+        setError(language === 'en' ? 'Failed to create listing. Please check your data and try again.' : language === 'ru' ? 'Не удалось создать объявление. Проверьте данные и попробуйте еще раз.' : 'Elan yaratmaq uğursuz oldu. Məlumatlarınızı yoxlayın və yenidən cəhd edin.')
         setIsSubmitting(false)
         return
       }
@@ -1344,13 +1396,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </select>
                         </div>
 
+                        <div className="form-group">
+                          <label>{language === 'en' ? 'District' : language === 'ru' ? 'Район' : 'Rayon'} *</label>
+                          <select
+                            value={newListing.district}
+                            onChange={(e) => setNewListing({...newListing, district: e.target.value as District})}
+                            required
+                          >
+                            <option value="">{language === 'en' ? 'Select district' : language === 'ru' ? 'Выберите район' : 'Rayon seçin'}</option>
+                            {districts.map(district => (
+                              <option key={district} value={district}>{district}</option>
+                            ))}
+                          </select>
+                        </div>
+
                         <CityLocationPicker
                           city={newListing.city}
                           locationTags={newListing.locationTags}
                           locationCategory={newListing.locationCategory}
                           onCityChange={(city) => setNewListing(prev => ({...prev, city, locationTags: []}))}
                           onLocationTagsChange={(tags) => setNewListing(prev => ({...prev, locationTags: tags}))}
-                          onLocationCategoryChange={(category) => setNewListing(prev => ({...prev, locationCategory: category, locationTags: []}))}
+                          onLocationCategoryChange={(category) => setNewListing(prev => ({...prev, locationCategory: category}))}
                         />
 
                         <div className="form-group full-width">
