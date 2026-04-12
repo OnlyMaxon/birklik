@@ -12,7 +12,7 @@ import { CityLocationPicker } from '../../components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
-import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '../../services'
+import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '../../services'
 import './DashboardPage.css'
 
 type TabType = 'listings' | 'add' | 'favorites' | 'bookings' | 'bookmarked' | 'notifications' | 'profile'
@@ -44,6 +44,18 @@ const isTestListing = (listing: Property): boolean => {
   return [titleAz, titleEn, descriptionAz, descriptionEn].some((value) =>
     value.includes(TEST_LISTING_MARKER)
   )
+}
+
+const isPremiumExpired = (property: Property): boolean => {
+  if (!property.premiumExpiresAt || property.listingTier !== 'premium') return false
+  const today = getTodayISO()
+  return property.premiumExpiresAt < today
+}
+
+const isPremiumActive = (property: Property): boolean => {
+  if (!property.premiumExpiresAt || property.listingTier !== 'premium') return false
+  const today = getTodayISO()
+  return property.premiumExpiresAt >= today
 }
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
@@ -478,7 +490,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       views: 0,
       likes: [],
       favorites: [],
-      comments: []
+      comments: [],
+      premiumExpiresAt: newListing.listingTier === 'premium' ? new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
     }
 
     if (editingListingId) {
@@ -658,6 +671,47 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     await loadListings()
+  }
+
+  const handleExtendPremium = async (propertyId: string) => {
+    const newExpiryDate = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    try {
+      const property = listings.find((p: Property) => p.id === propertyId)
+      if (!property) return
+      
+      await updateProperty(propertyId, { premiumExpiresAt: newExpiryDate })
+      
+      // Send notification to user about premium extension
+      const getLocalizedTitle = (titleObj: any) => {
+        if (!titleObj) return 'Your property'
+        if (language === 'en') return titleObj.en || titleObj.az || titleObj.ru || 'Your property'
+        if (language === 'ru') return titleObj.ru || titleObj.az || titleObj.en || 'Your property'
+        return titleObj.az || titleObj.en || titleObj.ru || 'Your property'
+      }
+      
+      if (user?.id) {
+        await createPremiumNotification(user.id, {
+          userId: user.id,
+          type: 'premium',
+          title: language === 'en' ? 'Premium Extended' : language === 'ru' ? 'Премиум продлен' : 'Premium Uzadılmışdır',
+          message: language === 'en' 
+            ? `Your premium listing "${getLocalizedTitle(property.title)}" is now active until ${newExpiryDate}`
+            : language === 'ru'
+            ? `Ваше премиум объявление "${getLocalizedTitle(property.title)}" теперь активно до ${newExpiryDate}`
+            : `Sizin premium elanı "${getLocalizedTitle(property.title)}" ${newExpiryDate} tarixinə qədər aktiv`,
+          read: false,
+          propertyId: propertyId,
+          propertyTitle: getLocalizedTitle(property.title),
+          action: 'expired'
+        })
+      }
+      
+      await loadListings()
+      alert(language === 'en' ? 'Premium extended for 3 more weeks!' : language === 'ru' ? 'Премиум продлен еще на 3 недели!' : 'Premium 3 həftə daha uzadıldı!')
+    } catch (error) {
+      console.error('Error extending premium:', error)
+      alert(language === 'en' ? 'Failed to extend premium' : language === 'ru' ? 'Не удалось продлить премиум' : 'Premium uzada bilmədi')
+    }
   }
 
   const handleOpenBusyModal = (property: Property) => {
@@ -941,7 +995,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
           views: 0,
           likes: [],
           favorites: [],
-          comments: []
+          comments: [],
+          premiumExpiresAt: testListing.listingTier === 'premium' ? new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
         }
 
         await createProperty(propertyPayload, [])
@@ -1138,6 +1193,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   <strong>{isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'}</strong> {property.unavailableFrom} - {property.unavailableTo}
                                 </p>
                               )}
+                              {property.listingTier === 'premium' && isPremiumExpired(property) && (
+                                <p style={{ fontSize: '0.82rem', color: '#c62828', marginTop: '0.12rem', fontWeight: 'bold' }}>
+                                  ⏰ {isEnglish ? 'Premium status expired. Click "Extend" below to revive!' : isRussian ? 'Премиум истек. Нажмите "Продлить" ниже!' : 'Premium sürəsi bitdi. Aşağıda "Uzat"a klik edin!'}
+                                </p>
+                              )}
+                              {property.listingTier === 'premium' && isPremiumActive(property) && (
+                                <p style={{ fontSize: '0.82rem', color: '#ffa500', marginTop: '0.12rem' }}>
+                                  ⭐ {isEnglish ? `Premium active until ${property.premiumExpiresAt}` : isRussian ? `Премиум активен до ${property.premiumExpiresAt}` : `Premium ${property.premiumExpiresAt} tarixinə qədər aktiv`}
+                                </p>
+                              )}
                               {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (
                                 <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
                                   {isEnglish ? 'Click "Activate" to make it active again.' : isRussian ? 'Нажмите "Активировать" чтобы активировать снова.' : 'Yenidən aktiv etmək üçün "Aktiv et" düyməsini sıxın.'}
@@ -1153,6 +1218,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 ) : (
                                   <button className="btn btn-accent btn-sm" onClick={() => handleSetActive(property.id)}>
                                     {isEnglish ? 'Activate' : isRussian ? 'Активировать' : 'Aktiv et'}
+                                  </button>
+                                )}
+                                {property.listingTier === 'premium' && isPremiumExpired(property) && (
+                                  <button className="btn btn-sm" style={{ backgroundColor: '#ffa500', color: 'white', border: 'none' }} onClick={() => handleExtendPremium(property.id)}>
+                                    ⭐ {isEnglish ? 'Extend' : isRussian ? 'Продлить' : 'Uzat'}
                                   </button>
                                 )}
                                 <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>

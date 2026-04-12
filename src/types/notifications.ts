@@ -1,8 +1,8 @@
 /**
- * Notification Type - User notifications for bookings, comments, favorites, replies
+ * Notification Type - User notifications for bookings, comments, favorites, replies, premium
  */
 
-export type NotificationType = 'booking' | 'comment' | 'favorite' | 'reply'
+export type NotificationType = 'booking' | 'comment' | 'favorite' | 'reply' | 'premium'
 
 export interface Notification {
   id: string
@@ -50,4 +50,11 @@ export interface ReplyNotification extends Notification {
   parentCommentId: string
   replierName: string
   replyText: string
+}
+
+export interface PremiumNotification extends Notification {
+  type: 'premium'
+  propertyId: string
+  propertyTitle: string
+  action: 'expired' | 'expiring_soon'
 }

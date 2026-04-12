@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, CommentNotification, FavoriteNotification } from '../types'
+import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification } from '../types'
 
 const COLLECTION_NAME = 'users'
 const NOTIFICATIONS_SUBCOLLECTION = 'notifications'
@@ -142,5 +142,28 @@ export const deleteNotification = async (userId: string, notificationId: string)
   } catch (error) {
     console.error('Error deleting notification:', error)
     return false
+  }
+}
+
+/**
+ * Create premium notification for property owner
+ * @param {string} ownerId - Property owner's user ID
+ * @param {PremiumNotification} notificationData - Premium notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createPremiumNotification = async (
+  ownerId: string,
+  notificationData: Omit<PremiumNotification, 'id' | 'createdAt'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      ...notificationData,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    console.error('Error creating premium notification:', error)
+    return null
   }
 }
