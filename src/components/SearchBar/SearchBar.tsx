@@ -55,6 +55,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
 
+  // Get current month and next month for two-calendar view
+  const now = new Date()
+  const calendarMonth = now.getMonth()
+  const calendarYear = now.getFullYear()
+  const secondMonth = calendarMonth === 11 ? 0 : calendarMonth + 1
+  const secondYear = calendarMonth === 11 ? calendarYear + 1 : calendarYear
+
   // Find and display selected city
   const selectedCity = cityValue
     ? cities.find((c) => c.value === cityValue)
@@ -143,12 +150,82 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   // Get today's date in YYYY-MM-DD format
   const getTodayISO = (): string => new Date().toISOString().split('T')[0]
 
-  // Confirm date selection from picker
+  // Format date to YYYY-MM-DD
+  const dateToISO = (date: Date): string => date.toISOString().split('T')[0]
+
+  // Compare dates (ignoring time)
+  const isSameDay = (date1: string, date2: string): boolean => date1 === date2
+
+  const isBeforeDay = (date1: string, date2: string): boolean => date1 < date2
+  const isAfterDay = (date1: string, date2: string): boolean => date1 > date2
+  const isBetween = (date: string, start: string, end: string): boolean => date > start && date < end
+
+  // Get day name for calendar header
+  const getDayName = (dayIndex: number): string => {
+    const days = isEnglish ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] 
+                  : isRussian ? ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+                  : ['Baz', 'B.e', 'Çar', 'Cüm', 'Cümə', 'Cur', 'Şən']
+    return days[dayIndex]
+  }
+
+  // Get month name
+  const getMonthName = (month: number): string => {
+    const months = isEnglish 
+      ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      : isRussian
+      ? ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+      : ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun', 'İyul', 'Avqust', 'Sentyabr', 'Sentyabr', 'Noyabr', 'Dekabr']
+    return months[month]
+  }
+
+  // Generate calendar days for a given month
+  const generateCalendarDays = (month: number, year: number): (number | null)[] => {
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startingDayOfWeek = firstDay.getDay()
+    
+    const days: (number | null)[] = []
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null)
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(i)
+    }
+    return days
+  }
+
+  // Handle date selection with range logic
+  const handleDateSelect = (day: number, month: number, year: number) => {
+    const selectedDate = dateToISO(new Date(year, month, day))
+    const today = getTodayISO()
+
+    if (isBeforeDay(selectedDate, today)) return // Prevent past dates
+
+    if (!tempCheckIn || isAfterDay(selectedDate, tempCheckIn)) {
+      // If no check-in yet, or selected date is after check-in, set as check-out
+      if (tempCheckIn && isBeforeDay(selectedDate, tempCheckIn)) {
+        setTempCheckIn(selectedDate)
+      } else if (!tempCheckIn) {
+        setTempCheckIn(selectedDate)
+      } else {
+        setTempCheckOut(selectedDate)
+      }
+    } else {
+      // Selected date is before or equal to check-in
+      setTempCheckIn(selectedDate)
+      setTempCheckOut('')
+    }
+  }
+
+  // Confirm date selection
   const handleDatePickerConfirm = () => {
-    setCheckIn(tempCheckIn)
-    setCheckOut(tempCheckOut)
-    onDateChange?.(tempCheckIn, tempCheckOut)
-    setIsDatePickerOpen(false)
+    if (tempCheckIn && tempCheckOut) {
+      setCheckIn(tempCheckIn)
+      setCheckOut(tempCheckOut)
+      onDateChange?.(tempCheckIn, tempCheckOut)
+      setIsDatePickerOpen(false)
+    }
   }
 
   // Cancel date selection
@@ -157,8 +234,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setTempCheckOut(checkOut)
     setIsDatePickerOpen(false)
   }
-
-  const today = getTodayISO()
 
   return (
     <form className="search-bar-card" onSubmit={handleSubmit}>
@@ -248,7 +323,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             }
           </button>
 
-          {/* Date Picker Modal */}
+          {/* Date Picker Modal - AirBNB Style */}
           {isDatePickerOpen && (
             <div 
               className="search-date-picker-modal"
@@ -260,7 +335,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 display: 'flex',
-                alignItems: 'flex-end',
+                alignItems: 'center',
+                justifyContent: 'center',
                 zIndex: 1000
               }}
               onClick={(e) => {
@@ -273,54 +349,188 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 ref={datePickerRef}
                 style={{
                   backgroundColor: 'white',
-                  width: '100%',
-                  maxWidth: '500px',
-                  borderRadius: '16px 16px 0 0',
+                  borderRadius: '12px',
                   padding: '1.5rem',
-                  maxHeight: '80vh',
-                  overflowY: 'auto'
+                  maxHeight: '85vh',
+                  overflowY: 'auto',
+                  boxShadow: '0 10px 50px rgba(0, 0, 0, 0.3)',
+                  width: '95%',
+                  maxWidth: '1100px'
                 }}
               >
-                {/* Simple mini calendar picker */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem' }}>
-                    {isEnglish ? 'Check-in date' : isRussian ? 'Дата заезда' : 'Giriş tarixi'}
-                  </label>
-                  <input
-                    type="date"
-                    value={tempCheckIn}
-                    onChange={(e) => setTempCheckIn(e.target.value)}
-                    min={today}
+                {/* Header with title and close button */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '600', color: '#2d2420' }}>
+                    {isEnglish ? 'Select dates' : isRussian ? 'Выберите даты' : 'Tarixləri seçin'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleDatePickerCancel}
                     style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '8px',
-                      fontSize: '1rem'
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '1.5rem',
+                      cursor: 'pointer',
+                      color: '#999'
                     }}
-                  />
+                  >
+                    ✕
+                  </button>
                 </div>
 
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.9rem' }}>
-                    {isEnglish ? 'Check-out date' : isRussian ? 'Дата выезда' : 'Çıxış tarixi'}
-                  </label>
-                  <input
-                    type="date"
-                    value={tempCheckOut}
-                    onChange={(e) => setTempCheckOut(e.target.value)}
-                    min={tempCheckIn || today}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '8px',
-                      fontSize: '1rem'
-                    }}
-                  />
+                {/* Calendar container */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '1.5rem' }}>
+                  {/* First Calendar */}
+                  <div>
+                    {/* Month/Year header with navigation */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>
+                        {getMonthName(calendarMonth)} {calendarYear}
+                      </h3>
+                    </div>
+
+                    {/* Day names header */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => (
+                        <div
+                          key={dayIndex}
+                          style={{
+                            textAlign: 'center',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            color: '#999',
+                            padding: '0.5rem 0'
+                          }}
+                        >
+                          {getDayName(dayIndex)}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calendar days */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem' }}>
+                      {generateCalendarDays(calendarMonth, calendarYear).map((day, index) => {
+                        if (day === null) {
+                          return <div key={`empty-${index}`} />
+                        }
+                        const dateStr = dateToISO(new Date(calendarYear, calendarMonth, day))
+                        const today = getTodayISO()
+                        const isPast = isBeforeDay(dateStr, today)
+                        const isCheckIn = isSameDay(dateStr, tempCheckIn)
+                        const isCheckOut = isSameDay(dateStr, tempCheckOut)
+                        const isInRange = tempCheckIn && tempCheckOut && isBetween(dateStr, tempCheckIn, tempCheckOut)
+
+                        return (
+                          <button
+                            key={`day-${day}`}
+                            type="button"
+                            onClick={() => !isPast && handleDateSelect(day, calendarMonth, calendarYear)}
+                            disabled={isPast}
+                            style={{
+                              padding: '0.75rem',
+                              border: isCheckIn || isCheckOut ? '2px solid #b7925d' : isInRange ? 'none' : '1px solid #e0e0e0',
+                              borderRadius: isCheckIn || isCheckOut ? '8px' : '4px',
+                              backgroundColor: isCheckIn || isCheckOut ? '#b7925d' : isInRange ? '#f0e6d2' : isPast ? '#f9f9f9' : 'white',
+                              color: isCheckIn || isCheckOut ? 'white' : isPast ? '#ccc' : '#2d2420',
+                              cursor: isPast ? 'not-allowed' : 'pointer',
+                              fontWeight: isCheckIn || isCheckOut ? '700' : '500',
+                              fontSize: '0.9rem',
+                              opacity: isPast ? 0.5 : 1
+                            }}
+                          >
+                            {day}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Second Calendar (Next Month) */}
+                  <div>
+                    {/* Month/Year header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>
+                        {getMonthName(secondMonth)} {secondYear}
+                      </h3>
+                    </div>
+
+                    {/* Day names header */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => (
+                        <div
+                          key={dayIndex}
+                          style={{
+                            textAlign: 'center',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            color: '#999',
+                            padding: '0.5rem 0'
+                          }}
+                        >
+                          {getDayName(dayIndex)}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calendar days */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem' }}>
+                      {generateCalendarDays(secondMonth, secondYear).map((day, index) => {
+                        if (day === null) {
+                          return <div key={`empty-${index}`} />
+                        }
+                        const dateStr = dateToISO(new Date(secondYear, secondMonth, day))
+                        const today = getTodayISO()
+                        const isPast = isBeforeDay(dateStr, today)
+                        const isCheckIn = isSameDay(dateStr, tempCheckIn)
+                        const isCheckOut = isSameDay(dateStr, tempCheckOut)
+                        const isInRange = tempCheckIn && tempCheckOut && isBetween(dateStr, tempCheckIn, tempCheckOut)
+
+                        return (
+                          <button
+                            key={`day-${day}`}
+                            type="button"
+                            onClick={() => !isPast && handleDateSelect(day, secondMonth, secondYear)}
+                            disabled={isPast}
+                            style={{
+                              padding: '0.75rem',
+                              border: isCheckIn || isCheckOut ? '2px solid #b7925d' : isInRange ? 'none' : '1px solid #e0e0e0',
+                              borderRadius: isCheckIn || isCheckOut ? '8px' : '4px',
+                              backgroundColor: isCheckIn || isCheckOut ? '#b7925d' : isInRange ? '#f0e6d2' : isPast ? '#f9f9f9' : 'white',
+                              color: isCheckIn || isCheckOut ? 'white' : isPast ? '#ccc' : '#2d2420',
+                              cursor: isPast ? 'not-allowed' : 'pointer',
+                              fontWeight: isCheckIn || isCheckOut ? '700' : '500',
+                              fontSize: '0.9rem',
+                              opacity: isPast ? 0.5 : 1
+                            }}
+                          >
+                            {day}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                {/* Selected dates summary */}
+                {tempCheckIn && (
+                  <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px', marginBottom: '1.5rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.25rem' }}>
+                      {isEnglish ? 'Selected dates:' : isRussian ? 'Выбранные даты:' : 'Seçilmiş tarixlər:'}
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '600', color: '#2d2420' }}>
+                      {tempCheckIn.split('-').reverse().join('.')} 
+                      {tempCheckOut && ` → ${tempCheckOut.split('-').reverse().join('.')}`}
+                      {!tempCheckOut && (
+                        <span style={{ color: '#999', fontSize: '0.9rem' }}>
+                          {isEnglish ? ' (select check-out date)' : isRussian ? ' (выберите дату выезда)' : ' (çıxış tarixi seçin)'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '1rem' }}>
                   <button
                     type="button"
                     onClick={handleDatePickerCancel}
@@ -329,9 +539,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                       padding: '0.75rem',
                       border: '1px solid #e0e0e0',
                       borderRadius: '8px',
-                      backgroundColor: '#f5f5f5',
+                      backgroundColor: '#fff',
                       cursor: 'pointer',
-                      fontWeight: '500'
+                      fontWeight: '600',
+                      fontSize: '0.95rem',
+                      color: '#2d2420'
                     }}
                   >
                     {isEnglish ? 'Cancel' : isRussian ? 'Отмена' : 'Ləğv et'}
@@ -339,18 +551,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   <button
                     type="button"
                     onClick={handleDatePickerConfirm}
+                    disabled={!tempCheckIn || !tempCheckOut}
                     style={{
                       flex: 1,
                       padding: '0.75rem',
                       border: 'none',
                       borderRadius: '8px',
-                      backgroundColor: '#b7925d',
+                      backgroundColor: (!tempCheckIn || !tempCheckOut) ? '#ccc' : '#b7925d',
                       color: 'white',
-                      cursor: 'pointer',
-                      fontWeight: '500'
+                      cursor: (!tempCheckIn || !tempCheckOut) ? 'not-allowed' : 'pointer',
+                      fontWeight: '600',
+                      fontSize: '0.95rem'
                     }}
                   >
-                    {isEnglish ? 'Apply' : isRussian ? 'Применить' : 'Tətbiq et'}
+                    {isEnglish ? 'Confirm' : isRussian ? 'Подтвердить' : 'Təsdiq et'}
                   </button>
                 </div>
               </div>
