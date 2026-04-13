@@ -116,8 +116,7 @@ export const RegisterPage: React.FC = () => {
         const user = auth.currentUser
         if (user) {
           await sendEmailVerification(user, {
-            url: `${window.location.origin}/dashboard`,
-            handleCodeInApp: true
+            url: `${window.location.origin}/auth/action`
           })
         }
       } catch (err) {

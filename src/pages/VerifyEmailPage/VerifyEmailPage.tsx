@@ -45,8 +45,7 @@ export const VerifyEmailPage: React.FC = () => {
 
     try {
       await sendEmailVerification(firebaseUser, {
-        url: `${window.location.origin}/dashboard`,
-        handleCodeInApp: true
+        url: `${window.location.origin}/auth/action`
       })
       
       setMessage(
