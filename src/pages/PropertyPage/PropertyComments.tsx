@@ -2,6 +2,7 @@ import React from 'react'
 import { useLanguage, useAuth } from '../../context'
 import { Property, Comment } from '../../types'
 import { addCommentToProperty, deleteCommentFromProperty } from '../../services'
+import { ReportCommentModal } from '../../components'
 import * as logger from '../../services/logger'
 
 interface PropertyCommentsProps {
@@ -25,6 +26,7 @@ export const PropertyComments: React.FC<PropertyCommentsProps> = ({ property, on
   const [replyingToId, setReplyingToId] = React.useState<string | null>(null)
   const [replyText, setReplyText] = React.useState('')
   const [message, setMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [reportModal, setReportModal] = React.useState<{ isOpen: boolean; commentId: string; commentText: string } | null>(null)
 
   const handlePostComment = async () => {
     if (!isAuthenticated || !user || !newComment.trim()) return
@@ -58,10 +60,11 @@ export const PropertyComments: React.FC<PropertyCommentsProps> = ({ property, on
   const comments = property.comments || []
 
   return (
-    <div style={{ marginBottom: '2rem' }}>
-      <h2 style={{ fontSize: '1.3rem', fontWeight: 600, marginBottom: '1.5rem' }}>
-        {language === 'en' ? 'Reviews' : language === 'ru' ? 'Отзывы' : 'Rəylər'} ({comments.length})
-      </h2>
+    <>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.3rem', fontWeight: 600, marginBottom: '1.5rem' }}>
+          {language === 'en' ? 'Reviews' : language === 'ru' ? 'Отзывы' : 'Rəylər'} ({comments.length})
+        </h2>
 
       {/* Comment Form */}
       {isAuthenticated && user ? (
@@ -187,21 +190,40 @@ export const PropertyComments: React.FC<PropertyCommentsProps> = ({ property, on
               <p style={{ margin: '0 0 0.75rem 0', lineHeight: '1.5', color: '#333', whiteSpace: 'pre-wrap' }}>
                 {comment.text}
               </p>
-              <button
-                onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#27ae60',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  fontWeight: 500,
-                  padding: 0,
-                  textDecoration: 'underline'
-                }}
-              >
-                {language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
-              </button>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <button
+                  onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#27ae60',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                    padding: 0,
+                    textDecoration: 'underline'
+                  }}
+                >
+                  {language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
+                </button>
+                {isAuthenticated && user && (
+                  <button
+                    onClick={() => setReportModal({ isOpen: true, commentId: comment.id, commentText: comment.text })}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#e74c3c',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                      padding: 0,
+                      textDecoration: 'underline'
+                    }}
+                  >
+                    {language === 'en' ? 'Report' : language === 'ru' ? 'Пожаловаться' : 'Şikayyət'}
+                  </button>
+                )}
+              </div>
               {replyingToId === comment.id && isAuthenticated && user && (
                 <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #eee' }}>
                   <textarea
@@ -299,5 +321,19 @@ export const PropertyComments: React.FC<PropertyCommentsProps> = ({ property, on
         )}
       </div>
     </div>
+
+    {/* Report Comment Modal */}
+    {reportModal && (
+      <ReportCommentModal
+        isOpen={reportModal.isOpen}
+        onClose={() => setReportModal(null)}
+        propertyId={property.id}
+        commentId={reportModal.commentId}
+        commentText={reportModal.commentText}
+        reportedBy={user?.id || ''}
+        reportedByName={user?.name || 'Anonymous'}
+      />
+    )}
+    </>
   )
 }

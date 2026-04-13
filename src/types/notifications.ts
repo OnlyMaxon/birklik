@@ -2,7 +2,7 @@
  * Notification Type - User notifications for bookings, comments, favorites, replies, premium
  */
 
-export type NotificationType = 'booking' | 'comment' | 'favorite' | 'reply' | 'premium'
+export type NotificationType = 'booking' | 'comment' | 'favorite' | 'reply' | 'premium' | 'commentReport'
 
 export interface Notification {
   id: string
@@ -57,4 +57,13 @@ export interface PremiumNotification extends Notification {
   propertyId: string
   propertyTitle: string
   action: 'expired' | 'expiring_soon'
+}
+
+export interface ReportNotification extends Notification {
+  type: 'commentReport'
+  reportId: string
+  propertyId: string
+  commentId: string
+  reason: string
+  reportedBy: string
 }

@@ -18,6 +18,22 @@ export interface Comment {
   replies?: Comment[] // Optional: nested reply comments
 }
 
+export type ReportReason = 'spam' | 'inappropriate' | 'offensive' | 'misleading' | 'other'
+
+export interface CommentReport {
+  id: string
+  propertyId: string
+  commentId: string
+  commentText: string
+  reportedBy: string
+  reportedByName: string
+  reason: ReportReason
+  details?: string
+  createdAt: string
+  status: 'open' | 'closed'
+  commentDeleted: boolean
+}
+
 export interface LocalizedText {
   az: string
   en: string

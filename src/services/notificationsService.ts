@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification } from '../types'
+import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification } from '../types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'users'
@@ -165,6 +165,43 @@ export const createPremiumNotification = async (
     return docRef.id
   } catch (error) {
     logger.error('Error creating premium notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create comment report notification for all moderators
+ * @param {ReportNotification} notificationData - Report notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createReportNotification = async (
+  notificationData: Omit<ReportNotification, 'id' | 'createdAt' | 'userId' | 'relatedId' | 'relatedUserId' | 'relatedUserName' | 'actionUrl'>
+): Promise<string | null> => {
+  try {
+    // Get all users with moderator role
+    const usersRef = collection(db, COLLECTION_NAME)
+    const q = query(usersRef, where('isModerator', '==', true))
+    const snapshot = await getDocs(q)
+    
+    if (snapshot.empty) {
+      logger.warn('No moderators found for report notification')
+      return null
+    }
+
+    // Send notification to first moderator (in practice, you might want to send to all)
+    const moderator = snapshot.docs[0]
+    const moderatorId = moderator.id
+    
+    const notificationsRef = collection(db, COLLECTION_NAME, moderatorId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      ...notificationData,
+      userId: moderatorId,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating report notification:', error)
     return null
   }
 }

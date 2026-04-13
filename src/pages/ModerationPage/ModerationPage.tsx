@@ -4,11 +4,12 @@ import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
 import { approveProperty, getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty } from '../../services'
+import { getAllReports, closeReport } from '../../services/reportService'
 import { isModerator } from '../../config/constants'
-import { Language, Property } from '../../types'
+import { Language, Property, CommentReport } from '../../types'
 import './ModerationPage.css'
 
-type ModerationTab = 'posts' | 'comments'
+type ModerationTab = 'posts' | 'comments' | 'reports'
 
 export const ModerationPage: React.FC = () => {
   const { isAuthenticated, firebaseUser } = useAuth()
@@ -16,9 +17,11 @@ export const ModerationPage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<ModerationTab>('posts')
   const [pendingListings, setPendingListings] = React.useState<Property[]>([])
   const [allComments, setAllComments] = React.useState<CommentWithProperty[]>([])
+  const [allReports, setAllReports] = React.useState<CommentReport[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [isApprovingId, setIsApprovingId] = React.useState<string | null>(null)
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
+  const [isClosingReport, setIsClosingReport] = React.useState<string | null>(null)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [error, setError] = React.useState('')
@@ -38,12 +41,14 @@ export const ModerationPage: React.FC = () => {
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)
     setError('')
-    const [listings, comments] = await Promise.all([
+    const [listings, comments, reports] = await Promise.all([
       getPendingProperties(),
-      getAllCommentsForModeration()
+      getAllCommentsForModeration(),
+      getAllReports()
     ])
     setPendingListings(listings)
     setAllComments(comments)
+    setAllReports(reports)
     setIsLoading(false)
   }, [])
 
@@ -89,6 +94,21 @@ export const ModerationPage: React.FC = () => {
 
     await loadPendingListings()
     setIsDeletingComment(null)
+  }
+
+  const handleCloseReport = async (reportId: string, commentDeleted: boolean) => {
+    setIsClosingReport(reportId)
+    setError('')
+
+    const ok = await closeReport(reportId, commentDeleted)
+    if (!ok) {
+      setError(language === 'en' ? 'Could not close report.' : language === 'ru' ? 'Не удалось закрыть жалобу.' : 'Şikayyəti bağlamaq mümkün olmadı.')
+      setIsClosingReport(null)
+      return
+    }
+
+    await loadPendingListings()
+    setIsClosingReport(null)
   }
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
@@ -145,7 +165,13 @@ export const ModerationPage: React.FC = () => {
               className={`tab-btn ${activeTab === 'comments' ? 'active' : ''}`}
               onClick={() => setActiveTab('comments')}
             >
-              {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Şərhlər'} ({allComments.length})
+              {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Шер'} ({allComments.length})
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
+              onClick={() => setActiveTab('reports')}
+            >
+              {language === 'en' ? 'Reports' : language === 'ru' ? 'Жалобы' : 'Şikayətlər'} ({allReports.filter(r => r.status === 'open').length})
             </button>
           </div>
 
@@ -196,7 +222,7 @@ export const ModerationPage: React.FC = () => {
                 ))}
               </div>
             )
-          ) : (
+          ) : activeTab === 'comments' ? (
             // COMMENTS TAB
             allComments.length === 0 ? (
               <div className="moderation-empty card">
@@ -236,6 +262,88 @@ export const ModerationPage: React.FC = () => {
                           : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
                       </button>
                     </div>
+                  </article>
+                ))}
+              </div>
+            )
+          ) : (
+            // REPORTS TAB
+            allReports.length === 0 ? (
+              <div className="moderation-empty card">
+                <p>{language === 'en' ? 'No comment reports.' : language === 'ru' ? 'Нет жалоб на комментарии.' : 'Şərhlər haqqında şikayyət yoxdur.'}</p>
+              </div>
+            ) : (
+              <div className="moderation-list">
+                {allReports.map((report) => (
+                  <article key={report.id} className="moderation-comment card">
+                    <div style={{ padding: '1rem', borderRadius: '8px', background: report.status === 'open' ? '#fff3e0' : '#f5f5f5', marginBottom: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <strong>
+                          {language === 'en' ? 'Report' : language === 'ru' ? 'Жалоба' : 'Şikayyət'} #{report.id.slice(0, 8)}
+                        </strong>
+                        <span style={{
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem',
+                          fontWeight: 500,
+                          background: report.status === 'open' ? '#ff9800' : '#4caf50',
+                          color: 'white'
+                        }}>
+                          {report.status === 'open' 
+                            ? (language === 'en' ? 'Open' : language === 'ru' ? 'Открыто' : 'Açıq')
+                            : (language === 'en' ? 'Closed' : language === 'ru' ? 'Закрыто' : 'Tertibli')}
+                        </span>
+                      </div>
+                      <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#666' }}>
+                        <strong>{language === 'en' ? 'Reason:' : language === 'ru' ? 'Причина:' : 'Səbəb:'}</strong> {report.reason}
+                      </p>
+                      <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#666' }}>
+                        <strong>{language === 'en' ? 'Reported by:' : language === 'ru' ? 'Пожаловался:' : 'Bildirən:'}</strong> {report.reportedByName}
+                      </p>
+                      {report.details && (
+                        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#555', fontStyle: 'italic' }}>
+                          <strong>{language === 'en' ? 'Details:' : language === 'ru' ? 'Детали:' : 'Detallar:'}</strong> {report.details}
+                        </p>
+                      )}
+                    </div>
+
+                    <div style={{ padding: '1rem', background: '#f9f9f9', borderRadius: '8px', borderLeft: '3px solid #e74c3c', marginBottom: '1rem' }}>
+                      <p style={{ margin: 0, fontSize: '0.95rem', color: '#333', fontStyle: 'italic' }}>
+                        "{report.commentText.substring(0, 150)}{report.commentText.length > 150 ? '...' : ''}"
+                      </p>
+                    </div>
+
+                    {report.status === 'open' && (
+                      <div className="moderation-actions">
+                        <Link to={`/property/${report.propertyId}#comment-${report.commentId}`} className="btn btn-ghost btn-sm">
+                          {language === 'en' ? 'View Comment' : language === 'ru' ? 'Просмотр' : 'Şərhi görüş'}
+                        </Link>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={async () => {
+                            await deleteComment(report.propertyId, report.commentId)
+                            await handleCloseReport(report.id, true)
+                          }}
+                          disabled={isDeletingComment === report.commentId || isClosingReport === report.id}
+                        >
+                          {isDeletingComment === report.commentId || isClosingReport === report.id
+                            ? t.messages.loading
+                            : (language === 'en' ? 'Delete & Close' : language === 'ru' ? 'Удалить' : 'Sil')}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-accent btn-sm"
+                          style={{ background: '#4caf50' }}
+                          onClick={() => handleCloseReport(report.id, false)}
+                          disabled={isClosingReport === report.id}
+                        >
+                          {isClosingReport === report.id
+                            ? t.messages.loading
+                            : (language === 'en' ? 'Dismiss' : language === 'ru' ? 'Отклонить' : 'Rədd et')}
+                        </button>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
