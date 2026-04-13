@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { approveProperty, getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty } from '../../services'
+import { approveProperty, getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, deleteProperty } from '../../services'
 import { getAllReports, closeReport } from '../../services/reportService'
 import { isModerator } from '../../config/constants'
 import { Language, Property, CommentReport } from '../../types'
@@ -22,6 +22,7 @@ export const ModerationPage: React.FC = () => {
   const [isApprovingId, setIsApprovingId] = React.useState<string | null>(null)
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
   const [isClosingReport, setIsClosingReport] = React.useState<string | null>(null)
+  const [isDeletingListing, setIsDeletingListing] = React.useState<string | null>(null)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [error, setError] = React.useState('')
@@ -94,6 +95,21 @@ export const ModerationPage: React.FC = () => {
 
     await loadPendingListings()
     setIsDeletingComment(null)
+  }
+
+  const deleteListingModeration = async (id: string) => {
+    setIsDeletingListing(id)
+    setError('')
+
+    const ok = await deleteProperty(id)
+    if (!ok) {
+      setError(language === 'en' ? 'Could not delete listing.' : language === 'ru' ? 'Не удалось удалить объявление.' : 'Elanı silmək mümkün olmadı.')
+      setIsDeletingListing(null)
+      return
+    }
+
+    await loadPendingListings()
+    setIsDeletingListing(null)
   }
 
   const handleCloseReport = async (reportId: string, commentDeleted: boolean) => {
@@ -216,6 +232,21 @@ export const ModerationPage: React.FC = () => {
                         {isApprovingId === listing.id
                           ? t.messages.loading
                           : (language === 'en' ? 'Approve' : language === 'ru' ? 'Одобрить' : 'Təsdiq et')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: '#e74c3c' }}
+                        onClick={() => {
+                          if (window.confirm(language === 'en' ? 'Delete this listing?' : language === 'ru' ? 'Удалить это объявление?' : 'Bu elanı silməksiniz?')) {
+                            deleteListingModeration(listing.id)
+                          }
+                        }}
+                        disabled={isDeletingListing === listing.id}
+                      >
+                        {isDeletingListing === listing.id
+                          ? t.messages.loading
+                          : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
                       </button>
                     </div>
                   </article>
