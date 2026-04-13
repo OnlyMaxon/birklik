@@ -15,26 +15,39 @@ if (isIOS && isGoogleShell) {
 
 // Обработка ошибок загрузки динамических модулей
 let moduleLoadAttempts = 0
-const MAX_RELOAD_ATTEMPTS = 3
+const MAX_RELOAD_ATTEMPTS = 5
 
-window.addEventListener('error', (event) => {
+window.addEventListener('error', (event: ErrorEvent) => {
   if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
     moduleLoadAttempts++
-    console.error(`[App] Module load failed (attempt ${moduleLoadAttempts}):`, event.error)
+    console.error(`[App] Module load failed (attempt ${moduleLoadAttempts}/${MAX_RELOAD_ATTEMPTS}):`, event.error)
     
     if (moduleLoadAttempts < MAX_RELOAD_ATTEMPTS) {
-      // Очищаем все кеши
+      console.log('[App] Clearing Service Worker cache...')
+      // Очищаем ALL кеши
       if ('caches' in window) {
         caches.keys().then((cacheNames) => {
-          cacheNames.forEach((cacheName) => {
-            caches.delete(cacheName)
+          Promise.all(cacheNames.map((cacheName) => {
+            console.log('[App] Clearing cache:', cacheName)
+            return caches.delete(cacheName)
+          })).then(() => {
+            console.log('[App] Cache cleared, reloading...')
+            // Перезагружаем страницу с параметром для обновления
+            const url = new URL(globalThis.location.href)
+            url.searchParams.set('t', Date.now().toString())
+            url.searchParams.set('attempt', moduleLoadAttempts.toString())
+            globalThis.location.href = url.toString()
           })
         })
+      } else {
+        // Fallback если нет кеша
+        const url = new URL(globalThis.location.href)
+        url.searchParams.set('t', Date.now().toString())
+        globalThis.location.href = url.toString()
       }
-      // Перезагружаем страницу с параметром для обновления
-      const url = new URL(window.location.href)
-      url.searchParams.set('t', Date.now().toString())
-      window.location.href = url.toString()
+    } else {
+      console.error('[App] Max reload attempts reached!')
+      alert('Ошибка загрузки приложения. Пожалуйста, очистите кеш браузера и попробуйте снова.')
     }
   }
 })
@@ -46,20 +59,37 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         console.log('[App] Service Worker registered successfully:', registration)
         
-        // Проверяем обновления каждые 30 минут
+        // Проверяем обновления каждые 10 минут
         setInterval(() => {
+          console.log('[App] Checking for Service Worker updates...')
           registration.update()
-        }, 30 * 60 * 1000)
+        }, 10 * 60 * 1000)
       })
       .catch((error) => {
-        console.warn('[App] Service Worker registration failed:', error)
+        console.error('[App] Service Worker registration failed:', error)
       })
     
     // Слушаем обновления Service Worker
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('[App] Service Worker controller changed, reload may be needed')
+      console.log('[App] Service Worker controller changed - new version loaded')
+      // Можно показать пользователю уведомление об обновлении
+    })
+
+    // Слушаем сообщения от Service Worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      console.log('[App] Message from Service Worker:', event.data)
     })
   })
+
+  // Очищаем все Service Workers при установке нового
+  if ('unregister' in navigator.serviceWorker) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      // Логируем существующие регистрации
+      registrations.forEach((reg) => {
+        console.log('[App] Existing SW registration:', reg.scope)
+      })
+    })
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
