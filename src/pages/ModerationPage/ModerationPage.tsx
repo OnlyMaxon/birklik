@@ -3,13 +3,13 @@ import { Link, Navigate } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { approveProperty, getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, deleteProperty } from '../../services'
+import { approveProperty, getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty } from '../../services'
 import { getAllReports, closeReport } from '../../services/reportService'
 import { isModerator } from '../../config/constants'
 import { Language, Property, CommentReport } from '../../types'
 import './ModerationPage.css'
 
-type ModerationTab = 'posts' | 'comments' | 'reports'
+type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings'
 
 export const ModerationPage: React.FC = () => {
   const { isAuthenticated, firebaseUser } = useAuth()
@@ -18,6 +18,8 @@ export const ModerationPage: React.FC = () => {
   const [pendingListings, setPendingListings] = React.useState<Property[]>([])
   const [allComments, setAllComments] = React.useState<CommentWithProperty[]>([])
   const [allReports, setAllReports] = React.useState<CommentReport[]>([])
+  const [allListings, setAllListings] = React.useState<Property[]>([])
+  const [searchQuery, setSearchQuery] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(true)
   const [isApprovingId, setIsApprovingId] = React.useState<string | null>(null)
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
@@ -42,14 +44,16 @@ export const ModerationPage: React.FC = () => {
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)
     setError('')
-    const [listings, comments, reports] = await Promise.all([
+    const [listings, comments, reports, allProps] = await Promise.all([
       getPendingProperties(),
       getAllCommentsForModeration(),
-      getAllReports()
+      getAllReports(),
+      getAllProperties()
     ])
     setPendingListings(listings)
     setAllComments(comments)
     setAllReports(reports)
+    setAllListings(allProps)
     setIsLoading(false)
   }, [])
 
@@ -97,21 +101,6 @@ export const ModerationPage: React.FC = () => {
     setIsDeletingComment(null)
   }
 
-  const deleteListingModeration = async (id: string) => {
-    setIsDeletingListing(id)
-    setError('')
-
-    const ok = await deleteProperty(id)
-    if (!ok) {
-      setError(language === 'en' ? 'Could not delete listing.' : language === 'ru' ? 'Не удалось удалить объявление.' : 'Elanı silmək mümkün olmadı.')
-      setIsDeletingListing(null)
-      return
-    }
-
-    await loadPendingListings()
-    setIsDeletingListing(null)
-  }
-
   const handleCloseReport = async (reportId: string, commentDeleted: boolean) => {
     setIsClosingReport(reportId)
     setError('')
@@ -125,6 +114,21 @@ export const ModerationPage: React.FC = () => {
 
     await loadPendingListings()
     setIsClosingReport(null)
+  }
+
+  const deleteListing = async (id: string) => {
+    setIsDeletingListing(id)
+    setError('')
+
+    const ok = await deleteProperty(id)
+    if (!ok) {
+      setError(language === 'en' ? 'Could not delete listing.' : language === 'ru' ? 'Не удалось удалить объявление.' : 'Elanı silmək mümkün olmadı.')
+      setIsDeletingListing(null)
+      return
+    }
+
+    await loadPendingListings()
+    setIsDeletingListing(null)
   }
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
@@ -189,6 +193,12 @@ export const ModerationPage: React.FC = () => {
             >
               {language === 'en' ? 'Reports' : language === 'ru' ? 'Жалобы' : 'Şikayətlər'} ({allReports.filter(r => r.status === 'open').length})
             </button>
+            <button
+              className={`tab-btn ${activeTab === 'allListings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('allListings')}
+            >
+              {language === 'en' ? 'All Listings' : language === 'ru' ? 'Все объявления' : 'Bütün Elanlar'} ({allListings.length})
+            </button>
           </div>
 
           {error && <div className="error-message">{error}</div>}
@@ -232,21 +242,6 @@ export const ModerationPage: React.FC = () => {
                         {isApprovingId === listing.id
                           ? t.messages.loading
                           : (language === 'en' ? 'Approve' : language === 'ru' ? 'Одобрить' : 'Təsdiq et')}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: '#e74c3c' }}
-                        onClick={() => {
-                          if (window.confirm(language === 'en' ? 'Delete this listing?' : language === 'ru' ? 'Удалить это объявление?' : 'Bu elanı silməksiniz?')) {
-                            deleteListingModeration(listing.id)
-                          }
-                        }}
-                        disabled={isDeletingListing === listing.id}
-                      >
-                        {isDeletingListing === listing.id
-                          ? t.messages.loading
-                          : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
                       </button>
                     </div>
                   </article>
@@ -297,7 +292,7 @@ export const ModerationPage: React.FC = () => {
                 ))}
               </div>
             )
-          ) : (
+          ) : activeTab === 'reports' ? (
             // REPORTS TAB
             allReports.length === 0 ? (
               <div className="moderation-empty card">
@@ -379,7 +374,82 @@ export const ModerationPage: React.FC = () => {
                 ))}
               </div>
             )
-          )}
+          ) : activeTab === 'allListings' ? (
+            // ALL LISTINGS TAB
+            <div>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <input
+                  type="text"
+                  placeholder={language === 'en' ? 'Search listings...' : language === 'ru' ? 'Поиск объявлений...' : 'Elanları axtarın...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    borderRadius: '6px',
+                    border: '1px solid #ddd',
+                    fontSize: '0.95rem'
+                  }}
+                />
+              </div>
+
+              {allListings.length === 0 ? (
+                <div className="moderation-empty card">
+                  <p>{language === 'en' ? 'No listings found.' : language === 'ru' ? 'Объявлений не найдено.' : 'Elan tapılmadı.'}</p>
+                </div>
+              ) : (
+                <div className="moderation-list">
+                  {allListings
+                    .filter(listing => {
+                      const query = searchQuery.toLowerCase()
+                      const title = getLocalizedText(listing.title).toLowerCase()
+                      const description = getLocalizedText(listing.description).toLowerCase()
+                      const owner = listing.owner?.name.toLowerCase() || ''
+                      return title.includes(query) || description.includes(query) || owner.includes(query)
+                    })
+                    .map((listing) => (
+                      <article key={listing.id} className="moderation-item card">
+                        <img src={listing.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(listing.title)} className="moderation-image" />
+
+                        <div className="moderation-content">
+                          <h3>{getLocalizedText(listing.title)}</h3>
+                          <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {t.districts[listing.district]}</p>
+                          <p className="moderation-description">{getLocalizedText(listing.description)}</p>
+                          <p className="moderation-owner">
+                            <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
+                          </p>
+                          <p className="moderation-owner">
+                            <strong>{language === 'en' ? 'Status:' : language === 'ru' ? 'Статус:' : 'Status:'}</strong> {listing.isActive ? (language === 'en' ? 'Published' : language === 'ru' ? 'Опубликовано' : 'Dərc olunub') : (language === 'en' ? 'Archived' : language === 'ru' ? 'Архивировано' : 'Arxivləşdirildi')}
+                          </p>
+                        </div>
+
+                        <div className="moderation-actions">
+                          <Link to={`/property/${listing.id}`} className="btn btn-ghost btn-sm">
+                            {language === 'en' ? 'View' : language === 'ru' ? 'Просмотр' : 'Bax'}
+                          </Link>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            style={{ background: '#e74c3c' }}
+                            onClick={() => {
+                              if (confirm(language === 'en' ? 'Delete this listing?' : language === 'ru' ? 'Удалить объявление?' : 'Bu elanı silmək istəyirsiniz?')) {
+                                deleteListing(listing.id)
+                              }
+                            }}
+                            disabled={isDeletingListing === listing.id}
+                          >
+                            {isDeletingListing === listing.id
+                              ? t.messages.loading
+                              : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                </div>
+              )}
+            </div>
+          ) : null
+          }
           </div>
         </div>
       </section>

@@ -386,6 +386,26 @@ export const getPendingProperties = async (): Promise<Property[]> => {
 }
 
 /**
+ * Get all published properties for moderation
+ * @returns {Promise<Property[]>} Array of all published properties
+ */
+export const getAllProperties = async (): Promise<Property[]> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('status', '==', 'approved'),
+      orderBy('createdAt', 'desc')
+    )
+    const snapshot = await getDocs(q)
+
+    return snapshot.docs.map(mapDocToProperty)
+  } catch (error) {
+    logger.error('Error getting all properties:', error)
+    return []
+  }
+}
+
+/**
  * Approve a pending property and make it publicly visible
  * @param {string} id - Property Firestore document ID
  * @returns {Promise<boolean>} True on success, false if property not found or update fails
