@@ -948,6 +948,43 @@ export const PropertyPage: React.FC = () => {
                               </button>
                             )}
                           </div>
+
+                          {/* Reply Form */}
+                          {replyingToId === comment.id && isAuthenticated && (
+                            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee', backgroundColor: '#f9f9f9', padding: '0.75rem' }}>
+                              <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>
+                                {language === 'en' ? 'Replying to: ' : language === 'ru' ? 'Ответ на: ' : 'Cavab: '} 
+                                <strong>{comment.userName}</strong>
+                              </p>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input
+                                  type="text"
+                                  placeholder={language === 'en' ? 'Write a reply...' : language === 'ru' ? 'Написать ответ...' : 'Cavab yazın...'}
+                                  style={{
+                                    flex: 1,
+                                    padding: '0.5rem',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ddd',
+                                    fontSize: '0.9rem'
+                                  }}
+                                />
+                                <button
+                                  style={{
+                                    padding: '0.5rem 1rem',
+                                    backgroundColor: '#27ae60',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  {language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))
                     ) : (
