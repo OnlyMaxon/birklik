@@ -88,7 +88,7 @@ export const ResetPasswordPage: React.FC = () => {
       }
 
       // Check if this is email verification
-      if (mode === 'emailVerification') {
+      if (mode === 'verifyEmail') {
         setIsEmailVerification(true)
         handleEmailVerification()
         return
