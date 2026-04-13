@@ -5,7 +5,7 @@ import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading, ReportCommentModal } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
-import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
+import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty, addReplyToComment } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { getCsrfToken } from '../../services/csrfService'
@@ -69,6 +69,8 @@ export const PropertyPage: React.FC = () => {
   const [notificationMessage, setNotificationMessage] = React.useState('')
   const [reportModal, setReportModal] = React.useState<{ isOpen: boolean; commentId: string; commentText: string } | null>(null)
   const [replyingToId, setReplyingToId] = React.useState<string | null>(null)
+  const [replyText, setReplyText] = React.useState('')
+  const [isPostingReply, setIsPostingReply] = React.useState(false)
 
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
@@ -380,6 +382,30 @@ export const PropertyPage: React.FC = () => {
       const updated = await getPropertyById(property.id)
       setProperty(updated)
     }
+  }
+
+  const handleAddReply = async (parentCommentId: string) => {
+    if (!isAuthenticated || !user || !property || !replyText.trim()) return
+
+    setIsPostingReply(true)
+    const success = await addReplyToComment(
+      property.id,
+      parentCommentId,
+      user.id,
+      user.name,
+      user.avatar,
+      replyText.trim()
+    )
+
+    if (success) {
+      setReplyText('')
+      setReplyingToId(null)
+      // Reload property to show new reply
+      const updated = await getPropertyById(property.id)
+      setProperty(updated)
+    }
+
+    setIsPostingReply(false)
   }
 
   if (isLoading) {
@@ -949,6 +975,24 @@ export const PropertyPage: React.FC = () => {
                             )}
                           </div>
 
+                          {/* Replies */}
+                          {comment.replies && comment.replies.length > 0 && (
+                            <div style={{ marginTop: '1rem', marginLeft: '1.5rem', paddingLeft: '1rem', borderLeft: '2px solid #e0e0e0' }}>
+                              <p style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.5rem' }}>
+                                {comment.replies.length} {comment.replies.length === 1 ? (language === 'en' ? 'reply' : language === 'ru' ? 'ответ' : 'cavab') : (language === 'en' ? 'replies' : language === 'ru' ? 'ответов' : 'cavablar')}
+                              </p>
+                              {comment.replies.map(reply => (
+                                <div key={reply.id} style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f0f0f0' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '0.85rem', color: '#333', fontWeight: 500 }}>{reply.userName}</span>
+                                  </div>
+                                  <p style={{ fontSize: '0.9rem', color: '#555', margin: '0.3rem 0' }}>{reply.text}</p>
+                                  <p style={{ fontSize: '0.75rem', color: '#999' }}>{formatDate(reply.createdAt)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           {/* Reply Form */}
                           {replyingToId === comment.id && isAuthenticated && (
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee', backgroundColor: '#f9f9f9', padding: '0.75rem' }}>
@@ -959,6 +1003,9 @@ export const PropertyPage: React.FC = () => {
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 <input
                                   type="text"
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  onKeyPress={(e) => e.key === 'Enter' && handleAddReply(comment.id)}
                                   placeholder={language === 'en' ? 'Write a reply...' : language === 'ru' ? 'Написать ответ...' : 'Cavab yazın...'}
                                   style={{
                                     flex: 1,
@@ -969,18 +1016,21 @@ export const PropertyPage: React.FC = () => {
                                   }}
                                 />
                                 <button
+                                  onClick={() => handleAddReply(comment.id)}
+                                  disabled={isPostingReply || !replyText.trim()}
                                   style={{
                                     padding: '0.5rem 1rem',
                                     backgroundColor: '#27ae60',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: '4px',
-                                    cursor: 'pointer',
+                                    cursor: isPostingReply || !replyText.trim() ? 'not-allowed' : 'pointer',
                                     fontSize: '0.85rem',
-                                    fontWeight: 'bold'
+                                    fontWeight: 'bold',
+                                    opacity: isPostingReply || !replyText.trim() ? 0.6 : 1
                                   }}
                                 >
-                                  {language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
+                                  {isPostingReply ? '...' : (language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver')}
                                 </button>
                               </div>
                             </div>

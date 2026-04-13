@@ -470,6 +470,67 @@ export const addCommentToProperty = async (
 }
 
 /**
+ * Add a reply to an existing comment
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} parentCommentId - Parent comment ID
+ * @param {string} userId - User Firestore ID
+ * @param {string} userName - User name
+ * @param {string} userAvatar - User avatar URL
+ * @param {string} text - Reply text
+ * @returns {Promise<boolean>} True on success, false if property or parent comment not found
+ */
+export const addReplyToComment = async (
+  propertyId: string,
+  parentCommentId: string,
+  userId: string,
+  userName: string,
+  userAvatar: string | undefined,
+  text: string
+): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    const currentData = current.data() as Property
+    const comments = currentData.comments || []
+
+    // Find and update the parent comment
+    const updatedComments = comments.map(comment => {
+      if (comment.id === parentCommentId) {
+        const newReply = {
+          id: `${Date.now()}_${userId}`,
+          userId,
+          userName,
+          userAvatar,
+          text,
+          createdAt: new Date().toISOString(),
+          parentCommentId
+        }
+        return {
+          ...comment,
+          replies: [...(comment.replies || []), newReply]
+        }
+      }
+      return comment
+    })
+
+    await updateDoc(docRef, {
+      comments: updatedComments,
+      updatedAt: new Date().toISOString()
+    })
+
+    return true
+  } catch (error) {
+    logger.error('Error adding reply:', error)
+    return false
+  }
+}
+
+/**
  * Toggle like status for a property by a user
  * @param {string} propertyId - Property Firestore document ID
  * @param {string} userId - User Firestore ID performing the like toggle
