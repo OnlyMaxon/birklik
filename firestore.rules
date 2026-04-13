@@ -94,5 +94,24 @@ service cloud.firestore {
         || isModerator()
       );
     }
+
+    match /commentReports/{reportId} {
+      // Read: authenticated users can read all reports AND moderators can read all reports
+      allow read: if request.auth != null;
+      
+      // Create: any authenticated user can report a comment
+      allow create: if request.auth != null
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.reportedByName != null
+        && request.resource.data.commentId != null
+        && request.resource.data.propertyId != null
+        && request.resource.data.reason != null;
+      
+      // Update: moderator can update (close/dismiss reports)
+      allow update: if request.auth != null && isModerator();
+      
+      // Delete: moderator can delete reports
+      allow delete: if request.auth != null && isModerator();
+    }
   }
 }
