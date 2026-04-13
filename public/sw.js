@@ -109,15 +109,27 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           // ВАЖНО: проверяем, что это действительно JS, не HTML ошибка
           const mimeType = response.headers.get('content-type') || ''
-          if (!isValidMimeType(response, 'application/javascript')) {
+          const isValidJS = mimeType.includes('application/javascript') || mimeType.includes('application/x-javascript')
+          
+          if (!isValidJS && response.status !== 200) {
             console.error(`[${SW_VERSION}] ⚠️ WRONG MIME for JS! Got: "${mimeType}", Status: ${response.status}, URL: ${url.pathname}`)
-            return new Response('Module load error - invalid MIME type', { 
+            // Не кешируем плохие ответы - просто возвращаем ошибку
+            return new Response(`Module load failed - server returned ${response.status}`, { 
               status: 404,
               headers: { 'Content-Type': 'text/plain' }
             })
           }
 
-          if (response && response.status === 200) {
+          if (!isValidJS && response.status === 200) {
+            // Может быть text/html ошибка даже с 200 - это проблема Cloudflare
+            console.error(`[${SW_VERSION}] ⚠️ MIME MISMATCH! Expected JS but got: "${mimeType}" for ${url.pathname}`)
+            return new Response(`MIME type mismatch: ${mimeType}`, { 
+              status: 502,
+              headers: { 'Content-Type': 'text/plain' }
+            })
+          }
+
+          if (response && response.status === 200 && isValidJS) {
             console.log(`[${SW_VERSION}] ✓ Valid JS loaded:`, url.pathname)
             // Кешируем ТОЛЬКО валидные JS файлы
             const responseToCache = response.clone()
@@ -128,7 +140,8 @@ self.addEventListener('fetch', (event) => {
           return response
         })
         .catch((err) => {
-          console.error(`[${SW_VERSION}] JS fetch failed:`, url.pathname, err.message)
+          console.error(`[${SW_VERSION}] JS fetch error:`, url.pathname, err.message)
+          // Пытаемся взять из кеша
           return caches.match(request).catch((cacheErr) => {
             console.error(`[${SW_VERSION}] No cache available for:`, url.pathname)
             return new Response('', { status: 404 })
