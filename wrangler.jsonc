@@ -2,9 +2,6 @@
   "name": "birklik",
   "compatibility_date": "2026-04-05",
   "pages_build_output_dir": "dist",
-  "assets": {
-    "directory": "./dist"
-  },
   "vars": {
     "VITE_FIREBASE_AUTH_DOMAIN": "birklik-65289.firebaseapp.com",
     "VITE_FIREBASE_PROJECT_ID": "birklik-65289",
