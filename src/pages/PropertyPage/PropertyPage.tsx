@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import { ImageGallery, PropertyMap, Loading } from '../../components'
+import { ImageGallery, PropertyMap, Loading, ReportCommentModal } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
@@ -67,6 +67,8 @@ export const PropertyPage: React.FC = () => {
   const [isPostingComment, setIsPostingComment] = React.useState(false)
   const [showNotification, setShowNotification] = React.useState(false)
   const [notificationMessage, setNotificationMessage] = React.useState('')
+  const [reportModal, setReportModal] = React.useState<{ isOpen: boolean; commentId: string; commentText: string } | null>(null)
+  const [replyingToId, setReplyingToId] = React.useState<string | null>(null)
 
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
@@ -908,6 +910,44 @@ export const PropertyPage: React.FC = () => {
                           </div>
                           <p className="comment-text">{comment.text}</p>
                           <p className="comment-date">{formatDate(comment.createdAt)}</p>
+                          
+                          {/* Interaction Buttons */}
+                          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #eee' }}>
+                            <button
+                              onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#27ae60',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                                fontWeight: 500,
+                                padding: 0,
+                                textDecoration: 'underline',
+                                textDecorationColor: '#27ae60'
+                              }}
+                            >
+                              {language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
+                            </button>
+                            {isAuthenticated && (
+                              <button
+                                onClick={() => setReportModal({ isOpen: true, commentId: comment.id, commentText: comment.text })}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#e74c3c',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  fontWeight: 500,
+                                  padding: 0,
+                                  textDecoration: 'underline',
+                                  textDecorationColor: '#e74c3c'
+                                }}
+                              >
+                                {language === 'en' ? 'Report' : language === 'ru' ? 'Пожаловаться' : 'Şikayyət'}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -922,6 +962,19 @@ export const PropertyPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Report Comment Modal */}
+      {reportModal && property && (
+        <ReportCommentModal
+          isOpen={reportModal.isOpen}
+          onClose={() => setReportModal(null)}
+          propertyId={property.id}
+          commentId={reportModal.commentId}
+          commentText={reportModal.commentText}
+          reportedBy={user?.id || ''}
+          reportedByName={user?.name || 'Anonymous'}
+        />
+      )}
     </Layout>
   )
 }

@@ -69,9 +69,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       <Link to={`/property/${property.id}`} className="property-image">
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className="property-badges">
-          <div className="property-type-badge badge badge-primary">
-            {t.propertyTypes[property.type]}
-          </div>
           {isPremium && (
             <div className="property-premium-badge badge badge-premium" title={language === 'en' ? 'Premium listing' : language === 'ru' ? 'Премиум объявление' : 'Premium elan'}>
               <span>⭐</span> Premium
