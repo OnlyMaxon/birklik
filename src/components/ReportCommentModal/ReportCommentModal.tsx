@@ -67,13 +67,28 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
 
       // Notify moderators
       try {
+        const reasonText = reportReasons[reason as ReportReasonKey][language as keyof typeof reportReasons[ReportReasonKey]]
+        
         await createReportNotification({
           type: 'commentReport',
+          title: language === 'en' 
+            ? 'New Comment Report' 
+            : language === 'ru' 
+              ? 'Новая жалоба на комментарий' 
+              : 'Yeni şərh şikayyəti',
+          message: language === 'en'
+            ? `Report: ${reasonText}. Comment: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`
+            : language === 'ru'
+              ? `Жалоба: ${reasonText}. Комментарий: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`
+              : `Şikayyət: ${reasonText}. Şərh: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
           reportId: report.id,
           propertyId,
           commentId,
           reason,
-          reportedBy
+          reportedBy,
+          relatedId: commentId,
+          relatedUserId: reportedBy,
+          relatedUserName: reportedByName
         } as any)
       } catch (notifError) {
         logger.error('Error creating notification:', notifError)

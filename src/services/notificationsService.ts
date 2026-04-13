@@ -172,11 +172,11 @@ export const createPremiumNotification = async (
 /**
  * Create comment report notification for all moderators
  * @param {ReportNotification} notificationData - Report notification details
- * @returns {Promise<string|null>} Notification ID or null on error
+ * @returns {Promise<string[]>} Array of created notification IDs
  */
 export const createReportNotification = async (
   notificationData: Omit<ReportNotification, 'id' | 'createdAt' | 'userId' | 'relatedId' | 'relatedUserId' | 'relatedUserName' | 'actionUrl'>
-): Promise<string | null> => {
+): Promise<string[]> => {
   try {
     // Get all users with moderator role
     const usersRef = collection(db, COLLECTION_NAME)
@@ -185,23 +185,31 @@ export const createReportNotification = async (
     
     if (snapshot.empty) {
       logger.warn('No moderators found for report notification')
-      return null
+      return []
     }
 
-    // Send notification to first moderator (in practice, you might want to send to all)
-    const moderator = snapshot.docs[0]
-    const moderatorId = moderator.id
+    // Send notification to ALL moderators
+    const notificationIds: string[] = []
+    for (const moderatorDoc of snapshot.docs) {
+      const moderatorId = moderatorDoc.id
+      const notificationsRef = collection(db, COLLECTION_NAME, moderatorId, NOTIFICATIONS_SUBCOLLECTION)
+      
+      try {
+        const docRef = await addDoc(notificationsRef, {
+          ...notificationData,
+          userId: moderatorId,
+          read: false,
+          createdAt: new Date().toISOString()
+        })
+        notificationIds.push(docRef.id)
+      } catch (error) {
+        logger.error(`Error creating notification for moderator ${moderatorId}:`, error)
+      }
+    }
     
-    const notificationsRef = collection(db, COLLECTION_NAME, moderatorId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      userId: moderatorId,
-      read: false,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
+    return notificationIds
   } catch (error) {
     logger.error('Error creating report notification:', error)
-    return null
+    return []
   }
 }

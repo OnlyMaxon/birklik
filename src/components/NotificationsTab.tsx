@@ -55,6 +55,8 @@ export const NotificationsTab: React.FC = () => {
         return '❤️'
       case 'reply':
         return '↩️'
+      case 'commentReport':
+        return '🚩'
       default:
         return '🔔'
     }
