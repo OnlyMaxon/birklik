@@ -101,85 +101,74 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Для JS модулей - ТОЛЬКО СЕТЬ, без кеша!
+  // Для JS модулей - ТОЛЬКО СЕТЬ, БЕЗ КЕША!
   if (request.url.includes('/assets/') && request.url.endsWith('.js')) {
-    logRequest(url.pathname, 'JS')
+    logRequest(url.pathname, 'JS - NETWORK ONLY')
     event.respondWith(
-      fetch(request, { cache: 'no-store' })
+      fetch(request, { cache: 'no-store', credentials: 'same-origin' })
         .then((response) => {
-          // ВАЖНО: проверяем, что это действительно JS, не HTML ошибка
           const mimeType = response.headers.get('content-type') || ''
           const isValidJS = mimeType.includes('application/javascript') || mimeType.includes('application/x-javascript')
           
-          if (!isValidJS && response.status !== 200) {
-            console.error(`[${SW_VERSION}] ⚠️ WRONG MIME for JS! Got: "${mimeType}", Status: ${response.status}, URL: ${url.pathname}`)
-            // Не кешируем плохие ответы - просто возвращаем ошибку
-            return new Response(`Module load failed - server returned ${response.status}`, { 
-              status: 404,
+          console.log(`[${SW_VERSION}] JS Response: status=${response.status}, mime="${mimeType}", valid=${isValidJS}`)
+          
+          // Если статус не 200, это ошибка
+          if (response.status !== 200) {
+            console.error(`[${SW_VERSION}] ❌ Non-200 JS response: ${response.status} ${mimeType}`)
+            return new Response(`Error: ${response.status}`, { 
+              status: response.status,
               headers: { 'Content-Type': 'text/plain' }
             })
           }
 
-          if (!isValidJS && response.status === 200) {
-            // Может быть text/html ошибка даже с 200 - это проблема Cloudflare
-            console.error(`[${SW_VERSION}] ⚠️ MIME MISMATCH! Expected JS but got: "${mimeType}" for ${url.pathname}`)
-            return new Response(`MIME type mismatch: ${mimeType}`, { 
+          // Если MIME неправильный даже при 200
+          if (!isValidJS) {
+            console.error(`[${SW_VERSION}] ❌ Wrong MIME type! Expected JS but got: "${mimeType}" for ${url.pathname}`)
+            return new Response('Wrong MIME type', { 
               status: 502,
               headers: { 'Content-Type': 'text/plain' }
             })
           }
 
-          if (response && response.status === 200 && isValidJS) {
-            console.log(`[${SW_VERSION}] ✓ Valid JS loaded:`, url.pathname)
-            // Кешируем ТОЛЬКО валидные JS файлы
-            const responseToCache = response.clone()
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache)
-            })
-          }
+          console.log(`[${SW_VERSION}] ✅ Valid JS: ${url.pathname}`)
           return response
         })
         .catch((err) => {
-          console.error(`[${SW_VERSION}] JS fetch error:`, url.pathname, err.message)
-          // Пытаемся взять из кеша
-          return caches.match(request).catch((cacheErr) => {
-            console.error(`[${SW_VERSION}] No cache available for:`, url.pathname)
-            return new Response('', { status: 404 })
+          console.error(`[${SW_VERSION}] ❌ JS Fetch error:`, url.pathname, err.message)
+          return new Response(`Fetch failed: ${err.message}`, { 
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
           })
         })
     )
     return
   }
 
-  // Для CSS
+  // Для CSS - тоже ТОЛЬКО СЕТЬ
   if (request.url.includes('/assets/') && request.url.endsWith('.css')) {
-    logRequest(url.pathname, 'CSS')
+    logRequest(url.pathname, 'CSS - NETWORK ONLY')
     event.respondWith(
-      fetch(request, { cache: 'no-store' })
+      fetch(request, { cache: 'no-store', credentials: 'same-origin' })
         .then((response) => {
           const mimeType = response.headers.get('content-type') || ''
-          if (!isValidMimeType(response, 'text/css')) {
-            console.error(`[${SW_VERSION}] ⚠️ WRONG MIME for CSS! Got: "${mimeType}", Status: ${response.status}`)
-            return new Response('CSS load error', { status: 404 })
+          const isValidCSS = mimeType.includes('text/css')
+          
+          if (response.status !== 200) {
+            console.error(`[${SW_VERSION}] ❌ Non-200 CSS response: ${response.status}`)
+            return new Response(`Error: ${response.status}`, { status: response.status })
           }
 
-          if (response && response.status === 200) {
-            console.log(`[${SW_VERSION}] ✓ Valid CSS loaded:`, url.pathname)
-            const responseToCache = response.clone()
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache)
-            })
+          if (!isValidCSS) {
+            console.error(`[${SW_VERSION}] ❌ Wrong MIME for CSS: "${mimeType}"`)
+            return new Response('Wrong MIME type', { status: 502 })
           }
+
+          console.log(`[${SW_VERSION}] ✅ Valid CSS: ${url.pathname}`)
           return response
         })
         .catch((err) => {
-          console.warn(`[${SW_VERSION}] CSS fetch failed:`, err.message)
-          return caches.match(request).catch(() => {
-            return new Response('', { 
-              headers: { 'Content-Type': 'text/css' },
-              status: 404 
-            })
-          })
+          console.error(`[${SW_VERSION}] ❌ CSS Fetch error:`, url.pathname)
+          return new Response(`Fetch failed`, { status: 503 })
         })
     )
     return
