@@ -1,0 +1,21 @@
+# Cache-Control для различных типов файлов
+
+# Service Worker - никогда не кешируем
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# HTML - никогда не кешируем
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Assets (JS, CSS, images) - кешируем на длительный период
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Manifest и другие файлы
+/manifest.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Cloudflare Workers и функции
+/api/*
+  Cache-Control: no-store
