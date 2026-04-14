@@ -54,9 +54,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
     registrations.forEach((registration) => {
       // Удаляем все существующие регистрации
-      registration.unregister().then(() => {
-        console.log('[App] Old Service Worker unregistered')
-      })
+      registration.unregister()
     })
   })
 }

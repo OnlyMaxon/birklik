@@ -14,8 +14,8 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('[SW] Cache init failed:', err.message)
+      return cache.addAll(ASSETS_TO_CACHE).catch(() => {
+        // Some assets may fail to cache - that's OK, they'll be cached on demand
       })
     }).then(() => self.skipWaiting())
   )
