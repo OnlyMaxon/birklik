@@ -52,7 +52,7 @@ window.addEventListener('error', (event: ErrorEvent) => {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // Добавляем версию/checksum для cache-busting
-    const swVersion = '2026-04-14-v3'
+    const swVersion = '2026-04-14-v4'
     const swUrl = `/sw.js?v=${swVersion}`
     
     navigator.serviceWorker.register(swUrl, { scope: '/' })
