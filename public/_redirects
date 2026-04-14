@@ -1,1 +1,10 @@
+# Static assets - serve as-is
+/assets/* /assets/:splat 200
+/brand/* /brand/:splat 200
+/sw.js /sw.js 200
+/index.html /index.html 200
+/404.html /404.html 200
+/manifest.json /manifest.json 200
+
+# SPA routing - catch-all for client-side routing
 /* /index.html 200
