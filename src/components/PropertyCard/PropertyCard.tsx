@@ -74,11 +74,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
               <span>⭐</span> Premium
             </div>
           )}
-          {property.amenities?.includes('pool') && (
-            <div className="property-pool-badge badge badge-accent">
-              💧 {t.amenities.pool}
-            </div>
-          )}
         </div>
       </Link>
       
@@ -154,6 +149,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           )}
         </div>
 
+        {property.amenities?.includes('pool') && (
+          <div className="property-amenities" title={t.amenities.pool}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+          </div>
+        )}
+        
         <div className="property-footer">
           <div className="property-price">
             {nights > 0 && (

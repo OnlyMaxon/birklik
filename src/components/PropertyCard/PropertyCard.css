@@ -47,26 +47,34 @@
   z-index: 5;
 }
 
-.property-pool-badge {
+.property-amenities {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.6rem;
   background: rgba(183, 146, 93, 0.95);
-  color: #ffffff;
   border: none;
   border-radius: 5px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.62rem;
-  font-weight: 700;
-  display: inline-flex;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  color: #ffffff;
   backdrop-filter: blur(8px);
-  white-space: nowrap;
-  transition: all 0.3s ease;
+  z-index: 5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   cursor: default;
+  transition: all 0.3s ease;
 }
 
-.property-card:hover .property-pool-badge {
-  padding: 0.3rem 0.35rem;
-  font-size: 0;
+.property-amenities:hover {
+  background: rgba(183, 146, 93, 1);
+  box-shadow: 0 4px 12px rgba(183, 146, 93, 0.3);
+}
+
+.property-amenities svg {
+  stroke: currentColor;
+  fill: none;
 }
 
 .badge-premium {
