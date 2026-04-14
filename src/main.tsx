@@ -57,12 +57,8 @@ if ('serviceWorker' in navigator) {
     
     navigator.serviceWorker.register(swUrl, { scope: '/' })
       .then((registration) => {
-        console.log('[App] Service Worker registered successfully:', registration)
-        console.log('[App] SW URL:', swUrl)
-        
         // Проверяем обновления каждые 10 минут
         setInterval(() => {
-          console.log('[App] Checking for Service Worker updates...')
           registration.update()
         }, 10 * 60 * 1000)
       })
@@ -72,25 +68,14 @@ if ('serviceWorker' in navigator) {
     
     // Слушаем обновления Service Worker
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('[App] Service Worker controller changed - new version loaded')
-      // Можно показать пользователю уведомление об обновлении
+      // SW обновился и загрузил новую версию
     })
 
     // Слушаем сообщения от Service Worker
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('[App] Message from Service Worker:', event.data)
+    navigator.serviceWorker.addEventListener('message', (_event) => {
+      // Обработка сообщений от SW
     })
   })
-
-  // Очищаем все Service Workers при установке нового
-  if ('unregister' in navigator.serviceWorker) {
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      // Логируем существующие регистрации
-      registrations.forEach((reg) => {
-        console.log('[App] Existing SW registration:', reg.scope)
-      })
-    })
-  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
