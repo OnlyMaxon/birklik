@@ -60,6 +60,13 @@
   gap: 0.25rem;
   backdrop-filter: blur(8px);
   white-space: nowrap;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.property-card:hover .property-pool-badge {
+  padding: 0.3rem 0.35rem;
+  font-size: 0;
 }
 
 .badge-premium {
@@ -115,14 +122,14 @@
   cursor: not-allowed;
 }
 
-.property-favorite-btn.favorited {
-  background: rgba(216, 73, 73, 0.95);
+.property-favorite-btn.bookmarked {
+  background: rgba(212, 165, 116, 0.95);
   color: #ffffff;
 }
 
-.property-favorite-btn.favorited:hover:not(:disabled) {
-  background: rgba(216, 73, 73, 1);
-  box-shadow: 0 4px 12px rgba(216, 73, 73, 0.3);
+.property-favorite-btn.bookmarked:hover:not(:disabled) {
+  background: rgba(212, 165, 116, 1);
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
 }
 
 .property-favorite-btn svg {
