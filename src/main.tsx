@@ -48,17 +48,6 @@ window.addEventListener('error', (event: ErrorEvent) => {
   }
 })
 
-// ОЧИСТКА СТАРЫХ SERVICE WORKERS
-if ('serviceWorker' in navigator) {
-  // Unregister все старые Service Workers
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => {
-      // Удаляем все существующие регистрации
-      registration.unregister()
-    })
-  })
-}
-
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -68,6 +57,7 @@ if ('serviceWorker' in navigator) {
     
     navigator.serviceWorker.register(swUrl, { scope: '/' })
       .then((registration) => {
+        console.log('[App] Service Worker registered successfully')
         // Проверяем обновления каждые 10 минут
         setInterval(() => {
           registration.update()

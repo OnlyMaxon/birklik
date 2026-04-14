@@ -125,6 +125,11 @@ function App() {
   const [showRouteLoader, setShowRouteLoader] = React.useState(false)
   const isInitialMount = React.useRef(true)
 
+  // Log current path for debugging
+  React.useEffect(() => {
+    console.log('[App] Current path:', location.pathname, 'isLoading:', isLoading)
+  }, [location.pathname, isLoading])
+
   React.useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false
@@ -137,6 +142,7 @@ function App() {
 
   // Show loading screen while checking auth state
   if (isLoading) {
+    console.log('[App] Showing loading screen, isLoading is true')
     return <Loading fullScreen message="Birklik.az" brand />
   }
 
@@ -178,7 +184,12 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={
+            (() => {
+              console.warn('[App] Unknown route caught by catch-all:', location.pathname)
+              return <Navigate to="/" replace />
+            })()
+          } />
         </Routes>
       </React.Suspense>
     </>
