@@ -57,7 +57,6 @@ if ('serviceWorker' in navigator) {
     
     navigator.serviceWorker.register(swUrl, { scope: '/' })
       .then((registration) => {
-        console.log('[App] Service Worker registered successfully')
         // Проверяем обновления каждые 10 минут
         setInterval(() => {
           registration.update()
