@@ -58,6 +58,29 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
+          // Если 404, попробуем загрузить index.html для SPA routing
+          if (response.status === 404) {
+            // Это может быть SPA маршрут - загружаем index.html
+            return fetch('/index.html')
+              .then((indexResponse) => {
+                if (indexResponse && indexResponse.status === 200) {
+                  // Кешируем index.html
+                  const responseToCache = indexResponse.clone()
+                  caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(request, responseToCache)
+                  })
+                  // Возвращаем с оригинальным URL чтобы браузер обновил историю
+                  return new Response(indexResponse.body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: indexResponse.headers
+                  })
+                }
+                return response
+              })
+              .catch(() => response)
+          }
+
           if (response && response.status === 200) {
             const responseToCache = response.clone()
             caches.open(CACHE_NAME).then((cache) => {

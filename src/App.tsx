@@ -33,14 +33,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
       try {
         // Reload user to get latest emailVerified status
-        console.log('[ProtectedRoute] Checking email verification for:', firebaseUser.email)
         await firebaseUser.reload()
         
         // Add small delay to ensure state is current
         await new Promise(resolve => setTimeout(resolve, 100))
         
         setEmailVerified(firebaseUser.emailVerified)
-        console.log('[ProtectedRoute] emailVerified status:', firebaseUser.emailVerified)
       } catch (error) {
         logger.error('Error checking email verification:', error)
         setEmailVerified(firebaseUser.emailVerified)
@@ -66,7 +64,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   // Check if email is verified
   if (emailVerified === false) {
-    console.log('[ProtectedRoute] Email not verified, redirecting to /verify-email')
     return <Navigate to="/verify-email" replace />
   }
 
@@ -119,16 +116,16 @@ const ModeratorRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>
 }
 
+// Component for catch-all route
+const CatchAllRoute: React.FC = () => {
+  return <Navigate to="/" replace />
+}
+
 function App() {
   const { isLoading } = useAuth()
   const location = useLocation()
   const [showRouteLoader, setShowRouteLoader] = React.useState(false)
   const isInitialMount = React.useRef(true)
-
-  // Log current path for debugging
-  React.useEffect(() => {
-    console.log('[App] Current path:', location.pathname, 'isLoading:', isLoading)
-  }, [location.pathname, isLoading])
 
   React.useEffect(() => {
     if (isInitialMount.current) {
@@ -142,7 +139,6 @@ function App() {
 
   // Show loading screen while checking auth state
   if (isLoading) {
-    console.log('[App] Showing loading screen, isLoading is true')
     return <Loading fullScreen message="Birklik.az" brand />
   }
 
@@ -184,12 +180,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="*" element={
-            (() => {
-              console.warn('[App] Unknown route caught by catch-all:', location.pathname)
-              return <Navigate to="/" replace />
-            })()
-          } />
+          <Route path="*" element={<CatchAllRoute />} />
         </Routes>
       </React.Suspense>
     </>
