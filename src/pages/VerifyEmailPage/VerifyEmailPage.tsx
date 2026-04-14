@@ -44,6 +44,23 @@ export const VerifyEmailPage: React.FC = () => {
     setMessage('')
 
     try {
+      // Reload user and get fresh token before sending email
+      await firebaseUser.reload()
+      await firebaseUser.getIdToken(true)
+      
+      // Check if user still exists and email not verified
+      if (!firebaseUser.email || firebaseUser.emailVerified) {
+        setError(
+          language === 'en'
+            ? 'Email already verified or user not found'
+            : language === 'ru'
+              ? 'Email уже верифицирован или пользователь не найден'
+              : 'Email artıq doğrulanıb və ya istifadəçi tapılmadı'
+        )
+        setLoading(false)
+        return
+      }
+      
       await sendEmailVerification(firebaseUser, {
         url: `${window.location.origin}/auth/action`
       })
@@ -76,6 +93,24 @@ export const VerifyEmailPage: React.FC = () => {
           : language === 'ru' 
             ? 'Слишком много попыток. Попробуйте позже.' 
             : 'Həddindən artıq sorğu. Daha sonra yenidən cəhd edin.'
+      } else if (err.code === 'auth/user-not-found') {
+        errorMsg = language === 'en' 
+          ? 'User account not found. Please log in again.' 
+          : language === 'ru' 
+            ? 'Учетная запись пользователя не найдена. Пожалуйста, войдите еще раз.' 
+            : 'İstifadəçi hesabı tapılmadı. Zəhmət olmasa yenidən daxil olun.'
+      } else if (err.code === 'auth/invalid-user-token') {
+        errorMsg = language === 'en' 
+          ? 'Session expired. Please log in again.' 
+          : language === 'ru' 
+            ? 'Сеанс истек. Пожалуйста, войдите еще раз.' 
+            : 'Sesiya sona çatdı. Zəhmət olmasa yenidən daxil olun.'
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
+        errorMsg = language === 'en' 
+          ? 'Account issue. Please log in again.' 
+          : language === 'ru' 
+            ? 'Проблема с аккаунтом. Пожалуйста, войдите еще раз.' 
+            : 'Hesab problemi. Zəhmət olmasa yenidən daxil olun.'
       }
       
       setError(errorMsg)

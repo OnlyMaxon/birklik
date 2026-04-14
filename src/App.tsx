@@ -33,8 +33,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
       try {
         // Reload user to get latest emailVerified status
+        console.log('[ProtectedRoute] Checking email verification for:', firebaseUser.email)
         await firebaseUser.reload()
+        
+        // Add small delay to ensure state is current
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         setEmailVerified(firebaseUser.emailVerified)
+        console.log('[ProtectedRoute] emailVerified status:', firebaseUser.emailVerified)
       } catch (error) {
         logger.error('Error checking email verification:', error)
         setEmailVerified(firebaseUser.emailVerified)
@@ -60,6 +66,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   // Check if email is verified
   if (emailVerified === false) {
+    console.log('[ProtectedRoute] Email not verified, redirecting to /verify-email')
     return <Navigate to="/verify-email" replace />
   }
 

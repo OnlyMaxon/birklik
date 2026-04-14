@@ -42,22 +42,35 @@ export const ResetPasswordPage: React.FC = () => {
       // Apply the action code (this confirms the email)
       await applyActionCode(auth, oobCode)
       
+      console.log('[EmailVerification] applyActionCode successful')
+      
       // If user is currently logged in, reload to update emailVerified status
       if (auth.currentUser) {
+        console.log('[EmailVerification] Reloading user data...')
         await auth.currentUser.reload()
+        console.log('[EmailVerification] User reloaded. emailVerified:', auth.currentUser.emailVerified)
+        
+        // Force token refresh to ensure auth state is current
+        await auth.currentUser.getIdToken(true)
+        console.log('[EmailVerification] Token refreshed')
+      } else {
+        console.log('[EmailVerification] No currentUser logged in')
       }
 
       setSuccess(true)
       setValidating(false)
       
-      // Redirect after 3 seconds
+      // Redirect after 2 seconds (reduced from 3)
+      console.log('[EmailVerification] Scheduling redirect...')
       setTimeout(() => {
         if (auth.currentUser) {
+          console.log('[EmailVerification] Redirecting to /dashboard (user logged in)')
           navigate('/dashboard')
         } else {
+          console.log('[EmailVerification] Redirecting to /login (user not logged in)')
           navigate('/login')
         }
-      }, 3000)
+      }, 2000)
     } catch (err: any) {
       let errorMsg = language === 'en' ? 'Invalid or expired link' : language === 'ru' ? 'Недействительная или просроченная ссылка' : 'Doğrulama bağlantısı ya da sürəsi bitib'
       
@@ -67,6 +80,7 @@ export const ResetPasswordPage: React.FC = () => {
         errorMsg = language === 'en' ? 'Invalid verification link' : language === 'ru' ? 'Неверная ссылка подтверждения' : 'Doğrulama bağlantısı düzgün deyil'
       }
       
+      console.error('[EmailVerification] Error:', err.code, err.message)
       setError(errorMsg)
       setValidating(false)
     }
