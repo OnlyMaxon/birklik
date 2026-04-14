@@ -15,15 +15,16 @@ if (isIOS && isGoogleShell) {
 
 // Обработка ошибок загрузки динамических модулей
 let moduleLoadAttempts = 0
-const MAX_RELOAD_ATTEMPTS = 5
+const MAX_RELOAD_ATTEMPTS = 0 // Отключено - Service Worker теперь работает правильно
 
 window.addEventListener('error', (event: ErrorEvent) => {
   if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
     moduleLoadAttempts++
-    console.error(`[App] Module load failed (attempt ${moduleLoadAttempts}/${MAX_RELOAD_ATTEMPTS}):`, event.error)
+    console.error(`[App] ⚠️ Module load error (attempt ${moduleLoadAttempts}/${MAX_RELOAD_ATTEMPTS}):`, event.error)
+    console.error('[App] This should not happen - Service Worker is working correctly!')
     
     if (moduleLoadAttempts < MAX_RELOAD_ATTEMPTS) {
-      console.log('[App] Clearing Service Worker cache...')
+      console.log('[App] Clearing cache and reloading...')
       // Очищаем ALL кеши
       if ('caches' in window) {
         caches.keys().then((cacheNames) => {
@@ -39,15 +40,10 @@ window.addEventListener('error', (event: ErrorEvent) => {
             globalThis.location.href = url.toString()
           })
         })
-      } else {
-        // Fallback если нет кеша
-        const url = new URL(globalThis.location.href)
-        url.searchParams.set('t', Date.now().toString())
-        globalThis.location.href = url.toString()
       }
     } else {
       console.error('[App] Max reload attempts reached!')
-      alert('Ошибка загрузки приложения. Пожалуйста, очистите кеш браузера и попробуйте снова.')
+      alert('Ошибка загрузки приложения. Пожалуйста, обновите страницу браузером.')
     }
   }
 })
@@ -55,9 +51,14 @@ window.addEventListener('error', (event: ErrorEvent) => {
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    // Добавляем версию/checksum для cache-busting
+    const swVersion = '2026-04-14-v2'
+    const swUrl = `/sw.js?v=${swVersion}`
+    
+    navigator.serviceWorker.register(swUrl, { scope: '/' })
       .then((registration) => {
         console.log('[App] Service Worker registered successfully:', registration)
+        console.log('[App] SW URL:', swUrl)
         
         // Проверяем обновления каждые 10 минут
         setInterval(() => {
