@@ -48,6 +48,19 @@ window.addEventListener('error', (event: ErrorEvent) => {
   }
 })
 
+// ОЧИСТКА СТАРЫХ SERVICE WORKERS
+if ('serviceWorker' in navigator) {
+  // Unregister все старые Service Workers
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+      // Удаляем все существующие регистрации
+      registration.unregister().then(() => {
+        console.log('[App] Old Service Worker unregistered')
+      })
+    })
+  })
+}
+
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
