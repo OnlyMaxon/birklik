@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
@@ -14,7 +14,9 @@ type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings'
 export const ModerationPage: React.FC = () => {
   const { isAuthenticated, firebaseUser } = useAuth()
   const { language, t } = useLanguage()
-  const [activeTab, setActiveTab] = React.useState<ModerationTab>('posts')
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab') as ModerationTab | null
+  const [activeTab, setActiveTab] = React.useState<ModerationTab>(tabParam || 'posts')
   const [pendingListings, setPendingListings] = React.useState<Property[]>([])
   const [allComments, setAllComments] = React.useState<CommentWithProperty[]>([])
   const [allReports, setAllReports] = React.useState<CommentReport[]>([])
@@ -40,6 +42,13 @@ export const ModerationPage: React.FC = () => {
     }
     checkModerator()
   }, [firebaseUser])
+
+  // Sync activeTab with URL search params
+  React.useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
 
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)

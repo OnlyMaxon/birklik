@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context'
 import { useAuth } from '../context'
 import { Notification } from '../types'
@@ -8,6 +9,7 @@ import './TabsStyle.css'
 import * as logger from '../services/logger'
 
 export const NotificationsTab: React.FC = () => {
+  const navigate = useNavigate()
   const { language } = useLanguage()
   const { user } = useAuth()
   const [notifications, setNotifications] = React.useState<Notification[]>([])
@@ -45,6 +47,50 @@ export const NotificationsTab: React.FC = () => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId))
   }
 
+  const handleNotificationClick = async (notification: Notification) => {
+    // Пометить как прочитанное при клике
+    if (!notification.read && user?.id) {
+      await markNotificationAsRead(user.id, notification.id)
+      setNotifications(prev =>
+        prev.map(n => (n.id === notification.id ? { ...n, read: true } : n))
+      )
+    }
+
+    // Редирект в зависимости от типа уведомления
+    const booking = notification as any
+    const propertyId = booking.propertyId || notification.relatedId
+
+    switch (notification.type) {
+      case 'booking':
+        // Перейти на вкладку бронирований в Dashboard
+        navigate('/dashboard?tab=bookings')
+        break
+
+      case 'comment':
+      case 'reply':
+        // Перейти на страницу свойства где комментарий
+        if (propertyId) {
+          navigate(`/property/${propertyId}`)
+        }
+        break
+
+      case 'favorite':
+        // Перейти на страницу свойства которое добавили в избранное
+        if (propertyId) {
+          navigate(`/property/${propertyId}`)
+        }
+        break
+
+      case 'commentReport':
+        // Перейти на вкладку отчетов в moderation page
+        navigate('/dashboard/review?tab=reports')
+        break
+
+      default:
+        break
+    }
+  }
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'booking':
@@ -79,7 +125,12 @@ export const NotificationsTab: React.FC = () => {
       ) : (
         <div className="notifications-list">
           {notifications.map(notification => (
-            <div key={notification.id} className={`notification-item ${notification.read ? 'read' : 'unread'}`}>
+            <div 
+              key={notification.id} 
+              className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+              onClick={() => handleNotificationClick(notification)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="notification-icon">{getNotificationIcon(notification.type)}</div>
               <div className="notification-content">
                 <h4 className="notification-title">{notification.title}</h4>
@@ -95,7 +146,7 @@ export const NotificationsTab: React.FC = () => {
                   )}
                 </p>
               </div>
-              <div className="notification-actions">
+              <div className="notification-actions" onClick={(e) => e.stopPropagation()}>
                 {!notification.read && (
                   <button
                     onClick={() => handleMarkAsRead(notification.id)}

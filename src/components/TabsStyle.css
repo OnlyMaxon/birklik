@@ -124,6 +124,9 @@
 
 .notification-item:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left-color: #d4b896;
+  transform: translateX(2px);
+  background: #fffcf8;
 }
 
 .notification-icon {

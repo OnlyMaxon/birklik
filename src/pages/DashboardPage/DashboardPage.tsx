@@ -218,6 +218,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
   }, [isAuthenticated, navigate])
 
+  // Sync activeTab with URL search params
+  React.useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
+
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const loadListings = React.useCallback(async () => {
