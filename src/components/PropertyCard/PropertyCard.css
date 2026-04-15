@@ -47,34 +47,20 @@
   z-index: 5;
 }
 
-.property-amenities {
-  position: absolute;
-  bottom: 0.6rem;
-  left: 0.6rem;
+.property-pool-badge {
   background: rgba(183, 146, 93, 0.95);
+  color: #ffffff;
   border: none;
   border-radius: 5px;
-  width: 2.2rem;
-  height: 2.2rem;
-  display: flex;
+  padding: 0.35rem 0.5rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  gap: 0.25rem;
   backdrop-filter: blur(8px);
-  z-index: 5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  cursor: default;
+  white-space: nowrap;
   transition: all 0.3s ease;
-}
-
-.property-amenities:hover {
-  background: rgba(183, 146, 93, 1);
-  box-shadow: 0 4px 12px rgba(183, 146, 93, 0.3);
-}
-
-.property-amenities svg {
-  stroke: currentColor;
-  fill: none;
+  cursor: default;
 }
 
 .badge-premium {
