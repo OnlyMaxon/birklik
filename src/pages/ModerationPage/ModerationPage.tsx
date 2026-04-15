@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Navigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
@@ -146,36 +146,6 @@ export const ModerationPage: React.FC = () => {
     <Layout>
       <section className="moderation-page">
         <div className="container moderation-layout">
-          {/* Left Sidebar Menu */}
-          <aside className="moderation-sidebar">
-            <div className="sidebar-section">
-              <h3>{language === 'en' ? 'Dashboard' : language === 'ru' ? 'Панель' : 'Panel'}</h3>
-              <nav className="sidebar-nav">
-                <Link to="/dashboard" className="sidebar-link">
-                  {language === 'en' ? 'My Listings' : language === 'ru' ? 'Мои публикации' : 'Mənim elanlarım'}
-                </Link>
-                <Link to="/dashboard?tab=bookmarks" className="sidebar-link">
-                  {language === 'en' ? 'Bookmarked' : language === 'ru' ? 'Избранные' : 'Əlaqələndirilmişlər'}
-                </Link>
-                <Link to="/dashboard?tab=notifications" className="sidebar-link">
-                  {language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'}
-                </Link>
-              </nav>
-            </div>
-
-            {isModeratorUser && (
-              <div className="sidebar-section">
-                <h3>{language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}</h3>
-                <nav className="sidebar-nav">
-                  <Link to="/dashboard/review" className="sidebar-link active">
-                    {language === 'en' ? 'Review Content' : language === 'ru' ? 'Проверить контент' : 'Kontenti yoxla'}
-                  </Link>
-                </nav>
-              </div>
-            )}
-          </aside>
-
-          {/* Right Content */}
           <div className="moderation-content-wrapper">
             <div className="moderation-header">
               <h1>{language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}</h1>
