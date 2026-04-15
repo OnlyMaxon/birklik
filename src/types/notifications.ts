@@ -2,7 +2,7 @@
  * Notification Type - User notifications for bookings, comments, favorites, replies, premium
  */
 
-export type NotificationType = 'booking' | 'comment' | 'favorite' | 'reply' | 'premium' | 'commentReport' | 'rating'
+export type NotificationType = 'booking' | 'comment' | 'favorite' | 'reply' | 'premium' | 'commentReport' | 'rating' | 'cancellationRequest' | 'cancellationApproved' | 'cancellationRejected'
 
 export interface Notification {
   id: string
@@ -73,4 +73,32 @@ export interface RatingNotification extends Notification {
   propertyId: string
   raterName: string
   ratingValue: number
+}
+
+export interface CancellationRequestNotification extends Notification {
+  type: 'cancellationRequest'
+  bookingId: string
+  propertyId: string
+  requesterName: string
+  requesterEmail: string
+  checkInDate: string
+  checkOutDate: string
+}
+
+export interface CancellationApprovedNotification extends Notification {
+  type: 'cancellationApproved'
+  bookingId: string
+  propertyId: string
+  propertyTitle: string
+  checkInDate: string
+  checkOutDate: string
+}
+
+export interface CancellationRejectedNotification extends Notification {
+  type: 'cancellationRejected'
+  bookingId: string
+  propertyId: string
+  propertyTitle: string
+  checkInDate: string
+  checkOutDate: string
 }

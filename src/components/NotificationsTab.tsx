@@ -88,6 +88,16 @@ export const NotificationsTab: React.FC = () => {
         }
         break
 
+      case 'cancellationRequest':
+        // Перейти на вкладку запросов отмены в Dashboard
+        navigate('/dashboard?tab=cancellationRequests')
+        break
+
+      case 'cancellationApproved':
+      case 'cancellationRejected':
+        // Просто уведомление - никуда не редирект
+        break
+
       case 'commentReport':
         // Перейти на вкладку отчетов в moderation page
         navigate('/dashboard/review?tab=reports')
@@ -110,6 +120,12 @@ export const NotificationsTab: React.FC = () => {
         return '⭐'
       case 'reply':
         return '↩️'
+      case 'cancellationRequest':
+        return '❌'
+      case 'cancellationApproved':
+        return '✅'
+      case 'cancellationRejected':
+        return '❌'
       case 'commentReport':
         return '🚩'
       default:

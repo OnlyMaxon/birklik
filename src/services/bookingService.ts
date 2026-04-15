@@ -1,5 +1,5 @@
 import { db } from '../config/firebase'
-import { collection, doc, addDoc, deleteDoc, query, where, getDocs } from 'firebase/firestore'
+import { collection, doc, addDoc, query, where, getDocs, getDoc } from 'firebase/firestore'
 import { Booking } from '../types'
 import { validateCsrfToken } from './csrfService'
 import * as logger from './logger'
@@ -156,14 +156,56 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
  * @example
  * const cancelled = await cancelBooking('booking_555')
  */
-export const cancelBooking = async (bookingId: string): Promise<boolean> => {
+export const cancelBooking = async (bookingId: string): Promise<{success: boolean; requestId?: string}> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, bookingId)
-    await deleteDoc(docRef)
-    return true
+    const booking = await getDoc(docRef)
+    
+    if (!booking.exists()) {
+      return { success: false }
+    }
+
+    const bookingData = booking.data() as Booking
+    
+    // Create cancellation request instead of deleting directly
+    const { createCancellationRequest } = await import('./cancellationService')
+    const { createCancellationRequestNotification } = await import('./notificationsService')
+    
+    const requestId = await createCancellationRequest(
+      bookingId,
+      bookingData.propertyId,
+      bookingData.ownerId,
+      bookingData.userId,
+      bookingData.userName,
+      bookingData.userEmail,
+      bookingData.checkInDate,
+      bookingData.checkOutDate
+    )
+
+    if (!requestId) {
+      return { success: false }
+    }
+
+    // Notify property owner about cancellation request
+    await createCancellationRequestNotification(bookingData.ownerId, {
+      type: 'cancellationRequest',
+      title: '❌ Cancellation Request',
+      message: `${bookingData.userName} requested to cancel their booking`,
+      bookingId,
+      propertyId: bookingData.propertyId,
+      requesterName: bookingData.userName,
+      requesterEmail: bookingData.userEmail,
+      checkInDate: bookingData.checkInDate,
+      checkOutDate: bookingData.checkOutDate,
+      relatedId: bookingId,
+      relatedUserName: bookingData.userName,
+      actionUrl: `/dashboard?tab=cancellationRequests`
+    } as any)
+
+    return { success: true, requestId }
   } catch (error) {
     logger.error('Error cancelling booking:', error)
-    return false
+    return { success: false }
   }
 }
 

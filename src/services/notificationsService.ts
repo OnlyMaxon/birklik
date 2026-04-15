@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification } from '../types'
+import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification } from '../types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'users'
@@ -235,6 +235,81 @@ export const createRatingNotification = async (
     return docRef.id
   } catch (error) {
     logger.error('Error creating rating notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create cancellation request notification for property owner
+ * @param {string} ownerId - Property owner's user ID
+ * @param {CancellationRequestNotification} notificationData - Cancellation request notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createCancellationRequestNotification = async (
+  ownerId: string,
+  notificationData: Omit<CancellationRequestNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: ownerId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating cancellation request notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create cancellation approved notification for guest
+ * @param {string} guestId - Guest's user ID
+ * @param {CancellationApprovedNotification} notificationData - Cancellation approved notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createCancellationApprovedNotification = async (
+  guestId: string,
+  notificationData: Omit<CancellationApprovedNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, guestId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: guestId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating cancellation approved notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create cancellation rejected notification for guest
+ * @param {string} guestId - Guest's user ID
+ * @param {CancellationRejectedNotification} notificationData - Cancellation rejected notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createCancellationRejectedNotification = async (
+  guestId: string,
+  notificationData: Omit<CancellationRejectedNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, guestId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: guestId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating cancellation rejected notification:', error)
     return null
   }
 }

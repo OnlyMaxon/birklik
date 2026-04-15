@@ -129,6 +129,7 @@ export interface Booking {
   id: string
   propertyId: string
   userId: string
+  ownerId: string
   userName: string
   userEmail: string
   userPhone: string

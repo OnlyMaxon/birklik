@@ -216,6 +216,7 @@ export const PropertyPage: React.FC = () => {
       const booking: Omit<Booking, 'id' | 'createdAt'> = {
         propertyId: property.id,
         userId: user.id,
+        ownerId: property.ownerId || '',
         userName: user.name,
         userEmail: user.email,
         userPhone: user.phone,

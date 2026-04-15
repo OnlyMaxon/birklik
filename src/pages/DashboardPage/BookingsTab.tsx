@@ -1,9 +1,9 @@
 import React from 'react'
 import { useLanguage, useAuth } from '../../context'
 import { Booking, Property } from '../../types'
-import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
-import { getUserBookings } from '../../services'
+import { getUserBookings, cancelBooking } from '../../services'
 import { Loading } from '../../components'
 import * as logger from '../../services/logger'
 
@@ -136,8 +136,12 @@ export const BookingsTab: React.FC = () => {
 
     try {
       setIsCanceling(bookingId)
-      await deleteDoc(doc(db, 'bookings', bookingId))
-      setMyBookings(prev => prev.filter(b => b.id !== bookingId))
+      const result = await cancelBooking(bookingId)
+      if (result.success) {
+        setMyBookings(prev => prev.filter(b => b.id !== bookingId))
+      } else {
+        setError(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Не удалось отменить бронирование' : 'Bölməni ləğv etmək olmadı')
+      }
     } catch (err) {
       logger.error('Error canceling booking:', err)
       setError(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Не удалось отменить бронирование' : 'Bölməni ləğv etmək olmadı')

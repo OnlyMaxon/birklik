@@ -67,9 +67,9 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
     if (!lastBookingId) return
     
     try {
-      const success = await cancelBooking(lastBookingId)
-      if (success) {
-        setMessage({ type: 'success', text: language === 'en' ? 'Booking cancelled' : language === 'ru' ? 'Бронирование отменено' : 'Rezervasyon ləğv edildi' })
+      const result = await cancelBooking(lastBookingId)
+      if (result.success) {
+        setMessage({ type: 'success', text: language === 'en' ? 'Cancellation request sent' : language === 'ru' ? 'Запрос на отмену отправлен' : 'İptal sorğusu göndərildi' })
         setLastBookingId(null)
         onBookingSuccess?.()
         setTimeout(() => setMessage(null), 3000)
@@ -102,6 +102,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
     const booking: Omit<Booking, 'id' | 'createdAt'> = {
       propertyId: property.id,
       userId: user.id,
+      ownerId: property.ownerId || '',
       userName: user.name || 'Guest',
       userEmail: user.email || '',
       userPhone: user.phone || '',
