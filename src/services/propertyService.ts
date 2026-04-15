@@ -393,7 +393,6 @@ export const getAllProperties = async (): Promise<Property[]> => {
   try {
     const q = query(
       collection(db, COLLECTION_NAME),
-      where('status', '==', 'approved'),
       orderBy('createdAt', 'desc')
     )
     const snapshot = await getDocs(q)
