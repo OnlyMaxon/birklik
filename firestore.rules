@@ -113,5 +113,38 @@ service cloud.firestore {
       // Delete: moderator can delete reports
       allow delete: if request.auth != null && isModerator();
     }
+
+    match /cancellationRequests/{requestId} {
+      // Read: guest can read their own cancellation requests, or owner can read requests for their properties
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.guestId
+        || request.auth.uid == resource.data.ownerId
+      );
+
+      // Create: guest must match auth user
+      allow create: if request.auth != null
+        && request.resource.data.guestId == request.auth.uid
+        && request.resource.data.bookingId != null
+        && request.resource.data.propertyId != null
+        && request.resource.data.ownerId != null
+        && request.resource.data.guestName != null
+        && request.resource.data.guestEmail != null
+        && request.resource.data.checkInDate != null
+        && request.resource.data.checkOutDate != null
+        && request.resource.data.status == 'pending';
+
+      // Update: only property owner can update status (approve/reject)
+      allow update: if request.auth != null
+        && isOwner(resource.data.ownerId)
+        && (request.resource.data.status == 'approved' || request.resource.data.status == 'rejected')
+        && request.resource.data.respondedAt != null;
+
+      // Delete: guest, owner, or moderator can delete
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.guestId
+        || request.auth.uid == resource.data.ownerId
+        || isModerator()
+      );
+    }
   }
 }
