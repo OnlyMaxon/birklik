@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useSearchParams, Link } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
