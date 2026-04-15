@@ -77,7 +77,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           {property.amenities?.includes('pool') && (
             <div className="property-pool-badge badge badge-accent" title={t.amenities.pool}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <path d="M5 2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v12h14V4H5zm2 3h2v7H7V9zm4 0h2v7h-2V9zm4 0h2v7h-2V9z"/>
+                <path d="M12 2C12 2 6 10.5 6 15c0 3.311 2.686 6 6 6s6-2.689 6-6c0-4.5-6-13-6-13z"/>
               </svg>
             </div>
           )}
