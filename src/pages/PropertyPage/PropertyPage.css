@@ -599,59 +599,76 @@
   margin-top: 1.5rem;
 }
 
-.interactions-likes {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.interactions-rating {
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid rgba(121, 99, 72, 0.2);
 }
 
-.interactions-likes .btn {
-  border-radius: 14px;
-  font-weight: 600;
-  padding: 0.6rem 1.2rem;
-  display: inline-flex;
+.interactions-rating h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4f3f2d;
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.average-rating {
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
-  transition: all 0.3s ease;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
 }
 
-.interactions-likes .btn-primary {
-  background: linear-gradient(135deg, #d6b17d, #c4a16f);
-  border-color: #b8935f;
-  color: white;
+.average-rating .rating-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #d6b17d;
+  min-width: 40px;
 }
 
-.interactions-likes .btn-outline {
-  border: 2px solid rgba(121, 99, 72, 0.3);
-  color: #6e5436;
-  background: transparent;
+.average-rating .rating-text {
+  color: #7d6f5d;
+  font-size: 0.875rem;
 }
 
-.interactions-likes .btn-outline:hover:not(:disabled) {
-  background: rgba(214, 177, 125, 0.1);
-  border-color: rgba(121, 99, 72, 0.5);
+.stars-rating {
+  display: flex;
+  gap: 0.6rem;
 }
 
-.interactions-likes .btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.interactions-likes .likes-count {
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0.4rem;
+  color: #ccc;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 32px;
-  background: rgba(214, 177, 125, 0.2);
-  border-radius: 12px;
-  color: #6e5436;
-  font-weight: 700;
-  font-size: 0.875rem;
 }
+
+.star-btn:hover:not(:disabled) {
+  transform: scale(1.2);
+  color: #f0ad4e;
+}
+
+.star-btn.active {
+  color: #d6b17d;
+}
+
+.star-btn.filled {
+  color: #d6b17d;
+}
+
+.star-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 
 .interactions-comments h4 {
   font-size: 1rem;

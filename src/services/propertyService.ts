@@ -588,6 +588,119 @@ export const toggleLikeProperty = async (propertyId: string, userId: string): Pr
 }
 
 /**
+ * Add rating to a property by a user (1-5 stars)
+ * Only users who have booked the property can rate it
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} userId - User Firestore ID
+ * @param {number} rating - Rating value (1-5)
+ * @param {string} userName - User's name for notification
+ * @returns {Promise<{success: boolean; hasBooked?: boolean}>} Success status and booking check
+ * @example
+ * const result = await addRatingToProperty('prop_111', 'user_456', 5, 'John Doe')
+ */
+export const addRatingToProperty = async (
+  propertyId: string,
+  userId: string,
+  rating: number,
+  userName: string = 'User'
+): Promise<{ success: boolean; hasBooked?: boolean }> => {
+  try {
+    if (rating < 1 || rating > 5) {
+      logger.error('Invalid rating: must be 1-5')
+      return { success: false }
+    }
+
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return { success: false }
+    }
+
+    const currentData = current.data() as any
+    
+    // Check if user has booked this property
+    try {
+      const { hasUserBookedProperty } = await import('./bookingService')
+      const hasBooked = await hasUserBookedProperty(userId, propertyId)
+      if (!hasBooked) {
+        logger.warn(`User ${userId} attempted to rate property ${propertyId} without booking`)
+        return { success: false, hasBooked: false }
+      }
+    } catch (error) {
+      logger.warn('Could not verify booking status, allowing rating anyway')
+    }
+
+    const ratings = currentData.ratings || {}
+    ratings[userId] = rating
+
+    // Calculate average rating
+    const ratingValues = Object.values(ratings) as number[]
+    const averageRating = ratingValues.length > 0 
+      ? ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length 
+      : 0
+
+    await updateDoc(docRef, {
+      ratings,
+      rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+      reviews: ratingValues.length, // Total number of reviews
+      updatedAt: new Date().toISOString()
+    })
+
+    // Create notification for property owner
+    try {
+      const ownerId = currentData.ownerId
+      const { createRatingNotification } = await import('./notificationsService')
+      if (ownerId) {
+        await createRatingNotification(ownerId, {
+          type: 'rating',
+          title: `⭐ ${rating} stars`,
+          message: `${userName} rated your property with ${rating} stars`,
+          propertyId,
+          raterName: userName,
+          ratingValue: rating,
+          relatedId: propertyId,
+          relatedUserName: userName,
+          actionUrl: `/property/${propertyId}`
+        } as any)
+      }
+    } catch (error) {
+      logger.warn('Could not create rating notification:', error)
+    }
+
+    return { success: true }
+  } catch (error) {
+    logger.error('Error adding rating:', error)
+    return { success: false }
+  }
+}
+
+/**
+ * Get user's rating for a property
+ * @param {string} propertyId - Property Firestore document ID
+ * @param {string} userId - User Firestore ID
+ * @returns {Promise<number | null>} User's rating (1-5) or null if not rated
+ */
+export const getUserRatingForProperty = async (propertyId: string, userId: string): Promise<number | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, propertyId)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return null
+    }
+
+    const currentData = current.data() as any
+    const ratings = currentData.ratings || {}
+    
+    return ratings[userId] || null
+  } catch (error) {
+    logger.error('Error getting user rating:', error)
+    return null
+  }
+}
+
+/**
  * Delete a comment from a property
  * @param {string} propertyId - Property Firestore document ID
  * @param {string} commentId - Comment ID to delete

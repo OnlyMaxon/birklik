@@ -5,7 +5,7 @@ import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading, ReportCommentModal } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
-import { getPropertyById, addCommentToProperty, toggleLikeProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty, addReplyToComment } from '../../services'
+import { getPropertyById, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty, addReplyToComment, addRatingToProperty, getUserRatingForProperty } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { getCsrfToken } from '../../services/csrfService'
@@ -71,6 +71,8 @@ export const PropertyPage: React.FC = () => {
   const [replyingToId, setReplyingToId] = React.useState<string | null>(null)
   const [replyText, setReplyText] = React.useState('')
   const [isPostingReply, setIsPostingReply] = React.useState(false)
+  const [userRating, setUserRating] = React.useState<number | null>(null)
+  const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
 
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
@@ -107,6 +109,10 @@ export const PropertyPage: React.FC = () => {
       if (isAuthenticated && user) {
         const booked = await hasUserBookedProperty(user.id, id)
         setHasBooked(booked)
+        
+        // Load user's rating for this property
+        const rating = await getUserRatingForProperty(id, user.id)
+        setUserRating(rating)
       }
       
       setIsLoading(false)
@@ -319,15 +325,73 @@ export const PropertyPage: React.FC = () => {
     setIsPostingComment(false)
   }
 
-  const handleToggleLike = async () => {
-    if (!isAuthenticated || !user || !property) return
-
-    const success = await toggleLikeProperty(property.id, user.id)
-    if (success) {
-      // Reload property to show like count
-      const updated = await getPropertyById(property.id)
-      setProperty(updated)
+  const handleRating = async (rating: number) => {
+    if (!isAuthenticated || !user || !property) {
+      alert(language === 'en' ? 'Please sign in to rate' : language === 'ru' ? 'Пожалуйста, войдите чтобы оставить оценку' : 'Lütfen puanlamak için giriş yapın')
+      return
     }
+
+    // Check if user has booked this property
+    if (!hasBooked) {
+      alert(language === 'en' ? 'You can only rate properties you have booked' : language === 'ru' ? 'Вы можете оценивать только забронированные объекты' : 'Yalnız bronlaşdırdığınız əmlakları qiymətləndirə bilərsiniz')
+      return
+    }
+
+    setIsSubmittingRating(true)
+    try {
+      const result = await addRatingToProperty(property.id, user.id, rating, user.name || 'User')
+      if (result.success) {
+        setUserRating(rating)
+        setNotificationMessage(language === 'en' ? 'Rating saved!' : language === 'ru' ? 'Оценка сохранена!' : 'Reytinq kayd edildi!')
+        setShowNotification(true)
+        
+        // Reload property to show updated rating
+        const updated = await getPropertyById(property.id)
+        setProperty(updated)
+      } else if (result.hasBooked === false) {
+        alert(language === 'en' ? 'You can only rate properties you have booked' : language === 'ru' ? 'Вы можете оценивать только забронированные объекты' : 'Yalnız bronlaşdırdığınız əmlakları qiymətləndirə bilərsiniz')
+      } else {
+        setNotificationMessage(language === 'en' ? 'Error saving rating' : language === 'ru' ? 'Ошибка при сохранении оценки' : 'Reytinq kayd edilməsi xətası')
+        setShowNotification(true)
+      }
+    } catch (error) {
+      logger.error('Error submitting rating:', error)
+      setNotificationMessage(language === 'en' ? 'Error saving rating' : language === 'ru' ? 'Ошибка при сохранении оценки' : 'Reytinq kayd edilməsi xətası')
+      setShowNotification(true)
+    } finally {
+      setIsSubmittingRating(false)
+    }
+  }
+
+  const renderStars = () => {
+    return (
+      <div className="stars-rating">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            className={`star-btn ${userRating === star ? 'active' : ''} ${star <= userRating! ? 'filled' : ''}`}
+            onClick={() => handleRating(star)}
+            disabled={!isAuthenticated || isSubmittingRating}
+            title={`${star} ${language === 'en' ? 'star' : language === 'ru' ? 'звезда' : 'ulduz'}`}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  const renderAverageRating = () => {
+    const avgRating = property?.rating || 0
+    const reviewCount = property?.reviews || 0
+    return (
+      <div className="average-rating">
+        <span className="rating-value">{avgRating > 0 ? avgRating.toFixed(1) : '-'}</span>
+        <span className="rating-text">
+          {avgRating > 0 ? `(${reviewCount} ${language === 'en' ? 'review' : language === 'ru' ? 'отзыв' : 'rəy'}${reviewCount !== 1 ? (language === 'en' ? 's' : language === 'ru' ? 'ов' : '') : ''})` : language === 'en' ? 'Not rated yet' : language === 'ru' ? 'Еще не оценено' : 'Hələ qiymətləndirilməyib'}
+        </span>
+      </div>
+    )
   }
 
   const handleFavoriteClick = async () => {
@@ -870,21 +934,13 @@ export const PropertyPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Likes and Comments Section */}
+              {/* Interactions Section */}
               <div className="property-interactions-section">
-                {/* Likes */}
-                <div className="interactions-likes">
-                  <button
-                    onClick={handleToggleLike}
-                    disabled={!isAuthenticated}
-                    className={`btn btn-sm ${property.likes?.includes(user?.id || '') ? 'btn-primary' : 'btn-outline'}`}
-                    title={!isAuthenticated ? 'Sign in to like' : ''}
-                  >
-                    ❤️ {language === 'en' ? 'Like' : language === 'ru' ? 'Нравится' : 'Beğən'}
-                  </button>
-                  <span className="likes-count">
-                    {property.likes?.length || 0}
-                  </span>
+                {/* Rating Section */}
+                <div className="interactions-rating">
+                  <h4>{language === 'en' ? 'Rate this property' : language === 'ru' ? 'Оцените это свойство' : 'Bu əmlakı qiymətləndirin'}</h4>
+                  {renderAverageRating()}
+                  {renderStars()}
                 </div>
 
                 {/* Comments */}

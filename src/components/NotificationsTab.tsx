@@ -81,6 +81,13 @@ export const NotificationsTab: React.FC = () => {
         }
         break
 
+      case 'rating':
+        // Перейти на страницу свойства которое оценили
+        if (propertyId) {
+          navigate(`/property/${propertyId}`)
+        }
+        break
+
       case 'commentReport':
         // Перейти на вкладку отчетов в moderation page
         navigate('/dashboard/review?tab=reports')
@@ -99,6 +106,8 @@ export const NotificationsTab: React.FC = () => {
         return '💬'
       case 'favorite':
         return '❤️'
+      case 'rating':
+        return '⭐'
       case 'reply':
         return '↩️'
       case 'commentReport':

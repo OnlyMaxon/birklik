@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification } from '../types'
+import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification } from '../types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'users'
@@ -211,5 +211,30 @@ export const createReportNotification = async (
   } catch (error) {
     logger.error('Error creating report notification:', error)
     return []
+  }
+}
+
+/**
+ * Create rating notification for property owner
+ * @param {string} ownerId - Property owner's user ID
+ * @param {RatingNotification} notificationData - Rating notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createRatingNotification = async (
+  ownerId: string,
+  notificationData: Omit<RatingNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: ownerId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating rating notification:', error)
+    return null
   }
 }
