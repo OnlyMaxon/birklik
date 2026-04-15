@@ -45,7 +45,7 @@ export const createCancellationRequest = async (
   reason?: string
 ): Promise<string | null> => {
   try {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+    const requestData: any = {
       bookingId,
       propertyId,
       ownerId,
@@ -54,10 +54,15 @@ export const createCancellationRequest = async (
       guestEmail,
       checkInDate,
       checkOutDate,
-      reason,
       status: 'pending',
       createdAt: new Date().toISOString()
-    })
+    }
+
+    if (reason) {
+      requestData.reason = reason
+    }
+
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), requestData)
     return docRef.id
   } catch (error) {
     logger.error('Error creating cancellation request:', error)
