@@ -77,6 +77,21 @@ const MapCenterUpdater: React.FC<{ coordinates: { lat: number; lng: number } }> 
   return null
 }
 
+/**
+ * Sanitize API response to prevent XSS attacks
+ * Removes HTML tags and restricts length
+ */
+const sanitizeApiResponse = (input: string): string => {
+  if (typeof input !== 'string') return ''
+  
+  return input
+    .replace(/<[^>]*>/g, '')  // Remove HTML tags
+    .replace(/javascript:/gi, '')  // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, '')  // Remove event handlers (onclick, etc)
+    .trim()
+    .slice(0, 255)  // Max 255 chars
+}
+
 const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange, onAddressReverse }) => {
   useMapEvents({
     click: (event) => {
@@ -88,36 +103,51 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange, 
       
       // Reverse geocode to get address
       if (onAddressReverse) {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000)  // 5 second timeout
+        
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newCoords.lat}&lon=${newCoords.lng}&zoom=18&addressdetails=1`, {
+          signal: controller.signal,
           headers: {
             'Accept-Language': 'az,en;q=0.9'
           }
         })
           .then(res => res.json())
           .then(data => {
+            clearTimeout(timeoutId)
+            
             let address = ''
             
-            // Try multiple ways to extract address
-            if (data.address) {
+            // Type-check and extract address safely
+            if (data && typeof data === 'object' && data.address && typeof data.address === 'object') {
               // Prioritize: village -> suburb -> city_district -> county -> city
-              address = data.address.village || 
-                       data.address.suburb || 
-                       data.address.city_district || 
-                       data.address.county || 
-                       data.address.city || 
-                       data.address.town ||
-                       data.display_name?.split(',')[0] || 
-                       ''
+              address = [
+                data.address.village,
+                data.address.suburb,
+                data.address.city_district,
+                data.address.county,
+                data.address.city,
+                data.address.town,
+                data.display_name ? data.display_name.split(',')[0] : ''
+              ]
+                .find(a => typeof a === 'string' && a.length > 0) || ''
             }
             
-            // Only fill if it's in Azerbaijan
-            if (data.address && (data.address.country === 'Azerbaijan' || data.address.country_code === 'az')) {
-              if (address) {
-                onAddressReverse(address)
-              }
+            // Sanitize address BEFORE using
+            const sanitizedAddress = sanitizeApiResponse(address)
+            
+            // Only fill if it's in Azerbaijan and address is valid
+            if (
+              data &&
+              typeof data.address === 'object' &&
+              (data.address.country === 'Azerbaijan' || data.address.country_code === 'az') &&
+              sanitizedAddress.length > 0
+            ) {
+              onAddressReverse(sanitizedAddress)
             }
           })
           .catch(() => {
+            clearTimeout(timeoutId)
             // Silently fail if reverse geocoding fails
           })
       }

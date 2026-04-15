@@ -24,7 +24,7 @@ const REPORTS_COLLECTION = 'commentReports'
  * @param {string} reportedByName - Name of user making the report
  * @param {ReportReason} reason - Reason for the report
  * @param {string} details - Additional details about the report
- * @returns {Promise<CommentReport>} Created report object
+ * @returns {Promise<CommentReport|null>} Created report object, or null if duplicate
  */
 export const createCommentReport = async (
   propertyId: string,
@@ -34,8 +34,15 @@ export const createCommentReport = async (
   reportedByName: string,
   reason: ReportReason,
   details?: string
-): Promise<CommentReport> => {
+): Promise<CommentReport | null> => {
   try {
+    // Check if user already reported this comment (prevent duplicates)
+    const existingReports = await getCommentReports(commentId)
+    if (existingReports.some(r => r.reportedBy === reportedBy)) {
+      logger.warn(`User ${reportedBy} already reported comment ${commentId}`)
+      return null
+    }
+
     const reportData = {
       propertyId,
       commentId,

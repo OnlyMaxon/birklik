@@ -10,7 +10,11 @@ export interface PaginationState<T> {
 }
 
 export const usePagination = <T,>(
-  fetcher: (options: { limit: number; startAfter?: DocumentSnapshot }) => Promise<(T & { id: string })[]>,
+  fetcher: (options: { 
+    limit: number
+    startAfter?: DocumentSnapshot
+    onLastDocSnapshot?: (doc: DocumentSnapshot | undefined) => void
+  }) => Promise<(T & { id: string })[]>,
   pageSize = 10
 ) => {
   const [state, setState] = useState<PaginationState<T & { id: string }>>({
@@ -28,13 +32,23 @@ export const usePagination = <T,>(
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
+      let lastDoc: DocumentSnapshot | undefined
+
       const results = await fetcher({
         limit: pageSize + 1, // Fetch one extra to know if there's more
-        startAfter: lastSnapshot
+        startAfter: lastSnapshot,
+        onLastDocSnapshot: (doc) => {
+          lastDoc = doc
+        }
       })
 
       const hasMore = results.length > pageSize
       const itemsToAdd = results.slice(0, pageSize)
+
+      // CRITICAL FIX: Update lastSnapshot for next page
+      if (lastDoc) {
+        setLastSnapshot(lastDoc)
+      }
 
       setState((prev) => ({
         ...prev,
@@ -43,9 +57,6 @@ export const usePagination = <T,>(
         currentPage: prev.currentPage + 1,
         isLoading: false
       }))
-
-      // Store the last document for next pagination
-      // Note: This is a workaround - ideally fetcher should return snapshots too
     } catch (error: any) {
       setState((prev) => ({
         ...prev,
@@ -61,12 +72,22 @@ export const usePagination = <T,>(
     setLastSnapshot(undefined)
 
     try {
+      let lastDoc: DocumentSnapshot | undefined
+
       const results = await fetcher({
-        limit: pageSize + 1
+        limit: pageSize + 1,
+        onLastDocSnapshot: (doc) => {
+          lastDoc = doc
+        }
       })
 
       const hasMore = results.length > pageSize
       const itemsToShow = results.slice(0, pageSize)
+
+      // Store last document for pagination
+      if (lastDoc) {
+        setLastSnapshot(lastDoc)
+      }
 
       setState({
         items: itemsToShow,

@@ -96,8 +96,8 @@ service cloud.firestore {
     }
 
     match /commentReports/{reportId} {
-      // Read: authenticated users can read all reports AND moderators can read all reports
-      allow read: if request.auth != null;
+      // Read: only moderators can read reports (NOT any authenticated user)
+      allow read: if request.auth != null && isModerator();
       
       // Create: any authenticated user can report a comment
       allow create: if request.auth != null

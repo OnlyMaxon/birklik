@@ -51,22 +51,22 @@ export const parseFirebaseError = (error: any): AppError => {
         }
       case 'auth/user-not-found':
         return {
-          message: 'User account not found',
+          message: 'Invalid email or password',
           code: error.code
         }
       case 'auth/wrong-password':
         return {
-          message: 'Incorrect password',
+          message: 'Invalid email or password',
           code: error.code
         }
       case 'auth/email-already-in-use':
         return {
-          message: 'Email is already registered',
+          message: 'This email is already registered. Try logging in instead',
           code: error.code
         }
       case 'auth/weak-password':
         return {
-          message: 'Password is too weak. Use 6+ characters',
+          message: 'Password does not meet security requirements',
           code: error.code
         }
       default:

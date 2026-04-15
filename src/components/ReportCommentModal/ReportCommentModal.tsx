@@ -65,6 +65,20 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
         details
       )
 
+      // Check if report was created (null means duplicate)
+      if (!report) {
+        setMessage({
+          type: 'error',
+          text: language === 'en' 
+            ? 'You have already reported this comment'
+            : language === 'ru'
+              ? 'Вы уже пожаловались на этот комментарий'
+              : 'Siz artıq bu şərh haqqında şikayyət verdinisiniz'
+        })
+        setIsSubmitting(false)
+        return
+      }
+
       // Notify moderators
       try {
         const reasonText = reportReasons[reason as ReportReasonKey][language as keyof typeof reportReasons[ReportReasonKey]]

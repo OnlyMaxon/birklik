@@ -8,10 +8,12 @@ import {
   User as FirebaseUser
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { auth, db, storage } from '../config/firebase'
 import { User } from '../types'
 import * as logger from '../services/logger'
+import { clearCsrfToken } from '../services/csrfService'
+import { validatePhoneNumber, validatePassword, validateEmail, validateName } from '../utils/validators'
 
 interface AuthContextType {
   user: User | null
@@ -34,12 +36,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [cachedUserId, setCachedUserId] = useState<string | null>(null)
 
   // Listen to Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
+        // Skip if we already loaded this user
+        if (cachedUserId === fbUser.uid) {
+          setIsLoading(false)
+          return
+        }
+
         setFirebaseUser(fbUser)
+        setCachedUserId(fbUser.uid)
         
         // Try to get user data from Firestore
         try {
@@ -76,6 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setFirebaseUser(null)
         setUser(null)
+        setCachedUserId(null)
       }
       setIsLoading(false)
     })
@@ -95,6 +106,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   const register = async (name: string, email: string, phone: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    // Validate inputs
+    if (!validateName(name)) {
+      return { success: false, error: 'Invalid name format' }
+    }
+    if (!validateEmail(email)) {
+      return { success: false, error: 'Invalid email address' }
+    }
+    if (!validatePhoneNumber(phone)) {
+      return { success: false, error: 'Invalid phone number for Azerbaijan' }
+    }
+    if (!validatePassword(password)) {
+      return { success: false, error: 'Password must be at least 6 characters' }
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const fbUser = userCredential.user
@@ -131,7 +156,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
+      // Clear sensitive data from sessionStorage
+      clearCsrfToken()
+      sessionStorage.clear()
+      
       await signOut(auth)
+      
+      // Clear user state
+      setUser(null)
+      setFirebaseUser(null)
     } catch (error) {
       logger.error('Logout error:', error)
     }
@@ -142,14 +175,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { success: false, error: 'auth/not-authenticated' }
     }
 
+    let uploadedAvatarUrl: string | null = null
+    let uploadedAvatarPath: string | null = null
+
     try {
       let avatarUrl = payload.avatar || user.avatar || ''
 
+      // Upload file FIRST, fail fast if upload fails
       if (payload.avatarFile) {
         const fileName = `avatars/${firebaseUser.uid}/${Date.now()}_${payload.avatarFile.name}`
         const avatarRef = ref(storage, fileName)
-        await uploadBytes(avatarRef, payload.avatarFile)
-        avatarUrl = await getDownloadURL(avatarRef)
+        
+        try {
+          await uploadBytes(avatarRef, payload.avatarFile)
+          uploadedAvatarUrl = await getDownloadURL(avatarRef)
+          uploadedAvatarPath = fileName
+          avatarUrl = uploadedAvatarUrl
+        } catch (uploadError) {
+          // Fail fast - don't update Firestore if upload fails
+          logger.error('Avatar upload failed:', uploadError)
+          return { success: false, error: 'Failed to upload avatar' }
+        }
       }
 
       const updates = {
@@ -159,21 +205,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         updatedAt: new Date().toISOString()
       }
 
-      await setDoc(doc(db, 'users', firebaseUser.uid), updates, { merge: true })
+      // Only update Firestore if everything succeeded
+      try {
+        await setDoc(doc(db, 'users', firebaseUser.uid), updates, { merge: true })
 
-      await updateProfile(firebaseUser, {
-        displayName: payload.name,
-        photoURL: updates.avatar
-      })
+        await updateProfile(firebaseUser, {
+          displayName: payload.name,
+          photoURL: updates.avatar
+        })
 
-      setUser(prev => prev ? {
-        ...prev,
-        name: updates.name,
-        phone: updates.phone,
-        avatar: updates.avatar
-      } : prev)
+        setUser(prev => prev ? {
+          ...prev,
+          name: updates.name,
+          phone: updates.phone,
+          avatar: updates.avatar
+        } : prev)
 
-      return { success: true }
+        return { success: true }
+      } catch (firestoreError) {
+        // If Firestore update fails after upload, delete uploaded file
+        if (uploadedAvatarPath) {
+          try {
+            await deleteObject(ref(storage, uploadedAvatarPath))
+            logger.info('Cleaned up orphaned avatar after Firestore error')
+          } catch (deleteError) {
+            logger.error('Failed to cleanup orphaned avatar:', deleteError)
+          }
+        }
+        logger.error('Firestore update error:', firestoreError)
+        return { success: false, error: 'Failed to update profile' }
+      }
     } catch (error: any) {
       const err = error as { code?: string; message?: string }
       logger.error('Update profile error:', err)
