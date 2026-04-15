@@ -27,7 +27,6 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
 
   const handleCityChange = (newCity: string) => {
     onCityChange(newCity)
-    onLocationTagsChange([])
     setLocationSearch('')
   }
 
