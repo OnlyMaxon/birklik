@@ -134,7 +134,6 @@ export const az: Translations = {
     security: "Mühafizə",
     beach: "Çimərlik",
     gym: "İdman zalı",
-    // Əlavə rahatlıqlar
     sauna: "Sauna",
     kidsZone: "Uşaq oyun zonası",
     playstation: "PlayStation",
@@ -142,9 +141,8 @@ export const az: Translations = {
     tennis: "Tennis",
     boardGames: "Stol oyunları",
     samovar: "Samovar",
-    gazebo: "Besedka",
+    gazebo: "Çardaq",
     garage: "Qaraj",
-    // Yaxında yerləşən yerlər
     mountains: "Dağlar",
     forest: "Meşə",
     sea: "Dəniz",
@@ -152,7 +150,6 @@ export const az: Translations = {
     resortCenters: "İstirahət mərkəzləri",
     restaurant: "Restoran",
     park: "Park",
-    // Əmlak özəllikləri
     gardenView: "Bağa baxış",
     cityView: "Şəhərə baxış"
   },
