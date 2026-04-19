@@ -25,6 +25,8 @@ export const BookingsTab: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
   const [actionInProgress, setActionInProgress] = React.useState<{ type: 'cancel' | 'accept' | 'reject'; bookingId: string } | null>(null)
+  const [editingBookingId, setEditingBookingId] = React.useState<string | null>(null)
+  const [editingDates, setEditingDates] = React.useState<{ checkIn: string; checkOut: string } | null>(null)
 
   const t = {
     myBookings: language === 'en' ? 'My Bookings' : language === 'ru' ? 'Мои Бронирования' : 'Mənim Bölmələrim',
@@ -259,6 +261,46 @@ export const BookingsTab: React.FC = () => {
     }
   }
 
+  const handleEditApprovedBooking = (booking: BookingWithProperty) => {
+    setEditingBookingId(booking.id)
+    setEditingDates({
+      checkIn: booking.checkInDate,
+      checkOut: booking.checkOutDate
+    })
+  }
+
+  const handleSaveEditedBooking = async () => {
+    if (!editingBookingId || !editingDates) return
+
+    try {
+      setActionInProgress({ type: 'accept', bookingId: editingBookingId })
+      
+      // Update the booking in Firestore
+      const { updateDoc, doc } = await import('firebase/firestore')
+      const bookingRef = doc(db, 'bookings', editingBookingId)
+      await updateDoc(bookingRef, {
+        checkInDate: editingDates.checkIn,
+        checkOutDate: editingDates.checkOut
+      })
+
+      // Update in local state
+      setIncomingRequests(prev => prev.map(b =>
+        b.id === editingBookingId
+          ? { ...b, checkInDate: editingDates.checkIn, checkOutDate: editingDates.checkOut }
+          : b
+      ))
+
+      setEditingBookingId(null)
+      setEditingDates(null)
+      setError('')
+    } catch (err) {
+      logger.error('Error updating booking dates:', err)
+      setError(t.actionError)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
   const getStatusComponent = (booking: Booking) => {
     let statusText = t.pending
     let statusColor = '#ff9800'
@@ -370,15 +412,40 @@ export const BookingsTab: React.FC = () => {
                 <h4 className="booking-title">{booking.propertyTitle}</h4>
                 
                 <div className="booking-details">
-                  <p>
-                    <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
-                  </p>
-                  <p>
-                    <strong>{t.nights}:</strong> {booking.nights}
-                  </p>
-                  <p className="booking-price">
-                    {booking.totalPrice} AZN
-                  </p>
+                  {editingBookingId === booking.id && editingDates ? (
+                    <>
+                      <p>
+                        <strong>{language === 'en' ? 'Check-in:' : language === 'ru' ? 'Заезд:' : 'Giriş:'}​</strong>
+                        <input
+                          type="date"
+                          value={editingDates.checkIn}
+                          onChange={(e) => setEditingDates({ ...editingDates, checkIn: e.target.value })}
+                          style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
+                        />
+                      </p>
+                      <p>
+                        <strong>{language === 'en' ? 'Check-out:' : language === 'ru' ? 'Выезд:' : 'Çıxış:'}​</strong>
+                        <input
+                          type="date"
+                          value={editingDates.checkOut}
+                          onChange={(e) => setEditingDates({ ...editingDates, checkOut: e.target.value })}
+                          style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
+                        />
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
+                      </p>
+                      <p>
+                        <strong>{t.nights}:</strong> {booking.nights}
+                      </p>
+                      <p className="booking-price">
+                        {booking.totalPrice} AZN
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <div className="guest-info">
@@ -415,16 +482,45 @@ export const BookingsTab: React.FC = () => {
                       </button>
                     </>
                   )}
-                  {booking.status === 'approved' && (
-                    <button
-                      className="btn btn-reject"
-                      onClick={() => handleDeleteApprovedBooking(booking)}
-                      disabled={actionInProgress?.bookingId === booking.id}
-                      title={language === 'en' ? 'Delete this booking' : language === 'ru' ? 'Удалить бронирование' : 'Bölməni sil'}
-                    >
-                      {actionInProgress?.bookingId === booking.id ? '...' : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
-                    </button>
-                  )}
+                  {booking.status === 'approved' && editingBookingId === booking.id && editingDates ? (
+                    <>
+                      <button
+                        className="btn btn-accept"
+                        onClick={handleSaveEditedBooking}
+                        disabled={actionInProgress?.bookingId === booking.id}
+                      >
+                        {actionInProgress?.bookingId === booking.id ? '...' : (language === 'en' ? 'Save' : language === 'ru' ? 'Сохранить' : 'Saxla')}
+                      </button>
+                      <button
+                        className="btn btn-ghost"
+                        onClick={() => {
+                          setEditingBookingId(null)
+                          setEditingDates(null)
+                        }}
+                        disabled={actionInProgress?.bookingId === booking.id}
+                      >
+                        {language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv Et'}
+                      </button>
+                    </>
+                  ) : booking.status === 'approved' ? (
+                    <>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleEditApprovedBooking(booking)}
+                        title={language === 'en' ? 'Edit booking dates' : language === 'ru' ? 'Редактировать даты' : 'Bölmə tarixlərini redaktə et'}
+                      >
+                        ✏️ {language === 'en' ? 'Edit' : language === 'ru' ? 'Редактировать' : 'Redaktə Et'}
+                      </button>
+                      <button
+                        className="btn btn-reject"
+                        onClick={() => handleDeleteApprovedBooking(booking)}
+                        disabled={actionInProgress?.bookingId === booking.id}
+                        title={language === 'en' ? 'Delete this booking' : language === 'ru' ? 'Удалить бронирование' : 'Bölməni sil'}
+                      >
+                        {actionInProgress?.bookingId === booking.id ? '...' : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               </div>
             ))

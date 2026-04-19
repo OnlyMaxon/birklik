@@ -74,6 +74,7 @@ export const PropertyPage: React.FC = () => {
   const [userRating, setUserRating] = React.useState<number | null>(null)
   const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
   const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
+  const [isOwner, setIsOwner] = React.useState(false)
 
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
@@ -94,6 +95,11 @@ export const PropertyPage: React.FC = () => {
       setIsLoading(true)
       const data = await getPropertyById(id)
       setProperty(data)
+      
+      // Check if user is owner
+      if (data && user) {
+        setIsOwner(data.ownerId === user.id)
+      }
       
       // Check if favorited
       if (data && user) {
@@ -470,6 +476,23 @@ export const PropertyPage: React.FC = () => {
     }
   }
 
+  const handleMoveUp = () => {
+    // Navigate to payment page for move up service
+    // setNotificationMessage(language === 'en' ? 'Moving to payment...' : language === 'ru' ? 'Переводим на оплату...' : 'Ödəməyə keçir...')
+    // TODO: For now just show alert
+    alert(language === 'en' ? 'Move up feature coming soon' : language === 'ru' ? 'Функция перемещения вперед скоро' : 'Öndə getmə xüsusiyyəti tezliklə')
+  }
+
+  const handleUpgradeToVIP = () => {
+    // Navigate to payment page for VIP upgrade
+    alert(language === 'en' ? 'Upgrade to VIP - Payment processing...' : language === 'ru' ? 'Обновить до VIP - Обработка оплаты...' : 'VIP-ə yüksəltmə - Ödəniş işləməsi...')
+  }
+
+  const handleUpgradeToPremium = () => {
+    // Navigate to payment page for Premium upgrade
+    alert(language === 'en' ? 'Upgrade to Premium - Payment processing...' : language === 'ru' ? 'Обновить до Premium - Обработка оплаты...' : 'Premium-a yüksəltmə - Ödəniş işləməsi...')
+  }
+
   const handleDeleteComment = async (commentId: string) => {
     if (!property || !user) return
 
@@ -687,6 +710,41 @@ export const PropertyPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                
+                {/* Owner Actions */}
+                {isOwner && (
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleMoveUp}
+                      className="btn btn-sm btn-primary"
+                      title={language === 'en' ? 'Move up in search results' : language === 'ru' ? 'Переместить вверх в результатах поиска' : 'Axtarış nəticələrində yuxarıya keç'}
+                    >
+                      ⬆️ {language === 'en' ? 'Move Up' : language === 'ru' ? 'Вперед' : 'Qalx'}
+                    </button>
+                    
+                    {property.listingTier !== 'vip' && (
+                      <button
+                        onClick={handleUpgradeToVIP}
+                        className="btn btn-sm"
+                        style={{ backgroundColor: '#9c27b0', color: 'white', border: 'none' }}
+                        title={language === 'en' ? 'Upgrade to VIP' : language === 'ru' ? 'Обновить до VIP' : 'VIP-ə yüksəlt'}
+                      >
+                        👑 {language === 'en' ? 'VIP' : 'VIP'}
+                      </button>
+                    )}
+                    
+                    {property.listingTier !== 'premium' && (
+                      <button
+                        onClick={handleUpgradeToPremium}
+                        className="btn btn-sm"
+                        style={{ backgroundColor: '#d4a574', color: 'white', border: 'none' }}
+                        title={language === 'en' ? 'Upgrade to Premium' : language === 'ru' ? 'Обновить до Premium' : 'Premium-a yüksəlt'}
+                      >
+                        ⭐ {language === 'en' ? 'Premium' : language === 'ru' ? 'Премиум' : 'Premium'}
+                      </button>
+                    )}
+                  </div>
+                )}
                 
                 <div className="property-meta">
                   <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
