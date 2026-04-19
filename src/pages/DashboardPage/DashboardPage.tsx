@@ -239,15 +239,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       perks: [t.pricing_info.premium_features],
       emphasis: t.pricing.premiumDesc,
       highlighted: true
-    },
-    {
-      id: 'vip' as ListingTier,
-      title: t.pricing.vip,
-      price: '99 AZN',
-      period: t.pricing.perMonth,
-      perks: [t.pricing_info.vip_features],
-      emphasis: t.pricing.vipDesc,
-      highlighted: true
     }
   ]
 
