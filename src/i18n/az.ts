@@ -381,7 +381,8 @@ export const az: Translations = {
     errorNotFound: "Resurs tapılmadı",
     errorTooManyRequests: "Çox saylı sorğular. Sonra cəhd edin",
     errorServer: "Server xətası. Sonra cəhd edin",
-    networkError: "Şəbəkə xətası. Bağlantınızı yoxlayın"
+    networkError: "Şəbəkə xətası. Bağlantınızı yoxlayın",
+    securityValidationFailed: "Təhlükəsizlik yoxlaması uğursuz oldu. Zəhmət olmasa yenidən cəhd edin."
   },
   buttons: {
     cancel: "Ləğv et",

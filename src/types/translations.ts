@@ -385,6 +385,7 @@ export interface Translations {
     errorTooManyRequests: string
     errorServer: string
     networkError: string
+    securityValidationFailed: string
   }
   buttons: {
     cancel: string

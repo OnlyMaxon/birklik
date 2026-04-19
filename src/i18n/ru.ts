@@ -384,7 +384,8 @@ export const ru: Translations = {
     errorNotFound: 'Ресурс не найден',
     errorTooManyRequests: 'Слишком много запросов. Попробуйте позже',
     errorServer: 'Ошибка сервера. Попробуйте позже',
-    networkError: 'Ошибка сети. Проверьте подключение'
+    networkError: 'Ошибка сети. Проверьте подключение',
+    securityValidationFailed: 'Ошибка проверки безопасности. Пожалуйста, попробуйте еще раз.'
   },
   buttons: {
     cancel: 'Отмена',

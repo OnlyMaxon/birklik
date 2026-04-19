@@ -384,7 +384,8 @@ export const en: Translations = {
     errorNotFound: "Resource not found",
     errorTooManyRequests: "Too many requests. Please try again later",
     errorServer: "Server error. Please try again later",
-    networkError: "Network error. Please check your connection"
+    networkError: "Network error. Please check your connection",
+    securityValidationFailed: "Security validation failed. Please try again."
   },
   buttons: {
     cancel: "Cancel",

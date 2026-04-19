@@ -39,7 +39,7 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, 
     // Validate CSRF token
     if (!validateCsrfToken(csrfToken)) {
       logger.error('CSRF token validation failed')
-      return null
+      throw new Error('Security validation failed. Please try again.')
     }
 
     // Check for date conflicts before creating booking
