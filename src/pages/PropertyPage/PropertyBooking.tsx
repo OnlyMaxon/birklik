@@ -60,8 +60,16 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
   const [isBooking, setIsBooking] = React.useState(false)
   const [message, setMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [lastBookingId, setLastBookingId] = React.useState<string | null>(null)
+  const bookingTimeoutRef = React.useRef<number | null>(null)
 
   const getTodayISO = () => new Date().toISOString().split('T')[0]
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (bookingTimeoutRef.current) clearTimeout(bookingTimeoutRef.current)
+    }
+  }, [])
 
   const handleCancelBooking = async () => {
     if (!lastBookingId) return
@@ -113,15 +121,33 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       status: 'pending'
     }
 
+    // Prevent double submission
+    if (isBooking) return
+    
     setIsBooking(true)
+    
+    // Safety timeout to prevent hanging
+    const timeoutId = window.setTimeout(() => {
+      setIsBooking(false)
+      setMessage({ type: 'error', text: language === 'en' ? 'Request timeout' : language === 'ru' ? 'Время ожидания истекло' : 'Sorğu zaman aşımı' })
+    }, 15000)
+    
+    bookingTimeoutRef.current = timeoutId
+    
     try {
       const csrfToken = getCsrfToken()
       const createdBooking = await createBooking(booking, csrfToken)
+      
+      // Cancel the timeout if request succeeded
+      if (bookingTimeoutRef.current) clearTimeout(bookingTimeoutRef.current)
+      
       if (createdBooking?.id) {
         setLastBookingId(createdBooking.id)
         setMessage({ type: 'success', text: language === 'en' ? 'Request sent!' : language === 'ru' ? 'Запрос отправлен!' : 'Sorgu gonderildi!' })
+        // Clear dates to reset form
         setSelectedCheckIn('')
         setSelectedCheckOut('')
+        // Callback to refresh parent data
         onBookingSuccess?.()
         setTimeout(() => setMessage(null), 3000)
       } else {
@@ -132,6 +158,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       logger.error('Booking error:', error)
     } finally {
       setIsBooking(false)
+      if (bookingTimeoutRef.current) clearTimeout(bookingTimeoutRef.current)
     }
   }
 
