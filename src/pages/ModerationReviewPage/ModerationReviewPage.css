@@ -223,3 +223,53 @@
     width: 100%;
   }
 }
+
+/* Edit Form Styles */
+.edit-form {
+  background: #f9f6f1 !important;
+  border: 2px solid #d6b17d;
+}
+
+.edit-form h3 {
+  color: #4f3f2d;
+  margin-bottom: 1.5rem;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4f3f2d;
+  font-weight: 600;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: white;
+}
+
+.form-input {
+  height: 40px;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #d6b17d;
+  box-shadow: 0 0 0 3px rgba(214, 177, 125, 0.1);
+  background: #fafaf8;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}

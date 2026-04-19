@@ -3,7 +3,7 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { getPropertyById, approveProperty, rejectProperty } from '../../services'
+import { getPropertyById, approveProperty, rejectProperty, updateProperty } from '../../services'
 import { createListingRejectedNotification } from '../../services/notificationsService'
 import { isModerator } from '../../config/constants'
 import { Property, Language } from '../../types'
@@ -24,6 +24,10 @@ export const ModerationReviewPage: React.FC = () => {
   const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [rejectionReason, setRejectionReason] = React.useState('')
   const [showRejectForm, setShowRejectForm] = React.useState(false)
+  const [isEditMode, setIsEditMode] = React.useState(false)
+  const [editedTitle, setEditedTitle] = React.useState<Record<Language, string>>({ en: '', ru: '', az: '' })
+  const [editedDescription, setEditedDescription] = React.useState<Record<Language, string>>({ en: '', ru: '', az: '' })
+  const [editedPrice, setEditedPrice] = React.useState(0)
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -154,6 +158,59 @@ export const ModerationReviewPage: React.FC = () => {
     navigate(-1)
   }
 
+  const initializeEditMode = () => {
+    setEditedTitle({
+      en: property.title.en || '',
+      ru: property.title.ru || '',
+      az: property.title.az || ''
+    })
+    setEditedDescription({
+      en: property.description.en || '',
+      ru: property.description.ru || '',
+      az: property.description.az || ''
+    })
+    setEditedPrice(property.price?.daily || 0)
+    setIsEditMode(true)
+    setError('')
+  }
+
+  const handleSaveAndApprove = async () => {
+    setIsProcessing(true)
+    setError('')
+
+    try {
+      // Update property with edited data
+      const updated = await updateProperty(property.id, {
+        title: editedTitle,
+        description: editedDescription,
+        price: {
+          ...property.price,
+          daily: editedPrice
+        }
+      })
+
+      if (!updated) {
+        setError(language === 'en' ? 'Could not update property.' : language === 'ru' ? 'Не удалось обновить объявление.' : 'Elanı yeniləmək mümkün olmadı.')
+        setIsProcessing(false)
+        return
+      }
+
+      // Approve the updated property
+      const ok = await approveProperty(property.id)
+      if (!ok) {
+        setError(language === 'en' ? 'Could not approve listing.' : language === 'ru' ? 'Не удалось одобрить объявление.' : 'Elanı təsdiqləmək mümkün olmadı.')
+        setIsProcessing(false)
+        return
+      }
+
+      // Redirect to moderation page
+      navigate('/dashboard/review')
+    } catch (err) {
+      setError(language === 'en' ? 'Error saving changes' : language === 'ru' ? 'Ошибка сохранения' : 'Dəyişikliklərin saxlanması xətası')
+      setIsProcessing(false)
+    }
+  }
+
   return (
     <Layout>
       <section className="moderation-review-page">
@@ -168,6 +225,87 @@ export const ModerationReviewPage: React.FC = () => {
           {error && <div className="error-message">{error}</div>}
 
           <div className="review-content">
+            {/* Edit Form */}
+            {isEditMode && (
+              <article className="review-card edit-form">
+                <h3>{language === 'en' ? 'Edit Listing' : language === 'ru' ? 'Отредактировать объявление' : 'Elanı Redaktə Et'}</h3>
+                
+                <div className="form-section">
+                  <label><strong>Title (EN):</strong></label>
+                  <input 
+                    type="text"
+                    value={editedTitle.en}
+                    onChange={(e) => setEditedTitle({...editedTitle, en: e.target.value})}
+                    placeholder="English title"
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-section">
+                  <label><strong>Title (RU):</strong></label>
+                  <input 
+                    type="text"
+                    value={editedTitle.ru}
+                    onChange={(e) => setEditedTitle({...editedTitle, ru: e.target.value})}
+                    placeholder="Russian title"
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-section">
+                  <label><strong>Title (AZ):</strong></label>
+                  <input 
+                    type="text"
+                    value={editedTitle.az}
+                    onChange={(e) => setEditedTitle({...editedTitle, az: e.target.value})}
+                    placeholder="Azerbaijani title"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-section">
+                  <label><strong>Description (EN):</strong></label>
+                  <textarea 
+                    value={editedDescription.en}
+                    onChange={(e) => setEditedDescription({...editedDescription, en: e.target.value})}
+                    placeholder="English description"
+                    className="form-textarea"
+                    rows={5}
+                  />
+                </div>
+                <div className="form-section">
+                  <label><strong>Description (RU):</strong></label>
+                  <textarea 
+                    value={editedDescription.ru}
+                    onChange={(e) => setEditedDescription({...editedDescription, ru: e.target.value})}
+                    placeholder="Russian description"
+                    className="form-textarea"
+                    rows={5}
+                  />
+                </div>
+                <div className="form-section">
+                  <label><strong>Description (AZ):</strong></label>
+                  <textarea 
+                    value={editedDescription.az}
+                    onChange={(e) => setEditedDescription({...editedDescription, az: e.target.value})}
+                    placeholder="Azerbaijani description"
+                    className="form-textarea"
+                    rows={5}
+                  />
+                </div>
+
+                <div className="form-section">
+                  <label><strong>{language === 'en' ? 'Daily Price:' : language === 'ru' ? 'Дневная цена:' : 'Gündəlik Qiymət:'}</strong></label>
+                  <input 
+                    type="number"
+                    value={editedPrice}
+                    onChange={(e) => setEditedPrice(parseFloat(e.target.value) || 0)}
+                    placeholder="Price per night"
+                    className="form-input"
+                    min="0"
+                  />
+                </div>
+              </article>
+            )}
+
             {/* Main Property Info */}
             <article className="review-card">
               <div className="review-image-section">
@@ -257,7 +395,28 @@ export const ModerationReviewPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="review-actions">
-            {showRejectForm ? (
+            {isEditMode ? (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setIsEditMode(false)}
+                  disabled={isProcessing}
+                >
+                  {language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv Et'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-accent"
+                  onClick={handleSaveAndApprove}
+                  disabled={isProcessing}
+                >
+                  {isProcessing
+                    ? t.messages.loading
+                    : (language === 'en' ? 'Save & Approve' : language === 'ru' ? 'Сохранить и одобрить' : 'Saxla və Təsdiq Et')}
+                </button>
+              </>
+            ) : showRejectForm ? (
               <>
                 <button
                   type="button"
@@ -290,6 +449,15 @@ export const ModerationReviewPage: React.FC = () => {
                   disabled={isProcessing}
                 >
                   {language === 'en' ? 'Back' : language === 'ru' ? 'Назад' : 'Geri'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-outline"
+                  onClick={initializeEditMode}
+                  disabled={isProcessing}
+                  title={language === 'en' ? 'Edit and fix issues in the listing' : language === 'ru' ? 'Отредактировать объявление' : 'Elanı redaktə et'}
+                >
+                  ✏️ {language === 'en' ? 'Edit' : language === 'ru' ? 'Редактировать' : 'Redaktə Et'}
                 </button>
                 <button
                   type="button"
