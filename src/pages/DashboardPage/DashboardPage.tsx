@@ -740,10 +740,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       }
       
       await loadListings()
-      alert(language === 'en' ? 'Premium extended for 3 more weeks!' : language === 'ru' ? 'Премиум продлен еще на 3 недели!' : 'Premium 3 həftə daha uzadıldı!')
+      alert(t.errors.premiumExtendedSuccess)
     } catch (error) {
       logger.error('Error extending premium:', error)
-      alert(language === 'en' ? 'Failed to extend premium' : language === 'ru' ? 'Не удалось продлить премиум' : 'Premium uzada bilmədi')
+      alert(t.dashboard.failedToExtendPremium)
     }
   }
 
@@ -1293,7 +1293,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                     }}>
                       <span style={{ fontSize: '18px' }}>⚠️</span>
                       <span style={{ fontWeight: '500' }}>
-                        {language === 'en' ? 'Please select a listing plan (Free, Standard, or Premium)' : language === 'ru' ? 'Пожалуйста, выберите тариф (Бесплатный, Стандарт или Премиум)' : 'Lütfən bir paket seçin (Pulsuz, Standart və ya Premium)'}
+                        {t.dashboard.selectListingPlan}
                       </span>
                     </div>
                   )}
@@ -1317,7 +1317,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             </span>
                           ) : (
                             <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#dc3545', fontWeight: 'bold' }}>
-                              ({language === 'en' ? 'Required' : language === 'ru' ? 'Обязательно' : 'Zəruri'})
+                              ({t.form.required})
                             </span>
                           )}
                         </h3>
@@ -1447,7 +1447,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               type="text"
                               value={locationSearch}
                               onChange={(e) => setLocationSearch(e.target.value)}
-                              placeholder={language === 'en' ? 'Search address (e.g. Mardakan, Baku)' : language === 'ru' ? 'Поиск адреса (напр.: Mardakan, Baku)' : 'Ünvan axtarın (məs: Mərdəkan, Bakı)'}
+                              placeholder={t.dashboard.searchAddressPlaceholder}
                             />
                             <button
                               type="button"
@@ -1455,7 +1455,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               onClick={handleSearchLocation}
                               disabled={isSearchingLocation}
                             >
-                              {isSearchingLocation ? t.messages.loading : (language === 'en' ? 'Find on map' : language === 'ru' ? 'Найти на карте' : 'Xəritədə tap')}
+                              {isSearchingLocation ? t.messages.loading : t.buttons.findOnMap}
                             </button>
                           </div>
                           {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
