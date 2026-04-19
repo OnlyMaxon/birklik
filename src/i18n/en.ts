@@ -283,7 +283,7 @@ export const en: Translations = {
     free: "Standard",
     standard: "VIP",
     premium: "Premium",
-    vip: "VIP Plus",
+    vip: "VIP",
     freeDesc: "Get started",
     standardDesc: "For small business",
     premiumDesc: "Professional service",

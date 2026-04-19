@@ -283,7 +283,7 @@ export const az: Translations = {
     free: "Standart",
     standard: "VIP",
     premium: "Premium",
-    vip: "VIP Plus",
+    vip: "VIP",
     freeDesc: "Başlamaq üçün",
     standardDesc: "Kiçik müəssisə üçün",
     premiumDesc: "Peşəkar xidmət",

@@ -283,7 +283,7 @@ export const ru: Translations = {
     free: 'Стандарт',
     standard: 'VIP',
     premium: 'Премиум',
-    vip: 'VIP Плюс',
+    vip: 'VIP',
     freeDesc: 'Для старта',
     standardDesc: 'Для малого бизнеса',
     premiumDesc: 'Профессиональный уровень',
