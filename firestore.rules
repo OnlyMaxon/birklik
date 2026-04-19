@@ -69,11 +69,8 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Read: user can read their own bookings OR property owner can read bookings for their properties
-      allow read: if request.auth != null && (
-        request.auth.uid == resource.data.userId
-        || isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
-      );
+      // Read: any authenticated user can read bookings (needed for date conflict checking and viewing own bookings)
+      allow read: if request.auth != null;
       
       // Create: user booking must be created by the authenticated user with 'pending' status
       allow create: if request.auth != null 
