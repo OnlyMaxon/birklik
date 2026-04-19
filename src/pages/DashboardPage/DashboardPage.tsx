@@ -216,20 +216,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const listingPlans = [
     {
-      id: 'free' as ListingTier,
-      title: t.pricing.free,
-      price: '0 AZN',
-      period: t.pricing.perMonth,
-      perks: [t.pricing_info.free_features],
-      emphasis: t.pricing.freeDesc
-    },
-    {
       id: 'standard' as ListingTier,
       title: t.pricing.standard,
       price: '15 AZN',
       period: t.pricing.perMonth,
       perks: [t.pricing_info.standard_features],
       emphasis: t.pricing.standardDesc
+    },
+    {
+      id: 'vip' as ListingTier,
+      title: t.pricing.vip,
+      price: '15 AZN',
+      period: t.pricing.perMonth,
+      perks: [t.pricing_info.vip_features],
+      emphasis: t.pricing.vipDesc
     },
     {
       id: 'premium' as ListingTier,
@@ -308,7 +308,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [newListing, setNewListing] = React.useState({
     title: '',
     description: '',
-    listingTier: 'free' as ListingTier,
+    listingTier: 'standard' as ListingTier,
     type: '' as PropertyType | '',
     district: '' as District | '',
     address: '',
@@ -347,7 +347,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setNewListing({
       title: '',
       description: '',
-      listingTier: 'free',
+      listingTier: 'standard',
       type: '',
       district: '',
       address: '',
