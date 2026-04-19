@@ -94,17 +94,25 @@ export const getPropertyBookings = async (propertyId: string): Promise<Booking[]
  */
 export const checkBookingConflict = async (propertyId: string, checkInDate: string, checkOutDate: string): Promise<boolean> => {
   try {
-    const q = query(
+    // Check both approved and pending bookings for conflicts
+    const qApproved = query(
       collection(db, COLLECTION_NAME),
       where('propertyId', '==', propertyId),
       where('status', '==', 'approved')
     )
-    const snapshot = await getDocs(q)
+    const qPending = query(
+      collection(db, COLLECTION_NAME),
+      where('propertyId', '==', propertyId),
+      where('status', '==', 'pending')
+    )
+    const snapshotApproved = await getDocs(qApproved)
+    const snapshotPending = await getDocs(qPending)
+    const allSnapshots = [...snapshotApproved.docs, ...snapshotPending.docs]
 
     const proposedCheckIn = new Date(checkInDate).getTime()
     const proposedCheckOut = new Date(checkOutDate).getTime()
 
-    for (const doc of snapshot.docs) {
+    for (const doc of allSnapshots) {
       const booking = doc.data() as Omit<Booking, 'id'>
       const existingCheckIn = new Date(booking.checkInDate).getTime()
       const existingCheckOut = new Date(booking.checkOutDate).getTime()

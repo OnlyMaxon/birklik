@@ -119,12 +119,14 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       const createdBooking = await createBooking(booking, csrfToken)
       if (createdBooking?.id) {
         setLastBookingId(createdBooking.id)
+        setMessage({ type: 'success', text: language === 'en' ? 'Request sent!' : language === 'ru' ? 'Запрос отправлен!' : 'Sorgu gonderildi!' })
+        setSelectedCheckIn('')
+        setSelectedCheckOut('')
+        onBookingSuccess?.()
+        setTimeout(() => setMessage(null), 3000)
+      } else {
+        setMessage({ type: 'error', text: language === 'en' ? 'Dates conflict or booking error' : language === 'ru' ? 'Эти даты уже забронированы или ошибка' : 'Tarixlər əvvəldən qeydiyyatdadır' })
       }
-      setMessage({ type: 'success', text: language === 'en' ? 'Request sent!' : language === 'ru' ? 'Запрос отправлен!' : 'Sorgu gonderildi!' })
-      setSelectedCheckIn('')
-      setSelectedCheckOut('')
-      onBookingSuccess?.()
-      setTimeout(() => setMessage(null), 3000)
     } catch (error) {
       setMessage({ type: 'error', text: language === 'en' ? 'Booking error' : language === 'ru' ? 'Ошибка бронирования' : 'Rezervasyon xətası' })
       logger.error('Booking error:', error)
