@@ -75,6 +75,8 @@ export const PropertyPage: React.FC = () => {
   const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
   const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
 
+  console.log('[PropertyPage] Component rendered:', { id, selectedCheckIn, selectedCheckOut, isBooking })
+
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
     if (showNotification) {
@@ -82,6 +84,16 @@ export const PropertyPage: React.FC = () => {
       return () => clearTimeout(timer)
     }
   }, [showNotification])
+
+  // Log when dates change
+  React.useEffect(() => {
+    console.log('[PropertyPage] Dates changed:', { selectedCheckIn, selectedCheckOut })
+  }, [selectedCheckIn, selectedCheckOut])
+
+  // Log when booking state changes
+  React.useEffect(() => {
+    console.log('[PropertyPage] isBooking changed to:', isBooking)
+  }, [isBooking])
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -217,7 +229,7 @@ export const PropertyPage: React.FC = () => {
       return
     }
 
-    console.log('[PropertyPage] Starting booking with dates:', { selectedCheckIn, selectedCheckOut, nights: selectedNights, total: selectedTotal })
+    console.log('[PropertyPage] Starting booking with dates:', { selectedCheckIn, selectedCheckOut })
     setIsBooking(true)
     try {
       const booking: Omit<Booking, 'id' | 'createdAt'> = {
@@ -239,13 +251,18 @@ export const PropertyPage: React.FC = () => {
       const result = await createBooking(booking, csrfToken)
       console.log('[PropertyPage] createBooking result:', result)
       if (result) {
-        console.log('[PropertyPage] Booking successful, clearing dates and resetting state')
+        console.log('[PropertyPage] Booking successful! ID:', result.id)
+        console.log('[PropertyPage] OLD STATE - selectedCheckIn:', selectedCheckIn, 'selectedCheckOut:', selectedCheckOut)
+        
         setHasBooked(true)
         setShowContactInfo(true)
         
         // Clear selected dates to allow new booking
+        console.log('[PropertyPage] **CLEARING DATES**')
         setSelectedCheckIn('')
         setSelectedCheckOut('')
+        
+        console.log('[PropertyPage] NEW STATE - selectedCheckIn: "", selectedCheckOut: ""')
         
         // Show toast notification
         const notifMsg = language === 'en' 
@@ -277,14 +294,17 @@ export const PropertyPage: React.FC = () => {
           })
         }
       } else {
+        console.log('[PropertyPage] Booking FAILED - result is null')
         setNotificationMessage(t.messages.bookingError)
         setShowNotification(true)
       }
     } catch (error) {
+      console.log('[PropertyPage] Booking EXCEPTION:', error)
       logger.error('Error making booking:', error)
       setNotificationMessage(t.messages.bookingError)
       setShowNotification(true)
     } finally {
+      console.log('[PropertyPage] Finally block - setting isBooking to false')
       setIsBooking(false)
     }
   }
@@ -579,6 +599,14 @@ export const PropertyPage: React.FC = () => {
     if (!selectedCheckIn || !selectedCheckOut || !property.unavailableFrom || !property.unavailableTo) return false
     return selectedCheckIn <= property.unavailableTo && selectedCheckOut >= property.unavailableFrom
   })()
+  
+  console.log('[PropertyPage] Render button state:', { 
+    showBookingButton: selectedCheckIn && selectedCheckOut && selectedNights > 0 && !selectedRangeBusy,
+    selectedCheckIn, 
+    selectedCheckOut, 
+    selectedNights,
+    selectedRangeBusy 
+  })
   const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, language))
   const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, language))
   const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
