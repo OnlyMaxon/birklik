@@ -358,6 +358,7 @@ export const az: Translations = {
     reply: "Cavab ver",
     approve: "Təsdiq et",
     reject: "Rədd et",
+    markAllAsRead: "Hamısını oxundu kimi işarələ",
     findOnMap: "Xəritədə tap",
     uploadPhotos: "Şəkil yüklə",
     selectDates: "Tarix seçin",

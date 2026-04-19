@@ -358,6 +358,7 @@ export const ru: Translations = {
     reply: 'Ответить',
     approve: 'Одобрить',
     reject: 'Отклонить',
+    markAllAsRead: 'Прочитать все',
     findOnMap: 'Найти на карте',
     uploadPhotos: 'Загрузить фото',
     selectDates: 'Выбрать даты',

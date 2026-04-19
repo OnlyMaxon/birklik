@@ -358,6 +358,7 @@ export interface Translations {
     reply: string
     approve: string
     reject: string
+    markAllAsRead: string
     findOnMap: string
     uploadPhotos: string
     selectDates: string

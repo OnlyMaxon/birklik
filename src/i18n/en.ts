@@ -358,6 +358,7 @@ export const en: Translations = {
     reply: "Reply",
     approve: "Approve",
     reject: "Reject",
+    markAllAsRead: "Mark all as read",
     findOnMap: "Find on map",
     uploadPhotos: "Upload photos",
     selectDates: "Select dates",

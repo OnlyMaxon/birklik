@@ -10,7 +10,7 @@ import * as logger from '../services/logger'
 
 export const NotificationsTab: React.FC = () => {
   const navigate = useNavigate()
-  const { language } = useLanguage()
+  const { t, language } = useLanguage()
   const { user } = useAuth()
   const [notifications, setNotifications] = React.useState<Notification[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
@@ -38,6 +38,22 @@ export const NotificationsTab: React.FC = () => {
     await markNotificationAsRead(user.id, notificationId)
     setNotifications(prev =>
       prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
+    )
+  }
+
+  const handleMarkAllAsRead = async () => {
+    if (!user?.id) return
+    
+    const unreadNotifications = notifications.filter(n => !n.read)
+    
+    // Mark all unread notifications as read
+    for (const notification of unreadNotifications) {
+      await markNotificationAsRead(user.id, notification.id)
+    }
+    
+    // Update state
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, read: true }))
     )
   }
 
@@ -139,9 +155,31 @@ export const NotificationsTab: React.FC = () => {
 
   return (
     <div className="tab-content">
-      <h3 className="tab-title">
-        {language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'}
-      </h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 className="tab-title">
+          {language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'}
+        </h3>
+        {notifications.some(n => !n.read) && (
+          <button
+            onClick={handleMarkAllAsRead}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#27ae60',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              transition: 'background-color 0.3s'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#229954' }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#27ae60' }}
+          >
+            {t.buttons.markAllAsRead}
+          </button>
+        )}
+      </div>
 
       {notifications.length === 0 ? (
         <div className="empty-state">
