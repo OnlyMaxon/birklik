@@ -117,13 +117,34 @@
 }
 
 .property-favorite-btn.bookmarked {
-  background: rgba(212, 165, 116, 0.95);
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: #ffffff;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+  animation: favoriteHeartBeat 0.4s ease;
 }
 
 .property-favorite-btn.bookmarked:hover:not(:disabled) {
-  background: rgba(212, 165, 116, 1);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.5);
+  transform: scale(1.15);
+}
+
+@keyframes favoriteHeartBeat {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.25);
+  }
+  40% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .property-favorite-btn svg {

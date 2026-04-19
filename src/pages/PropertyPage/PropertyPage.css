@@ -96,13 +96,34 @@
 }
 
 .favorite-btn.favorited {
-  background: rgba(216, 73, 73, 0.95);
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: #ffffff;
+  animation: favoriteHeartBeat 0.4s ease;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
 .favorite-btn.favorited:hover:not(:disabled) {
-  background: rgba(216, 73, 73, 1);
-  box-shadow: 0 4px 12px rgba(216, 73, 73, 0.3);
+  background: linear-gradient(135deg, #d84343, #b43333);
+  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.5);
+  transform: scale(1.15);
+}
+
+@keyframes favoriteHeartBeat {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.25);
+  }
+  40% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .favorite-btn svg {
