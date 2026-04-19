@@ -5,7 +5,7 @@ import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, PropertyMap, Loading, ReportCommentModal } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
-import { getPropertyById, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, updateProperty, addReplyToComment, addRatingToProperty, getUserRatingForProperty } from '../../services'
+import { getPropertyById, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, addReplyToComment, addRatingToProperty, getUserRatingForProperty, getPropertyBookings } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { getCsrfToken } from '../../services/csrfService'
@@ -73,6 +73,7 @@ export const PropertyPage: React.FC = () => {
   const [isPostingReply, setIsPostingReply] = React.useState(false)
   const [userRating, setUserRating] = React.useState<number | null>(null)
   const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
+  const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
 
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
@@ -113,6 +114,12 @@ export const PropertyPage: React.FC = () => {
         // Load user's rating for this property
         const rating = await getUserRatingForProperty(id, user.id)
         setUserRating(rating)
+      }
+
+      // Load all bookings for this property (to show first booking under price)
+      if (id) {
+        const bookings = await getPropertyBookings(id)
+        setPropertyBookings(bookings)
       }
       
       setIsLoading(false)
@@ -216,7 +223,7 @@ export const PropertyPage: React.FC = () => {
         checkOutDate: selectedCheckOut,
         nights: selectedNights,
         totalPrice: selectedTotal,
-        status: 'active'
+        status: 'pending'
       }
 
       const csrfToken = getCsrfToken()
@@ -233,16 +240,6 @@ export const PropertyPage: React.FC = () => {
             : 'Sizin sifariş siz kabinetinizə əlavə edildI'
         setNotificationMessage(notifMsg)
         setShowNotification(true)
-        
-        // Auto-block the booked dates in calendar (mark as unavailable)
-        try {
-          await updateProperty(property.id, {
-            unavailableFrom: selectedCheckIn,
-            unavailableTo: selectedCheckOut
-          })
-        } catch (error) {
-          logger.error('Error blocking dates:', error)
-        }
         
         // Send booking notification to property owner
         if (property.ownerId) {
@@ -985,6 +982,17 @@ export const PropertyPage: React.FC = () => {
                       <span className="price-label">{t.property.perNight}:</span>
                       <span className="price-value">{property.price.daily} {property.price.currency}</span>
                     </div>
+                    
+                    {propertyBookings.length > 0 && (
+                      <div className="first-booking-info" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #eee' }}>
+                        <p style={{ fontSize: '0.85rem', color: '#666', margin: '0.25rem 0' }}>
+                          <strong>{language === 'en' ? 'Latest booking:' : language === 'ru' ? 'Последнее бронирование:' : 'Son bölmə:'}​</strong>
+                        </p>
+                        <p style={{ fontSize: '0.8rem', color: '#999', margin: '0.25rem 0' }}>
+                          {propertyBookings[0].checkInDate} → {propertyBookings[0].checkOutDate}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

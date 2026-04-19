@@ -138,5 +138,8 @@ export interface Booking {
   nights: number
   totalPrice: number
   createdAt: string
-  status: 'active' | 'cancelled'
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  approvedAt?: string
+  rejectedAt?: string
+  rejectionReason?: string
 }

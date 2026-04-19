@@ -3,7 +3,8 @@ import { useLanguage, useAuth } from '../../context'
 import { Booking, Property } from '../../types'
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from '../../config/firebase'
-import { getUserBookings, cancelBooking } from '../../services'
+import { getUserBookings, cancelBooking, acceptBooking, rejectBooking } from '../../services'
+import { createBookingApprovedNotification, createBookingRejectedNotification } from '../../services/notificationsService'
 import { Loading } from '../../components'
 import * as logger from '../../services/logger'
 
@@ -23,7 +24,7 @@ export const BookingsTab: React.FC = () => {
   const [incomingRequests, setIncomingRequests] = React.useState<BookingWithProperty[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
-  const [isCanceiling, setIsCanceling] = React.useState<string | null>(null)
+  const [actionInProgress, setActionInProgress] = React.useState<{ type: 'cancel' | 'accept' | 'reject'; bookingId: string } | null>(null)
 
   const t = {
     myBookings: language === 'en' ? 'My Bookings' : language === 'ru' ? 'Мои Бронирования' : 'Mənim Bölmələrim',
@@ -41,10 +42,18 @@ export const BookingsTab: React.FC = () => {
     empty: language === 'en' ? 'No bookings yet' : language === 'ru' ? 'Нет бронирований' : 'Hələ bölmə yoxdur',
     owner: language === 'en' ? 'Owner' : language === 'ru' ? 'Владелец' : 'Sahibi',
     status: language === 'en' ? 'Status' : language === 'ru' ? 'Статус' : 'Status',
-    loading: language === 'en' ? 'Loading bookings...' : language === 'ru' ? 'Загрузка бронирований...' : 'Bölmələr yüklənir...'
+    loading: language === 'en' ? 'Loading bookings...' : language === 'ru' ? 'Загрузка бронирований...' : 'Bölmələr yüklənir...',
+    pending: language === 'en' ? 'Waiting' : language === 'ru' ? 'Ожидание' : 'Gözləmə',
+    approved: language === 'en' ? 'Approved' : language === 'ru' ? 'Принято' : 'Qəbul edildi',
+    rejected: language === 'en' ? 'Rejected' : language === 'ru' ? 'Отклонено' : 'Rədd edildi',
+    accept: language === 'en' ? 'Accept' : language === 'ru' ? 'Принять' : 'Qəbul Et',
+    reject: language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et',
+    acceptSuccess: language === 'en' ? 'Booking approved' : language === 'ru' ? 'Бронирование принято' : 'Bölmə qəbul edildi',
+    rejectSuccess: language === 'en' ? 'Booking rejected' : language === 'ru' ? 'Бронирование отклонено' : 'Bölmə rədd edildi',
+    actionError: language === 'en' ? 'Failed to complete action' : language === 'ru' ? 'Не удалось выполнить действие' : 'Fəal tamamlana bilmədi'
   }
 
-  // Load my bookings (bookings user made)
+  // Load my bookings (bookings user made as guest)
   const loadMyBookings = React.useCallback(async () => {
     if (!user?.id) return
 
@@ -75,12 +84,11 @@ export const BookingsTab: React.FC = () => {
     }
   }, [user?.id, language])
 
-  // Load incoming booking requests (bookings on user's properties)
+  // Load incoming booking requests (pending bookings on user's properties)
   const loadIncomingRequests = React.useCallback(async () => {
     if (!user?.id) return
 
     try {
-      // Get all user's properties
       const propsRef = collection(db, 'properties')
       const propsQuery = query(propsRef, where('ownerId', '==', user.id))
       const propsSnapshot = await getDocs(propsQuery)
@@ -91,12 +99,12 @@ export const BookingsTab: React.FC = () => {
         return
       }
 
-      // Get all bookings for these properties
       const bookingsRef = collection(db, 'bookings')
       const allBookings: BookingWithProperty[] = []
 
       for (const propertyId of propertyIds) {
-        const bookingsQuery = query(bookingsRef, where('propertyId', '==', propertyId), where('status', '==', 'active'))
+        // Get only PENDING bookings
+        const bookingsQuery = query(bookingsRef, where('propertyId', '==', propertyId), where('status', '==', 'pending'))
         const bookingsSnap = await getDocs(bookingsQuery)
 
         const property = propsSnapshot.docs.find(d => d.id === propertyId)?.data() as Property | undefined
@@ -132,22 +140,123 @@ export const BookingsTab: React.FC = () => {
   }, [loadMyBookings, loadIncomingRequests])
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm(t.confirm)) return
+    const confirmMsg = language === 'en' ? 'Are you sure?' : language === 'ru' ? 'Вы уверены?' : 'Əminsiniz?'
+    if (!confirm(confirmMsg)) return
 
     try {
-      setIsCanceling(bookingId)
+      setActionInProgress({ type: 'cancel', bookingId })
       const result = await cancelBooking(bookingId)
       if (result.success) {
         setMyBookings(prev => prev.filter(b => b.id !== bookingId))
+        setError('')
       } else {
-        setError(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Не удалось отменить бронирование' : 'Bölməni ləğv etmək olmadı')
+        setError(t.actionError)
       }
     } catch (err) {
       logger.error('Error canceling booking:', err)
-      setError(language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Не удалось отменить бронирование' : 'Bölməni ləğv etmək olmadı')
+      setError(t.actionError)
     } finally {
-      setIsCanceling(null)
+      setActionInProgress(null)
     }
+  }
+
+  const handleAcceptBooking = async (booking: BookingWithProperty) => {
+    try {
+      setActionInProgress({ type: 'accept', bookingId: booking.id })
+      
+      const updated = await acceptBooking(booking.id)
+      if (updated) {
+        // Send notification to guest
+        await createBookingApprovedNotification(booking.userId, {
+          type: 'bookingApproved',
+          title: language === 'en' ? '✅ Your booking is approved!' : language === 'ru' ? '✅ Ваше бронирование принято!' : '✅ Sizin bölmə qəbul edildi!',
+          message: language === 'en' ? 'Your booking has been approved by the property owner' : language === 'ru' ? 'Ваше бронирование одобрено владельцем' : 'Sizin bölmə sahibi tərəfindən qəbul edildi',
+          read: false,
+          bookingId: booking.id,
+          propertyId: booking.propertyId,
+          propertyTitle: booking.propertyTitle || '',
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          ownerName: user?.name || ''
+        })
+
+        setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
+        setError('')
+      } else {
+        setError(t.actionError)
+      }
+    } catch (err) {
+      logger.error('Error accepting booking:', err)
+      setError(t.actionError)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
+  const handleRejectBooking = async (booking: BookingWithProperty) => {
+    const reason = language === 'en' ? 'Not available on these dates' : language === 'ru' ? 'Недоступно на эти даты' : 'Bu tarixlərdə əlçatan deyil'
+    
+    try {
+      setActionInProgress({ type: 'reject', bookingId: booking.id })
+      
+      const updated = await rejectBooking(booking.id, reason)
+      if (updated) {
+        // Send notification to guest
+        await createBookingRejectedNotification(booking.userId, {
+          type: 'bookingRejected',
+          title: language === 'en' ? '❌ Your booking was rejected' : language === 'ru' ? '❌ Ваше бронирование отклонено' : '❌ Sizin bölmə rədd edildi',
+          message: language === 'en' ? 'The property owner declined your booking request' : language === 'ru' ? 'Владелец отклонил ваш запрос на бронирование' : 'Əmlak sahibi sizin bölmə sorğunuzu rədd etdi',
+          read: false,
+          bookingId: booking.id,
+          propertyId: booking.propertyId,
+          propertyTitle: booking.propertyTitle || '',
+          checkInDate: booking.checkInDate,
+          checkOutDate: booking.checkOutDate,
+          ownerName: user?.name || '',
+          rejectionReason: reason
+        })
+
+        setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
+        setError('')
+      } else {
+        setError(t.actionError)
+      }
+    } catch (err) {
+      logger.error('Error rejecting booking:', err)
+      setError(t.actionError)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
+  const getStatusComponent = (booking: Booking) => {
+    let statusText = t.pending
+    let statusColor = '#ff9800'
+
+    if (booking.status === 'approved') {
+      statusText = t.approved
+      statusColor = '#4caf50'
+    } else if (booking.status === 'rejected') {
+      statusText = t.rejected
+      statusColor = '#f44336'
+    } else if (booking.status === 'cancelled') {
+      statusText = language === 'en' ? 'Cancelled' : language === 'ru' ? 'Отменено' : 'Ləğv edildi'
+      statusColor = '#999'
+    }
+
+    return (
+      <div style={{
+        display: 'inline-block',
+        padding: '0.4rem 0.8rem',
+        borderRadius: '20px',
+        backgroundColor: `${statusColor}20`,
+        color: statusColor,
+        fontSize: '0.85rem',
+        fontWeight: '500'
+      }}>
+        {statusText}
+      </div>
+    )
   }
 
   if (isLoading) {
@@ -171,38 +280,47 @@ export const BookingsTab: React.FC = () => {
         </button>
       </div>
 
-      {error && <div className="error-message" style={{ color: '#d32f2f', marginBottom: '1rem' }}>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
 
       {activeSubTab === 'my-bookings' && (
         <div className="bookings-grid">
           {myBookings.length === 0 ? (
-            <div className="empty-state" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#888' }}>
-              {t.empty}
-            </div>
+            <div className="empty-state">{t.empty}</div>
           ) : (
             myBookings.map(booking => (
-              <div key={booking.id} className="booking-card" style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '1rem', backgroundColor: '#fafafa' }}>
+              <div key={booking.id} className="booking-card">
                 {booking.propertyImage && (
-                  <img src={booking.propertyImage} alt="property" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />
+                  <img src={booking.propertyImage} alt="property" className="booking-image" />
                 )}
-                <h4 style={{ fontSize: '0.95rem', margin: '0.5rem 0' }}>{booking.propertyTitle}</h4>
-                <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.3rem 0' }}>
-                  <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
-                </p>
-                <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.3rem 0' }}>
-                  <strong>{t.nights}:</strong> {booking.nights}
-                </p>
-                <p style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#d6b17d', margin: '0.5rem 0' }}>
-                  {booking.totalPrice} AZN
-                </p>
-                <button
-                  className="btn btn-sm"
-                  style={{ marginTop: '0.5rem', width: '100%' }}
-                  onClick={() => handleCancelBooking(booking.id)}
-                  disabled={isCanceiling === booking.id}
-                >
-                  {isCanceiling === booking.id ? 'Canceling...' : t.cancel}
-                </button>
+                <h4 className="booking-title">{booking.propertyTitle}</h4>
+                
+                <div className="booking-details">
+                  <p>
+                    <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
+                  </p>
+                  <p>
+                    <strong>{t.nights}:</strong> {booking.nights}
+                  </p>
+                  <p className="booking-price">
+                    {booking.totalPrice} AZN
+                  </p>
+                </div>
+
+                <div className="booking-status">
+                  <strong>{t.status}:</strong> {getStatusComponent(booking)}
+                </div>
+
+                {booking.status === 'pending' && (
+                  <button
+                    className="btn btn-cancel"
+                    onClick={() => handleCancelBooking(booking.id)}
+                    disabled={actionInProgress?.bookingId === booking.id}
+                  >
+                    {actionInProgress?.bookingId === booking.id ? (
+                      language === 'en' ? 'Canceling...' : language === 'ru' ? 'Отмена...' : 'Ləğv edilir...'
+                    ) : t.cancel}
+                  </button>
+                )}
               </div>
             ))
           )}
@@ -212,39 +330,53 @@ export const BookingsTab: React.FC = () => {
       {activeSubTab === 'requests' && (
         <div className="bookings-grid">
           {incomingRequests.length === 0 ? (
-            <div className="empty-state" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem', color: '#888' }}>
-              {t.empty}
-            </div>
+            <div className="empty-state">{t.empty}</div>
           ) : (
             incomingRequests.map(booking => (
-              <div key={booking.id} className="booking-request-card" style={{ border: '1px solid #d6b17d', borderRadius: '8px', padding: '1rem', backgroundColor: '#fffbf5' }}>
+              <div key={booking.id} className="booking-request-card">
                 {booking.propertyImage && (
-                  <img src={booking.propertyImage} alt="property" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />
+                  <img src={booking.propertyImage} alt="property" className="booking-image" />
                 )}
-                <h4 style={{ fontSize: '0.95rem', margin: '0.5rem 0' }}>{booking.propertyTitle}</h4>
+                <h4 className="booking-title">{booking.propertyTitle}</h4>
                 
-                <div style={{ backgroundColor: 'white', padding: '0.75rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
-                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.3rem 0' }}>
+                <div className="booking-details">
+                  <p>
                     <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
                   </p>
-                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.3rem 0' }}>
+                  <p>
                     <strong>{t.nights}:</strong> {booking.nights}
                   </p>
-                  <p style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#d6b17d' }}>
+                  <p className="booking-price">
                     {booking.totalPrice} AZN
                   </p>
                 </div>
 
-                <div style={{ backgroundColor: 'white', padding: '0.75rem', borderRadius: '4px' }}>
-                  <p style={{ fontSize: '0.85rem', margin: '0.3rem 0' }}>
-                    <strong>{t.guest}:</strong> {booking.userName}
+                <div className="guest-info">
+                  <h5>{t.guest}</h5>
+                  <p><strong>{booking.userName}</strong></p>
+                  <p>
+                    {t.phone}: <a href={`tel:${booking.userPhone}`}>{booking.userPhone}</a>
                   </p>
-                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.3rem 0' }}>
-                    {t.phone}: <a href={`tel:${booking.userPhone}`} style={{ color: '#1976d2', textDecoration: 'none' }}>{booking.userPhone}</a>
+                  <p>
+                    {t.email}: <a href={`mailto:${booking.userEmail}`}>{booking.userEmail}</a>
                   </p>
-                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.3rem 0' }}>
-                    {t.email}: <a href={`mailto:${booking.userEmail}`} style={{ color: '#1976d2', textDecoration: 'none' }}>{booking.userEmail}</a>
-                  </p>
+                </div>
+
+                <div className="booking-actions">
+                  <button
+                    className="btn btn-accept"
+                    onClick={() => handleAcceptBooking(booking)}
+                    disabled={actionInProgress?.bookingId === booking.id}
+                  >
+                    {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' ? '...' : t.accept}
+                  </button>
+                  <button
+                    className="btn btn-reject"
+                    onClick={() => handleRejectBooking(booking)}
+                    disabled={actionInProgress?.bookingId === booking.id}
+                  >
+                    {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' ? '...' : t.reject}
+                  </button>
                 </div>
               </div>
             ))
@@ -261,7 +393,7 @@ export const BookingsTab: React.FC = () => {
           display: flex;
           gap: 0.5rem;
           margin-bottom: 1.5rem;
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 2px solid #e0e0e0;
         }
 
         .tab-button {
@@ -271,12 +403,13 @@ export const BookingsTab: React.FC = () => {
           border-bottom: 3px solid transparent;
           cursor: pointer;
           font-weight: 500;
-          color: #666;
+          color: #999;
           transition: all 0.3s;
+          font-size: 0.95rem;
         }
 
         .tab-button:hover {
-          color: #333;
+          color: #666;
         }
 
         .tab-button.active {
@@ -286,32 +419,139 @@ export const BookingsTab: React.FC = () => {
 
         .bookings-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1rem;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 1.25rem;
         }
 
         .booking-card, .booking-request-card {
-          transition: box-shadow 0.3s, transform 0.3s;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 1rem;
+          background: #fafafa;
+          transition: all 0.3s ease;
         }
 
         .booking-card:hover, .booking-request-card:hover {
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           transform: translateY(-2px);
         }
 
-        .btn {
-          background: #d6b17d;
-          color: #fff;
-          border: none;
-          border-radius: 4px;
-          padding: 0.5rem 1rem;
-          cursor: pointer;
-          font-weight: 500;
-          transition: background 0.3s;
+        .booking-request-card {
+          border-color: #d6b17d;
+          background: #fffbf5;
         }
 
-        .btn:hover:not(:disabled) {
-          background: #c9a156;
+        .booking-image {
+          width: 100%;
+          height: 140px;
+          object-fit: cover;
+          border-radius: 6px;
+          margin-bottom: 0.75rem;
+        }
+
+        .booking-title {
+          font-size: 0.95rem;
+          font-weight: 600;
+          margin: 0.5rem 0;
+          color: #333;
+        }
+
+        .booking-details {
+          background: white;
+          padding: 0.75rem;
+          border-radius: 4px;
+          margin-bottom: 0.75rem;
+          font-size: 0.85rem;
+        }
+
+        .booking-details p {
+          margin: 0.3rem 0;
+          color: #666;
+        }
+
+        .booking-price {
+          font-weight: 600 !important;
+          color: #d6b17d !important;
+          font-size: 0.95rem !important;
+          margin-top: 0.5rem !important;
+        }
+
+        .booking-status {
+          margin-bottom: 0.75rem;
+          font-size: 0.85rem;
+        }
+
+        .guest-info {
+          background: white;
+          padding: 0.75rem;
+          border-radius: 4px;
+          margin-bottom: 0.75rem;
+          font-size: 0.85rem;
+        }
+
+        .guest-info h5 {
+          margin: 0 0 0.5rem 0;
+          font-size: 0.9rem;
+          color: #666;
+        }
+
+        .guest-info p {
+          margin: 0.25rem 0;
+          color: #666;
+        }
+
+        .guest-info a {
+          color: #1976d2;
+          text-decoration: none;
+        }
+
+        .guest-info a:hover {
+          text-decoration: underline;
+        }
+
+        .booking-actions {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .btn {
+          flex: 1;
+          padding: 0.5rem 0.75rem;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 500;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+          background: #f5f5f5;
+          color: #d32f2f;
+          border: 1px solid #d32f2f;
+        }
+
+        .btn-cancel:hover:not(:disabled) {
+          background: #d32f2f;
+          color: white;
+        }
+
+        .btn-accept {
+          background: #4caf50;
+          color: white;
+        }
+
+        .btn-accept:hover:not(:disabled) {
+          background: #45a049;
+        }
+
+        .btn-reject {
+          background: #f44336;
+          color: white;
+        }
+
+        .btn-reject:hover:not(:disabled) {
+          background: #da190b;
         }
 
         .btn:disabled {
@@ -319,20 +559,30 @@ export const BookingsTab: React.FC = () => {
           cursor: not-allowed;
         }
 
-        .btn-sm {
-          padding: 0.4rem 0.8rem;
-          font-size: 0.85rem;
+        .empty-state {
+          grid-column: 1 / -1;
+          text-align: center;
+          padding: 3rem 1rem;
+          color: #999;
+          font-size: 0.95rem;
         }
 
-        .empty-state {
-          text-align: center;
-          padding: 2rem;
-          font-size: 0.95rem;
+        .error-message {
+          background: #ffebee;
+          color: #d32f2f;
+          padding: 0.75rem 1rem;
+          border-radius: 4px;
+          margin-bottom: 1rem;
+          font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
           .bookings-grid {
             grid-template-columns: 1fr;
+          }
+
+          .booking-actions {
+            flex-direction: column;
           }
         }
       `}</style>

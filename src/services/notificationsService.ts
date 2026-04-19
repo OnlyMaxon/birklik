@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification } from '../types'
+import { Notification, BookingNotification, BookingApprovedNotification, BookingRejectedNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification } from '../types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'users'
@@ -310,6 +310,56 @@ export const createCancellationRejectedNotification = async (
     return docRef.id
   } catch (error) {
     logger.error('Error creating cancellation rejected notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create booking approved notification for guest
+ * @param {string} guestId - Guest's user ID
+ * @param {BookingApprovedNotification} notificationData - Booking approved notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createBookingApprovedNotification = async (
+  guestId: string,
+  notificationData: Omit<BookingApprovedNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, guestId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: guestId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating booking approved notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create booking rejected notification for guest
+ * @param {string} guestId - Guest's user ID
+ * @param {BookingRejectedNotification} notificationData - Booking rejected notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createBookingRejectedNotification = async (
+  guestId: string,
+  notificationData: Omit<BookingRejectedNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, guestId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: guestId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating booking rejected notification:', error)
     return null
   }
 }

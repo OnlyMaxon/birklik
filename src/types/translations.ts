@@ -220,6 +220,22 @@ export interface Translations {
     findOnMap: string
     dragDropOrClick: string
     filesSelected: string
+    bookingStatus: string
+    bookingWaiting: string
+    bookingApproved: string
+    bookingRejected: string
+    bookingAccept: string
+    bookingReject: string
+    bookingCancel: string
+    bookingGuest: string
+    bookingDates: string
+    bookingNights: string
+    bookingTotal: string
+    bookingPhone: string
+    bookingEmail: string
+    bookingNoBookings: string
+    bookingMyBookings: string
+    bookingRequests: string
   }
   form: {
     title: string

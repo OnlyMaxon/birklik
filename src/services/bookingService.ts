@@ -45,7 +45,7 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, 
     const bookingData = {
       ...booking,
       createdAt: now,
-      status: 'active' as const
+      status: 'pending' as const
     }
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), bookingData)
@@ -97,7 +97,7 @@ export const checkBookingConflict = async (propertyId: string, checkInDate: stri
     const q = query(
       collection(db, COLLECTION_NAME),
       where('propertyId', '==', propertyId),
-      where('status', '==', 'active')
+      where('status', '==', 'approved')
     )
     const snapshot = await getDocs(q)
 
@@ -224,12 +224,76 @@ export const hasUserBookedProperty = async (userId: string, propertyId: string):
       collection(db, COLLECTION_NAME),
       where('userId', '==', userId),
       where('propertyId', '==', propertyId),
-      where('status', '==', 'active')
+      where('status', '==', 'approved')
     )
     const snapshot = await getDocs(q)
     return snapshot.docs.length > 0
   } catch (error) {
     logger.error('Error checking booking:', error)
     return false
+  }
+}
+
+/**
+ * Accept a pending booking request
+ * @param {string} bookingId - Booking Firestore document ID
+ * @returns {Promise<Booking | null>} Updated booking with approved status, or null on failure
+ */
+export const acceptBooking = async (bookingId: string): Promise<Booking | null> => {
+  try {
+    const { updateDoc } = await import('firebase/firestore')
+    const docRef = doc(db, COLLECTION_NAME, bookingId)
+    const bookingSnap = await getDoc(docRef)
+    
+    if (!bookingSnap.exists()) {
+      logger.error('Booking not found')
+      return null
+    }
+
+    const now = new Date().toISOString()
+    
+    await updateDoc(docRef, {
+      status: 'approved',
+      approvedAt: now
+    })
+
+    const updated = await getDoc(docRef)
+    return { id: updated.id, ...(updated.data() as Omit<Booking, 'id'>) }
+  } catch (error) {
+    logger.error('Error accepting booking:', error)
+    return null
+  }
+}
+
+/**
+ * Reject a pending booking request
+ * @param {string} bookingId - Booking Firestore document ID
+ * @param {string} reason - Optional rejection reason
+ * @returns {Promise<Booking | null>} Updated booking with rejected status, or null on failure
+ */
+export const rejectBooking = async (bookingId: string, reason?: string): Promise<Booking | null> => {
+  try {
+    const { updateDoc } = await import('firebase/firestore')
+    const docRef = doc(db, COLLECTION_NAME, bookingId)
+    const bookingSnap = await getDoc(docRef)
+    
+    if (!bookingSnap.exists()) {
+      logger.error('Booking not found')
+      return null
+    }
+
+    const now = new Date().toISOString()
+    
+    await updateDoc(docRef, {
+      status: 'rejected',
+      rejectedAt: now,
+      rejectionReason: reason || 'No reason provided'
+    })
+
+    const updated = await getDoc(docRef)
+    return { id: updated.id, ...(updated.data() as Omit<Booking, 'id'>) }
+  } catch (error) {
+    logger.error('Error rejecting booking:', error)
+    return null
   }
 }

@@ -110,7 +110,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       checkOutDate: selectedCheckOut,
       nights,
       totalPrice,
-      status: 'active'
+      status: 'pending'
     }
 
     setIsBooking(true)
