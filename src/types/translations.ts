@@ -30,6 +30,22 @@ export interface Translations {
     yes: string
     no: string
     clearFilters: string
+    whereGoing: string
+    when: string
+    selectDates: string
+    selectedDates: string
+    selectCheckout: string
+    guests: string
+    min: string
+    max: string
+    clear: string
+    showFilters: string
+    filterLabel: string
+    confirmBtn: string
+    cancelBtn: string
+    moreFilters: string
+    near: string
+    city: string
   }
   property: {
     perNight: string
@@ -46,6 +62,62 @@ export interface Translations {
     address: string
     area: string
     sqm: string
+    bookingRequest: string
+    bookingSending: string
+    bookingSent: string
+    bookingError: string
+    errorSignInBook: string
+    errorSelectDates: string
+    rateProperty: string
+    signInRate: string
+    onlyRateBooked: string
+    rateError: string
+    rateSaved: string
+    comments: string
+    addComment: string
+    postComment: string
+    noComments: string
+    replyTo: string
+    reply: string
+    writeReply: string
+    replies: string
+    reviewCount: string
+    reviewsCount: string
+    notRated: string
+    star: string
+    views: string
+    availability: string
+    currentlyAvailable: string
+    temporaryOccupied: string
+    availableFrom: string
+    busyFrom: string
+    busyUntil: string
+    checkIn: string
+    checkOut: string
+    city: string
+    premiumDaysRemaining: string
+    signInBookmark: string
+    bookmarkAdded: string
+    signInComment: string
+    cannotSelectPastDates: string
+    dateNotAvailable: string
+    bookingAddedToCabinet: string
+    availableForBooking: string
+    temporarilyOccupied: string
+    availableAgainFrom: string
+    weekDayLabels: string[]
+    signInToBookmark: string
+    premiumRemainingDays: string
+    near: string
+    more: string
+    contactAfterBooking: string
+    bookingButton: string
+    sendRequest: string
+    post: string
+    report: string
+    replyCount: string
+    replyingTo: string
+    writeReplyPlaceholder: string
   }
   amenities: {
     pool: string
@@ -107,6 +179,47 @@ export interface Translations {
     delete: string
     active: string
     pending: string
+    editListing: string
+    viewBookings: string
+    viewComments: string
+    premiumStatus: string
+    activeListing: string
+    inactiveListing: string
+    planExpires: string
+    favorites: string
+    bookings: string
+    notifications: string
+    moderation: string
+    startDate: string
+    endDate: string
+    setNonActive: string
+    setInactive: string
+    profilePhoto: string
+    choosePhoto: string
+    remove: string
+    near: string
+    clear: string
+    more: string
+    enterAddressForSearch: string
+    addressNotFound: string
+    invalidCoordinates: string
+    locationSearchFailed: string
+    signInToAddListing: string
+    fullNameRequired: string
+    profileUpdateFailed: string
+    profileUpdated: string
+    premiumExtended: string
+    premiumExtendedAlert: string
+    failedToExtendPremium: string
+    selectBothDates: string
+    startBeforeEnd: string
+    selectListingPlan: string
+    required: string
+    locationHiddenStandard: string
+    searchAddressPlaceholder: string
+    findOnMap: string
+    dragDropOrClick: string
+    filesSelected: string
   }
   form: {
     title: string
@@ -137,6 +250,12 @@ export interface Translations {
     noResults: string
     loading: string
     error: string
+    bookingError: string
+    ratingError: string
+    errorUpdatingFavorites: string
+    listingSaved: string
+    profileUpdated: string
+    profileUpdateFailed: string
   }
   hero: {
     title: string
@@ -186,5 +305,259 @@ export interface Translations {
     plansNote: string
     ctaTitle: string
     ctaSubtitle: string
+  }
+  errors: {
+    addressForSearch: string
+    addressNotFound: string
+    invalidCoordinates: string
+    locationSearchFailed: string
+    pleaseSignIn: string
+    pleaseSignInBookmark: string
+    pleaseSignInBook: string
+    pleaseSignInComment: string
+    pleaseSignInReport: string
+    enterTitle: string
+    selectPropertyType: string
+    selectCity: string
+    selectDistrict: string
+    createListingFailed: string
+    updateProfileFailed: string
+    updateProfileSuccess: string
+    premiumExtendedSuccess: string
+    sessionExpired: string
+    accountIssue: string
+    errorUpdatingFavorites: string
+    errorMakingBooking: string
+    errorBadRequest: string
+    errorUnauthorized: string
+    errorNotFound: string
+    errorTooManyRequests: string
+    errorServer: string
+    networkError: string
+  }
+  buttons: {
+    cancel: string
+    delete: string
+    edit: string
+    save: string
+    close: string
+    next: string
+    back: string
+    more: string
+    less: string
+    clear: string
+    search: string
+    filter: string
+    reset: string
+    login: string
+    register: string
+    logout: string
+    bookmark: string
+    share: string
+    report: string
+    reply: string
+    approve: string
+    reject: string
+    findOnMap: string
+    uploadPhotos: string
+    selectDates: string
+    confirmBooking: string
+    checkIn: string
+    checkOut: string
+    extendPremium: string
+    upgradePlan: string
+    createListing: string
+    browseListings: string
+  }
+  common: {
+    night: string
+    nights: string
+    week: string
+    weeks: string
+    month: string
+    months: string
+    day: string
+    days: string
+    room: string
+    rooms: string
+    guest: string
+    guests: string
+    reply: string
+    replies: string
+    views: string
+    likes: string
+    reviews: string
+    locationHidden: string
+    dragDropUpload: string
+    maxImages: string
+    maxWords: string
+    minPhotos: string
+    selectDateRange: string
+    startBeforeEnd: string
+    bookingConfirmed: string
+    bookingPending: string
+    bookingCancelled: string
+    commentApproved: string
+    commentRejected: string
+    alreadyReported: string
+    reportedSuccess: string
+  }
+  notifications: {
+    favoriteAdded: string
+    favoriteRemoved: string
+    bookingCreated: string
+    bookingCancelled: string
+    commentPosted: string
+    commentReply: string
+    newBooking: string
+    newComment: string
+    listingApproved: string
+    listingRejected: string
+    premiumExpiring: string
+  }
+  filters: {
+    moreFilters: string
+    nearbyPlaces: string
+    city: string
+    district: string
+    priceRange: string
+    sortBy: string
+    near: string
+    removeFilter: string
+    resetAdvanced: string
+  }
+  booking: {
+    nights: string
+    confirmed: string
+    total: string
+    perNight: string
+    selectCheckIn: string
+    selectCheckOut: string
+    selectDates: string
+    checkIn: string
+    checkOut: string
+    bookingFee: string
+  }
+  comments: {
+    leaveComment: string
+    submitComment: string
+    yourComment: string
+    reportComment: string
+    reportReason: string
+    spam: string
+    inappropriate: string
+    offensive: string
+    misleading: string
+    other: string
+  }
+  moderation: {
+    pending: string
+    approved: string
+    rejected: string
+    moderateComments: string
+    moderateListings: string
+    viewReports: string
+  }
+  calendar: {
+    days: {
+      sun: string
+      mon: string
+      tue: string
+      wed: string
+      thu: string
+      fri: string
+      sat: string
+    }
+    months: {
+      jan: string
+      feb: string
+      mar: string
+      apr: string
+      may: string
+      jun: string
+      jul: string
+      aug: string
+      sep: string
+      oct: string
+      nov: string
+      dec: string
+    }
+  }
+  pages: {
+    about: {
+      title: string
+      sections: Array<{
+        title: string
+        content: string
+        isList?: boolean
+      }>
+    }
+    contact: {
+      title: string
+      intro: string
+      phone: string
+      email: string
+      address: string
+      phoneNumber: string
+      emailAddress: string
+      addressValue: string
+      workingHours: string
+      mondayFriday: string
+      weekendClosed: string
+      socialNetworks: string
+      facebook: string
+      instagram: string
+      closing: string
+    }
+    terms: {
+      title: string
+      lastUpdated: string
+      sections: Array<{
+        number: string
+        title: string
+        content: string
+      }>
+    }
+    privacy: {
+      title: string
+      sections: Array<{
+        title: string
+        content: string
+        isList?: boolean
+      }>
+    }
+  }
+  listing: {
+    createTitle: string
+    selectType: string
+    selectCity: string
+    selectDistrictMetro: string
+    selectDistrict: string
+    enterPrice: string
+    enterRooms: string
+    maxImagesStandard: string
+    minPhotos: string
+    maxWordsStandard: string
+    setLocationMap: string
+    locationHidden: string
+    searchAddressPlaceholder: string
+    findOnMap: string
+    selectPlan: string
+    required: string
+    newBooking: string
+    newComment: string
+    createdFailed: string
+    updateFailed: string
+    locationSearchError: string
+    addressNotFound: string
+    invalidCoords: string
+    searchFailed: string
+    datesRequired: string
+    startBeforeEnd: string
+    profileRequired: string
+    extendFailed: string
+    extendSuccess: string
+    premiumExtended: string
+    contactAfterBooking: string
   }
 }

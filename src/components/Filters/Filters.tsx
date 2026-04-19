@@ -25,7 +25,6 @@ const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
 export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, hideFilterToggle = false, isOpen = false, onOpenChange, mapToggle }) => {
   const { t, language } = useLanguage()
-    const isRussian = language === 'ru'
 
   const [showMore, setShowMore] = React.useState(false)
 
@@ -84,9 +83,9 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
 
   const popularMoreOptions = sortedMoreOptions.filter((option) => quickMorePopular.includes(option.key))
   const popularNearOptions = sortedNearOptions.filter((option) => quickNearPopular.includes(option.key))
-  const moreButtonLabel = language === 'en' ? 'More filters' : isRussian ? 'Доп. фильтры' : 'Əlavə filtrlər'
-  const nearTitle = language === 'en' ? 'Near' : isRussian ? 'Рядом' : 'Yaxında'
-  const cityLabel = language === 'en' ? 'City' : isRussian ? 'Город' : 'Şəhər'
+  const moreButtonLabel = t.search.moreFilters
+  const nearTitle = t.search.near
+  const cityLabel = t.search.city
 
   const moreLabelMap = new Map(sortedMoreOptions.map((item) => [item.key, getLocalizedLabel(item)]))
   const nearLabelMap = new Map(sortedNearOptions.map((item) => [item.key, getLocalizedLabel(item)]))
@@ -240,7 +239,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 type="button"
                 className="selected-chip"
                 onClick={() => handleRemoveChip(chip)}
-                title={language === 'en' ? 'Remove filter' : isRussian ? 'Удалить фильтр' : 'Filtri sil'}
+                title={t.filters.removeFilter}
               >
                 <span>{chip.label}</span>
                 <strong aria-hidden="true">×</strong>
@@ -256,7 +255,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 <h4>{moreButtonLabel} <span className="count-pill">{filters.extraFilters.length}</span></h4>
                 {filters.extraFilters.length > 0 && (
                   <button type="button" className="section-clear-btn" onClick={() => clearSection('extraFilters')}>
-                    {language === 'en' ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
+                    {t.buttons.clear}
                   </button>
                 )}
               </div>
@@ -291,7 +290,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 <h4>{nearTitle} <span className="count-pill">{filters.nearbyPlaces.length}</span></h4>
                 {filters.nearbyPlaces.length > 0 && (
                   <button type="button" className="section-clear-btn" onClick={() => clearSection('nearbyPlaces')}>
-                    {language === 'en' ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
+                    {t.buttons.clear}
                   </button>
                 )}
               </div>
@@ -326,7 +325,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
 
         <div className="filters-actions">
           <button className="btn btn-ghost" onClick={resetAdvancedOnly}>
-            {language === 'en' ? 'Reset advanced' : isRussian ? 'Сбросить доп. фильтры' : 'Əlavə filtrləri təmizlə'}
+            {t.filters.resetAdvanced}
           </button>
           <button className="btn btn-ghost" onClick={onClear}>
             {t.search.clearFilters}

@@ -1,21 +1,21 @@
 import React from 'react'
 import './DateRangePicker.css'
+import { useLanguage } from '../../context'
 
 interface DateRangePickerProps {
   checkIn: string
   checkOut: string
   onDateChange: (checkIn: string, checkOut: string) => void
   onClose?: () => void
-  language: 'en' | 'az' | 'ru'
 }
 
 export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   checkIn,
   checkOut,
   onDateChange,
-  onClose,
-  language
+  onClose
 }) => {
+  const { t } = useLanguage()
   const [currentMonth, setCurrentMonth] = React.useState(new Date())
   const [tempCheckIn, setTempCheckIn] = React.useState(checkIn)
   const [tempCheckOut, setTempCheckOut] = React.useState(checkOut)
@@ -90,20 +90,11 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     return ''
   }
 
-  const monthNames = {
-    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-    az: ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun', 'İyul', 'Avqust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'],
-    ru: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-  }
-
-  const dayNames = {
-    en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    az: ['Baz', 'B.e', 'Ça.', 'Ç.a', 'C.a', 'Cum', 'Cuma'],
-    ru: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-  }
-
-  const days = dayNames[language]
-  const months = monthNames[language]
+  const monthKeys: Array<keyof typeof t.calendar.months> = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+  const dayKeys: Array<keyof typeof t.calendar.days> = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+  
+  const months = monthKeys.map(key => t.calendar.months[key])
+  const days = dayKeys.map(key => t.calendar.days[key])
   const daysInMonth = getDaysInMonth(currentMonth)
   const firstDay = getFirstDayOfMonth(currentMonth)
   const calendarDays = []
@@ -129,12 +120,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   })()
 
   const labels = {
-    en: { title: 'Select dates', checkIn: 'Check-in', checkOut: 'Check-out', nights: 'nights', confirmed: 'Dates selected' },
-    az: { title: 'Tarixləri seçin', checkIn: 'Giriş', checkOut: 'Çıxış', nights: 'gecə', confirmed: 'Tarixlər seçildi' },
-    ru: { title: 'Выберите даты', checkIn: 'Заезд', checkOut: 'Выезд', nights: 'ночей', confirmed: 'Даты выбраны' }
+    title: t.booking.selectDates,
+    checkIn: t.booking.checkIn,
+    checkOut: t.booking.checkOut,
+    nights: t.booking.nights,
+    confirmed: t.booking.confirmed
   }
 
-  const label = labels[language]
+  const label = labels
 
   return (
     <div className="date-range-picker-overlay">

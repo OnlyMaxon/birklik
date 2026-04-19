@@ -143,22 +143,14 @@ export const PropertyPage: React.FC = () => {
     if (!dateISO) return
     const today = getTodayISO()
     if (dateISO < today) {
-      setNotificationMessage(language === 'en' 
-        ? 'Cannot select past dates' 
-        : language === 'ru' 
-          ? 'Нельзя выбирать прошлые даты' 
-          : 'Keçmiş tarixləri seçə bilməzsiniz')
+      setNotificationMessage(t.property.cannotSelectPastDates)
       setShowNotification(true)
       return
     }
 
     // Check if date is booked
     if (isCellDisabled(dateISO)) {
-      setNotificationMessage(language === 'en' 
-        ? 'This date is not available' 
-        : language === 'ru' 
-          ? 'Эта дата недоступна' 
-          : 'Bu tarix mövcud deyil')
+      setNotificationMessage(t.property.dateNotAvailable)
       setShowNotification(true)
       return
     }
@@ -207,7 +199,7 @@ export const PropertyPage: React.FC = () => {
 
   const handleMakeBooking = async () => {
     if (!isAuthenticated || !user || !property || !selectedCheckIn || !selectedCheckOut) {
-      alert(language === 'en' ? 'Please select dates and sign in' : language === 'ru' ? 'Пожалуйста, выберите даты и войдите' : 'Lütfen tarix seçin və daxil olun')
+      alert(t.property.errorSelectDates)
       return
     }
 
@@ -257,7 +249,7 @@ export const PropertyPage: React.FC = () => {
           await createBookingNotification(property.ownerId, {
             userId: property.ownerId,
             type: 'booking',
-            title: language === 'en' ? 'New Booking' : language === 'ru' ? 'Новое бронирование' : 'Yeni Sifariş',
+            title: t.notifications.newBooking,
             message: `${user.name} booked your property for ${selectedNights} nights`,
             read: false,
             propertyId: property.id,
@@ -273,12 +265,12 @@ export const PropertyPage: React.FC = () => {
           })
         }
       } else {
-        setNotificationMessage(language === 'en' ? 'Error creating booking' : language === 'ru' ? 'Ошибка при создании бронирования' : 'Sifariş yaratılma xətası')
+        setNotificationMessage(t.messages.bookingError)
         setShowNotification(true)
       }
     } catch (error) {
       logger.error('Error making booking:', error)
-      setNotificationMessage(language === 'en' ? 'Error making booking' : language === 'ru' ? 'Ошибка при бронировании' : 'Sifariş xətası')
+      setNotificationMessage(t.messages.bookingError)
       setShowNotification(true)
     } finally {
       setIsBooking(false)
@@ -309,7 +301,7 @@ export const PropertyPage: React.FC = () => {
         await createCommentNotification(property.ownerId, {
           userId: property.ownerId,
           type: 'comment',
-          title: language === 'en' ? 'New Comment' : language === 'ru' ? 'Новый комментарий' : 'Yeni Şərh',
+          title: t.notifications.newComment,
           message: `${user.name} commented: "${newComment.trim().substring(0, 50)}${newComment.trim().length > 50 ? '...' : ''}"`,
           read: false,
           propertyId: property.id,
@@ -328,13 +320,13 @@ export const PropertyPage: React.FC = () => {
 
   const handleRating = async (rating: number) => {
     if (!isAuthenticated || !user || !property) {
-      alert(language === 'en' ? 'Please sign in to rate' : language === 'ru' ? 'Пожалуйста, войдите чтобы оставить оценку' : 'Lütfen puanlamak için giriş yapın')
+      alert(t.property.signInRate)
       return
     }
 
     // Check if user has booked this property
     if (!hasBooked) {
-      alert(language === 'en' ? 'You can only rate properties you have booked' : language === 'ru' ? 'Вы можете оценивать только забронированные объекты' : 'Yalnız bronlaşdırdığınız əmlakları qiymətləndirə bilərsiniz')
+      alert(t.property.onlyRateBooked)
       return
     }
 
@@ -343,21 +335,21 @@ export const PropertyPage: React.FC = () => {
       const result = await addRatingToProperty(property.id, user.id, rating, user.name || 'User')
       if (result.success) {
         setUserRating(rating)
-        setNotificationMessage(language === 'en' ? 'Rating saved!' : language === 'ru' ? 'Оценка сохранена!' : 'Reytinq kayd edildi!')
+        setNotificationMessage(t.property.rateSaved)
         setShowNotification(true)
         
         // Reload property to show updated rating
         const updated = await getPropertyById(property.id)
         setProperty(updated)
       } else if (result.hasBooked === false) {
-        alert(language === 'en' ? 'You can only rate properties you have booked' : language === 'ru' ? 'Вы можете оценивать только забронированные объекты' : 'Yalnız bronlaşdırdığınız əmlakları qiymətləndirə bilərsiniz')
+        alert(t.property.onlyRateBooked)
       } else {
-        setNotificationMessage(language === 'en' ? 'Error saving rating' : language === 'ru' ? 'Ошибка при сохранении оценки' : 'Reytinq kayd edilməsi xətası')
+        setNotificationMessage(t.messages.ratingError)
         setShowNotification(true)
       }
     } catch (error) {
       logger.error('Error submitting rating:', error)
-      setNotificationMessage(language === 'en' ? 'Error saving rating' : language === 'ru' ? 'Ошибка при сохранении оценки' : 'Reytinq kayd edilməsi xətası')
+      setNotificationMessage(t.messages.ratingError)
       setShowNotification(true)
     } finally {
       setIsSubmittingRating(false)
@@ -373,7 +365,7 @@ export const PropertyPage: React.FC = () => {
             className={`star-btn ${userRating === star ? 'active' : ''} ${star <= userRating! ? 'filled' : ''}`}
             onClick={() => handleRating(star)}
             disabled={!isAuthenticated || isSubmittingRating}
-            title={`${star} ${language === 'en' ? 'star' : language === 'ru' ? 'звезда' : 'ulduz'}`}
+            title={`${star} ${t.property.star}`}
           >
             ★
           </button>
@@ -389,7 +381,7 @@ export const PropertyPage: React.FC = () => {
       <div className="average-rating">
         <span className="rating-value">{avgRating > 0 ? avgRating.toFixed(1) : '-'}</span>
         <span className="rating-text">
-          {avgRating > 0 ? `(${reviewCount} ${language === 'en' ? 'review' : language === 'ru' ? 'отзыв' : 'rəy'}${reviewCount !== 1 ? (language === 'en' ? 's' : language === 'ru' ? 'ов' : '') : ''})` : language === 'en' ? 'Not rated yet' : language === 'ru' ? 'Еще не оценено' : 'Hələ qiymətləndirilməyib'}
+          {avgRating > 0 ? `(${reviewCount} ${t.property.reviewCount}${reviewCount !== 1 ? (language === 'en' ? 's' : language === 'ru' ? 'ов' : '') : ''})` : t.property.notRated}
         </span>
       </div>
     )
@@ -397,7 +389,7 @@ export const PropertyPage: React.FC = () => {
 
   const handleFavoriteClick = async () => {
     if (!isAuthenticated || !user) {
-      alert(language === 'en' ? 'Please sign in to add favorites' : language === 'ru' ? 'Пожалуйста, войдите чтобы добавить в избранные' : 'Favorilere eklemek için giriş yapın')
+      alert(t.property.signInBookmark)
       return
     }
 
@@ -417,7 +409,7 @@ export const PropertyPage: React.FC = () => {
           await createFavoriteNotification(ownerId, {
             userId: ownerId,
             type: 'favorite',
-            title: language === 'en' ? 'Added to Favorites' : language === 'ru' ? 'Добавлено в избранные' : 'Favorilərə Əlavə Edildi',
+            title: t.property.bookmarkAdded,
             message: `${user.name} added your property to favorites`,
             read: false,
             propertyId: property.id,
@@ -432,7 +424,7 @@ export const PropertyPage: React.FC = () => {
       setIsFavorited(!isFavorited)
     } catch (error) {
       logger.error('Error toggling favorite:', error)
-      alert(language === 'en' ? 'Error updating favorites' : language === 'ru' ? 'Ошибка при обновлении избранных' : 'Favori güncellenirken hata oluştu')
+      alert(t.messages.errorUpdatingFavorites)
     } finally {
       setIsFavoriting(false)
     }
@@ -496,7 +488,7 @@ export const PropertyPage: React.FC = () => {
   }
 
   const isAvailable = property.isActive !== false || isOccupationExpired(property)
-  const availabilityTitle = language === 'en' ? 'Availability calendar' : language === 'ru' ? 'Календарь доступности' : 'Mövcudluq təqvimi'
+  const availabilityTitle = t.property.availability
   const availabilityNote = isAvailable
     ? (language === 'en' ? 'Currently available for booking.' : language === 'ru' ? 'Сейчас доступно для аренды.' : 'Hazırda sifariş üçün açıqdır.')
     : (language === 'en' ? 'Temporarily occupied and hidden from public listing.' : language === 'ru' ? 'Временно занято и скрыто из общего списка.' : 'Müvəqqəti məşğuldur və ümumi siyahıda göstərilmir.')
@@ -651,7 +643,7 @@ export const PropertyPage: React.FC = () => {
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                         <circle cx="12" cy="12" r="3"/>
                       </svg>
-                      {property.views} {language === 'en' ? 'views' : language === 'ru' ? 'просмотров' : 'baxış'}
+                      {property.views} {t.property.views}
                     </span>
                   )}
                   {property.likes && property.likes.length > 0 && (
@@ -707,7 +699,7 @@ export const PropertyPage: React.FC = () => {
 
                 {moreLabels.length > 0 && (
                   <div className="property-section">
-                    <h3>{language === 'en' ? 'More' : language === 'ru' ? 'Дополнительно' : 'Əlavə'}</h3>
+                    <h3>{t.property.more}</h3>
                     <div className="amenities-grid">
                       {moreLabels.map((label) => (
                         <span key={label} className="amenity-item extra-item">
@@ -720,7 +712,7 @@ export const PropertyPage: React.FC = () => {
 
                 {nearLabels.length > 0 && (
                   <div className="property-section">
-                    <h3>{language === 'en' ? 'Near' : language === 'ru' ? 'Рядом' : 'Yaxında'}</h3>
+                    <h3>{t.property.near}</h3>
                     <div className="amenities-grid">
                       {nearLabels.map((label) => (
                         <span key={label} className="amenity-item extra-item">
@@ -736,7 +728,7 @@ export const PropertyPage: React.FC = () => {
                   <p>{getLocalizedText(property.address)}</p>
                   {property.city && (
                     <p className="property-city-line">
-                      <strong>{language === 'en' ? 'City' : language === 'ru' ? 'Город' : 'Şəhər'}:</strong> {property.city}
+                      <strong>{t.property.city}:</strong> {property.city}
                     </p>
                   )}
                   {locationLabels.length > 0 && (
@@ -783,7 +775,7 @@ export const PropertyPage: React.FC = () => {
                     </>
                   ) : (
                     <p style={{ fontSize: '0.9rem', color: '#9b7448', marginTop: '0.5rem' }}>
-                      {language === 'en' ? 'Contact info will appear after booking' : language === 'ru' ? 'Контактная информация появится после бронирования' : 'Məlumata bron etdikdən sonra nəzər salacaq'}
+                      {t.property.contactAfterBooking}
                     </p>
                   )}
                 </div>
@@ -849,11 +841,11 @@ export const PropertyPage: React.FC = () => {
                   </div>
                   <div className="availability-dates">
                     <div>
-                      <span>{language === 'en' ? 'Busy from' : language === 'ru' ? 'Занято с' : 'Məşğul başlanğıc'}</span>
+                      <span>{t.property.busyFrom}</span>
                       <strong>{formatDate(property.unavailableFrom)}</strong>
                     </div>
                     <div>
-                      <span>{language === 'en' ? 'Busy until' : language === 'ru' ? 'Занято до' : 'Məşğul bitiş'}</span>
+                      <span>{t.property.busyUntil}</span>
                       <strong>{formatDate(property.unavailableTo)}</strong>
                     </div>
                   </div>
@@ -861,12 +853,12 @@ export const PropertyPage: React.FC = () => {
                   {selectedCheckIn && (
                     <div className="availability-range-inputs">
                       <div className="selected-range-display">
-                        <span>{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş tarixi'}:</span>
+                        <span>{t.property.checkIn}:</span>
                         <strong>{formatDate(selectedCheckIn)}</strong>
                       </div>
                       {selectedCheckOut && (
                         <div className="selected-range-display">
-                          <span>{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış tarixi'}:</span>
+                          <span>{t.property.checkOut}:</span>
                           <strong>{formatDate(selectedCheckOut)}</strong>
                         </div>
                       )}
@@ -905,13 +897,13 @@ export const PropertyPage: React.FC = () => {
                         transition: 'background-color 0.3s'
                       }}
                     >
-                      {isBooking ? (language === 'en' ? 'Booking...' : language === 'ru' ? 'Бронирование...' : 'Sifariş edilir...') : (language === 'en' ? 'Send Request' : language === 'ru' ? 'Отправить запрос' : 'Sorğu göndər')}
+                      {isBooking ? t.property.bookingButton : t.property.sendRequest}
                     </button>
                   )}
 
                   {hasBooked && (
                     <div style={{ padding: '0.5rem 0.75rem', marginTop: '0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                      {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
+                      {t.property.bookingSent}
                     </div>
                   )}
 
@@ -939,7 +931,7 @@ export const PropertyPage: React.FC = () => {
               <div className="property-interactions-section">
                 {/* Rating Section */}
                 <div className="interactions-rating">
-                  <h4>{language === 'en' ? 'Rate this property' : language === 'ru' ? 'Оцените это свойство' : 'Bu əmlakı qiymətləndirin'}</h4>
+                  <h4>{t.property.rateProperty}</h4>
                   {renderAverageRating()}
                   {renderStars()}
                 </div>
@@ -947,7 +939,7 @@ export const PropertyPage: React.FC = () => {
                 {/* Comments */}
                 <div className="interactions-comments">
                   <h4>
-                    💬 {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Şərhlər'} ({property.comments?.length || 0})
+                    💬 {t.property.comments} ({property.comments?.length || 0})
                   </h4>
 
                   {isAuthenticated && (
@@ -956,7 +948,7 @@ export const PropertyPage: React.FC = () => {
                         type="text"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        placeholder={language === 'en' ? 'Add a comment...' : language === 'ru' ? 'Добавить комментарий...' : 'Şərh əlavə edin...'}
+                        placeholder={t.property.addComment}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                       />
                       <button
@@ -964,14 +956,14 @@ export const PropertyPage: React.FC = () => {
                         disabled={isPostingComment || !newComment.trim()}
                         className="btn btn-sm btn-primary"
                       >
-                        {isPostingComment ? '...' : language === 'en' ? 'Post' : language === 'ru' ? 'Отправить' : 'Yolla'}
+                        {isPostingComment ? '...' : t.property.post}
                       </button>
                     </div>
                   )}
 
                   {!isAuthenticated && (
                     <p className="comments-sign-in-hint">
-                      {language === 'en' ? 'Sign in to comment' : language === 'ru' ? 'Войдите чтобы комментировать' : 'Şərhləmək üçün daxil olun'}
+                      {t.property.signInComment}
                     </p>
                   )}
 
@@ -1010,7 +1002,7 @@ export const PropertyPage: React.FC = () => {
                                 textDecorationColor: '#27ae60'
                               }}
                             >
-                              {language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
+                              {t.property.reply}
                             </button>
                             {isAuthenticated && (
                               <button

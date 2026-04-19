@@ -385,7 +385,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const handleSearchLocation = async () => {
     const query = locationSearch.trim() || newListing.address.trim()
     if (!query) {
-      setLocationSearchError(language === 'en' ? 'Enter address for search.' : language === 'ru' ? 'Введите адрес для поиска.' : 'Axtarış üçün ünvan daxil edin.')
+      setLocationSearchError(t.dashboard.enterAddressForSearch)
       return
     }
 
@@ -407,7 +407,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const results = (await response.json()) as GeocodeResult[]
 
       if (!results.length) {
-        setLocationSearchError(language === 'en' ? 'Address not found. Try a more specific address.' : language === 'ru' ? 'Адрес не найден. Укажите более точный адрес.' : 'Ünvan tapılmadı. Daha dəqiq ünvan yazın.')
+        setLocationSearchError(t.dashboard.addressNotFound)
         return
       }
 
@@ -424,7 +424,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         lng: Number(lng.toFixed(6))
       })
     } catch (searchError) {
-      setLocationSearchError(language === 'en' ? 'Location search failed. Try again.' : language === 'ru' ? 'Поиск локации не удался. Попробуйте снова.' : 'Ünvan axtarışı uğursuz oldu. Yenidən cəhd edin.')
+      setLocationSearchError(t.dashboard.locationSearchFailed)
     } finally {
       setIsSearchingLocation(false)
     }
@@ -445,14 +445,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     // Validate title
     if (!newListing.title.trim()) {
-      setError(language === 'en' ? 'Please enter a title' : language === 'ru' ? 'Введите заголовок' : 'Başlıq daxil edin')
+      setError(t.listing.createTitle)
       setIsSubmitting(false)
       return
     }
 
     // Validate type
     if (!newListing.type) {
-      setError(language === 'en' ? 'Please select property type' : language === 'ru' ? 'Выберите тип недвижимости' : 'Mülk tipini seçin')
+      setError(t.listing.selectType)
       setIsSubmitting(false)
       return
     }
@@ -461,7 +461,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     // Validate city
     if (!newListing.city) {
-      setError(language === 'en' ? 'Please select a city' : language === 'ru' ? 'Выберите город' : 'Şəhər seçin')
+      setError(t.listing.selectCity)
       setIsSubmitting(false)
       return
     }
@@ -469,9 +469,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     // Validate location/district selection
     if (!newListing.locationTags || newListing.locationTags.length === 0) {
       if (newListing.city === 'Baku') {
-        setError(language === 'en' ? 'Please select a district or metro' : language === 'ru' ? 'Выберите район или метро' : 'Rayon yoxsa metro seçin')
+        setError(t.listing.selectDistrictMetro)
       } else {
-        setError(language === 'en' ? 'Please select a district' : language === 'ru' ? 'Выберите район' : 'Rayon seçin')
+        setError(t.listing.selectDistrict)
       }
       setIsSubmitting(false)
       return
@@ -479,14 +479,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     // Validate price
     if (!newListing.price || Number(newListing.price) <= 0) {
-      setError(language === 'en' ? 'Please enter a valid price' : language === 'ru' ? 'Введите корректную цену' : 'Doğru qiyməti daxil edin')
+      setError(t.listing.enterPrice)
       setIsSubmitting(false)
       return
     }
 
     // Validate rooms
     if (!newListing.rooms || Number(newListing.rooms) <= 0) {
-      setError(language === 'en' ? 'Please enter number of rooms' : language === 'ru' ? 'Укажите количество комнат' : 'Otaq sayını daxil edin')
+      setError(t.listing.enterRooms)
       setIsSubmitting(false)
       return
     }
@@ -506,20 +506,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
-      setError(language === 'en' ? 'Maximum 4 images for Standard plan' : language === 'ru' ? 'Максимум 4 фото для тарифа Стандарт' : 'Standart paket üçün maksimum 4 şəkil yükləmək olar')
+      setError(t.listing.maxImagesStandard)
       setIsSubmitting(false)
       return
     }
 
     if (selectedFiles.length < 2) {
-      setError(language === 'en' ? 'Please add at least 2 photos' : language === 'ru' ? 'Пожалуйста добавьте минимум 2 фотографии' : 'Lütfən ən azı 2 foto əlavə edin')
+      setError(t.listing.minPhotos)
       setIsSubmitting(false)
       return
     }
 
     const descriptionWordCount = newListing.description.trim().split(/\s+/).filter(Boolean).length
     if (newListing.listingTier === 'free' && descriptionWordCount > 35) {
-      setError(language === 'en' ? 'Maximum 35 words for Standard plan' : language === 'ru' ? 'Максимум 35 слов для тарифа Стандарт' : 'Standart paketdə təsvir maksimum 35 söz ola bilər')
+      setError(t.listing.maxWordsStandard)
       setIsSubmitting(false)
       return
     }
@@ -532,7 +532,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
     // Validate coordinates are set
     if (!listingCoordinates.lat || !listingCoordinates.lng) {
-      setError(language === 'en' ? 'Please set location on map' : language === 'ru' ? 'Установите место на карте' : 'Xəritədə yeri qeyd edin')
+      setError(t.listing.setLocationMap)
       setIsSubmitting(false)
       return
     }
@@ -603,14 +603,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     if (editingListingId) {
       const updated = await updateProperty(editingListingId, propertyPayload, selectedFiles)
       if (!updated) {
-        setError(language === 'en' ? 'Failed to update listing. Please try again.' : language === 'ru' ? 'Не удалось обновить объявление. Попробуйте еще раз.' : 'Elanı yeniləmə uğursuz oldu. Lütfən yenidən cəhd edin.')
+        setError(t.listing.updateFailed)
         setIsSubmitting(false)
         return
       }
     } else {
       const created = await createProperty(propertyPayload, selectedFiles)
       if (!created) {
-        setError(language === 'en' ? 'Failed to create listing. Please check your data and try again.' : language === 'ru' ? 'Не удалось создать объявление. Проверьте данные и попробуйте еще раз.' : 'Elan yaratmaq uğursuz oldu. Məlumatlarınızı yoxlayın və yenidən cəhd edin.')
+        setError(t.listing.createdFailed)
         setIsSubmitting(false)
         return
       }
@@ -735,7 +735,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     e.preventDefault()
 
     if (!profileName.trim()) {
-      setProfileError(language === 'en' ? 'Full name is required.' : language === 'ru' ? 'Требуются имя и фамилия.' : 'Ad və soyad tələb olunur.')
+      setProfileError(t.dashboard.fullNameRequired)
       setProfileMessage('')
       return
     }
@@ -752,12 +752,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
 
     if (!result.success) {
-      setProfileError(language === 'en' ? 'Failed to update profile.' : language === 'ru' ? 'Не удалось обновить профиль.' : 'Profil yenilənmədi.')
+      setProfileError(t.dashboard.profileUpdateFailed)
       setIsSavingProfile(false)
       return
     }
 
-    setProfileMessage(language === 'en' ? 'Profile updated successfully.' : language === 'ru' ? 'Профиль успешно обновлен.' : 'Profil uğurla yeniləndi.')
+    setProfileMessage(t.dashboard.profileUpdated)
     setProfileAvatarFile(null)
     setIsSavingProfile(false)
   }
@@ -836,12 +836,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     if (!busyListingId) return
 
     if (!busyFrom || !busyTo) {
-      setError(language === 'en' ? 'Select both start and end dates.' : language === 'ru' ? 'Выберите даты начала и конца.' : 'Başlama və bitmə tarixlərini seçin.')
+      setError(t.dashboard.selectBothDates)
       return
     }
 
     if (busyFrom > busyTo) {
-      setError(language === 'en' ? 'Start date must be before end date.' : language === 'ru' ? 'Дата начала должна быть раньше даты окончания.' : 'Başlama tarixi bitmə tarixindən böyük ola bilməz.')
+      setError(t.dashboard.startBeforeEnd)
       return
     }
 
@@ -1186,7 +1186,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                   </svg>
-                  {language === 'en' ? 'Favorites' : language === 'ru' ? 'Избранные' : 'Sevimlilər'}
+                  {t.dashboard.favorites}
                 </button>
                 <button
                   className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
@@ -1195,7 +1195,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z" />
                   </svg>
-                  {language === 'en' ? 'Bookings' : language === 'ru' ? 'Бронирования' : 'Bölmələr'}
+                 {t.dashboard.bookings}
                 </button>
                 <button
                   className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
@@ -1205,7 +1205,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
-                  {language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'}
+                  {t.dashboard.notifications}
                 </button>
                 <button
                   className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
@@ -1226,7 +1226,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       <path d="M9 12l2 2 4-4"/>
                       <path d="M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/>
                     </svg>
-                    {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
+                    {t.dashboard.moderation}
                   </button>
                 )}
               </nav>

@@ -3,63 +3,9 @@ import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import './ContactPage.css'
 
-const contactContent = {
-  az: {
-    title: 'Əlaqə',
-    intro: 'Sizə xidmət göstərməkdən məmnunuq! Hər hansı sual, təklif və ya dəstək üçün bizimlə əlaqə saxlaya bilərsiniz:',
-    phone: 'Telefon',
-    email: 'E-poçt',
-    address: 'Ünvan',
-    phoneNumber: '+994 55 660 00 86',
-    emailAddress: 'info@birklik.az',
-    addressValue: 'Bakı şəhəri, Azərbaycan',
-    workingHours: 'İş saatları',
-    mondayFriday: 'Bazar ertəsi – Cümə: 09:00 – 18:00',
-    weekendClosed: 'Şənbə – Bazar: bağlıdır',
-    socialNetworks: 'Sosial şəbəkələr',
-    facebook: 'facebook.com/birklikaz',
-    instagram: 'instagram.com/birklikaz',
-    closing: 'Biz sizin suallarınıza tez bir zamanda cavab verməyə çalışırıq və hər zaman xidmətinizdəyik.'
-  },
-  ru: {
-    title: 'Контакты',
-    intro: 'Мы рады помочь вам! Для вопросов, предложений или поддержки свяжитесь с нами:',
-    phone: 'Телефон',
-    email: 'Электронная почта',
-    address: 'Адрес',
-    phoneNumber: '+994 55 660 00 86',
-    emailAddress: 'info@birklik.az',
-    addressValue: 'город Баку, Азербайджан',
-    workingHours: 'Часы работы',
-    mondayFriday: 'Понедельник – Пятница: 09:00 – 18:00',
-    weekendClosed: 'Суббота – Воскресенье: выходной',
-    socialNetworks: 'Социальные сети',
-    facebook: 'facebook.com/birklikaz',
-    instagram: 'instagram.com/birklikaz',
-    closing: 'Мы стараемся отвечать на ваши вопросы как можно быстрее и всегда готовы помочь.'
-  },
-  en: {
-    title: 'Contact',
-    intro: 'We are happy to assist you! For any questions, suggestions, or support, please contact us:',
-    phone: 'Phone',
-    email: 'Email',
-    address: 'Address',
-    phoneNumber: '+994 55 660 00 86',
-    emailAddress: 'info@birklik.az',
-    addressValue: 'Baku, Azerbaijan',
-    workingHours: 'Working Hours',
-    mondayFriday: 'Monday – Friday: 09:00 – 18:00',
-    weekendClosed: 'Saturday – Sunday: Closed',
-    socialNetworks: 'Social Media',
-    facebook: 'facebook.com/birklikaz',
-    instagram: 'instagram.com/birklikaz',
-    closing: 'We aim to respond to your inquiries promptly and are always here to assist you.'
-  }
-}
-
 export const ContactPage: React.FC = () => {
-  const { language } = useLanguage()
-  const content = contactContent[language as keyof typeof contactContent] || contactContent.en
+  const { t } = useLanguage()
+  const content = t.pages.contact
 
   return (
     <Layout>

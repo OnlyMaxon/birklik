@@ -17,14 +17,6 @@ interface ReportCommentModalProps {
 
 type ReportReasonKey = ReportReason
 
-const reportReasons: { [key in ReportReasonKey]: { en: string; ru: string; az: string } } = {
-  spam: { en: 'Spam', ru: 'Спам', az: 'Spam' },
-  inappropriate: { en: 'Inappropriate content', ru: 'Неприемлемый контент', az: 'Uygunsuz məzmun' },
-  offensive: { en: 'Offensive language', ru: 'Оскорбительный язык', az: 'Sarkastik dil' },
-  misleading: { en: 'Misleading information', ru: 'Вводящая в заблуждение информация', az: 'Yanış məlumat' },
-  other: { en: 'Other', ru: 'Другое', az: 'Digər' }
-}
-
 export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
   isOpen,
   onClose,
@@ -34,11 +26,23 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
   reportedBy,
   reportedByName
 }) => {
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const [reason, setReason] = React.useState<ReportReason>('spam')
   const [details, setDetails] = React.useState('')
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [message, setMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Get report reason labels from translations
+  const getReasonLabel = (reasonKey: ReportReasonKey): string => {
+    const reasonMap: { [key in ReportReasonKey]: string } = {
+      spam: t.comments.spam,
+      inappropriate: t.comments.inappropriate,
+      offensive: t.comments.offensive,
+      misleading: t.comments.misleading,
+      other: t.comments.other
+    }
+    return reasonMap[reasonKey]
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,7 +85,7 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
 
       // Notify moderators
       try {
-        const reasonText = reportReasons[reason as ReportReasonKey][language as keyof typeof reportReasons[ReportReasonKey]]
+        const reasonText = getReasonLabel(reason as ReportReasonKey)
         
         await createReportNotification({
           type: 'commentReport',
@@ -209,9 +213,9 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
                 cursor: 'pointer'
               }}
             >
-              {Object.entries(reportReasons).map(([key, labels]) => (
-                <option key={key} value={key}>
-                  {labels[language as keyof typeof labels] || labels.en}
+              {(['spam', 'inappropriate', 'offensive', 'misleading', 'other'] as ReportReason[]).map((reasonKey) => (
+                <option key={reasonKey} value={reasonKey}>
+                  {getReasonLabel(reasonKey)}
                 </option>
               ))}
             </select>

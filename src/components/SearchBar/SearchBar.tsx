@@ -162,20 +162,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   // Get day name for calendar header
   const getDayName = (dayIndex: number): string => {
-    const days = isEnglish ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] 
-                  : isRussian ? ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-                  : ['Baz', 'B.e', 'Çar', 'Cüm', 'Cümə', 'Cur', 'Şən']
-    return days[dayIndex]
+    const dayKeys: Array<keyof typeof t.calendar.days> = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+    return t.calendar.days[dayKeys[dayIndex]]
   }
 
   // Get month name
   const getMonthName = (month: number): string => {
-    const months = isEnglish 
-      ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-      : isRussian
-      ? ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-      : ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun', 'İyul', 'Avqust', 'Sentyabr', 'Sentyabr', 'Noyabr', 'Dekabr']
-    return months[month]
+    const monthKeys: Array<keyof typeof t.calendar.months> = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    return t.calendar.months[monthKeys[month]]
   }
 
   // Generate calendar days for a given month
@@ -241,7 +235,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <div className="search-card-field search-location-field">
         <div className="search-field-content">
           <div className="search-field-label">
-            {isEnglish ? 'Where are you going?' : isRussian ? 'Куда ты идешь?' : 'Hara gedəcəksən?'}
+            {t.search.whereGoing}
           </div>
           <div className="search-location-wrapper">
             <input
@@ -263,7 +257,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   e.stopPropagation()
                   handleClearCity()
                 }}
-                title={isEnglish ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
+                title={t.search.clear}
               >
                 ✕
               </button>
@@ -295,7 +289,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <div className="search-card-field search-dates-field">
         <div className="search-field-content">
           <div className="search-field-label">
-            {isEnglish ? 'When?' : isRussian ? 'Когда?' : 'Nə vaxt?'}
+            {t.search.when}
           </div>
           <button
             type="button"
@@ -320,7 +314,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           >
             {checkIn && checkOut 
               ? `${checkIn.split('-').reverse().join('.')} → ${checkOut.split('-').reverse().join('.')}`
-              : (isEnglish ? 'Select dates' : isRussian ? 'Выберите даты' : 'Tarixləri seçin')
+              : (t.search.selectDates)
             }
           </button>
 
@@ -362,7 +356,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 {/* Header with title and close button */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '600', color: '#2d2420' }}>
-                    {isEnglish ? 'Select dates' : isRussian ? 'Выберите даты' : 'Tarixləri seçin'}
+                    {t.search.selectDates}
                   </h2>
                   <button
                     type="button"
@@ -516,14 +510,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 {tempCheckIn && (
                   <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '8px', marginBottom: '1.5rem' }}>
                     <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.25rem' }}>
-                      {isEnglish ? 'Selected dates:' : isRussian ? 'Выбранные даты:' : 'Seçilmiş tarixlər:'}
+                      {t.search.selectedDates}
                     </div>
                     <div style={{ fontSize: '1rem', fontWeight: '600', color: '#2d2420' }}>
                       {tempCheckIn.split('-').reverse().join('.')} 
                       {tempCheckOut && ` → ${tempCheckOut.split('-').reverse().join('.')}`}
                       {!tempCheckOut && (
                         <span style={{ color: '#999', fontSize: '0.9rem' }}>
-                          {isEnglish ? ' (select check-out date)' : isRussian ? ' (выберите дату выезда)' : ' (çıxış tarixi seçin)'}
+                          {t.search.selectCheckout}
                         </span>
                       )}
                     </div>
@@ -547,7 +541,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                       color: '#2d2420'
                     }}
                   >
-                    {isEnglish ? 'Cancel' : isRussian ? 'Отмена' : 'Ləğv et'}
+                    {t.search.cancelBtn}
                   </button>
                   <button
                     type="button"
@@ -565,7 +559,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                       fontSize: '0.95rem'
                     }}
                   >
-                    {isEnglish ? 'Confirm' : isRussian ? 'Подтвердить' : 'Təsdiq et'}
+                    {t.search.confirmBtn}
                   </button>
                 </div>
               </div>
@@ -578,12 +572,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <div className="search-card-field search-guests-field">
         <div className="search-field-content">
           <div className="search-field-label">
-            {isEnglish ? 'Guests' : isRussian ? 'Гости' : 'Qonaqlar'}
+            {t.search.guests}
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '0.75rem', color: '#999', marginBottom: '0.25rem' }}>
-                {isEnglish ? 'Min' : isRussian ? 'Мин' : 'Min'}
+                {t.search.min}
               </div>
               <select
                 className="search-field-input search-guests-select"
@@ -606,7 +600,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             <span style={{ color: '#999', marginTop: '1rem' }}>-</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '0.75rem', color: '#999', marginBottom: '0.25rem' }}>
-                {isEnglish ? 'Max' : isRussian ? 'Макс' : 'Max'}
+                {t.search.max}
               </div>
               <select
                 className="search-field-input search-guests-select"
@@ -637,12 +631,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           type="button"
           className="search-btn-filters"
           onClick={onFiltersOpen}
-          title={isEnglish ? 'Show filters' : isRussian ? 'Показать фильтры' : 'Filtirləri göstər'}
+          title={t.search.showFilters}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
           </svg>
-          {isEnglish ? 'Filters' : isRussian ? 'Фильтры' : 'Filtrlər'}
+          {t.search.filterLabel}
           {activeFilterCount > 0 && <span className="search-filter-badge">{activeFilterCount}</span>}
         </button>
         <button type="submit" className="search-btn-main">
