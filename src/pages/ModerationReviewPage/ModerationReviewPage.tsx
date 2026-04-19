@@ -3,7 +3,7 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { getPropertyById, approveProperty } from '../../services'
+import { getPropertyById, approveProperty, rejectProperty } from '../../services'
 import { createListingRejectedNotification } from '../../services/notificationsService'
 import { isModerator } from '../../config/constants'
 import { Property, Language } from '../../types'
@@ -117,7 +117,7 @@ export const ModerationReviewPage: React.FC = () => {
     setError('')
 
     try {
-      // Send rejection notification to property owner
+      // First, send rejection notification to property owner
       if (property.ownerId) {
         await createListingRejectedNotification(property.ownerId, {
           type: 'listingRejected',
@@ -134,10 +134,18 @@ export const ModerationReviewPage: React.FC = () => {
         })
       }
 
+      // Then, remove the property from moderation queue
+      const rejected = await rejectProperty(property.id)
+      if (!rejected) {
+        setError(language === 'en' ? 'Could not reject listing.' : language === 'ru' ? 'Не удалось отклонить объявление.' : 'Elanı rədd etmək mümkün olmadı.')
+        setIsProcessing(false)
+        return
+      }
+
       // Redirect back to moderation page
       navigate('/dashboard/review')
     } catch (err) {
-      setError(language === 'en' ? 'Error sending rejection notification' : language === 'ru' ? 'Ошибка отправки уведомления' : 'Notification göndərməsi xətası')
+      setError(language === 'en' ? 'Error rejecting listing' : language === 'ru' ? 'Ошибка при отклонении' : 'Elan rədd edilərkən xəta')
       setIsProcessing(false)
     }
   }

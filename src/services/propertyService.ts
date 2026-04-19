@@ -448,6 +448,33 @@ export const approveProperty = async (id: string): Promise<boolean> => {
 }
 
 /**
+ * Reject a pending property - removes it from moderation queue
+ * @param {string} id - Property Firestore document ID
+ * @returns {Promise<boolean>} True on success, false if property not found or update fails
+ * @throws {Error} On Firestore update failure
+ * @example
+ * const rejected = await rejectProperty('prop_456')
+ */
+export const rejectProperty = async (id: string): Promise<boolean> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id)
+    const current = await getDoc(docRef)
+
+    if (!current.exists()) {
+      return false
+    }
+
+    // Delete the rejected property from public listings
+    await deleteDoc(docRef)
+
+    return true
+  } catch (error) {
+    logger.error('Error rejecting property:', error)
+    return false
+  }
+}
+
+/**
  * Add a comment to a property
  * @param {string} propertyId - Property Firestore document ID
  * @param {string} userId - User Firestore ID making the comment

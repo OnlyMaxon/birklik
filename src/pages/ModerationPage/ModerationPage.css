@@ -226,3 +226,84 @@
     white-space: normal;
   }
 }
+
+/* Rejection Modal */
+.moderation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.moderation-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.moderation-modal h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #4f3f2d;
+  font-family: var(--font-display);
+}
+
+.rejection-title {
+  font-weight: 600;
+  color: #4f3f2d;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.moderation-modal label {
+  display: block;
+  font-weight: 600;
+  color: #4f3f2d;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.rejection-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.rejection-textarea:focus {
+  outline: none;
+  border-color: #d6b17d;
+  box-shadow: 0 0 0 3px rgba(214, 177, 125, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+.modal-actions .btn {
+  min-width: 120px;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #c33;
+}

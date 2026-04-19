@@ -3,7 +3,8 @@ import { Navigate, useSearchParams, Link } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty } from '../../services'
+import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty } from '../../services'
+import { createListingRejectedNotification } from '../../services/notificationsService'
 import { getAllReports, closeReport } from '../../services/reportService'
 import { isModerator } from '../../config/constants'
 import { Language, Property, CommentReport } from '../../types'
@@ -29,6 +30,10 @@ export const ModerationPage: React.FC = () => {
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [error, setError] = React.useState('')
+  const [showRejectModal, setShowRejectModal] = React.useState(false)
+  const [selectedPropertyForReject, setSelectedPropertyForReject] = React.useState<Property | null>(null)
+  const [rejectReason, setRejectReason] = React.useState('')
+  const [isRejectingProperty, setIsRejectingProperty] = React.useState(false)
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -124,6 +129,59 @@ export const ModerationPage: React.FC = () => {
     setIsDeletingListing(null)
   }
 
+  const handleRejectPropertyClick = (property: Property) => {
+    setSelectedPropertyForReject(property)
+    setShowRejectModal(true)
+    setRejectReason('')
+    setError('')
+  }
+
+  const handleConfirmRejectProperty = async () => {
+    if (!selectedPropertyForReject || !rejectReason.trim()) {
+      setError(language === 'en' ? 'Please provide a rejection reason' : language === 'ru' ? 'Укажите причину отказа' : 'Rədd səbəbini qeyd edin')
+      return
+    }
+
+    setIsRejectingProperty(true)
+    setError('')
+
+    try {
+      // Send rejection notification to owner
+      if (selectedPropertyForReject.ownerId) {
+        await createListingRejectedNotification(selectedPropertyForReject.ownerId, {
+          type: 'listingRejected',
+          title: language === 'en' ? 'Listing Rejected' : language === 'ru' ? 'Объявление отклонено' : 'Elan rədd edildi',
+          message: language === 'en' 
+            ? `Your listing has been rejected: ${rejectReason}`
+            : language === 'ru'
+            ? `Ваше объявление было отклонено: ${rejectReason}`
+            : `Elanınız rədd edildi: ${rejectReason}`,
+          read: false,
+          propertyId: selectedPropertyForReject.id,
+          propertyTitle: getLocalizedText(selectedPropertyForReject.title),
+          rejectionReason: rejectReason
+        })
+      }
+
+      // Remove property from moderation queue
+      const rejected = await rejectProperty(selectedPropertyForReject.id)
+      if (!rejected) {
+        setError(language === 'en' ? 'Could not reject listing.' : language === 'ru' ? 'Не удалось отклонить объявление.' : 'Elanı rədd etmək mümkün olmadı.')
+        setIsRejectingProperty(false)
+        return
+      }
+
+      // Close modal and refresh list
+      setShowRejectModal(false)
+      setSelectedPropertyForReject(null)
+      setRejectReason('')
+      await loadPendingListings()
+    } catch (err) {
+      setError(language === 'en' ? 'Error rejecting listing' : language === 'ru' ? 'Ошибка при отклонении' : 'Elan rədd edilərkən xəta')
+      setIsRejectingProperty(false)
+    }
+  }
+
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   return (
@@ -210,15 +268,7 @@ export const ModerationPage: React.FC = () => {
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
-                        onClick={() => {
-                          // Simulate opening reject form or modal
-                          const reason = prompt(
-                            language === 'en' ? 'Enter rejection reason:' : language === 'ru' ? 'Укажите причину отказа:' : 'Rədd səbəbini qeyd edin:'
-                          )
-                          if (reason) {
-                            // Rejection reason recorded
-                          }
-                        }}
+                        onClick={() => handleRejectPropertyClick(listing)}
                       >
                         {language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et'}
                       </button>
@@ -437,6 +487,48 @@ export const ModerationPage: React.FC = () => {
           }
           </div>
         </div>
+
+        {/* Rejection Modal */}
+        {showRejectModal && selectedPropertyForReject && (
+          <div className="moderation-overlay" onClick={() => !isRejectingProperty && setShowRejectModal(false)}>
+            <div className="moderation-modal" onClick={(e) => e.stopPropagation()}>
+              <h2>{language === 'en' ? 'Reject Listing' : language === 'ru' ? 'Отклонить объявление' : 'Elanı Rədd Et'}</h2>
+              
+              {error && <div className="error-message">{error}</div>}
+              
+              <p className="rejection-title">{getLocalizedText(selectedPropertyForReject.title)}</p>
+              
+              <label>{language === 'en' ? 'Rejection Reason:' : language === 'ru' ? 'Причина отказа:' : 'Rədd səbəbi:'}</label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder={language === 'en' ? 'Enter rejection reason...' : language === 'ru' ? 'Укажите причину отказа...' : 'Rədd səbəbini qeyd edin...'}
+                className="rejection-textarea"
+                rows={5}
+                disabled={isRejectingProperty}
+              />
+              
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => !isRejectingProperty && setShowRejectModal(false)}
+                  disabled={isRejectingProperty}
+                >
+                  {language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv Et'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleConfirmRejectProperty}
+                  disabled={isRejectingProperty || !rejectReason.trim()}
+                >
+                  {isRejectingProperty ? t.messages.loading : (language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </Layout>
   )
