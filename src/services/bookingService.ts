@@ -219,8 +219,9 @@ export const cancelBooking = async (bookingId: string): Promise<{success: boolea
       checkOutDate: bookingData.checkOutDate,
       relatedId: bookingId,
       relatedUserName: bookingData.userName,
-      actionUrl: `/dashboard?tab=cancellationRequests`
-    } as any)
+      actionUrl: `/dashboard?tab=cancellationRequests`,
+      read: false
+    })
 
     return { success: true, requestId }
   } catch (error) {

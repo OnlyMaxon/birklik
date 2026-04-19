@@ -9,7 +9,7 @@ interface DateRangePickerProps {
   onClose?: () => void
 }
 
-export const DateRangePicker: React.FC<DateRangePickerProps> = ({
+export const DateRangePicker = React.memo<DateRangePickerProps>(({
   checkIn,
   checkOut,
   onDateChange,
@@ -224,4 +224,4 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
       </div>
     </div>
   )
-}
+})

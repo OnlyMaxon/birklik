@@ -14,7 +14,7 @@ interface PropertyCardProps {
   onFavoriteToggle?: (propertyId: string, isFavorited: boolean) => void
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ 
+export const PropertyCard = React.memo<PropertyCardProps>(({ 
   property, 
   checkIn, 
   checkOut,
@@ -196,4 +196,4 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       </div>
     </div>
   )
-}
+})

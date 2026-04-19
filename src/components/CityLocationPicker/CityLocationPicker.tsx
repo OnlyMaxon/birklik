@@ -12,7 +12,7 @@ interface CityLocationPickerProps {
   onLocationCategoryChange?: (category: LocationCategory) => void
 }
 
-export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
+export const CityLocationPicker = React.memo<CityLocationPickerProps>(({
   city,
   locationTags,
   locationCategory = 'rayon',
@@ -207,4 +207,4 @@ export const CityLocationPicker: React.FC<CityLocationPickerProps> = ({
       )}
     </div>
   )
-}
+})

@@ -8,72 +8,73 @@ export interface AppError {
   details?: string
 }
 
-export const parseFirebaseError = (error: any): AppError => {
-  const message = error?.message || 'An unknown error occurred'
+export const parseFirebaseError = (error: unknown): AppError => {
+  const err = error as Record<string, unknown>
+  const message = (err?.message as string) || 'An unknown error occurred'
 
   // Firebase-specific errors
-  if (error?.code) {
-    switch (error.code) {
+  if (err?.code) {
+    const code = err.code as string
+    switch (code) {
       case 'permission-denied':
         return {
           message: 'You do not have permission to perform this action',
-          code: error.code
+          code
         }
       case 'not-found':
         return {
           message: 'The requested resource was not found',
-          code: error.code
+          code
         }
       case 'already-exists':
         return {
           message: 'This resource already exists',
-          code: error.code
+          code
         }
       case 'resource-exhausted':
         return {
           message: 'Operation limit exceeded. Please try again later',
-          code: error.code
+          code
         }
       case 'unauthenticated':
         return {
           message: 'You need to be logged in to perform this action',
-          code: error.code
+          code
         }
       case 'invalid-argument':
         return {
           message: 'Invalid input provided',
-          code: error.code
+          code
         }
       case 'failed-precondition':
         return {
           message: 'Operation cannot be completed in current state',
-          code: error.code
+          code
         }
       case 'auth/user-not-found':
         return {
           message: 'Invalid email or password',
-          code: error.code
+          code
         }
       case 'auth/wrong-password':
         return {
           message: 'Invalid email or password',
-          code: error.code
+          code
         }
       case 'auth/email-already-in-use':
         return {
           message: 'This email is already registered. Try logging in instead',
-          code: error.code
+          code
         }
       case 'auth/weak-password':
         return {
           message: 'Password does not meet security requirements',
-          code: error.code
+          code
         }
       default:
         return {
           message,
-          code: error.code,
-          details: error.message
+          code
         }
     }
   }
@@ -81,38 +82,43 @@ export const parseFirebaseError = (error: any): AppError => {
   return { message }
 }
 
-export const getErrorMessage = (error: any): string => {
+export const getErrorMessage = (error: unknown): string => {
   if (typeof error === 'string') {
     return error
   }
 
-  if (error?.message) {
-    return error.message
+  const err = error as Record<string, unknown>
+  if (err?.message) {
+    return err.message as string
   }
 
   return 'An unexpected error occurred. Please try again.'
 }
 
-export const isNetworkError = (error: any): boolean => {
-  if (error?.code === 'NETWORK_ERROR' || error?.code === 'INTERNAL_ERROR') {
+export const isNetworkError = (error: unknown): boolean => {
+  const err = error as Record<string, unknown>
+  if (err?.code === 'NETWORK_ERROR' || err?.code === 'INTERNAL_ERROR') {
     return true
   }
 
-  if (error?.message?.toLowerCase().includes('network') || error?.message?.toLowerCase().includes('offline')) {
+  const msg = (err?.message as string)?.toLowerCase() || ''
+  if (msg.includes('network') || msg.includes('offline')) {
     return true
   }
 
   return false
 }
 
-export const isAuthError = (error: any): boolean => {
-  if (!error?.code) return false
-  return error.code.startsWith('auth/')
+export const isAuthError = (error: unknown): boolean => {
+  const err = error as Record<string, unknown>
+  if (!err?.code) return false
+  return (err.code as string).startsWith('auth/')
 }
 
-export const shouldRetry = (error: any): boolean => {
+export const shouldRetry = (error: unknown): boolean => {
+  const err = error as Record<string, unknown>
   const retryableErrors = ['NETWORK_ERROR', 'INTERNAL_ERROR', 'resource-exhausted', 'unavailable']
-  return retryableErrors.includes(error?.code)
+  return retryableErrors.includes(err?.code as string)
 }
 
 /**
@@ -123,7 +129,7 @@ export const withRetry = async <T>(
   maxAttempts = 3,
   delayMs = 1000
 ): Promise<T> => {
-  let lastError: any
+  let lastError: unknown
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {

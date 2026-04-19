@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage, useAuth } from '../../context'
 import { Booking, Property } from '../../types'
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../../config/firebase'
 import { getUserBookings, cancelBooking, acceptBooking, rejectBooking } from '../../services'
 import { createBookingApprovedNotification, createBookingRejectedNotification } from '../../services/notificationsService'
@@ -63,21 +63,27 @@ export const BookingsTab: React.FC = () => {
       const bookings = await getUserBookings(user.id)
       const bookingsWithDetails: BookingWithProperty[] = []
 
-      for (const booking of bookings) {
-        try {
-          const propertyDoc = await getDoc(doc(db, 'properties', booking.propertyId))
-          const property = propertyDoc.data() as Property | undefined
-
-          bookingsWithDetails.push({
-            ...booking,
-            propertyTitle: property?.title?.[language] || 'Property',
-            propertyImage: property?.images?.[0]
-          })
-        } catch (err) {
-          logger.error(`Error loading property ${booking.propertyId}:`, err)
-          bookingsWithDetails.push(booking)
-        }
+      if (bookings.length === 0) {
+        setMyBookings([])
+        return
       }
+
+      // Batch fetch properties - get unique property IDs (Firestore `in` limit is 10)
+      const propertyIds = [...new Set(bookings.map(b => b.propertyId))].slice(0, 10)
+      const propsRef = collection(db, 'properties')
+      const propsQuery = query(propsRef, where('__name__', 'in', propertyIds))
+      const propsSnapshot = await getDocs(propsQuery)
+      const propertiesMap = new Map(propsSnapshot.docs.map(d => [d.id, d.data() as Property]))
+
+      // Combine bookings with property details
+      bookings.forEach(booking => {
+        const property = propertiesMap.get(booking.propertyId)
+        bookingsWithDetails.push({
+          ...booking,
+          propertyTitle: property?.title?.[language] || 'Property',
+          propertyImage: property?.images?.[0]
+        })
+      })
 
       setMyBookings(bookingsWithDetails)
     } catch (err) {
@@ -95,6 +101,7 @@ export const BookingsTab: React.FC = () => {
       const propsQuery = query(propsRef, where('ownerId', '==', user.id))
       const propsSnapshot = await getDocs(propsQuery)
       const propertyIds = propsSnapshot.docs.map(doc => doc.id)
+      const propertiesMap = new Map(propsSnapshot.docs.map(d => [d.id, d.data() as Property]))
 
       if (propertyIds.length === 0) {
         setIncomingRequests([])
@@ -104,17 +111,17 @@ export const BookingsTab: React.FC = () => {
       const bookingsRef = collection(db, 'bookings')
       const allBookings: BookingWithProperty[] = []
 
-      for (const propertyId of propertyIds) {
-        // Get ALL bookings (not just pending)
-        const bookingsQuery = query(bookingsRef, where('propertyId', '==', propertyId))
+      // Batch query bookings in chunks of 10 (Firestore 'in' limit)
+      for (let i = 0; i < propertyIds.length; i += 10) {
+        const chunk = propertyIds.slice(i, i + 10)
+        const bookingsQuery = query(bookingsRef, where('propertyId', 'in', chunk))
         const bookingsSnap = await getDocs(bookingsQuery)
-
-        const property = propsSnapshot.docs.find(d => d.id === propertyId)?.data() as Property | undefined
 
         bookingsSnap.docs.forEach(bookingDoc => {
           const booking = bookingDoc.data() as Omit<Booking, 'id'>
           // Filter out rejected and cancelled bookings
           if (booking.status !== 'rejected' && booking.status !== 'cancelled') {
+            const property = propertiesMap.get(booking.propertyId)
             allBookings.push({
               id: bookingDoc.id,
               ...booking,

@@ -8,7 +8,7 @@ import { Loading } from './Loading'
 import './TabsStyle.css'
 import * as logger from '../services/logger'
 
-export const NotificationsTab: React.FC = () => {
+export const NotificationsTab = React.memo(() => {
   const navigate = useNavigate()
   const { t, language } = useLanguage()
   const { user } = useAuth()
@@ -73,8 +73,8 @@ export const NotificationsTab: React.FC = () => {
     }
 
     // Редирект в зависимости от типа уведомления
-    const booking = notification as any
-    const propertyId = booking.propertyId || notification.relatedId
+    const booking = notification as unknown as Record<string, unknown>
+    const propertyId = (booking?.propertyId as string) || notification.relatedId
 
     switch (notification.type) {
       case 'booking':
@@ -233,4 +233,4 @@ export const NotificationsTab: React.FC = () => {
       )}
     </div>
   )
-}
+})

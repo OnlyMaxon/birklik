@@ -627,7 +627,7 @@ export const addRatingToProperty = async (
       return { success: false }
     }
 
-    const currentData = current.data() as any
+    const currentData = current.data() as Record<string, unknown>
     
     // Check if user has booked this property
     try {
@@ -641,11 +641,11 @@ export const addRatingToProperty = async (
       logger.warn('Could not verify booking status, allowing rating anyway')
     }
 
-    const ratings = currentData.ratings || {}
+    const ratings = (currentData?.ratings as Record<string, number>) || {}
     ratings[userId] = rating
 
     // Calculate average rating
-    const ratingValues = Object.values(ratings) as number[]
+    const ratingValues = Object.values(ratings).filter((v): v is number => typeof v === 'number')
     const averageRating = ratingValues.length > 0 
       ? ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length 
       : 0
@@ -659,7 +659,7 @@ export const addRatingToProperty = async (
 
     // Create notification for property owner
     try {
-      const ownerId = currentData.ownerId
+      const ownerId = currentData?.ownerId as string
       const { createRatingNotification } = await import('./notificationsService')
       if (ownerId) {
         await createRatingNotification(ownerId, {
@@ -671,8 +671,9 @@ export const addRatingToProperty = async (
           ratingValue: rating,
           relatedId: propertyId,
           relatedUserName: userName,
-          actionUrl: `/property/${propertyId}`
-        } as any)
+          actionUrl: `/property/${propertyId}`,
+          read: false
+        })
       }
     } catch (error) {
       logger.warn('Could not create rating notification:', error)
@@ -700,10 +701,10 @@ export const getUserRatingForProperty = async (propertyId: string, userId: strin
       return null
     }
 
-    const currentData = current.data() as any
-    const ratings = currentData.ratings || {}
+    const currentData = current.data() as Record<string, unknown>
+    const ratings = (currentData?.ratings as Record<string, number>) || {}
     
-    return ratings[userId] || null
+    return typeof ratings[userId] === 'number' ? ratings[userId] : null
   } catch (error) {
     logger.error('Error getting user rating:', error)
     return null

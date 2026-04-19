@@ -212,7 +212,6 @@ export const PropertyPage: React.FC = () => {
 
   const handleMakeBooking = async () => {
     if (!isAuthenticated || !user || !property || !selectedCheckIn || !selectedCheckOut) {
-      console.log('[PropertyPage] Missing required fields for booking')
       alert(t.property.errorSelectDates)
       return
     }
@@ -460,7 +459,7 @@ export const PropertyPage: React.FC = () => {
         })
       } catch (error) {
         // User cancelled share, no need to alert
-        if ((error as any).name !== 'AbortError') {
+        if ((error as Error).name !== 'AbortError') {
           logger.error('Error sharing:', error)
         }
       }

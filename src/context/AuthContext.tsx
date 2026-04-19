@@ -235,10 +235,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logger.error('Firestore update error:', firestoreError)
         return { success: false, error: 'Failed to update profile' }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = error as { code?: string; message?: string }
       logger.error('Update profile error:', err)
-      return { success: false, error: error.code || 'auth/update-failed' }
+      return { success: false, error: err.code || 'auth/update-failed' }
     }
   }
 

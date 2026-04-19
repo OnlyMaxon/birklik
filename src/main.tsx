@@ -20,19 +20,14 @@ const MAX_RELOAD_ATTEMPTS = 0 // Отключено - Service Worker тепер�
 window.addEventListener('error', (event: ErrorEvent) => {
   if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
     moduleLoadAttempts++
-    console.error(`[App] ⚠️ Module load error (attempt ${moduleLoadAttempts}/${MAX_RELOAD_ATTEMPTS}):`, event.error)
-    console.error('[App] This should not happen - Service Worker is working correctly!')
     
     if (moduleLoadAttempts < MAX_RELOAD_ATTEMPTS) {
-      console.log('[App] Clearing cache and reloading...')
       // Очищаем ALL кеши
       if ('caches' in window) {
         caches.keys().then((cacheNames) => {
           Promise.all(cacheNames.map((cacheName) => {
-            console.log('[App] Clearing cache:', cacheName)
             return caches.delete(cacheName)
           })).then(() => {
-            console.log('[App] Cache cleared, reloading...')
             // Перезагружаем страницу с параметром для обновления
             const url = new URL(globalThis.location.href)
             url.searchParams.set('t', Date.now().toString())
@@ -42,7 +37,6 @@ window.addEventListener('error', (event: ErrorEvent) => {
         })
       }
     } else {
-      console.error('[App] Max reload attempts reached!')
       alert('Ошибка загрузки приложения. Пожалуйста, обновите страницу браузером.')
     }
   }
@@ -62,8 +56,8 @@ if ('serviceWorker' in navigator) {
           registration.update()
         }, 10 * 60 * 1000)
       })
-      .catch((error) => {
-        console.error('[App] Service Worker registration failed:', error)
+      .catch(() => {
+        // Service Worker registration failed - fail silently
       })
     
     // Слушаем обновления Service Worker

@@ -84,28 +84,29 @@ export const VerifyEmailPage: React.FC = () => {
           return prev - 1
         })
       }, 1000)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { code?: string; message?: string }
       let errorMsg = language === 'en' ? 'Error sending email' : language === 'ru' ? 'Ошибка отправки письма' : 'E-poçt göndərmə xətası'
       
-      if (err.code === 'auth/too-many-requests') {
+      if (error.code === 'auth/too-many-requests') {
         errorMsg = language === 'en' 
           ? 'Too many requests. Try again later.' 
           : language === 'ru' 
             ? 'Слишком много попыток. Попробуйте позже.' 
             : 'Həddindən artıq sorğu. Daha sonra yenidən cəhd edin.'
-      } else if (err.code === 'auth/user-not-found') {
+      } else if (error.code === 'auth/user-not-found') {
         errorMsg = language === 'en' 
           ? 'User account not found. Please log in again.' 
           : language === 'ru' 
             ? 'Учетная запись пользователя не найдена. Пожалуйста, войдите еще раз.' 
             : 'İstifadəçi hesabı tapılmadı. Zəhmət olmasa yenidən daxil olun.'
-      } else if (err.code === 'auth/invalid-user-token') {
+      } else if (error.code === 'auth/invalid-user-token') {
         errorMsg = language === 'en' 
           ? 'Session expired. Please log in again.' 
           : language === 'ru' 
             ? 'Сеанс истек. Пожалуйста, войдите еще раз.' 
             : 'Sesiya sona çatdı. Zəhmət olmasa yenidən daxil olun.'
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
+      } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
         errorMsg = language === 'en' 
           ? 'Account issue. Please log in again.' 
           : language === 'ru' 

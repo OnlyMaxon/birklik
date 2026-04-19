@@ -52,7 +52,7 @@ const buildCalendarCells = (monthDate: Date): CalendarCell[] => {
  * <PropertyBooking property={property} onBookingSuccess={refresh} />
  */
 export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBookingSuccess }) => {
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const { isAuthenticated, user } = useAuth()
   const [selectedCheckIn, setSelectedCheckIn] = React.useState('')
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
@@ -71,56 +71,31 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
     }
   }, [])
 
-  // Log isBooking changes
-  React.useEffect(() => {
-    console.log('[PropertyBooking] isBooking changed to:', isBooking)
-  }, [isBooking])
-
-  // Log selected dates changes
-  React.useEffect(() => {
-    console.log('[PropertyBooking] Selected dates changed:', { selectedCheckIn, selectedCheckOut })
-  }, [selectedCheckIn, selectedCheckOut])
-
-  // Log message changes
-  React.useEffect(() => {
-    if (message) {
-      console.log('[PropertyBooking] Message changed:', message)
-    }
-  }, [message])
+  // Effects removed - debug logs removed
 
   const handleCancelBooking = async () => {
-    console.log('[PropertyBooking] handleCancelBooking called:', { lastBookingId })
     if (!lastBookingId) {
-      console.log('[PropertyBooking] No lastBookingId, returning')
       return
     }
     
     try {
-      console.log('[PropertyBooking] Calling cancelBooking...')
       const result = await cancelBooking(lastBookingId)
-      console.log('[PropertyBooking] cancelBooking result:', result)
       if (result.success) {
-        console.log('[PropertyBooking] Cancellation successful')
         setMessage({ type: 'success', text: language === 'en' ? 'Cancellation request sent' : language === 'ru' ? 'Запрос на отмену отправлен' : 'İptal sorğusu göndərildi' })
         setLastBookingId(null)
         onBookingSuccess?.()
         setTimeout(() => setMessage(null), 3000)
       } else {
-        console.log('[PropertyBooking] Cancellation failed')
         setMessage({ type: 'error', text: language === 'en' ? 'Failed to cancel booking' : language === 'ru' ? 'Ошибка отмены' : 'İptal edilə bilmədi' })
       }
     } catch (error) {
-      console.log('[PropertyBooking] Cancellation exception:', error)
       setMessage({ type: 'error', text: language === 'en' ? 'Cancellation error' : language === 'ru' ? 'Ошибка отмены' : 'İptal xətası' })
       logger.error('Cancel error:', error)
     }
   }
 
   const handleBookProperty = async () => {
-    console.log('[PropertyBooking] handleBookProperty called, isBooking:', isBooking)
-    
     if (!isAuthenticated || !user || !selectedCheckIn || !selectedCheckOut) {
-      console.log('[PropertyBooking] Missing required fields:', { isAuthenticated, userExists: !!user, selectedCheckIn, selectedCheckOut })
       setMessage({ type: 'error', text: language === 'en' ? 'Please fill all fields' : language === 'ru' ? 'Пожалуйста, заполните все поля' : 'Lütfən bütün sahələri doldurun' })
       return
     }
@@ -129,15 +104,12 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
     const checkOutDate = new Date(selectedCheckOut)
 
     if (checkOutDate <= checkInDate) {
-      console.log('[PropertyBooking] Invalid date range', { checkInDate, checkOutDate })
       setMessage({ type: 'error', text: language === 'en' ? 'Check-out must be after check-in' : language === 'ru' ? 'Выезд должен быть после приезда' : 'Çıkış tarixi giriş tarixindən sonra olmalıdır' })
       return
     }
 
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
     const totalPrice = (property.price?.daily || 0) * nights
-
-    console.log('[PropertyBooking] Booking params:', { nights, totalPrice, selectedCheckIn, selectedCheckOut })
 
     const booking: Omit<Booking, 'id' | 'createdAt'> = {
       propertyId: property.id,
@@ -155,64 +127,49 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
 
     // Prevent double submission
     if (isBooking) {
-      console.log('[PropertyBooking] Already booking, ignoring click')
       return
     }
     
-    console.log('[PropertyBooking] Starting booking process...')
     setIsBooking(true)
     
     // Safety timeout to prevent hanging
     const timeoutId = window.setTimeout(() => {
-      console.log('[PropertyBooking] Timeout reached - resetting isBooking')
       setIsBooking(false)
       setMessage({ type: 'error', text: language === 'en' ? 'Request timeout' : language === 'ru' ? 'Время ожидания истекло' : 'Sorğu zaman aşımı' })
     }, 15000)
     
     bookingTimeoutRef.current = timeoutId
-    console.log('[PropertyBooking] Timeout set, ID:', timeoutId)
     
     try {
-      console.log('[PropertyBooking] Calling createBooking...')
       const csrfToken = getCsrfToken()
       const createdBooking = await createBooking(booking, csrfToken)
-      
-      console.log('[PropertyBooking] createBooking response:', createdBooking)
       
       // Cancel the timeout if request succeeded
       if (bookingTimeoutRef.current) {
         clearTimeout(bookingTimeoutRef.current)
-        console.log('[PropertyBooking] Timeout cleared')
       }
       
       if (createdBooking?.id) {
-        console.log('[PropertyBooking] Booking successful, ID:', createdBooking.id)
         setLastBookingId(createdBooking.id)
         setMessage({ type: 'success', text: language === 'en' ? 'Request sent!' : language === 'ru' ? 'Запрос отправлен!' : 'Sorgu gonderildi!' })
         // Clear dates to reset form
         setSelectedCheckIn('')
         setSelectedCheckOut('')
-        console.log('[PropertyBooking] Dates cleared, calling onBookingSuccess')
         // Callback to refresh parent data
         onBookingSuccess?.()
         setTimeout(() => {
-          console.log('[PropertyBooking] Clearing message')
           setMessage(null)
         }, 3000)
       } else {
-        console.log('[PropertyBooking] Booking failed or returned null')
         setMessage({ type: 'error', text: language === 'en' ? 'Dates conflict or booking error' : language === 'ru' ? 'Эти даты уже забронированы или ошибка' : 'Tarixlər əvvəldən qeydiyyatdadır' })
       }
     } catch (error) {
-      console.log('[PropertyBooking] Exception caught:', error)
       setMessage({ type: 'error', text: language === 'en' ? 'Booking error' : language === 'ru' ? 'Ошибка бронирования' : 'Rezervasyon xətası' })
       logger.error('Booking error:', error)
     } finally {
-      console.log('[PropertyBooking] Finally block - setting isBooking to false')
       setIsBooking(false)
       if (bookingTimeoutRef.current) {
         clearTimeout(bookingTimeoutRef.current)
-        console.log('[PropertyBooking] Final cleanup - timeout cleared')
       }
     }
   }
@@ -220,8 +177,6 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
   const calendarCells = buildCalendarCells(displayMonth)
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
   const dayNames = language === 'en' ? ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] : language === 'ru' ? ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] : ['B', 'Ç', 'Ş', 'P', 'C', 'Ş', 'B']
-
-  console.log('[PropertyBooking] Render:', { isBooking, selectedCheckIn, selectedCheckOut, hasLastBookingId: !!lastBookingId, message: message?.text })
 
   const isCellDisabled = (dateISO?: string) => {
     if (!dateISO) return false
@@ -325,7 +280,7 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
       {selectedCheckIn && selectedCheckOut && (
         <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'white', borderRadius: '6px' }}>
           <p style={{ margin: '0 0 0.5rem 0', color: '#666' }}>
-            {Math.ceil((new Date(selectedCheckOut).getTime() - new Date(selectedCheckIn).getTime()) / (1000 * 60 * 60 * 24))} {language === 'en' ? 'nights' : language === 'ru' ? 'ночи' : 'gecə'}
+            {Math.ceil((new Date(selectedCheckOut).getTime() - new Date(selectedCheckIn).getTime()) / (1000 * 60 * 60 * 24))} {t.property.perNight}
           </p>
           <p style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600, color: '#27ae60' }}>
             ${(property.price?.daily || 0) * Math.ceil((new Date(selectedCheckOut).getTime() - new Date(selectedCheckIn).getTime()) / (1000 * 60 * 60 * 24))}

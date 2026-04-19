@@ -57,11 +57,12 @@ export const usePagination = <T,>(
         currentPage: prev.currentPage + 1,
         isLoading: false
       }))
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: error?.message || 'Failed to load more items'
+        error: (err?.message as string) || 'Failed to load more items'
       }))
     }
   }, [fetcher, pageSize, lastSnapshot])
@@ -96,11 +97,12 @@ export const usePagination = <T,>(
         error: null,
         currentPage: 1
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: error?.message || 'Failed to load items'
+        error: (err?.message as string) || 'Failed to load items'
       }))
     }
   }, [fetcher, pageSize])

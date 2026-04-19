@@ -216,7 +216,7 @@ export const ModerationPage: React.FC = () => {
                             language === 'en' ? 'Enter rejection reason:' : language === 'ru' ? 'Укажите причину отказа:' : 'Rədd səbəbini qeyd edin:'
                           )
                           if (reason) {
-                            console.log('Reject:', listing.id, reason)
+                            // Rejection reason recorded
                           }
                         }}
                       >

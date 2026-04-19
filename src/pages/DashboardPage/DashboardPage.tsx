@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
-import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useLanguage, useAuth } from '../../context'
 import { Layout } from '../../layouts'
@@ -8,6 +8,7 @@ import { FavoritesTab } from './FavoritesTab'
 import { BookingsTab } from './BookingsTab'
 import { NotificationsTab } from '../../components/NotificationsTab'
 import { CityLocationPicker } from '../../components'
+import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from './LocationPicker'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
@@ -25,8 +26,6 @@ interface GeocodeResult {
   lat: string
   lon: string
 }
-
-const DEFAULT_COORDINATES = { lat: 40.4093, lng: 49.8671 }
 const TEST_LISTING_MARKER = '[TEST_DATA]'
 const getTodayISO = (): string => new Date().toISOString().split('T')[0]
 
@@ -60,108 +59,6 @@ const isPremiumActive = (property: Property): boolean => {
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
-
-interface LocationPickerProps {
-  coordinates: { lat: number; lng: number }
-  onChange: (coords: { lat: number; lng: number }) => void
-  onAddressReverse?: (address: string) => void
-}
-
-const MapCenterUpdater: React.FC<{ coordinates: { lat: number; lng: number } }> = ({ coordinates }) => {
-  const map = useMap()
-
-  React.useEffect(() => {
-    map.setView([coordinates.lat, coordinates.lng], map.getZoom(), { animate: true })
-  }, [coordinates, map])
-
-  return null
-}
-
-/**
- * Sanitize API response to prevent XSS attacks
- * Removes HTML tags and restricts length
- */
-const sanitizeApiResponse = (input: string): string => {
-  if (typeof input !== 'string') return ''
-  
-  return input
-    .replace(/<[^>]*>/g, '')  // Remove HTML tags
-    .replace(/javascript:/gi, '')  // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, '')  // Remove event handlers (onclick, etc)
-    .trim()
-    .slice(0, 255)  // Max 255 chars
-}
-
-const LocationPicker: React.FC<LocationPickerProps> = ({ coordinates, onChange, onAddressReverse }) => {
-  useMapEvents({
-    click: (event) => {
-      const newCoords = {
-        lat: Number(event.latlng.lat.toFixed(6)),
-        lng: Number(event.latlng.lng.toFixed(6))
-      }
-      onChange(newCoords)
-      
-      // Reverse geocode to get address
-      if (onAddressReverse) {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)  // 5 second timeout
-        
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newCoords.lat}&lon=${newCoords.lng}&zoom=18&addressdetails=1`, {
-          signal: controller.signal,
-          headers: {
-            'Accept-Language': 'az,en;q=0.9'
-          }
-        })
-          .then(res => res.json())
-          .then(data => {
-            clearTimeout(timeoutId)
-            
-            let address = ''
-            
-            // Type-check and extract address safely
-            if (data && typeof data === 'object' && data.address && typeof data.address === 'object') {
-              // Prioritize: village -> suburb -> city_district -> county -> city
-              address = [
-                data.address.village,
-                data.address.suburb,
-                data.address.city_district,
-                data.address.county,
-                data.address.city,
-                data.address.town,
-                data.display_name ? data.display_name.split(',')[0] : ''
-              ]
-                .find(a => typeof a === 'string' && a.length > 0) || ''
-            }
-            
-            // Sanitize address BEFORE using
-            const sanitizedAddress = sanitizeApiResponse(address)
-            
-            // Only fill if it's in Azerbaijan and address is valid
-            if (
-              data &&
-              typeof data.address === 'object' &&
-              (data.address.country === 'Azerbaijan' || data.address.country_code === 'az') &&
-              sanitizedAddress.length > 0
-            ) {
-              onAddressReverse(sanitizedAddress)
-            }
-          })
-          .catch(() => {
-            clearTimeout(timeoutId)
-            // Silently fail if reverse geocoding fails
-          })
-      }
-    }
-  })
-
-  return (
-    <CircleMarker
-      center={[coordinates.lat, coordinates.lng]}
-      radius={10}
-      pathOptions={{ color: '#1f62c7', fillColor: '#ffb703', fillOpacity: 0.95, weight: 3 }}
-    />
-  )
-}
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'listings' }) => {
   const { language, t } = useLanguage()
@@ -817,11 +714,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       await updateProperty(propertyId, { premiumExpiresAt: newExpiryDate })
       
       // Send notification to user about premium extension
-      const getLocalizedTitle = (titleObj: any) => {
-        if (!titleObj) return 'Your property'
-        if (language === 'en') return titleObj.en || titleObj.az || titleObj.ru || 'Your property'
-        if (language === 'ru') return titleObj.ru || titleObj.az || titleObj.en || 'Your property'
-        return titleObj.az || titleObj.en || titleObj.ru || 'Your property'
+      const getLocalizedTitle = (titleObj: unknown): string => {
+        const title = titleObj as Record<string, unknown> || {}
+        if (!title) return 'Your property'
+        if (language === 'en') return (title.en as string) || (title.az as string) || (title.ru as string) || 'Your property'
+        if (language === 'ru') return (title.ru as string) || (title.az as string) || (title.en as string) || 'Your property'
+        return (title.az as string) || (title.en as string) || (title.ru as string) || 'Your property'
       }
       
       if (user?.id) {

@@ -45,7 +45,7 @@ export const createCancellationRequest = async (
   reason?: string
 ): Promise<string | null> => {
   try {
-    const requestData: any = {
+    const requestData: Omit<CancellationRequest, 'id'> = {
       bookingId,
       propertyId,
       ownerId,
