@@ -63,12 +63,18 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
 
   // Check if premium is still active
   const isPremium = property.premiumExpiresAt ? new Date(property.premiumExpiresAt).getTime() > Date.now() : false
+  const isVIP = property.listingTier === 'vip'
 
   return (
     <div className="property-card card">
       <Link to={`/property/${property.id}`} className="property-image">
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className="property-badges">
+          {isVIP && (
+            <div className="property-vip-badge badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
+              <span>👑</span> VIP
+            </div>
+          )}
           {isPremium && (
             <div className="property-premium-badge badge badge-premium" title={language === 'en' ? 'Premium listing' : language === 'ru' ? 'Премиум объявление' : 'Premium elan'}>
               <span>⭐</span> Premium

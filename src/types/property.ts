@@ -53,7 +53,7 @@ export interface PropertyOwner {
   email: string
 }
 
-export type ListingTier = 'free' | 'standard' | 'premium'
+export type ListingTier = 'free' | 'standard' | 'premium' | 'vip'
 
 export type ListingStatus = 'active' | 'pending'
 

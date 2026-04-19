@@ -66,6 +66,8 @@ export interface Translations {
     bookingSending: string
     bookingSent: string
     bookingError: string
+    bookingConflict: string
+    bookingConflictInfo: string
     errorSignInBook: string
     errorSelectDates: string
     rateProperty: string
@@ -281,9 +283,11 @@ export interface Translations {
     free: string
     standard: string
     premium: string
+    vip: string
     freeDesc: string
     standardDesc: string
     premiumDesc: string
+    vipDesc: string
     perMonth: string
   }
   validation: {
@@ -301,6 +305,7 @@ export interface Translations {
     free_features: string
     standard_features: string
     premium_features: string
+    vip_features: string
   }
   support: {
     waitingForReview: string

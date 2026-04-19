@@ -66,6 +66,8 @@ export const en: Translations = {
     bookingSending: "Booking...",
     bookingSent: "✓ Sent",
     bookingError: "Error creating booking",
+    bookingConflict: "These dates are already booked",
+    bookingConflictInfo: "Someone else may have booked these dates. Please try different dates.",
     errorSignInBook: "Please sign in to make a booking",
     errorSelectDates: "Please select dates and sign in",
     rateProperty: "Rate this property",
@@ -281,9 +283,11 @@ export const en: Translations = {
     free: "Standard",
     standard: "VIP",
     premium: "Premium",
+    vip: "VIP Plus",
     freeDesc: "Get started",
     standardDesc: "For small business",
     premiumDesc: "Professional service",
+    vipDesc: "Premium with top visibility",
     perMonth: "/month"
   },
   validation: {
@@ -300,7 +304,8 @@ export const en: Translations = {
   pricing_info: {
     free_features: "4 photos, short description, hidden location",
     standard_features: "20 photos, full description, location visible",
-    premium_features: "✓ Unlimited photos, featured 3 weeks on homepage, visible location"
+    premium_features: "✓ Unlimited photos, featured 3 weeks on homepage, visible location",
+    vip_features: "✓ VIP badge, guaranteed top position, priority moderation, unlimited photos"
   },
   support: {
     waitingForReview: "Listing pending - support team will contact you",

@@ -147,7 +147,6 @@ export const PropertyPage: React.FC = () => {
   // Handle calendar date click for range selection
 
   const handleCalendarDateClick = (dateISO: string | undefined) => {
-    console.log('[PropertyPage] Calendar date clicked:', dateISO, 'currentState:', { selectedCheckIn, selectedCheckOut })
     if (!dateISO) return
     const today = getTodayISO()
     if (dateISO < today) {
@@ -165,7 +164,6 @@ export const PropertyPage: React.FC = () => {
 
     // If no check-in selected, set it
     if (!selectedCheckIn) {
-      console.log('[PropertyPage] Setting check-in to', dateISO)
       setSelectedCheckIn(dateISO)
       return
     }
@@ -174,18 +172,15 @@ export const PropertyPage: React.FC = () => {
     if (!selectedCheckOut) {
       // If clicked date is before check-in, swap them
       if (dateISO < selectedCheckIn) {
-        console.log('[PropertyPage] Swapping dates')
         setSelectedCheckOut(selectedCheckIn)
         setSelectedCheckIn(dateISO)
       } else {
-        console.log('[PropertyPage] Setting check-out to', dateISO)
         setSelectedCheckOut(dateISO)
       }
       return
     }
 
     // If both selected, clicking a date starts new selection
-    console.log('[PropertyPage] Resetting dates, new check-in:', dateISO)
     setSelectedCheckIn(dateISO)
     setSelectedCheckOut('')
   }
@@ -210,14 +205,12 @@ export const PropertyPage: React.FC = () => {
   }
 
   const handleMakeBooking = async () => {
-    console.log('[PropertyPage] handleMakeBooking called')
     if (!isAuthenticated || !user || !property || !selectedCheckIn || !selectedCheckOut) {
       console.log('[PropertyPage] Missing required fields for booking')
       alert(t.property.errorSelectDates)
       return
     }
 
-    console.log('[PropertyPage] Starting booking with dates:', { selectedCheckIn, selectedCheckOut })
     setIsBooking(true)
     try {
       const booking: Omit<Booking, 'id' | 'createdAt'> = {
@@ -234,23 +227,16 @@ export const PropertyPage: React.FC = () => {
         status: 'pending'
       }
 
-      console.log('[PropertyPage] Calling createBooking...')
       const csrfToken = getCsrfToken()
       const result = await createBooking(booking, csrfToken)
-      console.log('[PropertyPage] createBooking result:', result)
       if (result) {
-        console.log('[PropertyPage] Booking successful! ID:', result.id)
-        console.log('[PropertyPage] OLD STATE - selectedCheckIn:', selectedCheckIn, 'selectedCheckOut:', selectedCheckOut)
         
         setHasBooked(true)
         setShowContactInfo(true)
         
         // Clear selected dates to allow new booking
-        console.log('[PropertyPage] **CLEARING DATES**')
         setSelectedCheckIn('')
         setSelectedCheckOut('')
-        
-        console.log('[PropertyPage] NEW STATE - selectedCheckIn: "", selectedCheckOut: ""')
         
         // Show toast notification
         const notifMsg = language === 'en' 
@@ -282,17 +268,20 @@ export const PropertyPage: React.FC = () => {
           })
         }
       } else {
-        console.log('[PropertyPage] Booking FAILED - result is null')
         setNotificationMessage(t.messages.bookingError)
         setShowNotification(true)
       }
     } catch (error) {
-      console.log('[PropertyPage] Booking EXCEPTION:', error)
       logger.error('Error making booking:', error)
-      setNotificationMessage(t.messages.bookingError)
+      
+      // Check if it's a booking conflict error
+      if (error instanceof Error && error.name === 'BookingConflictError') {
+        setNotificationMessage(t.property.bookingConflict + ' ' + t.property.bookingConflictInfo)
+      } else {
+        setNotificationMessage(t.messages.bookingError)
+      }
       setShowNotification(true)
     } finally {
-      console.log('[PropertyPage] Finally block - setting isBooking to false')
       setIsBooking(false)
     }
   }
@@ -701,6 +690,11 @@ export const PropertyPage: React.FC = () => {
                 
                 <div className="property-meta">
                   <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
+                  {property.listingTier === 'vip' && (
+                    <span className="badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
+                      👑 VIP
+                    </span>
+                  )}
                   {isPremiumActive(property.premiumExpiresAt) && (
                     <span className="badge badge-premium" title={language === 'en' ? `Premium listing - ${getPremiumRemainingDays(property.premiumExpiresAt)} days remaining` : language === 'ru' ? `Премиум объявление - осталось ${getPremiumRemainingDays(property.premiumExpiresAt)} дней` : `Premium elan - ${getPremiumRemainingDays(property.premiumExpiresAt)} gün qalıb`}>
                       ⭐ Premium

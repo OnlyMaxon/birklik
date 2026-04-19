@@ -6,6 +6,14 @@ import * as logger from './logger'
 
 const COLLECTION_NAME = 'bookings'
 
+// Custom error for booking conflicts
+export class BookingConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'BookingConflictError'
+  }
+}
+
 /**
  * Create a new booking record with CSRF protection
  * @param {Omit<Booking, 'id' | 'createdAt'>} booking - Booking data (excluding id and creation timestamp)
@@ -27,26 +35,19 @@ const COLLECTION_NAME = 'bookings'
  */
 export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, csrfToken: string): Promise<Booking | null> => {
   try {
-    console.log('[bookingService] createBooking called with:', { propertyId: booking.propertyId, userId: booking.userId, checkInDate: booking.checkInDate, checkOutDate: booking.checkOutDate })
     
     // Validate CSRF token
     if (!validateCsrfToken(csrfToken)) {
-      console.log('[bookingService] CSRF token validation failed')
       logger.error('CSRF token validation failed')
       return null
     }
 
-    console.log('[bookingService] CSRF token validated, checking for conflicts...')
-
     // Check for date conflicts before creating booking
     const hasConflict = await checkBookingConflict(booking.propertyId, booking.checkInDate, booking.checkOutDate)
     if (hasConflict) {
-      console.log('[bookingService] Booking conflict detected for dates:', { checkInDate: booking.checkInDate, checkOutDate: booking.checkOutDate })
       logger.error('Booking conflict: dates are already booked for this property')
-      return null
+      throw new BookingConflictError('These dates are already booked for this property')
     }
-
-    console.log('[bookingService] No conflicts, creating booking...')
 
     const now = new Date().toISOString()
 
@@ -56,13 +57,10 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, 
       status: 'pending' as const
     }
 
-    console.log('[bookingService] Adding document to collection...')
     const docRef = await addDoc(collection(db, COLLECTION_NAME), bookingData)
     const result = { id: docRef.id, ...bookingData } as Booking
-    console.log('[bookingService] Booking created successfully, ID:', docRef.id)
     return result
   } catch (error) {
-    console.log('[bookingService] Error creating booking:', error)
     logger.error('Error creating booking:', error)
     return null
   }
@@ -106,8 +104,6 @@ export const getPropertyBookings = async (propertyId: string): Promise<Booking[]
  */
 export const checkBookingConflict = async (propertyId: string, checkInDate: string, checkOutDate: string): Promise<boolean> => {
   try {
-    console.log('[bookingService] checkBookingConflict called:', { propertyId, checkInDate, checkOutDate })
-    
     // Check both approved and pending bookings for conflicts
     const qApproved = query(
       collection(db, COLLECTION_NAME),
@@ -120,20 +116,13 @@ export const checkBookingConflict = async (propertyId: string, checkInDate: stri
       where('status', '==', 'pending')
     )
     
-    console.log('[bookingService] Fetching approved bookings...')
     const snapshotApproved = await getDocs(qApproved)
-    console.log('[bookingService] Found', snapshotApproved.docs.length, 'approved bookings')
-    
-    console.log('[bookingService] Fetching pending bookings...')
     const snapshotPending = await getDocs(qPending)
-    console.log('[bookingService] Found', snapshotPending.docs.length, 'pending bookings')
     
     const allSnapshots = [...snapshotApproved.docs, ...snapshotPending.docs]
 
     const proposedCheckIn = new Date(checkInDate).getTime()
     const proposedCheckOut = new Date(checkOutDate).getTime()
-
-    console.log('[bookingService] Checking', allSnapshots.length, 'bookings for conflicts...')
 
     for (const doc of allSnapshots) {
       const booking = doc.data() as Omit<Booking, 'id'>
@@ -142,15 +131,12 @@ export const checkBookingConflict = async (propertyId: string, checkInDate: stri
 
       // Check for overlap: proposed range overlaps if it starts before existing ends AND ends after existing starts
       if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
-        console.log('[bookingService] Conflict found with booking:', { existingCheckIn: booking.checkInDate, existingCheckOut: booking.checkOutDate })
         return true
       }
     }
 
-    console.log('[bookingService] No conflicts found')
     return false
   } catch (error) {
-    console.log('[bookingService] Error checking booking conflict:', error)
     logger.error('Error checking booking conflict:', error)
     return false
   }

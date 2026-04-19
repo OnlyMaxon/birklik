@@ -461,12 +461,31 @@ input:focus, select:focus, textarea:focus {
   animation: premium-glow 2s ease-in-out infinite;
 }
 
+.badge-vip {
+  background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 237, 74, 0.5);
+  gap: 0.35rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  animation: vip-glow 2s ease-in-out infinite;
+}
+
 @keyframes premium-glow {
   0%, 100% {
     box-shadow: 0 2px 8px rgba(212, 165, 116, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
   }
   50% {
     box-shadow: 0 2px 12px rgba(212, 165, 116, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@keyframes vip-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(156, 39, 176, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.3);
   }
 }
 

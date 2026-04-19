@@ -66,6 +66,8 @@ export const ru: Translations = {
     bookingSending: 'Броня...',
     bookingSent: '✓ Отправлено',
     bookingError: 'Ошибка создания брони',
+    bookingConflict: 'Эти даты уже забронированы',
+    bookingConflictInfo: 'Возможно, кем-то другим. Пожалуйста, выберите другие даты.',
     errorSignInBook: 'Пожалуйста, войдите',
     errorSelectDates: 'Выберите даты и войдите',
     rateProperty: 'Оценить это свойство',
@@ -281,9 +283,11 @@ export const ru: Translations = {
     free: 'Стандарт',
     standard: 'VIP',
     premium: 'Премиум',
+    vip: 'VIP Плюс',
     freeDesc: 'Для старта',
     standardDesc: 'Для малого бизнеса',
     premiumDesc: 'Профессиональный уровень',
+    vipDesc: 'Премиум с высокой видимостью',
     perMonth: '/месяц'
   },
   validation: {
@@ -300,7 +304,8 @@ export const ru: Translations = {
   pricing_info: {
     free_features: '4 фото, короткое описание, скрытая локация',
     standard_features: '20 фото, полное описание, видимая локация',
-    premium_features: '✓ Безлимит фото, 3 недели на главной, видимая локация'
+    premium_features: '✓ Безлимит фото, 3 недели на главной, видимая локация',
+    vip_features: '✓ VIP значок, гарантированное 1-е место, приоритетная очередь, безлимит фото'
   },
   support: {
     waitingForReview: 'Объявление на проверке, с вами свяжется поддержка',

@@ -66,6 +66,8 @@ export const az: Translations = {
     bookingSending: "Sifariş...",
     bookingSent: "✓ Göndərildi",
     bookingError: "Sifariş yaradılmasında xəta",
+    bookingConflict: "Bu tarixlər artıq sifariş edilmişdir",
+    bookingConflictInfo: "Başqa biri tərəfindən sifariş verilib. Fərqli tarixlər seçin.",
     errorSignInBook: "Sifariş vermək üçün daxil olun",
     errorSelectDates: "Tarixləri seçin və daxil olun",
     rateProperty: "Bu mülkü qiymətləndirin",
@@ -281,9 +283,11 @@ export const az: Translations = {
     free: "Standart",
     standard: "VIP",
     premium: "Premium",
+    vip: "VIP Plus",
     freeDesc: "Başlamaq üçün",
     standardDesc: "Kiçik müəssisə üçün",
     premiumDesc: "Peşəkar xidmət",
+    vipDesc: "Yüksək görünürlüklü premium",
     perMonth: "/ay"
   },
   validation: {
@@ -300,7 +304,8 @@ export const az: Translations = {
   pricing_info: {
     free_features: "4 foto, qısa təsvir, gizli lokasiya",
     standard_features: "20 foto, tam təsvir, lokasiya göstərilir",
-    premium_features: "✓ Limitsiz foto, ana səhifədə 3 həftə, görünən məkan"
+    premium_features: "✓ Limitsiz foto, ana səhifədə 3 həftə, görünən məkan",
+    vip_features: "✓ VIP nişanı, zəmanətli 1-ci yer, prioritet yoxlama, limitsiz foto"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",

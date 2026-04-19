@@ -204,7 +204,14 @@ export const ModerationPage: React.FC = () => {
                         <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
                       </p>
                       <p className="moderation-owner">
-                        <strong>{language === 'en' ? 'Plan:' : language === 'ru' ? 'Тариф:' : 'Paket:'}</strong> {(listing.listingTier || 'standard').toUpperCase()}
+                        <strong>{language === 'en' ? 'Plan:' : language === 'ru' ? 'Тариф:' : 'Paket:'}</strong> 
+                        {listing.listingTier === 'vip' ? (
+                          <span style={{ color: '#9c27b0', fontWeight: 'bold', marginLeft: '0.5rem' }}>
+                            👑 VIP
+                          </span>
+                        ) : (
+                          <span style={{ marginLeft: '0.5rem' }}>{(listing.listingTier || 'standard').toUpperCase()}</span>
+                        )}
                       </p>
                     </div>
 
