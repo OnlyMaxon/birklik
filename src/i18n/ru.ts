@@ -133,7 +133,28 @@ export const ru: Translations = {
     bbq: 'Мангал',
     security: 'Охрана',
     beach: 'Пляж',
-    gym: 'Спортзал'
+    gym: 'Спортзал',
+    // Дополнительные удобства
+    sauna: 'Сауна',
+    kidsZone: 'Детская игровая зона',
+    playstation: 'PlayStation',
+    billiard: 'Бильярд',
+    tennis: 'Теннис',
+    boardGames: 'Настольные игры',
+    samovar: 'Самовар',
+    gazebo: 'Беседка',
+    garage: 'Гараж',
+    // Близлежащие места
+    mountains: 'Горы',
+    forest: 'Лес',
+    sea: 'Море',
+    riverLake: 'Река или озеро',
+    resortCenters: 'Курортные центры',
+    restaurant: 'Ресторан',
+    park: 'Парк',
+    // Характеристики объекта
+    gardenView: 'Вид на сад',
+    cityView: 'Вид на город'
   },
   propertyTypes: {
     villa: 'Вилла',

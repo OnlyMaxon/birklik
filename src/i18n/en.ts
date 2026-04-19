@@ -133,7 +133,28 @@ export const en: Translations = {
     bbq: "BBQ",
     security: "Security",
     beach: "Beach Access",
-    gym: "Gym"
+    gym: "Gym",
+    // Additional amenities
+    sauna: "Sauna",
+    kidsZone: "Kids Play Zone",
+    playstation: "PlayStation",
+    billiard: "Billiards",
+    tennis: "Tennis",
+    boardGames: "Board Games",
+    samovar: "Samovar",
+    gazebo: "Gazebo",
+    garage: "Garage",
+    // Nearby places
+    mountains: "Mountains",
+    forest: "Forest",
+    sea: "Sea",
+    riverLake: "River or Lake",
+    resortCenters: "Resort Centers",
+    restaurant: "Restaurant",
+    park: "Park",
+    // Property features
+    gardenView: "Garden View",
+    cityView: "City View"
   },
   propertyTypes: {
     villa: "Villa",

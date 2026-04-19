@@ -134,6 +134,27 @@ export interface Translations {
     security: string
     beach: string
     gym: string
+    // Additional amenities
+    sauna: string
+    kidsZone: string
+    playstation: string
+    billiard: string
+    tennis: string
+    boardGames: string
+    samovar: string
+    gazebo: string
+    garage: string
+    // Nearby places
+    mountains: string
+    forest: string
+    sea: string
+    riverLake: string
+    resortCenters: string
+    restaurant: string
+    park: string
+    // Property features
+    gardenView: string
+    cityView: string
   }
   propertyTypes: {
     villa: string

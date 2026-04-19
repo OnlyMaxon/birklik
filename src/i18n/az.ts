@@ -133,7 +133,28 @@ export const az: Translations = {
     bbq: "Manqal",
     security: "Mühafizə",
     beach: "Çimərlik",
-    gym: "İdman zalı"
+    gym: "İdman zalı",
+    // Əlavə rahatlıqlar
+    sauna: "Sauna",
+    kidsZone: "Uşaq oyun zonası",
+    playstation: "PlayStation",
+    billiard: "Bilyard",
+    tennis: "Tennis",
+    boardGames: "Stol oyunları",
+    samovar: "Samovar",
+    gazebo: "Besedka",
+    garage: "Qaraj",
+    // Yaxında yerləşən yerlər
+    mountains: "Dağlar",
+    forest: "Meşə",
+    sea: "Dəniz",
+    riverLake: "Çay və ya göl",
+    resortCenters: "İstirahət mərkəzləri",
+    restaurant: "Restoran",
+    park: "Park",
+    // Əmlak özəllikləri
+    gardenView: "Bağa baxış",
+    cityView: "Şəhərə baxış"
   },
   propertyTypes: {
     villa: "Villa",
