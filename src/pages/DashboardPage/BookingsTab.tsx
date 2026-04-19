@@ -278,9 +278,12 @@ export const BookingsTab: React.FC = () => {
     })
   }
 
-  const handleNavigateToProperty = (propertyId: string, e?: React.MouseEvent) => {
-    // Don't navigate if clicking on a button or input
-    if (e?.currentTarget.tagName !== 'DIV') return
+  const handleNavigateToProperty = (propertyId: string, e: React.MouseEvent<HTMLDivElement>) => {
+    // Don't navigate if clicking on a button, input, or interactive element
+    const target = e.target as HTMLElement
+    if (target.closest('button') || target.closest('input') || target.closest('textarea') || target.closest('a')) {
+      return
+    }
     navigate(`/property/${propertyId}`)
   }
 
@@ -380,12 +383,12 @@ export const BookingsTab: React.FC = () => {
               <div 
                 key={booking.id} 
                 className="booking-card"
-                onClick={() => handleNavigateToProperty(booking.propertyId)}
+                onClick={(e) => handleNavigateToProperty(booking.propertyId, e as React.MouseEvent<HTMLDivElement>)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    handleNavigateToProperty(booking.propertyId)
+                    navigate(`/property/${booking.propertyId}`)
                   }
                 }}
               >
@@ -436,12 +439,12 @@ export const BookingsTab: React.FC = () => {
               <div 
                 key={booking.id} 
                 className="booking-request-card"
-                onClick={() => handleNavigateToProperty(booking.propertyId)}
+                onClick={(e) => handleNavigateToProperty(booking.propertyId, e as React.MouseEvent<HTMLDivElement>)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    handleNavigateToProperty(booking.propertyId)
+                    navigate(`/property/${booking.propertyId}`)
                   }
                 }}
               >
