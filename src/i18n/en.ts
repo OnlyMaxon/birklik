@@ -368,7 +368,9 @@ export const en: Translations = {
     extendPremium: "Extend premium",
     upgradePlan: "Upgrade plan",
     createListing: "Create listing",
-    browseListings: "Browse listings"
+    browseListings: "Browse listings",
+    moveUp: "Move up",
+    moveDown: "Move down"
   },
   common: {
     night: "night",

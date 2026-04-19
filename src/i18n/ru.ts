@@ -368,7 +368,9 @@ export const ru: Translations = {
     extendPremium: 'Продлить премиум',
     upgradePlan: 'Улучшить план',
     createListing: 'Создать объявление',
-    browseListings: 'Просмотреть объявления'
+    browseListings: 'Просмотреть объявления',
+    moveUp: 'Переместить выше',
+    moveDown: 'Переместить ниже'
   },
   common: {
     night: 'ночь',

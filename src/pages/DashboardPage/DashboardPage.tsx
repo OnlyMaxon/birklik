@@ -372,6 +372,35 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setLocationSearchError('')
   }, [user])
 
+  const handleDeletePhoto = React.useCallback((index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }, [])
+
+  const handleMovePhotoUp = React.useCallback((index: number) => {
+    if (index > 0) {
+      setSelectedFiles(prev => {
+        const newFiles = [...prev]
+        const temp = newFiles[index - 1]
+        newFiles[index - 1] = newFiles[index]
+        newFiles[index] = temp
+        return newFiles
+      })
+    }
+  }, [])
+
+  const handleMovePhotoDown = React.useCallback((index: number) => {
+    setSelectedFiles(prev => {
+      if (index < prev.length - 1) {
+        const newFiles = [...prev]
+        const temp = newFiles[index]
+        newFiles[index] = newFiles[index + 1]
+        newFiles[index + 1] = temp
+        return newFiles
+      }
+      return prev
+    })
+  }, [])
+
   React.useEffect(() => {
     if (activeTab === 'add' && !editingListingId && user) {
       setNewListing(prev => ({
@@ -1753,10 +1782,45 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </div>
                           {selectedFilePreviews.length > 0 && (
                             <div className="upload-preview-grid">
-                              {selectedFilePreviews.map((preview) => (
+                              {selectedFilePreviews.map((preview, index) => (
                                 <div key={preview.url} className="upload-preview-item">
-                                  <img src={preview.url} alt={preview.name} />
-                                  <span>{preview.name}</span>
+                                  <div className="preview-photo-wrapper">
+                                    <img src={preview.url} alt={preview.name} />
+                                    <div className="preview-controls">
+                                      {index > 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleMovePhotoUp(index)}
+                                          className="control-btn move-up-btn"
+                                          title={t.buttons.moveUp}
+                                          aria-label={t.buttons.moveUp}
+                                        >
+                                          ↑
+                                        </button>
+                                      )}
+                                      {index < selectedFilePreviews.length - 1 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleMovePhotoDown(index)}
+                                          className="control-btn move-down-btn"
+                                          title={t.buttons.moveDown}
+                                          aria-label={t.buttons.moveDown}
+                                        >
+                                          ↓
+                                        </button>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeletePhoto(index)}
+                                        className="control-btn delete-btn"
+                                        title={t.buttons.delete}
+                                        aria-label={t.buttons.delete}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <span className="filename">{preview.name}</span>
                                 </div>
                               ))}
                             </div>

@@ -368,7 +368,9 @@ export const az: Translations = {
     extendPremium: "Premiumu uzat",
     upgradePlan: "Paketi yüksəlt",
     createListing: "Elan yarat",
-    browseListings: "Elanları bax"
+    browseListings: "Elanları bax",
+    moveUp: "Yuxarıya keçir",
+    moveDown: "Aşağıya keçir"
   },
   common: {
     night: "gecə",

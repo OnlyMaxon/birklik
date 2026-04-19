@@ -369,6 +369,8 @@ export interface Translations {
     upgradePlan: string
     createListing: string
     browseListings: string
+    moveUp: string
+    moveDown: string
   }
   common: {
     night: string
