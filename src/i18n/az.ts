@@ -480,7 +480,18 @@ export const az: Translations = {
     rejected: "Rədd olundu",
     moderateComments: "Şərfləri moderasiya et",
     moderateListings: "Elanları moderasiya et",
-    viewReports: "Şikayətləri bax"
+    viewReports: "Şikayətləri bax",
+    review: "Bax",
+    rejectListing: "Elanı Rədd Et",
+    rejectWithReason: "Şərh ilə Rədd Et",
+    rejectionReason: "Rədd səbəbi",
+    rejectionReasonPlaceholder: "Rədd səbəbini qeyd edin...",
+    sendInvoice: "Faktura",
+    confirmRejection: "Rədd Etməyi Təsdiq Et",
+    rejectionReasonHint: "Rədd səbəbini qeyd edin. Sahib bildirim alacaq.",
+    listingReviewPage: "Elanı Baxış",
+    backButton: "← Geri",
+    packageLabel: "Paket"
   },
   calendar: {
     days: {

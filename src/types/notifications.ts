@@ -2,7 +2,7 @@
  * Notification Type - User notifications for bookings, comments, favorites, replies, premium
  */
 
-export type NotificationType = 'booking' | 'bookingApproved' | 'bookingRejected' | 'comment' | 'favorite' | 'reply' | 'premium' | 'commentReport' | 'rating' | 'cancellationRequest' | 'cancellationApproved' | 'cancellationRejected'
+export type NotificationType = 'booking' | 'bookingApproved' | 'bookingRejected' | 'comment' | 'favorite' | 'reply' | 'premium' | 'commentReport' | 'rating' | 'cancellationRequest' | 'cancellationApproved' | 'cancellationRejected' | 'listingRejected' | 'invoiceSent'
 
 export interface Notification {
   id: string
@@ -122,4 +122,21 @@ export interface BookingRejectedNotification extends Notification {
   checkOutDate: string
   ownerName: string
   rejectionReason?: string
+}
+
+export interface ListingRejectedNotification extends Notification {
+  type: 'listingRejected'
+  propertyId: string
+  propertyTitle: string
+  rejectionReason: string
+}
+
+export interface InvoiceSentNotification extends Notification {
+  type: 'invoiceSent'
+  propertyId: string
+  propertyTitle: string
+  amount: number
+  currency: string
+  packageTier: 'standard' | 'vip' | 'premium'
+  invoiceUrl?: string
 }

@@ -13,6 +13,7 @@ const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage').t
 const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage').then((mod) => ({ default: mod.VerifyEmailPage })))
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
+const ModerationReviewPage = React.lazy(() => import('./pages/ModerationReviewPage').then((mod) => ({ default: mod.ModerationReviewPage })))
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then((mod) => ({ default: mod.TermsPage })))
 const AboutPage = React.lazy(() => import('./pages/AboutPage').then((mod) => ({ default: mod.AboutPage })))
 const ContactPage = React.lazy(() => import('./pages/ContactPage').then((mod) => ({ default: mod.ContactPage })))
@@ -174,6 +175,11 @@ function App() {
           <Route path="/dashboard/review" element={
             <ModeratorRoute>
               <ModerationPage />
+            </ModeratorRoute>
+          } />
+          <Route path="/dashboard/review/:id" element={
+            <ModeratorRoute>
+              <ModerationReviewPage />
             </ModeratorRoute>
           } />
           <Route path="/terms" element={<TermsPage />} />

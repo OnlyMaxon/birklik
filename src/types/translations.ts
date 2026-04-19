@@ -481,6 +481,17 @@ export interface Translations {
     moderateComments: string
     moderateListings: string
     viewReports: string
+    review: string
+    rejectListing: string
+    rejectWithReason: string
+    rejectionReason: string
+    rejectionReasonPlaceholder: string
+    sendInvoice: string
+    confirmRejection: string
+    rejectionReasonHint: string
+    listingReviewPage: string
+    backButton: string
+    packageLabel: string
   }
   calendar: {
     days: {

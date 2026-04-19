@@ -480,7 +480,18 @@ export const ru: Translations = {
     rejected: 'Отклонено',
     moderateComments: 'Модерировать комментарии',
     moderateListings: 'Модерировать объявления',
-    viewReports: 'Просмотреть жалобы'
+    viewReports: 'Просмотреть жалобы',
+    review: 'Проверить',
+    rejectListing: 'Отклонить объявление',
+    rejectWithReason: 'Отклонить с комментарием',
+    rejectionReason: 'Причина отказа',
+    rejectionReasonPlaceholder: 'Укажите причину отказа...',
+    sendInvoice: 'Счёт',
+    confirmRejection: 'Подтвердить отклонение',
+    rejectionReasonHint: 'Укажите причину отказа. Владельцу будет отправлено уведомление.',
+    listingReviewPage: 'Проверка объявления',
+    backButton: '← Назад',
+    packageLabel: 'Пакет'
   },
   calendar: {
     days: {

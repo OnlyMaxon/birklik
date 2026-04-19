@@ -1,6 +1,6 @@
 import { db } from '../config/firebase'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, BookingApprovedNotification, BookingRejectedNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification } from '../types'
+import { Notification, BookingNotification, BookingApprovedNotification, BookingRejectedNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification, InvoiceSentNotification } from '../types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'users'
@@ -360,6 +360,56 @@ export const createBookingRejectedNotification = async (
     return docRef.id
   } catch (error) {
     logger.error('Error creating booking rejected notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create listing rejected notification for property owner
+ * @param {string} ownerId - Property owner's user ID
+ * @param {ListingRejectedNotification} notificationData - Listing rejected notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createListingRejectedNotification = async (
+  ownerId: string,
+  notificationData: Omit<ListingRejectedNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: ownerId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating listing rejected notification:', error)
+    return null
+  }
+}
+
+/**
+ * Create invoice/payment notification for property owner
+ * @param {string} ownerId - Property owner's user ID
+ * @param {InvoiceSentNotification} notificationData - Invoice sent notification details
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+export const createInvoiceSentNotification = async (
+  ownerId: string,
+  notificationData: Omit<InvoiceSentNotification, 'id' | 'createdAt' | 'userId'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      userId: ownerId,
+      ...notificationData,
+      read: false,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating invoice sent notification:', error)
     return null
   }
 }

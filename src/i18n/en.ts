@@ -480,7 +480,18 @@ export const en: Translations = {
     rejected: "Rejected",
     moderateComments: "Moderate comments",
     moderateListings: "Moderate listings",
-    viewReports: "View reports"
+    viewReports: "View reports",
+    review: "Review",
+    rejectListing: "Reject Listing",
+    rejectWithReason: "Reject with comment",
+    rejectionReason: "Rejection reason",
+    rejectionReasonPlaceholder: "Enter rejection reason...",
+    sendInvoice: "Send Invoice",
+    confirmRejection: "Confirm Rejection",
+    rejectionReasonHint: "Enter a reason for rejection. This will be sent as a notification to the owner.",
+    listingReviewPage: "Review Listing",
+    backButton: "← Back",
+    packageLabel: "Package"
   },
   calendar: {
     days: {

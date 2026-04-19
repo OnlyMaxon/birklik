@@ -3,7 +3,7 @@ import { Navigate, useSearchParams, Link } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { approveProperty, getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty } from '../../services'
+import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty } from '../../services'
 import { getAllReports, closeReport } from '../../services/reportService'
 import { isModerator } from '../../config/constants'
 import { Language, Property, CommentReport } from '../../types'
@@ -23,7 +23,6 @@ export const ModerationPage: React.FC = () => {
   const [allListings, setAllListings] = React.useState<Property[]>([])
   const [searchQuery, setSearchQuery] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(true)
-  const [isApprovingId, setIsApprovingId] = React.useState<string | null>(null)
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
   const [isClosingReport, setIsClosingReport] = React.useState<string | null>(null)
   const [isDeletingListing, setIsDeletingListing] = React.useState<string | null>(null)
@@ -78,21 +77,6 @@ export const ModerationPage: React.FC = () => {
 
   if (!isAuthenticated || !isModeratorUser) {
     return <Navigate to="/dashboard" replace />
-  }
-
-  const approveListing = async (id: string) => {
-    setIsApprovingId(id)
-    setError('')
-
-    const ok = await approveProperty(id)
-    if (!ok) {
-      setError(language === 'en' ? 'Could not approve listing.' : language === 'ru' ? 'Не удалось одобрить объявление.' : 'Elanı təsdiqləmək mümkün olmadı.')
-      setIsApprovingId(null)
-      return
-    }
-
-    await loadPendingListings()
-    setIsApprovingId(null)
   }
 
   const deleteComment = async (propertyId: string, commentId: string) => {
@@ -216,18 +200,29 @@ export const ModerationPage: React.FC = () => {
                     </div>
 
                     <div className="moderation-actions">
-                      <Link to={`/property/${listing.id}`} className="btn btn-ghost btn-sm">
-                        {language === 'en' ? 'Preview' : language === 'ru' ? 'Предпросмотр' : 'Önizləmə'}
+                      <Link to={`/dashboard/review/${listing.id}`} className="btn btn-ghost btn-sm">
+                        {language === 'en' ? 'Review' : language === 'ru' ? 'Проверить' : 'Bax'}
                       </Link>
                       <button
                         type="button"
-                        className="btn btn-accent btn-sm"
-                        onClick={() => approveListing(listing.id)}
-                        disabled={isApprovingId === listing.id}
+                        className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          // Simulate opening reject form or modal
+                          const reason = prompt(
+                            language === 'en' ? 'Enter rejection reason:' : language === 'ru' ? 'Укажите причину отказа:' : 'Rədd səbəbini qeyd edin:'
+                          )
+                          if (reason) {
+                            console.log('Reject:', listing.id, reason)
+                          }
+                        }}
                       >
-                        {isApprovingId === listing.id
-                          ? t.messages.loading
-                          : (language === 'en' ? 'Approve' : language === 'ru' ? 'Одобрить' : 'Təsdiq et')}
+                        {language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                      >
+                        {language === 'en' ? 'Send Invoice' : language === 'ru' ? 'Счёт' : 'Faktura'}
                       </button>
                     </div>
                   </article>
