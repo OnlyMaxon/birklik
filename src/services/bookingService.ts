@@ -318,3 +318,62 @@ export const rejectBooking = async (bookingId: string, reason?: string): Promise
     return null
   }
 }
+
+/**
+ * Edit booking dates for approved bookings (owner/user editing)
+ * @param {string} bookingId - Booking Firestore document ID
+ * @param {Object} updates - Fields to update (checkInDate, checkOutDate, etc)
+ * @returns {Promise<Booking | null>} Updated booking, or null on failure
+ */
+export const editBooking = async (
+  bookingId: string,
+  updates: Partial<Booking>
+): Promise<Booking | null> => {
+  try {
+    const { updateDoc } = await import('firebase/firestore')
+    const docRef = doc(db, COLLECTION_NAME, bookingId)
+    const bookingSnap = await getDoc(docRef)
+    
+    if (!bookingSnap.exists()) {
+      logger.error('Booking not found')
+      return null
+    }
+
+    // Allowed fields for editing (only dates and related fields)
+    const allowedFields = ['checkInDate', 'checkOutDate', 'nights', 'totalPrice']
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([key]) => allowedFields.includes(key))
+    )
+
+    if (Object.keys(filteredUpdates).length === 0) {
+      logger.error('No valid fields to update')
+      return null
+    }
+
+    await updateDoc(docRef, filteredUpdates)
+
+    const updated = await getDoc(docRef)
+    return { id: updated.id, ...(updated.data() as Omit<Booking, 'id'>) }
+  } catch (error) {
+    logger.error('Error editing booking:', error)
+    return null
+  }
+}
+
+/**
+ * Delete a booking (owner/moderator only)
+ * @param {string} bookingId - Booking Firestore document ID
+ * @returns {Promise<boolean>} Success status
+ */
+export const deleteBooking = async (bookingId: string): Promise<boolean> => {
+  try {
+    const { deleteDoc } = await import('firebase/firestore')
+    const docRef = doc(db, COLLECTION_NAME, bookingId)
+    
+    await deleteDoc(docRef)
+    return true
+  } catch (error) {
+    logger.error('Error deleting booking:', error)
+    return false
+  }
+}

@@ -1,9 +1,10 @@
 import React from 'react'
 import { useLanguage, useAuth } from '../../context'
+import { useNavigate } from 'react-router-dom'
 import { Booking, Property } from '../../types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../../config/firebase'
-import { getUserBookings, cancelBooking, acceptBooking, rejectBooking } from '../../services'
+import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooking, deleteBooking } from '../../services'
 import { createBookingApprovedNotification, createBookingRejectedNotification } from '../../services/notificationsService'
 import { Loading } from '../../components'
 import * as logger from '../../services/logger'
@@ -19,6 +20,7 @@ interface BookingWithProperty extends Booking {
 export const BookingsTab: React.FC = () => {
   const { language } = useLanguage()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [activeSubTab, setActiveSubTab] = React.useState<'my-bookings' | 'requests'>('my-bookings')
   const [myBookings, setMyBookings] = React.useState<BookingWithProperty[]>([])
   const [incomingRequests, setIncomingRequests] = React.useState<BookingWithProperty[]>([])
@@ -252,8 +254,8 @@ export const BookingsTab: React.FC = () => {
     try {
       setActionInProgress({ type: 'reject', bookingId: booking.id })
       
-      const updated = await rejectBooking(booking.id, 'Deleted by owner')
-      if (updated) {
+      const success = await deleteBooking(booking.id)
+      if (success) {
         // Remove from list
         setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
         setError('')
@@ -276,30 +278,38 @@ export const BookingsTab: React.FC = () => {
     })
   }
 
+  const handleNavigateToProperty = (propertyId: string, e?: React.MouseEvent) => {
+    // Don't navigate if clicking on a button or input
+    if (e?.currentTarget.tagName !== 'DIV') return
+    navigate(`/property/${propertyId}`)
+  }
+
   const handleSaveEditedBooking = async () => {
     if (!editingBookingId || !editingDates) return
 
     try {
       setActionInProgress({ type: 'accept', bookingId: editingBookingId })
       
-      // Update the booking in Firestore
-      const { updateDoc, doc } = await import('firebase/firestore')
-      const bookingRef = doc(db, 'bookings', editingBookingId)
-      await updateDoc(bookingRef, {
+      // Update the booking using service function
+      const updated = await editBooking(editingBookingId, {
         checkInDate: editingDates.checkIn,
         checkOutDate: editingDates.checkOut
-      })
+      } as Partial<Booking>)
 
-      // Update in local state
-      setIncomingRequests(prev => prev.map(b =>
-        b.id === editingBookingId
-          ? { ...b, checkInDate: editingDates.checkIn, checkOutDate: editingDates.checkOut }
-          : b
-      ))
+      if (updated) {
+        // Update in local state
+        setIncomingRequests(prev => prev.map(b =>
+          b.id === editingBookingId
+            ? { ...b, checkInDate: editingDates.checkIn, checkOutDate: editingDates.checkOut }
+            : b
+        ))
 
-      setEditingBookingId(null)
-      setEditingDates(null)
-      setError('')
+        setEditingBookingId(null)
+        setEditingDates(null)
+        setError('')
+      } else {
+        setError(t.actionError)
+      }
     } catch (err) {
       logger.error('Error updating booking dates:', err)
       setError(t.actionError)
@@ -367,7 +377,18 @@ export const BookingsTab: React.FC = () => {
             <div className="empty-state">{t.empty}</div>
           ) : (
             myBookings.map(booking => (
-              <div key={booking.id} className="booking-card">
+              <div 
+                key={booking.id} 
+                className="booking-card"
+                onClick={() => handleNavigateToProperty(booking.propertyId)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleNavigateToProperty(booking.propertyId)
+                  }
+                }}
+              >
                 {booking.propertyImage && (
                   <img src={booking.propertyImage} alt="property" className="booking-image" />
                 )}
@@ -412,7 +433,18 @@ export const BookingsTab: React.FC = () => {
             <div className="empty-state">{t.empty}</div>
           ) : (
             incomingRequests.map(booking => (
-              <div key={booking.id} className="booking-request-card">
+              <div 
+                key={booking.id} 
+                className="booking-request-card"
+                onClick={() => handleNavigateToProperty(booking.propertyId)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleNavigateToProperty(booking.propertyId)
+                  }
+                }}
+              >
                 {booking.propertyImage && (
                   <img src={booking.propertyImage} alt="property" className="booking-image" />
                 )}
@@ -580,6 +612,7 @@ export const BookingsTab: React.FC = () => {
           padding: 1rem;
           background: #fafafa;
           transition: all 0.3s ease;
+          cursor: pointer;
         }
 
         .booking-card:hover, .booking-request-card:hover {
