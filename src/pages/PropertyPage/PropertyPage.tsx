@@ -75,8 +75,6 @@ export const PropertyPage: React.FC = () => {
   const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
   const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
 
-  console.log('[PropertyPage] Component rendered:', { id, selectedCheckIn, selectedCheckOut, isBooking })
-
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
     if (showNotification) {
@@ -84,16 +82,6 @@ export const PropertyPage: React.FC = () => {
       return () => clearTimeout(timer)
     }
   }, [showNotification])
-
-  // Log when dates change
-  React.useEffect(() => {
-    console.log('[PropertyPage] Dates changed:', { selectedCheckIn, selectedCheckOut })
-  }, [selectedCheckIn, selectedCheckOut])
-
-  // Log when booking state changes
-  React.useEffect(() => {
-    console.log('[PropertyPage] isBooking changed to:', isBooking)
-  }, [isBooking])
 
   React.useEffect(() => {
     const loadProperty = async () => {
@@ -279,7 +267,7 @@ export const PropertyPage: React.FC = () => {
             userId: property.ownerId,
             type: 'booking',
             title: t.notifications.newBooking,
-            message: `${user.name} booked your property for ${selectedNights} nights`,
+            message: `${user.name} booked your property`,
             read: false,
             propertyId: property.id,
             bookingId: result.id,
@@ -594,19 +582,13 @@ export const PropertyPage: React.FC = () => {
     const diff = Math.ceil((end.getTime() - start.getTime()) / oneDayMs)
     return diff > 0 ? diff : 0
   })()
-  const selectedTotal = selectedNights * property.price.daily
+  const selectedTotal = property ? selectedNights * property.price.daily : 0
   const selectedRangeBusy = (() => {
     if (!selectedCheckIn || !selectedCheckOut || !property.unavailableFrom || !property.unavailableTo) return false
     return selectedCheckIn <= property.unavailableTo && selectedCheckOut >= property.unavailableFrom
   })()
   
-  console.log('[PropertyPage] Render button state:', { 
-    showBookingButton: selectedCheckIn && selectedCheckOut && selectedNights > 0 && !selectedRangeBusy,
-    selectedCheckIn, 
-    selectedCheckOut, 
-    selectedNights,
-    selectedRangeBusy 
-  })
+
   const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, language))
   const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, language))
   const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
