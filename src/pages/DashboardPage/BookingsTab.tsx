@@ -84,7 +84,7 @@ export const BookingsTab: React.FC = () => {
     }
   }, [user?.id, language])
 
-  // Load incoming booking requests (pending bookings on user's properties)
+  // Load incoming booking requests (all bookings on user's properties - not rejected)
   const loadIncomingRequests = React.useCallback(async () => {
     if (!user?.id) return
 
@@ -103,20 +103,23 @@ export const BookingsTab: React.FC = () => {
       const allBookings: BookingWithProperty[] = []
 
       for (const propertyId of propertyIds) {
-        // Get only PENDING bookings
-        const bookingsQuery = query(bookingsRef, where('propertyId', '==', propertyId), where('status', '==', 'pending'))
+        // Get ALL bookings (not just pending)
+        const bookingsQuery = query(bookingsRef, where('propertyId', '==', propertyId))
         const bookingsSnap = await getDocs(bookingsQuery)
 
         const property = propsSnapshot.docs.find(d => d.id === propertyId)?.data() as Property | undefined
 
         bookingsSnap.docs.forEach(bookingDoc => {
           const booking = bookingDoc.data() as Omit<Booking, 'id'>
-          allBookings.push({
-            id: bookingDoc.id,
-            ...booking,
-            propertyTitle: property?.title?.[language] || 'Property',
-            propertyImage: property?.images?.[0]
-          })
+          // Filter out rejected and cancelled bookings
+          if (booking.status !== 'rejected' && booking.status !== 'cancelled') {
+            allBookings.push({
+              id: bookingDoc.id,
+              ...booking,
+              propertyTitle: property?.title?.[language] || 'Property',
+              propertyImage: property?.images?.[0]
+            })
+          }
         })
       }
 
@@ -180,7 +183,10 @@ export const BookingsTab: React.FC = () => {
           ownerName: user?.name || ''
         })
 
-        setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
+        // Update the booking status in the list instead of removing
+        setIncomingRequests(prev => prev.map(b => 
+          b.id === booking.id ? { ...b, status: 'approved' } : b
+        ))
         setError('')
       } else {
         setError(t.actionError)
@@ -216,6 +222,7 @@ export const BookingsTab: React.FC = () => {
           rejectionReason: reason
         })
 
+        // Remove from list when rejected
         setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
         setError('')
       } else {
@@ -223,6 +230,29 @@ export const BookingsTab: React.FC = () => {
       }
     } catch (err) {
       logger.error('Error rejecting booking:', err)
+      setError(t.actionError)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
+  const handleDeleteApprovedBooking = async (booking: BookingWithProperty) => {
+    const confirmMsg = language === 'en' ? 'Delete this booking?' : language === 'ru' ? 'Удалить это бронирование?' : 'Bu bölməni silmək istəyirsiniz?'
+    if (!confirm(confirmMsg)) return
+
+    try {
+      setActionInProgress({ type: 'reject', bookingId: booking.id })
+      
+      const updated = await rejectBooking(booking.id, 'Deleted by owner')
+      if (updated) {
+        // Remove from list
+        setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
+        setError('')
+      } else {
+        setError(t.actionError)
+      }
+    } catch (err) {
+      logger.error('Error deleting booking:', err)
       setError(t.actionError)
     } finally {
       setActionInProgress(null)
@@ -362,21 +392,39 @@ export const BookingsTab: React.FC = () => {
                   </p>
                 </div>
 
+                <div className="booking-status">
+                  <strong>{t.status}:</strong> {getStatusComponent(booking)}
+                </div>
+
                 <div className="booking-actions">
-                  <button
-                    className="btn btn-accept"
-                    onClick={() => handleAcceptBooking(booking)}
-                    disabled={actionInProgress?.bookingId === booking.id}
-                  >
-                    {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' ? '...' : t.accept}
-                  </button>
-                  <button
-                    className="btn btn-reject"
-                    onClick={() => handleRejectBooking(booking)}
-                    disabled={actionInProgress?.bookingId === booking.id}
-                  >
-                    {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' ? '...' : t.reject}
-                  </button>
+                  {booking.status === 'pending' && (
+                    <>
+                      <button
+                        className="btn btn-accept"
+                        onClick={() => handleAcceptBooking(booking)}
+                        disabled={actionInProgress?.bookingId === booking.id}
+                      >
+                        {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' ? '...' : t.accept}
+                      </button>
+                      <button
+                        className="btn btn-reject"
+                        onClick={() => handleRejectBooking(booking)}
+                        disabled={actionInProgress?.bookingId === booking.id}
+                      >
+                        {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' ? '...' : t.reject}
+                      </button>
+                    </>
+                  )}
+                  {booking.status === 'approved' && (
+                    <button
+                      className="btn btn-reject"
+                      onClick={() => handleDeleteApprovedBooking(booking)}
+                      disabled={actionInProgress?.bookingId === booking.id}
+                      title={language === 'en' ? 'Delete this booking' : language === 'ru' ? 'Удалить бронирование' : 'Bölməni sil'}
+                    >
+                      {actionInProgress?.bookingId === booking.id ? '...' : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
+                    </button>
+                  )}
                 </div>
               </div>
             ))

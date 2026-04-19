@@ -534,7 +534,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    if (newListing.listingTier === 'free' && selectedFiles.length > 4) {
+    if (newListing.listingTier === 'standard' && selectedFiles.length > 4) {
       setError(t.listing.maxImagesStandard)
       setIsSubmitting(false)
       return
@@ -547,14 +547,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     const descriptionWordCount = newListing.description.trim().split(/\s+/).filter(Boolean).length
-    if (newListing.listingTier === 'free' && descriptionWordCount > 35) {
+    if (newListing.listingTier === 'standard' && descriptionWordCount > 35) {
       setError(t.listing.maxWordsStandard)
       setIsSubmitting(false)
       return
     }
 
-    if (newListing.listingTier !== 'free' && !newListing.address.trim()) {
-      setError('Standart və Premium paketdə ünvan daxil edilməlidir')
+    if (!newListing.address.trim()) {
+      setError('Ünvan daxil edilməlidir')
       setIsSubmitting(false)
       return
     }
@@ -571,7 +571,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     const minGuests = Number(newListing.minGuests)
     const maxGuests = Number(newListing.maxGuests)
     const area = Number(newListing.area || 0)
-    const normalizedAddress = newListing.listingTier === 'free' ? 'Lokasiya gizlidir' : newListing.address
+    const normalizedAddress = newListing.address
     const listingStatus = 'pending'
 
     // Use first location tag as district
@@ -1415,7 +1415,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           {t.home.plansTitle}
                           {newListing.listingTier ? (
                             <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#28a745', fontWeight: 'normal' }}>
-                              ✓ {newListing.listingTier === 'free' ? t.pricing.free : newListing.listingTier === 'standard' ? t.pricing.standard : t.pricing.premium}
+                              ✓ {newListing.listingTier === 'standard' ? t.pricing.standard : newListing.listingTier === 'vip' ? t.pricing.vip : t.pricing.premium}
                             </span>
                           ) : (
                             <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#dc3545', fontWeight: 'bold' }}>
@@ -1531,13 +1531,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         />
 
                         <div className="form-group full-width">
-                          <label>{t.form.address} {newListing.listingTier === 'free' ? '' : '*'}</label>
+                          <label>{t.form.address} *</label>
                           <input
                             type="text"
                             value={newListing.address}
                             onChange={(e) => setNewListing({...newListing, address: e.target.value})}
-                            required={newListing.listingTier !== 'free'}
-                            placeholder={newListing.listingTier === 'free' ? (language === 'en' ? 'Location is hidden for Standard plan' : language === 'ru' ? 'Локация скрыта для тарифа Стандарт' : 'Standart paketdə lokasiya gizlədilir') : ''}
+                            required={true}
+                            placeholder=""
                           />
                         </div>
 
@@ -1777,7 +1777,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>{newListing.listingTier === 'free' ? (language === 'ru' ? 'Максимум 4 фото (тариф Стандарт)' : language === 'en' ? 'Maximum 4 photos (Standard plan)' : 'Maksimum 4 şəkil (Standart paket)') : (language === 'en' ? 'Drag & drop or click to upload' : language === 'ru' ? 'Перетащите файлы или нажмите для загрузки' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
+                            <p>{newListing.listingTier === 'standard' ? (language === 'ru' ? 'Максимум 4 фото' : language === 'en' ? 'Maximum 4 photos' : 'Maksimum 4 şəkil') : (language === 'en' ? 'Drag & drop or click to upload' : language === 'ru' ? 'Перетащите файлы или нажмите для загрузки' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
                             {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : language === 'ru' ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>}
                           </div>
                           {selectedFilePreviews.length > 0 && (

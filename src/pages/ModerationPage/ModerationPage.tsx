@@ -193,8 +193,12 @@ export const ModerationPage: React.FC = () => {
                           <span style={{ color: '#9c27b0', fontWeight: 'bold', marginLeft: '0.5rem' }}>
                             👑 VIP
                           </span>
+                        ) : listing.listingTier === 'premium' ? (
+                          <span style={{ color: '#d4a574', fontWeight: 'bold', marginLeft: '0.5rem' }}>
+                            ⭐ Premium
+                          </span>
                         ) : (
-                          <span style={{ marginLeft: '0.5rem' }}>{(listing.listingTier || 'standard').toUpperCase()}</span>
+                          <span style={{ color: '#666', marginLeft: '0.5rem' }}>{(listing.listingTier || 'standard').toUpperCase()}</span>
                         )}
                       </p>
                     </div>

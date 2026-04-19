@@ -305,7 +305,7 @@ export const en: Translations = {
     free_features: "4 photos, short description, hidden location",
     standard_features: "20 photos, full description, location visible",
     premium_features: "✓ Unlimited photos, featured 3 weeks on homepage, visible location",
-    vip_features: "✓ VIP badge, guaranteed top position, priority moderation, unlimited photos"
+    vip_features: "✓ VIP badge, priority moderation, unlimited photos"
   },
   support: {
     waitingForReview: "Listing pending - support team will contact you",

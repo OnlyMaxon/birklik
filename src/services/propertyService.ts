@@ -287,7 +287,7 @@ export const updateProperty = async (
 }
 
 /**
- * Delete a property and all associated images from Firestore and Storage
+ * Delete a property and all associated images and bookings from Firestore and Storage
  * @param {string} id - Property Firestore document ID
  * @returns {Promise<boolean>} True on success, false on failure
  * @throws {Error} On Firestore delete or image deletion failure
@@ -302,6 +302,16 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
       await deletePropertyImages(property.images)
     }
 
+    // Delete all bookings for this property
+    const bookingsRef = collection(db, 'bookings')
+    const bookingsQuery = query(bookingsRef, where('propertyId', '==', id))
+    const bookingsSnapshot = await getDocs(bookingsQuery)
+    
+    for (const bookingDoc of bookingsSnapshot.docs) {
+      await deleteDoc(bookingDoc.ref)
+    }
+
+    // Delete the property itself
     await deleteDoc(doc(db, COLLECTION_NAME, id))
     return true
   } catch (error) {

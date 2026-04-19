@@ -305,7 +305,7 @@ export const az: Translations = {
     free_features: "4 foto, qısa təsvir, gizli lokasiya",
     standard_features: "20 foto, tam təsvir, lokasiya göstərilir",
     premium_features: "✓ Limitsiz foto, ana səhifədə 3 həftə, görünən məkan",
-    vip_features: "✓ VIP nişanı, zəmanətli 1-ci yer, prioritet yoxlama, limitsiz foto"
+    vip_features: "✓ VIP nişanı, prioritet yoxlama, limitsiz foto"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",
