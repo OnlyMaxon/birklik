@@ -75,21 +75,28 @@ service cloud.firestore {
         || isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
       );
       
-      // Create: user booking must be created by the authenticated user
+      // Create: user booking must be created by the authenticated user with 'pending' status
       allow create: if request.auth != null 
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == 'active'
+        && request.resource.data.status == 'pending'
         && request.resource.data.keys().hasAny(['propertyId', 'checkInDate', 'checkOutDate', 'totalPrice', 'nights', 'userName', 'userEmail', 'userPhone']);
       
-      // Update: only user or property owner can update, and only status field
+      // Update: only authorized users can update status
       allow update: if request.auth != null && (
-        (request.auth.uid == resource.data.userId && request.resource.data.status != resource.data.status)
-        || (isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId) && request.resource.data.status != resource.data.status)
+        // Guest can change pending -> cancelled
+        (request.auth.uid == resource.data.userId 
+         && resource.data.status == 'pending' 
+         && request.resource.data.status == 'cancelled')
+        // Property owner can change pending -> approved or pending -> rejected
+        || (isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
+         && resource.data.status == 'pending'
+         && (request.resource.data.status == 'approved' || request.resource.data.status == 'rejected')
+         && request.resource.data.keys().hasOnly(['id', 'propertyId', 'userId', 'ownerId', 'userName', 'userEmail', 'userPhone', 'checkInDate', 'checkOutDate', 'nights', 'totalPrice', 'createdAt', 'status', 'approvedAt', 'rejectedAt', 'rejectionReason']))
       );
       
-      // Delete: user can cancel their own booking, or property owner/moderator can delete
+      // Delete: user can delete their own cancelled bookings, or property owner/moderator can delete
       allow delete: if request.auth != null && (
-        request.auth.uid == resource.data.userId 
+        (request.auth.uid == resource.data.userId && resource.data.status == 'cancelled')
         || isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
         || isModerator()
       );
