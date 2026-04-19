@@ -341,7 +341,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const lng = Number(results[0].lon)
 
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        setLocationSearchError(language === 'en' ? 'Invalid coordinates received.' : language === 'ru' ? 'Получены некорректные координаты.' : 'Koordinatlar düzgün alınmadı.')
+        setLocationSearchError(t.errors.invalidCoordinates)
         return
       }
 

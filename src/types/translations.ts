@@ -258,6 +258,11 @@ export interface Translations {
     bookingEmail: string
     bookingNoBookings: string
     bookingMyBookings: string
+    bookmarkProperties: string
+    vipListing: string
+    premiumListing: string
+    city: string
+    selectCity: string
     bookingRequests: string
   }
   form: {
@@ -283,6 +288,10 @@ export interface Translations {
     terms: string
     privacy: string
     copyright: string
+    whatWeDo: string
+    ourApps: string
+    downloadOn: string
+    getItOn: string
   }
   messages: {
     contactSuccess: string
@@ -413,6 +422,9 @@ export interface Translations {
     browseListings: string
     moveUp: string
     moveDown: string
+    copy: string
+    yes: string
+    no: string
   }
   common: {
     night: string
@@ -459,6 +471,10 @@ export interface Translations {
     listingApproved: string
     listingRejected: string
     premiumExpiring: string
+    linkCopied: string
+    failedToCopyLink: string
+    selectReason: string
+    reportedSuccess: string
   }
   filters: {
     moreFilters: string
@@ -494,6 +510,8 @@ export interface Translations {
     offensive: string
     misleading: string
     other: string
+    additionalDetails: string
+    reason: string
   }
   moderation: {
     pending: string

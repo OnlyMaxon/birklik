@@ -258,6 +258,11 @@ export const ru: Translations = {
     bookingEmail: 'Email',
     bookingNoBookings: 'Нет бронирований',
     bookingMyBookings: 'Мои Бронирования',
+    bookmarkProperties: 'Закладки',
+    vipListing: 'VIP объявление',
+    premiumListing: 'Премиум объявление',
+    city: 'Город',
+    selectCity: 'Выберите город',
     bookingRequests: 'Запросы на Бронирование'
   },
   form: {
@@ -282,7 +287,11 @@ export const ru: Translations = {
     contact: 'Контакты',
     terms: 'Условия',
     privacy: 'Конфиденциальность',
-    copyright: '© 2026 Birklik.az. Все права защищены.'
+    copyright: '© 2026 Birklik.az. Все права защищены.',
+    whatWeDo: 'Что мы делаем',
+    ourApps: 'Наши приложения',
+    downloadOn: 'Скачать на',
+    getItOn: 'Получить на'
   },
   messages: {
     contactSuccess: 'Заявка получена! Мы скоро свяжемся с вами.',
@@ -412,7 +421,10 @@ export const ru: Translations = {
     createListing: 'Создать объявление',
     browseListings: 'Просмотреть объявления',
     moveUp: 'Переместить выше',
-    moveDown: 'Переместить ниже'
+    moveDown: 'Переместить ниже',
+    copy: 'Скопировать ссылку',
+    yes: 'Да',
+    no: 'Нет'
   },
   common: {
     night: 'ночь',
@@ -458,7 +470,11 @@ export const ru: Translations = {
     newComment: 'Новый комментарий на вашем объявлении',
     listingApproved: 'Ваше объявление одобрено',
     listingRejected: 'Ваше объявление не одобрено',
-    premiumExpiring: 'Ваш премиум истекает через 3 дня'
+    premiumExpiring: 'Ваш премиум истекает через 3 дня',
+    linkCopied: 'Ссылка скопирована!',
+    failedToCopyLink: 'Не удалось скопировать ссылку',
+    selectReason: 'Пожалуйста, выберите причину',
+    reportedSuccess: 'Жалоба отправлена успешно'
   },
   filters: {
     moreFilters: 'Доп. фильтры',
@@ -493,7 +509,9 @@ export const ru: Translations = {
     inappropriate: 'Неприемлемый контент',
     offensive: 'Оскорбительный язык',
     misleading: 'Вводящая в заблуждение информация',
-    other: 'Другое'
+    other: 'Другое',
+    additionalDetails: 'Дополнительные сведения (опционально)',
+    reason: 'Причина'
   },
   moderation: {
     pending: 'На рассмотрении',

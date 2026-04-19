@@ -255,6 +255,11 @@ export const az: Translations = {
     bookingEmail: "Email",
     bookingNoBookings: "Heç bir sifariş yoxdur",
     bookingMyBookings: "Mənim Sifarişlərim",
+    bookmarkProperties: "Yadda Saxlanan Elanlar",
+    vipListing: "VIP elan",
+    premiumListing: "Premium elan",
+    city: "Şəhər",
+    selectCity: "Şəhər seçin",
     bookingRequests: "Sifariş Sorğuları"
   },
   form: {
@@ -279,7 +284,11 @@ export const az: Translations = {
     contact: "Əlaqə",
     terms: "Qaydalar",
     privacy: "Məxfilik",
-    copyright: "© 2026 Birklik.az. Bütün hüquqlar qorunur."
+    copyright: "© 2026 Birklik.az. Bütün hüquqlar qorunur.",
+    whatWeDo: "Biz nə edirik",
+    ourApps: "Bizim tətbiqlərimiz",
+    downloadOn: "Yükləyin",
+    getItOn: "Yükləyin"
   },
   messages: {
     contactSuccess: "Müraciətiniz qəbul edildi! Tezliklə sizinlə əlaqə saxlanılacaq (mock)",
@@ -409,7 +418,10 @@ export const az: Translations = {
     createListing: "Elan yarat",
     browseListings: "Elanları bax",
     moveUp: "Yuxarıya keçir",
-    moveDown: "Aşağıya keçir"
+    moveDown: "Aşağıya keçir",
+    copy: "Keçidi kopyala",
+    yes: "Bəli",
+    no: "Xeyr"
   },
   common: {
     night: "gecə",
@@ -455,7 +467,11 @@ export const az: Translations = {
     newComment: "Elanınızda yeni şərh",
     listingApproved: "Elanınız təsdiqləndi",
     listingRejected: "Elanınız rədd olundu",
-    premiumExpiring: "Premiumunuz 3 gün sonra bitəcəkdir"
+    premiumExpiring: "Premiumunuz 3 gün sonra bitəcəkdir",
+    linkCopied: "Keçid kopyalandı!",
+    failedToCopyLink: "Keçidi kopyalamaq uğursuz oldu",
+    selectReason: "Zəhmət olmasa səbəb seçin",
+    reportedSuccess: "Şikayət uğurla göndərildi"
   },
   filters: {
     moreFilters: "Əlavə filtrlər",
@@ -490,7 +506,9 @@ export const az: Translations = {
     inappropriate: "Uygunsuz məzmun",
     offensive: "Hörmətsiz dil",
     misleading: "Yanış məlumat",
-    other: "Digər"
+    other: "Digər",
+    additionalDetails: "Əlavə detallar (istəyə bağlı)",
+    reason: "Səbəb"
   },
   moderation: {
     pending: "Yoxlamada",

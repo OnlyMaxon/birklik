@@ -258,6 +258,11 @@ export const en: Translations = {
     bookingEmail: "Email",
     bookingNoBookings: "No bookings yet",
     bookingMyBookings: "My Bookings",
+    bookmarkProperties: "Bookmarked Properties",
+    vipListing: "VIP listing",
+    premiumListing: "Premium listing",
+    city: "City",
+    selectCity: "Select a city",
     bookingRequests: "Booking Requests"
   },
   form: {
@@ -282,7 +287,11 @@ export const en: Translations = {
     contact: "Contact",
     terms: "Terms",
     privacy: "Privacy",
-    copyright: "© 2026 Birklik.az. All rights reserved."
+    copyright: "© 2026 Birklik.az. All rights reserved.",
+    whatWeDo: "What we do",
+    ourApps: "Our apps",
+    downloadOn: "Download on the",
+    getItOn: "Get it on"
   },
   messages: {
     contactSuccess: "Your request has been received! We will contact you soon (mock)",
@@ -412,7 +421,10 @@ export const en: Translations = {
     createListing: "Create listing",
     browseListings: "Browse listings",
     moveUp: "Move up",
-    moveDown: "Move down"
+    moveDown: "Move down",
+    copy: "Copy link",
+    yes: "Yes",
+    no: "No"
   },
   common: {
     night: "night",
@@ -458,7 +470,11 @@ export const en: Translations = {
     newComment: "New comment on your listing",
     listingApproved: "Your listing was approved",
     listingRejected: "Your listing was not approved",
-    premiumExpiring: "Your premium listing expires in 3 days"
+    premiumExpiring: "Your premium listing expires in 3 days",
+    linkCopied: "Link copied!",
+    failedToCopyLink: "Failed to copy link",
+    selectReason: "Please select a reason",
+    reportedSuccess: "Report submitted successfully"
   },
   filters: {
     moreFilters: "More filters",
@@ -493,7 +509,9 @@ export const en: Translations = {
     inappropriate: "Inappropriate content",
     offensive: "Offensive language",
     misleading: "Misleading information",
-    other: "Other"
+    other: "Other",
+    additionalDetails: "Additional details (optional)",
+    reason: "Reason"
   },
   moderation: {
     pending: "Pending review",
