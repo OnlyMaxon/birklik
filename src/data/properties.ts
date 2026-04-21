@@ -2,9 +2,12 @@ import { Property, PropertyType, District, Amenity, LocationCategory } from '../
 
 export interface FilterOption {
   key: string
+}
+
+export interface LocationOption {
+  key: string
   az: string
   en: string
-  ru: string
 }
 
 export interface CityOption {
@@ -69,26 +72,26 @@ export const amenitiesList: Amenity[] = [
 ]
 
 export const moreFilterOptions: FilterOption[] = [
-  { key: 'sauna', az: 'Sauna', en: 'Sauna', ru: 'Сауна' },
-  { key: 'kidsZone', az: 'Uşaq oyun zonası', en: 'Kids play zone', ru: 'Детская игровая зона' },
-  { key: 'playstation', az: 'PlayStation', en: 'PlayStation', ru: 'PlayStation' },
-  { key: 'billiard', az: 'Bilyard', en: 'Billiards', ru: 'Бильярд' },
-  { key: 'tennis', az: 'Tennis', en: 'Tennis', ru: 'Теннис' },
-  { key: 'boardGames', az: 'Stol oyunları', en: 'Board games', ru: 'Настольные игры' },
-  { key: 'samovar', az: 'Samovar', en: 'Samovar', ru: 'Самовар' },
-  { key: 'gazebo', az: 'Besedka', en: 'Gazebo', ru: 'Беседка' },
-  { key: 'garage', az: 'Qaraj', en: 'Garage', ru: 'Гараж' }
+  { key: 'sauna' },
+  { key: 'kidsZone' },
+  { key: 'playstation' },
+  { key: 'billiard' },
+  { key: 'tennis' },
+  { key: 'boardGames' },
+  { key: 'samovar' },
+  { key: 'gazebo' },
+  { key: 'garage' }
 ]
 
 export const nearFilterOptions: FilterOption[] = [
-  { key: 'beach', az: 'Çimərlik', en: 'Beach', ru: 'Пляж' },
-  { key: 'mountains', az: 'Dağlar', en: 'Mountains', ru: 'Горы' },
-  { key: 'forest', az: 'Meşə', en: 'Forest', ru: 'Лес' },
-  { key: 'sea', az: 'Dəniz', en: 'Sea', ru: 'Море' },
-  { key: 'riverLake', az: 'Çay və ya göl', en: 'River or lake', ru: 'Река или озеро' },
-  { key: 'resortCenters', az: 'İstirahət mərkəzləri', en: 'Resort centers', ru: 'Курортные центры' },
-  { key: 'restaurant', az: 'Restoran', en: 'Restaurant', ru: 'Ресторан' },
-  { key: 'park', az: 'Park', en: 'Park', ru: 'Парк' }
+  { key: 'beach' },
+  { key: 'mountains' },
+  { key: 'forest' },
+  { key: 'sea' },
+  { key: 'riverLake' },
+  { key: 'resortCenters' },
+  { key: 'restaurant' },
+  { key: 'park' }
 ]
 
 const keyReplacements: Record<string, string> = {
@@ -121,12 +124,11 @@ const toOptionKey = (value: string): string => {
     .replace(/\s+/g, '_')
 }
 
-const toFilterOptions = (names: string[]): FilterOption[] => {
+const toFilterOptions = (names: string[]): LocationOption[] => {
   return names.map((name) => ({
     key: toOptionKey(name),
     az: name,
-    en: name,
-    ru: name
+    en: name
   }))
 }
 
@@ -296,7 +298,7 @@ export const cityDistricts: Record<string, string[]> = {
   'Ganja': ['Hacıkənd', 'Zurnabad', 'Çaylı', 'Aşağı Ağcakənd', 'Yeni Zod', 'Mixaylovka', 'Toğanalı', 'Azad', 'Çaykənd', 'Topalhəsənli']
 }
 
-export const cityLocationOptions: Record<LocationCategory, FilterOption[]> = {
+export const cityLocationOptions: Record<LocationCategory, LocationOption[]> = {
   rayon: toFilterOptions(rayonLocationNames),
   metro: toFilterOptions(metroLocationNames)
 }
@@ -311,11 +313,10 @@ const includesAny = (values: string[] | undefined, selected: string[]): boolean 
   return selected.some((item) => values.includes(item))
 }
 
-export const getOptionLabel = (options: FilterOption[], key: string, language: 'az' | 'en' | 'ru'): string => {
+export const getOptionLabel = (options: FilterOption[], key: string, t: any): string => {
   const option = options.find((entry) => entry.key === key)
   if (!option) return key
-  if (language === 'en') return option.en
-  return option.az
+  return t.amenities[option.key] || option.key
 }
 
 // Filter properties based on various criteria

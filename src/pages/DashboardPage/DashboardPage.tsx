@@ -589,14 +589,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
 
 
-  const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string; ru?: string } | string) => {
+  const getLocalizedOptionLabel = React.useCallback((option: { key: string } | string) => {
     if (typeof option === 'string') return option
-    if (language === 'en') return option.en
-    if (language === 'ru') return option.ru || option.en
-    return option.az
-  }, [language])
+    return (t.amenities as Record<string, string>)[option.key] || option.key
+  }, [t])
 
-  const sortByOptionLabel = React.useCallback((a: { az: string; en: string } | string, b: { az: string; en: string } | string) => {
+  const sortByOptionLabel = React.useCallback((a: { key: string } | string, b: { key: string } | string) => {
     const aLabel = typeof a === 'string' ? a : getLocalizedOptionLabel(a)
     const bLabel = typeof b === 'string' ? b : getLocalizedOptionLabel(b)
     return aLabel.localeCompare(bLabel, language === 'en' ? 'en' : 'az')

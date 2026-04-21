@@ -55,11 +55,11 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
     else handleChange('hasPool', null)
   }
 
-  const getLocalizedLabel = React.useCallback((option: { az: string; en: string }) => {
-    return language === 'en' ? option.en : option.az
-  }, [language])
+  const getLocalizedLabel = React.useCallback((option: { key: string }) => {
+    return (t.amenities as Record<string, string>)[option.key] || option.key
+  }, [t])
 
-  const sortByLabel = React.useCallback((a: { az: string; en: string }, b: { az: string; en: string }) => {
+  const sortByLabel = React.useCallback((a: { key: string }, b: { key: string }) => {
     return getLocalizedLabel(a).localeCompare(getLocalizedLabel(b), language === 'en' ? 'en' : 'az')
   }, [getLocalizedLabel, language])
 
