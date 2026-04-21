@@ -589,9 +589,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
 
 
-  const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string } | string) => {
+  const getLocalizedOptionLabel = React.useCallback((option: { az: string; en: string; ru?: string } | string) => {
     if (typeof option === 'string') return option
-    return language === 'en' ? option.en : option.az
+    if (language === 'en') return option.en
+    if (language === 'ru') return option.ru || option.en
+    return option.az
   }, [language])
 
   const sortByOptionLabel = React.useCallback((a: { az: string; en: string } | string, b: { az: string; en: string } | string) => {

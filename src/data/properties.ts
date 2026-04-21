@@ -4,6 +4,7 @@ export interface FilterOption {
   key: string
   az: string
   en: string
+  ru: string
 }
 
 export interface CityOption {
@@ -68,26 +69,26 @@ export const amenitiesList: Amenity[] = [
 ]
 
 export const moreFilterOptions: FilterOption[] = [
-  { key: 'sauna', az: 'Sauna', en: 'Sauna' },
-  { key: 'kidsZone', az: 'Uşaq oyun zonası', en: 'Kids play zone' },
-  { key: 'playstation', az: 'PlayStation', en: 'PlayStation' },
-  { key: 'billiard', az: 'Bilyard', en: 'Billiards' },
-  { key: 'tennis', az: 'Tennis', en: 'Tennis' },
-  { key: 'boardGames', az: 'Stol oyunları', en: 'Board games' },
-  { key: 'samovar', az: 'Samovar', en: 'Samovar' },
-  { key: 'gazebo', az: 'Besedka', en: 'Gazebo' },
-  { key: 'garage', az: 'Qaraj', en: 'Garage' }
+  { key: 'sauna', az: 'Sauna', en: 'Sauna', ru: 'Сауна' },
+  { key: 'kidsZone', az: 'Uşaq oyun zonası', en: 'Kids play zone', ru: 'Детская игровая зона' },
+  { key: 'playstation', az: 'PlayStation', en: 'PlayStation', ru: 'PlayStation' },
+  { key: 'billiard', az: 'Bilyard', en: 'Billiards', ru: 'Бильярд' },
+  { key: 'tennis', az: 'Tennis', en: 'Tennis', ru: 'Теннис' },
+  { key: 'boardGames', az: 'Stol oyunları', en: 'Board games', ru: 'Настольные игры' },
+  { key: 'samovar', az: 'Samovar', en: 'Samovar', ru: 'Самовар' },
+  { key: 'gazebo', az: 'Besedka', en: 'Gazebo', ru: 'Беседка' },
+  { key: 'garage', az: 'Qaraj', en: 'Garage', ru: 'Гараж' }
 ]
 
 export const nearFilterOptions: FilterOption[] = [
-  { key: 'beach', az: 'Çimərlik', en: 'Beach' },
-  { key: 'mountains', az: 'Dağlar', en: 'Mountains' },
-  { key: 'forest', az: 'Meşə', en: 'Forest' },
-  { key: 'sea', az: 'Dəniz', en: 'Sea' },
-  { key: 'riverLake', az: 'Çay və ya göl', en: 'River or lake' },
-  { key: 'resortCenters', az: 'İstirahət mərkəzləri', en: 'Resort centers' },
-  { key: 'restaurant', az: 'Restoran', en: 'Restaurant' },
-  { key: 'park', az: 'Park', en: 'Park' }
+  { key: 'beach', az: 'Çimərlik', en: 'Beach', ru: 'Пляж' },
+  { key: 'mountains', az: 'Dağlar', en: 'Mountains', ru: 'Горы' },
+  { key: 'forest', az: 'Meşə', en: 'Forest', ru: 'Лес' },
+  { key: 'sea', az: 'Dəniz', en: 'Sea', ru: 'Море' },
+  { key: 'riverLake', az: 'Çay və ya göl', en: 'River or lake', ru: 'Река или озеро' },
+  { key: 'resortCenters', az: 'İstirahət mərkəzləri', en: 'Resort centers', ru: 'Курортные центры' },
+  { key: 'restaurant', az: 'Restoran', en: 'Restaurant', ru: 'Ресторан' },
+  { key: 'park', az: 'Park', en: 'Park', ru: 'Парк' }
 ]
 
 const keyReplacements: Record<string, string> = {
@@ -124,7 +125,8 @@ const toFilterOptions = (names: string[]): FilterOption[] => {
   return names.map((name) => ({
     key: toOptionKey(name),
     az: name,
-    en: name
+    en: name,
+    ru: name
   }))
 }
 
