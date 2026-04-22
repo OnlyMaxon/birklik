@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { isModerator } from '../../config/constants'
@@ -10,6 +10,7 @@ import * as logger from '../../services/logger'
 export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage()
   const { isAuthenticated, user, firebaseUser, logout } = useAuth()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = React.useState(false)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0)
@@ -113,7 +114,21 @@ export const Header: React.FC = () => {
                 )}
                 
                 <div className="nav-user-section">
-                  <div className="user-profile">
+                  <div 
+                    className="user-profile"
+                    onClick={() => {
+                      navigate('/dashboard?tab=profile')
+                      setMenuOpen(false)
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        navigate('/dashboard?tab=profile')
+                        setMenuOpen(false)
+                      }
+                    }}
+                  >
                     <div className="user-avatar">
                       {user?.avatar ? (
                         <img src={user.avatar} alt={user.name} />
