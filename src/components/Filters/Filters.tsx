@@ -56,6 +56,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   }
 
   const getLocalizedLabel = React.useCallback((option: { key: string }) => {
+    if (!t || !t.amenities) return option.key
     return (t.amenities as Record<string, string>)[option.key] || option.key
   }, [t])
 

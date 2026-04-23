@@ -313,10 +313,11 @@ const includesAny = (values: string[] | undefined, selected: string[]): boolean 
   return selected.some((item) => values.includes(item))
 }
 
-export const getOptionLabel = (options: FilterOption[], key: string, t: any): string => {
+export const getOptionLabel = (options: FilterOption[] | LocationOption[], key: string, t: any): string => {
   const option = options.find((entry) => entry.key === key)
   if (!option) return key
-  return t.amenities[option.key] || option.key
+  if (!t || !t.amenities) return option.key
+  return (t.amenities as Record<string, string>)[option.key] || option.key
 }
 
 // Filter properties based on various criteria

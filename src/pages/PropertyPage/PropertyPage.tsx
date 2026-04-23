@@ -600,11 +600,11 @@ export const PropertyPage: React.FC = () => {
   })()
   
 
-  const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, language))
-  const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, language))
+  const moreLabels = (property.extraFeatures || []).map((key) => getOptionLabel(moreFilterOptions, key, t))
+  const nearLabels = (property.nearbyPlaces || []).map((key) => getOptionLabel(nearFilterOptions, key, t))
   const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
   const locationLabels = selectedLocationOptions
-    ? (property.locationTags || []).map((key) => getOptionLabel(selectedLocationOptions, key, language))
+    ? (property.locationTags || []).map((key) => getOptionLabel(selectedLocationOptions, key, t))
     : []
 
   return (
@@ -826,7 +826,7 @@ export const PropertyPage: React.FC = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
-                        {t.amenities[amenity]}
+                        {t?.amenities?.[amenity] || amenity}
                       </span>
                     ))}
                   </div>

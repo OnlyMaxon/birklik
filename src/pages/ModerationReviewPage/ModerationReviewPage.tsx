@@ -363,7 +363,7 @@ export const ModerationReviewPage: React.FC = () => {
                     <h3>{language === 'en' ? 'Amenities' : language === 'ru' ? 'Удобства' : 'Əlavə Xidmətlər'}</h3>
                     <div className="amenities-list">
                       {property.amenities.map(amenity => (
-                        <span key={amenity} className="amenity-tag">{amenity}</span>
+                        <span key={amenity} className="amenity-tag">{t?.amenities?.[amenity] || amenity}</span>
                       ))}
                     </div>
                   </div>

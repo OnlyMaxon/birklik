@@ -591,6 +591,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const getLocalizedOptionLabel = React.useCallback((option: { key: string } | string) => {
     if (typeof option === 'string') return option
+    if (!t || !t.amenities) return option.key
     return (t.amenities as Record<string, string>)[option.key] || option.key
   }, [t])
 
@@ -1590,7 +1591,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   checked={newListing.amenities.includes(amenity)}
                                   onChange={() => handleAmenityToggle(amenity)}
                                 />
-                                <span>{t.amenities[amenity]}</span>
+                                <span>{t?.amenities?.[amenity] || amenity}</span>
                               </label>
                             ))}
                           </div>
