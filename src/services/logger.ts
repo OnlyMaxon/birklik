@@ -13,7 +13,11 @@ const isDevelopment = process.env.NODE_ENV === 'development'
  */
 export const debug = (message: string, data?: any): void => {
   if (isDevelopment) {
-    console.debug(`[DEBUG] ${message}`, data)
+    if (data !== undefined) {
+      console.debug(`[DEBUG] ${message}`, data)
+    } else {
+      console.debug(`[DEBUG] ${message}`)
+    }
   }
 }
 
@@ -24,7 +28,11 @@ export const debug = (message: string, data?: any): void => {
  */
 export const info = (message: string, data?: any): void => {
   if (isDevelopment) {
-    console.info(`[INFO] ${message}`, data)
+    if (data !== undefined) {
+      console.info(`[INFO] ${message}`, data)
+    } else {
+      console.info(`[INFO] ${message}`)
+    }
   }
 }
 
@@ -34,7 +42,11 @@ export const info = (message: string, data?: any): void => {
  * @param {any} data - Optional data to log
  */
 export const warn = (message: string, data?: any): void => {
-  console.warn(`[WARN] ${message}`, data)
+  if (data !== undefined) {
+    console.warn(`[WARN] ${message}`, data)
+  } else {
+    console.warn(`[WARN] ${message}`)
+  }
 }
 
 /**
@@ -43,5 +55,9 @@ export const warn = (message: string, data?: any): void => {
  * @param {any} error - Error object or additional data
  */
 export const error = (message: string, error?: any): void => {
-  console.error(`[ERROR] ${message}`, error)
+  if (error !== undefined) {
+    console.error(`[ERROR] ${message}`, error)
+  } else {
+    console.error(`[ERROR] ${message}`)
+  }
 }

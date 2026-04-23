@@ -57,6 +57,15 @@ export const BookingsTab: React.FC = () => {
     actionError: language === 'en' ? 'Failed to complete action' : language === 'ru' ? 'Не удалось выполнить действие' : 'Fəal tamamlana bilmədi'
   }
 
+  // Helper function to check if booking is completed (checkout date passed)
+  const isBookingCompleted = (checkOutDate: string): boolean => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const checkOut = new Date(checkOutDate)
+    checkOut.setHours(0, 0, 0, 0)
+    return checkOut < today
+  }
+
   // Load my bookings (bookings user made as guest)
   const loadMyBookings = React.useCallback(async () => {
     if (!user?.id) return
@@ -70,21 +79,42 @@ export const BookingsTab: React.FC = () => {
         return
       }
 
+      // Filter out rejected, cancelled, and completed bookings
+      const activeBookings = bookings.filter(booking => {
+        // Exclude rejected and cancelled bookings
+        if (booking.status === 'rejected' || booking.status === 'cancelled') {
+          return false
+        }
+        // Exclude completed bookings (checkout date passed)
+        if (isBookingCompleted(booking.checkOutDate)) {
+          return false
+        }
+        return true
+      })
+
+      if (activeBookings.length === 0) {
+        setMyBookings([])
+        return
+      }
+
       // Batch fetch properties - get unique property IDs (Firestore `in` limit is 10)
-      const propertyIds = [...new Set(bookings.map(b => b.propertyId))].slice(0, 10)
+      const propertyIds = [...new Set(activeBookings.map(b => b.propertyId))].slice(0, 10)
       const propsRef = collection(db, 'properties')
       const propsQuery = query(propsRef, where('__name__', 'in', propertyIds))
       const propsSnapshot = await getDocs(propsQuery)
       const propertiesMap = new Map(propsSnapshot.docs.map(d => [d.id, d.data() as Property]))
 
-      // Combine bookings with property details
-      bookings.forEach(booking => {
+      // Combine bookings with property details - only if property exists
+      activeBookings.forEach(booking => {
         const property = propertiesMap.get(booking.propertyId)
-        bookingsWithDetails.push({
-          ...booking,
-          propertyTitle: property?.title?.[language] || 'Property',
-          propertyImage: property?.images?.[0]
-        })
+        // Skip bookings for deleted properties
+        if (property) {
+          bookingsWithDetails.push({
+            ...booking,
+            propertyTitle: property?.title?.[language] || 'Property',
+            propertyImage: property?.images?.[0]
+          })
+        }
       })
 
       setMyBookings(bookingsWithDetails)
@@ -121,15 +151,18 @@ export const BookingsTab: React.FC = () => {
 
         bookingsSnap.docs.forEach(bookingDoc => {
           const booking = bookingDoc.data() as Omit<Booking, 'id'>
-          // Filter out rejected and cancelled bookings
-          if (booking.status !== 'rejected' && booking.status !== 'cancelled') {
+          // Filter out rejected, cancelled, and completed bookings
+          if (booking.status !== 'rejected' && booking.status !== 'cancelled' && !isBookingCompleted(booking.checkOutDate)) {
             const property = propertiesMap.get(booking.propertyId)
-            allBookings.push({
-              id: bookingDoc.id,
-              ...booking,
-              propertyTitle: property?.title?.[language] || 'Property',
-              propertyImage: property?.images?.[0]
-            })
+            // Only add if property exists
+            if (property) {
+              allBookings.push({
+                id: bookingDoc.id,
+                ...booking,
+                propertyTitle: property?.title?.[language] || 'Property',
+                propertyImage: property?.images?.[0]
+              })
+            }
           }
         })
       }
@@ -233,8 +266,10 @@ export const BookingsTab: React.FC = () => {
           rejectionReason: reason
         })
 
-        // Remove from list when rejected
+        // Remove from incoming requests
         setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
+        // Also remove from my bookings if visible there
+        setMyBookings(prev => prev.filter(b => b.id !== booking.id))
         setError('')
       } else {
         setError(t.actionError)
