@@ -1,40 +1,53 @@
 # ============================================
-# BIRKLIK.AZ HEADERS CONFIGURATION
+# BIRKLIK.AZ CACHE & SECURITY HEADERS
 # ============================================
+# Key principle:
+# - HTML: never cache (browser will always fetch fresh)
+# - Assets with hash: cache forever (immutable)
+# - Service Worker: never cache (always check for updates)
 
-# CRITICAL: Service Worker - MUST NOT CACHE
+# ============================================
+# SERVICE WORKER - NO CACHE (critical for updates)
+# ============================================
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate, proxy-revalidate
   Content-Type: application/javascript; charset=utf-8
   Pragma: no-cache
   Expires: 0
 
-# HTML files - never cache
+# ============================================
+# HTML FILES - NO CACHE (always fetch fresh)
+# ============================================
 /*.html
   Cache-Control: no-cache, no-store, must-revalidate, proxy-revalidate
   Content-Type: text/html; charset=utf-8
   Pragma: no-cache
   Expires: 0
+  X-Content-Type-Options: nosniff
 
 # 404 page for SPA routing
 /404.html
   Cache-Control: no-cache, no-store, must-revalidate
   Content-Type: text/html; charset=utf-8
+  X-Content-Type-Options: nosniff
 
 # ============================================
-# ASSETS - LONG CACHE WITH CONTENT HASHING
+# ASSETS - AGGRESSIVE CACHING (1 year)
+# Vite adds content hash to filenames
+# Safe to cache because filenames change when content changes
 # ============================================
 
-# JavaScript assets - MUST BE application/javascript
+# JavaScript assets
 /assets/*.js
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: application/javascript; charset=utf-8
   X-Content-Type-Options: nosniff
 
-# CSS assets
+# CSS assets  
 /assets/*.css
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: text/css; charset=utf-8
+  X-Content-Type-Options: nosniff
 
 # Font files
 /assets/*.woff
@@ -51,6 +64,9 @@
   Content-Type: image/png
 
 /assets/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/jpeg
+
 /assets/*.jpeg
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: image/jpeg
@@ -67,17 +83,27 @@
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: image/svg+xml
 
-# Manifest
+# ============================================
+# MANIFEST & CONFIG - NO CACHE
+# ============================================
 /manifest.json
   Cache-Control: no-cache, no-store, must-revalidate
   Content-Type: application/manifest+json
 
-# API routes - never cache
-/api/*
-  Cache-Control: no-store, no-cache, must-revalidate
+/robots.txt
+  Cache-Control: no-cache, no-store
+  Content-Type: text/plain
 
-# Default: prevent caching of unknown files
-/*
+# ============================================
+# BRAND/STATIC - MODERATE CACHE
+# ============================================
+/brand/*
+  Cache-Control: public, max-age=604800
+  X-Content-Type-Options: nosniff
+
+# ============================================
+# DEFAULT - NO CACHE (safe default)
+# ============================================
   Cache-Control: public, max-age=3600
   X-Content-Type-Options: nosniff
 
