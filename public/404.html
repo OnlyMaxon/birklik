@@ -15,6 +15,11 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- Cloudflare Pages SPA routing via _redirects file -->
+    <!-- 
+      IMPORTANT: Cloudflare Pages SPA Routing
+      This file is served with status 200 (not 404) when users request non-existent routes.
+      The React Router takes over and renders the correct component based on the URL.
+      This is the standard mechanism for SPA routing on static hosts.
+    -->
   </body>
 </html>
