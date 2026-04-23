@@ -66,6 +66,19 @@ export const BookingsTab: React.FC = () => {
     return checkOut < today
   }
 
+  // Helper function to get property title with fallback to other languages
+  const getPropertyTitle = (property: Property | undefined): string => {
+    if (!property?.title) return 'Property'
+    // Try current language first
+    if (property.title[language]) return property.title[language]
+    // Fallback to other languages
+    if (property.title['en']) return property.title['en']
+    if (property.title['ru']) return property.title['ru']
+    if (property.title['az']) return property.title['az']
+    // Last resort
+    return Object.values(property.title)[0] || 'Property'
+  }
+
   // Load my bookings (bookings user made as guest)
   const loadMyBookings = React.useCallback(async () => {
     if (!user?.id) return
@@ -119,7 +132,7 @@ export const BookingsTab: React.FC = () => {
         if (property) {
           bookingsWithDetails.push({
             ...booking,
-            propertyTitle: property?.title?.[language] || 'Property',
+            propertyTitle: getPropertyTitle(property),
             propertyImage: property?.images?.[0]
           })
         }
@@ -167,7 +180,7 @@ export const BookingsTab: React.FC = () => {
               allBookings.push({
                 id: bookingDoc.id,
                 ...booking,
-                propertyTitle: property?.title?.[language] || 'Property',
+                propertyTitle: getPropertyTitle(property),
                 propertyImage: property?.images?.[0]
               })
             }
