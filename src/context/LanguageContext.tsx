@@ -31,7 +31,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     document.documentElement.lang = language
   }, [language])
 
-  const t = translations[language]
+  const t = translations[language] || translations['en'] || {}
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
@@ -43,7 +43,12 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext)
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider')
+    // Fallback: return default translations if context not available
+    return {
+      language: 'az',
+      setLanguage: () => {},
+      t: translations['az'] || translations['en'] || {}
+    }
   }
   return context
 }
