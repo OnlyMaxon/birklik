@@ -12,9 +12,6 @@ import * as logger from '../../services/logger'
 interface BookingWithProperty extends Booking {
   propertyTitle?: string
   propertyImage?: string
-  ownerName?: string
-  ownerPhone?: string
-  ownerEmail?: string
 }
 
 export const BookingsTab: React.FC = () => {
@@ -33,18 +30,13 @@ export const BookingsTab: React.FC = () => {
   const t = {
     myBookings: language === 'en' ? 'My Bookings' : language === 'ru' ? 'Мои Бронирования' : 'Mənim Bölmələrim',
     requests: language === 'en' ? 'Booking Requests' : language === 'ru' ? 'Запросы на Бронирование' : 'Bölmə Sorğuları',
-    property: language === 'en' ? 'Property' : language === 'ru' ? 'Свойство' : 'Əmlak',
     dates: language === 'en' ? 'Dates' : language === 'ru' ? 'Даты' : 'Tarix',
     nights: language === 'en' ? 'nights' : language === 'ru' ? 'ночи' : 'gecə',
-    total: language === 'en' ? 'Total' : language === 'ru' ? 'Итого' : 'Cəmi',
     guest: language === 'en' ? 'Guest' : language === 'ru' ? 'Гость' : 'Qonaq',
-    contact: language === 'en' ? 'Contact' : language === 'ru' ? 'Контакт' : 'Əlaqə',
     phone: language === 'en' ? 'Phone' : language === 'ru' ? 'Телефон' : 'Telefon',
     email: language === 'en' ? 'Email' : language === 'ru' ? 'Email' : 'Email',
     cancel: language === 'en' ? 'Cancel Booking' : language === 'ru' ? 'Отменить' : 'Ləğv Et',
-    confirm: language === 'en' ? 'Confirm Cancel' : language === 'ru' ? 'Подтвердить отмену' : 'Ləğvini Təsdiq Et',
     empty: language === 'en' ? 'No bookings yet' : language === 'ru' ? 'Нет бронирований' : 'Hələ bölmə yoxdur',
-    owner: language === 'en' ? 'Owner' : language === 'ru' ? 'Владелец' : 'Sahibi',
     status: language === 'en' ? 'Status' : language === 'ru' ? 'Статус' : 'Status',
     loading: language === 'en' ? 'Loading bookings...' : language === 'ru' ? 'Загрузка бронирований...' : 'Bölmələr yüklənir...',
     pending: language === 'en' ? 'Waiting' : language === 'ru' ? 'Ожидание' : 'Gözləmə',
@@ -52,8 +44,6 @@ export const BookingsTab: React.FC = () => {
     rejected: language === 'en' ? 'Rejected' : language === 'ru' ? 'Отклонено' : 'Rədd edildi',
     accept: language === 'en' ? 'Accept' : language === 'ru' ? 'Принять' : 'Qəbul Et',
     reject: language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et',
-    acceptSuccess: language === 'en' ? 'Booking approved' : language === 'ru' ? 'Бронирование принято' : 'Bölmə qəbul edildi',
-    rejectSuccess: language === 'en' ? 'Booking rejected' : language === 'ru' ? 'Бронирование отклонено' : 'Bölmə rədd edildi',
     actionError: language === 'en' ? 'Failed to complete action' : language === 'ru' ? 'Не удалось выполнить действие' : 'Fəal tamamlana bilmədi'
   }
 
