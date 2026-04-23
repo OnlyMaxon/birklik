@@ -97,12 +97,20 @@ export const BookingsTab: React.FC = () => {
         return
       }
 
-      // Batch fetch properties - get unique property IDs (Firestore `in` limit is 10)
-      const propertyIds = [...new Set(activeBookings.map(b => b.propertyId))].slice(0, 10)
+      // Get unique property IDs
+      const uniquePropertyIds = [...new Set(activeBookings.map(b => b.propertyId))]
       const propsRef = collection(db, 'properties')
-      const propsQuery = query(propsRef, where('__name__', 'in', propertyIds))
-      const propsSnapshot = await getDocs(propsQuery)
-      const propertiesMap = new Map(propsSnapshot.docs.map(d => [d.id, d.data() as Property]))
+      const propertiesMap = new Map<string, Property>()
+
+      // Batch fetch properties in chunks of 10 (Firestore `in` limit is 10)
+      for (let i = 0; i < uniquePropertyIds.length; i += 10) {
+        const chunk = uniquePropertyIds.slice(i, i + 10)
+        const propsQuery = query(propsRef, where('__name__', 'in', chunk))
+        const propsSnapshot = await getDocs(propsQuery)
+        propsSnapshot.docs.forEach(d => {
+          propertiesMap.set(d.id, d.data() as Property)
+        })
+      }
 
       // Combine bookings with property details - only if property exists
       activeBookings.forEach(booking => {
