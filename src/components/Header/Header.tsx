@@ -98,7 +98,7 @@ export const Header: React.FC = () => {
             <NavLink to="/" end className={getNavClass} onClick={() => setMenuOpen(false)}>
               {t.nav.home}
             </NavLink>
-            <NavLink to="/dashboard/add" className={getNavClass} onClick={() => setMenuOpen(false)}>
+            <NavLink to="/dashboard?tab=add" className={getNavClass} onClick={() => setMenuOpen(false)}>
               {t.nav.addListing}
             </NavLink>
 
