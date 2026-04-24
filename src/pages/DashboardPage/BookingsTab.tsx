@@ -26,6 +26,7 @@ export const BookingsTab: React.FC = () => {
   const [actionInProgress, setActionInProgress] = React.useState<{ type: 'cancel' | 'accept' | 'reject'; bookingId: string } | null>(null)
   const [editingBookingId, setEditingBookingId] = React.useState<string | null>(null)
   const [editingDates, setEditingDates] = React.useState<{ checkIn: string; checkOut: string } | null>(null)
+  const [sortBy, setSortBy] = React.useState<'date-newest' | 'date-oldest' | 'price-high' | 'price-low' | 'name'>('date-newest')
 
   const t = {
     myBookings: language === 'en' ? 'My Bookings' : language === 'ru' ? 'Мои Бронирования' : 'Mənim Bölmələrim',
@@ -44,7 +45,13 @@ export const BookingsTab: React.FC = () => {
     rejected: language === 'en' ? 'Rejected' : language === 'ru' ? 'Отклонено' : 'Rədd edildi',
     accept: language === 'en' ? 'Accept' : language === 'ru' ? 'Принять' : 'Qəbul Et',
     reject: language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et',
-    actionError: language === 'en' ? 'Failed to complete action' : language === 'ru' ? 'Не удалось выполнить действие' : 'Fəal tamamlana bilmədi'
+    actionError: language === 'en' ? 'Failed to complete action' : language === 'ru' ? 'Не удалось выполнить действие' : 'Fəal tamamlana bilmədi',
+    sort: language === 'en' ? 'Sort' : language === 'ru' ? 'Сортировка' : 'Sıralama',
+    sortDateNewest: language === 'en' ? 'Date (newest first)' : language === 'ru' ? 'Дата (новие сначала)' : 'Tarix (yeni əvvəl)',
+    sortDateOldest: language === 'en' ? 'Date (oldest first)' : language === 'ru' ? 'Дата (старые сначала)' : 'Tarix (eski əvvəl)',
+    sortPriceHigh: language === 'en' ? 'Price (high to low)' : language === 'ru' ? 'Цена (выше)' : 'Qiymət (yüksəkdən aşağıya)',
+    sortPriceLow: language === 'en' ? 'Price (low to high)' : language === 'ru' ? 'Цена (ниже)' : 'Qiymət (aşağıdan yüksəyə)',
+    sortName: language === 'en' ? 'Name (A-Z)' : language === 'ru' ? 'Название (А-Я)' : 'Ad (A-Z)'
   }
 
   // Helper function to check if booking is completed (checkout date passed)
@@ -67,6 +74,25 @@ export const BookingsTab: React.FC = () => {
     if (property.title['az']) return property.title['az']
     // Last resort
     return Object.values(property.title)[0] || 'Property'
+  }
+
+  // Helper function to sort bookings
+  const sortBookings = (bookings: BookingWithProperty[]): BookingWithProperty[] => {
+    const sorted = [...bookings]
+    switch (sortBy) {
+      case 'date-newest':
+        return sorted.sort((a, b) => new Date(b.checkInDate).getTime() - new Date(a.checkInDate).getTime())
+      case 'date-oldest':
+        return sorted.sort((a, b) => new Date(a.checkInDate).getTime() - new Date(b.checkInDate).getTime())
+      case 'price-high':
+        return sorted.sort((a, b) => (b.totalPrice || 0) - (a.totalPrice || 0))
+      case 'price-low':
+        return sorted.sort((a, b) => (a.totalPrice || 0) - (b.totalPrice || 0))
+      case 'name':
+        return sorted.sort((a, b) => (a.propertyTitle || '').localeCompare(b.propertyTitle || ''))
+      default:
+        return sorted
+    }
   }
 
   // Load my bookings (bookings user made as guest)
@@ -416,6 +442,28 @@ export const BookingsTab: React.FC = () => {
         >
           {t.requests}
         </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: '500', color: '#666' }}>{t.sort}:</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            style={{
+              padding: '0.5rem 0.8rem',
+              borderRadius: '4px',
+              border: '1px solid #ddd',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              color: '#333'
+            }}
+          >
+            <option value="date-newest">{t.sortDateNewest}</option>
+            <option value="date-oldest">{t.sortDateOldest}</option>
+            <option value="price-high">{t.sortPriceHigh}</option>
+            <option value="price-low">{t.sortPriceLow}</option>
+            <option value="name">{t.sortName}</option>
+          </select>
+        </div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -425,7 +473,7 @@ export const BookingsTab: React.FC = () => {
           {myBookings.length === 0 ? (
             <div className="empty-state">{t.empty}</div>
           ) : (
-            myBookings.map(booking => (
+            sortBookings(myBookings).map(booking => (
               <div 
                 key={booking.id} 
                 className="booking-card"
@@ -481,7 +529,7 @@ export const BookingsTab: React.FC = () => {
           {incomingRequests.length === 0 ? (
             <div className="empty-state">{t.empty}</div>
           ) : (
-            incomingRequests.map(booking => (
+            sortBookings(incomingRequests).map(booking => (
               <div 
                 key={booking.id} 
                 className="booking-request-card"
