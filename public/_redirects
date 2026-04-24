@@ -1,19 +1,12 @@
-# ============================================
-# STATIC ASSETS - MUST COME FIRST
-# ============================================
+# STATIC ASSETS
 /assets/* /assets/:splat 200
 /brand/* /brand/:splat 200
 
-# ============================================
-# SYSTEM FILES - SERVE DIRECTLY
-# ============================================
+# SYSTEM FILES  
 /sw.js /sw.js 200
 /favicon.ico /favicon.ico 200
 
-# ============================================
-# SPA ROUTING - CATH ALL OTHER PATHS
-# For Cloudflare Pages: this rewrites non-existent
-# routes to index.html so React Router can handle them
-# MUST BE LAST RULE
-# ============================================
+# SPA CATCH-ALL (MUST BE LAST)
+# Rewrite all non-existent routes to index.html with 200 status
+# This allows React Router to handle the navigation
 /* /index.html 200
