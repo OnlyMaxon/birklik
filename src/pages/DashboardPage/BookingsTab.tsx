@@ -29,8 +29,8 @@ export const BookingsTab: React.FC = () => {
   const [sortBy, setSortBy] = React.useState<'date-newest' | 'date-oldest' | 'price-high' | 'price-low' | 'name'>('date-newest')
 
   const t = {
-    myBookings: language === 'en' ? 'My Bookings' : language === 'ru' ? 'Мои Бронирования' : 'Mənim Bölmələrim',
-    requests: language === 'en' ? 'Booking Requests' : language === 'ru' ? 'Запросы на Бронирование' : 'Bölmə Sorğuları',
+    myBookings: language === 'en' ? 'My Bookings' : language === 'ru' ? 'Мои Бронирования' : 'Mənim bronlarım',
+    requests: language === 'en' ? 'Booking Requests' : language === 'ru' ? 'Запросы на Бронирование' : 'Gələn sorğular',
     dates: language === 'en' ? 'Dates' : language === 'ru' ? 'Даты' : 'Tarix',
     nights: language === 'en' ? 'nights' : language === 'ru' ? 'ночи' : 'gecə',
     guest: language === 'en' ? 'Guest' : language === 'ru' ? 'Гость' : 'Qonaq',

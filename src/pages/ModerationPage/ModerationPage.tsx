@@ -206,7 +206,7 @@ export const ModerationPage: React.FC = () => {
               className={`tab-btn ${activeTab === 'comments' ? 'active' : ''}`}
               onClick={() => setActiveTab('comments')}
             >
-              {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Шер'} ({allComments.length})
+              {language === 'en' ? 'Comments' : language === 'ru' ? 'Комментарии' : 'Şərhlər'} ({allComments.length})
             </button>
             <button
               className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
