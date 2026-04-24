@@ -175,8 +175,21 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
   }
 
   const calendarCells = buildCalendarCells(displayMonth)
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-  const dayNames = language === 'en' ? ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] : language === 'ru' ? ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] : ['B', 'Ç', 'Ş', 'P', 'C', 'Ş', 'B']
+  const monthNames = [
+    t.calendar.months.jan,
+    t.calendar.months.feb,
+    t.calendar.months.mar,
+    t.calendar.months.apr,
+    t.calendar.months.may,
+    t.calendar.months.jun,
+    t.calendar.months.jul,
+    t.calendar.months.aug,
+    t.calendar.months.sep,
+    t.calendar.months.oct,
+    t.calendar.months.nov,
+    t.calendar.months.dec
+  ]
+  const dayNames = [t.calendar.days.mon, t.calendar.days.tue, t.calendar.days.wed, t.calendar.days.thu, t.calendar.days.fri, t.calendar.days.sat, t.calendar.days.sun]
 
   const isCellDisabled = (dateISO?: string) => {
     if (!dateISO) return false
