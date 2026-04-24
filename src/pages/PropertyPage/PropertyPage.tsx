@@ -558,10 +558,16 @@ export const PropertyPage: React.FC = () => {
     ? (language === 'en' ? `Available again from ${formatDate(property.unavailableTo)}.` : language === 'ru' ? `Снова будет доступно с ${formatDate(property.unavailableTo)}.` : `${formatDate(property.unavailableTo)} tarixindən sonra yenidən boş olacaq.`)
     : ''
 
-  const monthLabel = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ', {
-    month: 'long',
-    year: 'numeric'
-  }).format(displayMonth)
+  // Generate month label using translated month names from i18n
+  const getMonthLabel = (date: Date) => {
+    const monthIndex = date.getMonth()
+    const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
+    const monthName = t.calendar.months[monthKeys[monthIndex]]
+    const year = date.getFullYear()
+    return `${monthName} ${year}`
+  }
+
+  const monthLabel = getMonthLabel(displayMonth)
   
   const handlePrevMonth = () => {
     setDisplayMonth(prev => {
