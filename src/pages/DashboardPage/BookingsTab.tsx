@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLanguage, useAuth } from '../../context'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Booking, Property } from '../../types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../../config/firebase'
@@ -18,7 +18,9 @@ export const BookingsTab: React.FC = () => {
   const { language } = useLanguage()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [activeSubTab, setActiveSubTab] = React.useState<'my-bookings' | 'requests'>('my-bookings')
+  const [searchParams] = useSearchParams()
+  const subtabParam = searchParams.get('subtab') as 'my-bookings' | 'requests' | null
+  const [activeSubTab, setActiveSubTab] = React.useState<'my-bookings' | 'requests'>(subtabParam || 'my-bookings')
   const [myBookings, setMyBookings] = React.useState<BookingWithProperty[]>([])
   const [incomingRequests, setIncomingRequests] = React.useState<BookingWithProperty[]>([])
   const [isLoading, setIsLoading] = React.useState(true)

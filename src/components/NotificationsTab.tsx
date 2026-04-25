@@ -100,14 +100,14 @@ export const NotificationsTab = React.memo(() => {
         break
 
       case 'cancellationRequest':
-        // Перейти на вкладку бронирований в Dashboard
-        navigate('/dashboard?tab=bookings')
+        // Перейти на вкладку бронирований в Dashboard на подвкладку запросов
+        navigate('/dashboard?tab=bookings&subtab=requests')
         break
 
       case 'cancellationApproved':
       case 'cancellationRejected':
-        // Перейти на вкладку бронирований в Dashboard
-        navigate('/dashboard?tab=bookings')
+        // Перейти на вкладку бронирований в Dashboard на подвкладку запросов
+        navigate('/dashboard?tab=bookings&subtab=requests')
         break
 
       case 'commentReport':
