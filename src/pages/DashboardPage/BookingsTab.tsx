@@ -233,7 +233,10 @@ export const BookingsTab: React.FC = () => {
       setActionInProgress({ type: 'cancel', bookingId })
       const result = await cancelBooking(bookingId)
       if (result.success) {
-        setMyBookings(prev => prev.filter(b => b.id !== bookingId))
+        // Update booking status to cancellation_requested instead of removing it
+        setMyBookings(prev => prev.map(b => 
+          b.id === bookingId ? { ...b, status: 'cancellation_requested' } : b
+        ))
         setError('')
       } else {
         setError(t.actionError)
@@ -408,6 +411,9 @@ export const BookingsTab: React.FC = () => {
     } else if (booking.status === 'cancelled') {
       statusText = language === 'en' ? 'Cancelled' : language === 'ru' ? 'Отменено' : 'Ləğv edildi'
       statusColor = '#999'
+    } else if (booking.status === 'cancellation_requested') {
+      statusText = language === 'en' ? 'Cancellation Requested' : language === 'ru' ? 'Отправлено' : 'Ləğv edilmə istənib'
+      statusColor = '#ff6f00'
     }
 
     return (
@@ -519,6 +525,19 @@ export const BookingsTab: React.FC = () => {
                       language === 'en' ? 'Canceling...' : language === 'ru' ? 'Отмена...' : 'Ləğv edilir...'
                     ) : t.cancel}
                   </button>
+                )}
+                
+                {booking.status === 'cancellation_requested' && (
+                  <div style={{ 
+                    padding: '0.4rem 0.8rem', 
+                    borderRadius: '4px', 
+                    backgroundColor: '#fff3cd', 
+                    color: '#856404',
+                    fontSize: '0.85rem',
+                    fontWeight: '500'
+                  }}>
+                    {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
+                  </div>
                 )}
               </div>
             ))
