@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '../context'
 import { useAuth } from '../context'
 import { Notification } from '../types'
-import { getUserNotifications, markNotificationAsRead, deleteNotification } from '../services/notificationsService'
+import { getUserNotifications, deleteNotification } from '../services/notificationsService'
 import { Loading } from './Loading'
 import './TabsStyle.css'
 import * as logger from '../services/logger'
@@ -35,10 +35,9 @@ export const NotificationsTab = React.memo(() => {
 
   const handleMarkAsRead = async (notificationId: string) => {
     if (!user?.id) return
-    await markNotificationAsRead(user.id, notificationId)
-    setNotifications(prev =>
-      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
-    )
+    // Delete notification instead of marking as read - auto-cleanup after viewing
+    await deleteNotification(user.id, notificationId)
+    setNotifications(prev => prev.filter(n => n.id !== notificationId))
   }
 
   const handleMarkAllAsRead = async () => {
@@ -46,15 +45,13 @@ export const NotificationsTab = React.memo(() => {
     
     const unreadNotifications = notifications.filter(n => !n.read)
     
-    // Mark all unread notifications as read
+    // Delete all unread notifications - auto-cleanup
     for (const notification of unreadNotifications) {
-      await markNotificationAsRead(user.id, notification.id)
+      await deleteNotification(user.id, notification.id)
     }
     
-    // Update state
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, read: true }))
-    )
+    // Update state - remove deleted notifications
+    setNotifications(prev => prev.filter(n => n.read))
   }
 
   const handleDelete = async (notificationId: string) => {
@@ -64,12 +61,10 @@ export const NotificationsTab = React.memo(() => {
   }
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Пометить как прочитанное при клике
-    if (!notification.read && user?.id) {
-      await markNotificationAsRead(user.id, notification.id)
-      setNotifications(prev =>
-        prev.map(n => (n.id === notification.id ? { ...n, read: true } : n))
-      )
+    // Delete notification when clicked (auto-cleanup after viewing/interacting)
+    if (user?.id) {
+      await deleteNotification(user.id, notification.id)
+      setNotifications(prev => prev.filter(n => n.id !== notification.id))
     }
 
     // Редирект в зависимости от типа уведомления

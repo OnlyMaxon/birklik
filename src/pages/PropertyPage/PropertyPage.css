@@ -674,15 +674,19 @@
 
 .star-btn:hover:not(:disabled) {
   transform: scale(1.2);
-  color: #f0ad4e;
+  color: #FFD700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
 .star-btn.active {
-  color: #d6b17d;
+  color: #FFD700;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
 }
 
 .star-btn.filled {
-  color: #d6b17d;
+  color: #FFD700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  font-weight: bold;
 }
 
 .star-btn:disabled {

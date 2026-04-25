@@ -86,6 +86,13 @@ export const Header: React.FC = () => {
     return `nav-link${isNotificationsTab ? ' active' : ''} notification-link`
   }
 
+  const getAddListingClass = () => {
+    // Only active if we're on /dashboard?tab=add
+    const location = window.location.search
+    const isAddTab = location.includes('tab=add')
+    return `nav-link${isAddTab ? ' active' : ''}`
+  }
+
   return (
     <header className="header">
       <div className="header-content">
@@ -98,9 +105,9 @@ export const Header: React.FC = () => {
             <NavLink to="/" end className={getNavClass} onClick={() => setMenuOpen(false)}>
               {t.nav.home}
             </NavLink>
-            <NavLink to="/dashboard?tab=add" className={getNavClass} onClick={() => setMenuOpen(false)}>
+            <Link to="/dashboard?tab=add" className={getAddListingClass()} onClick={() => setMenuOpen(false)}>
               {t.nav.addListing}
-            </NavLink>
+            </Link>
 
             {isAuthenticated ? (
               <>
