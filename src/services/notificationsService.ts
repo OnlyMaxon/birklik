@@ -44,6 +44,23 @@ export const getUnreadNotificationsCount = async (userId: string): Promise<numbe
 }
 
 /**
+ * Get moderation notifications count (commentReport type)
+ * @param {string} userId - User Firestore ID (moderator)
+ * @returns {Promise<number>} Count of moderation notifications
+ */
+export const getModerationNotificationsCount = async (userId: string): Promise<number> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, userId, NOTIFICATIONS_SUBCOLLECTION)
+    const q = query(notificationsRef, where('type', '==', 'commentReport'))
+    const snapshot = await getDocs(q)
+    return snapshot.size
+  } catch (error) {
+    logger.error('Error getting moderation count:', error)
+    return 0
+  }
+}
+
+/**
  * Create booking notification for property owner
  * @param {string} ownerId - Property owner's user ID
  * @param {BookingNotification} notificationData - Booking notification details

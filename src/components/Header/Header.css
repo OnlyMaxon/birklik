@@ -101,6 +101,17 @@
   justify-content: center;
 }
 
+.moderation-link-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.moderation-link-wrapper .nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (min-width: 1025px) {
   .nav-user-section {
     flex-direction: row;

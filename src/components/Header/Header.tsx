@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { isModerator } from '../../config/constants'
-import { getUnreadNotificationsCount } from '../../services/notificationsService'
+import { getUnreadNotificationsCount, getModerationNotificationsCount } from '../../services/notificationsService'
 import './Header.css'
 import * as logger from '../../services/logger'
 
@@ -14,6 +14,7 @@ export const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = React.useState(false)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0)
+  const [moderationNotificationCount, setModerationNotificationCount] = React.useState(0)
 
   React.useEffect(() => {
     const checkModerator = async () => {
@@ -47,6 +48,29 @@ export const Header: React.FC = () => {
       if (interval) clearInterval(interval)
     }
   }, [isAuthenticated, user?.id])
+
+  React.useEffect(() => {
+    const loadModerationCount = async () => {
+      if (!isModeratorUser || !user?.id) {
+        setModerationNotificationCount(0)
+        return
+      }
+
+      try {
+        const count = await getModerationNotificationsCount(user.id)
+        setModerationNotificationCount(count)
+      } catch (error) {
+        logger.error('Error loading moderation notifications count:', error)
+      }
+    }
+
+    loadModerationCount()
+    // Reload count every 30 seconds for moderators
+    const interval = isModeratorUser ? setInterval(loadModerationCount, 30000) : undefined
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isModeratorUser, user?.id])
 
   React.useEffect(() => {
     if (!menuOpen) {
@@ -115,9 +139,14 @@ export const Header: React.FC = () => {
                   {t.nav.dashboard}
                 </NavLink>
                 {isModeratorUser && (
-                  <NavLink to="/dashboard/review" className={getNavClass} onClick={() => setMenuOpen(false)}>
-                    {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
-                  </NavLink>
+                  <div className="moderation-link-wrapper">
+                    <NavLink to="/dashboard/review" className={getNavClass} onClick={() => setMenuOpen(false)}>
+                      {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
+                    </NavLink>
+                    {moderationNotificationCount > 0 && (
+                      <span className="notification-badge">{moderationNotificationCount}</span>
+                    )}
+                  </div>
                 )}
                 
                 <div className="nav-user-section">
