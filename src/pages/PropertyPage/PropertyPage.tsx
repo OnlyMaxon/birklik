@@ -724,10 +724,10 @@ export const PropertyPage: React.FC = () => {
                       className="btn btn-sm btn-primary"
                       title={language === 'en' ? 'Move up in search results' : language === 'ru' ? 'Переместить вверх в результатах поиска' : 'Axtarış nəticələrində yuxarıya keç'}
                     >
-                      ⬆️ {language === 'en' ? 'Move Up' : language === 'ru' ? 'Вперед' : 'Qalx'}
+                      ⬆️ {language === 'en' ? 'Move Up' : language === 'ru' ? 'Вперед' : 'İreli Çək'}
                     </button>
                     
-                    {property.listingTier !== 'vip' && (
+                    {property.listingTier !== 'vip' && property.listingTier !== 'premium' && (
                       <button
                         onClick={handleUpgradeToVIP}
                         className="btn btn-sm"
