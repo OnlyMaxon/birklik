@@ -319,6 +319,14 @@ export interface Translations {
     premiumDesc: string
     vipDesc: string
     perMonth: string
+    plans: string
+    selectDuration: string
+    days14: string
+    days30: string
+    vipFeatures: string
+    vipDisplays: string
+    premiumFeatures: string
+    premiumDisplays: string
   }
   validation: {
     emailInvalid: string
@@ -426,6 +434,8 @@ export interface Translations {
     copy: string
     yes: string
     no: string
+    show: string
+    hide: string
   }
   common: {
     night: string
@@ -596,6 +606,7 @@ export interface Translations {
     privacy: {
       title: string
       sections: Array<{
+        number: string
         title: string
         content: string
         isList?: boolean

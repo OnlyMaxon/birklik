@@ -136,10 +136,10 @@ export const CityLocationPicker = React.memo<CityLocationPickerProps>(({
           <div className="dashboard-section-head">
             <label>
               {language === 'en'
-                ? 'City locations'
+                ? 'City locations (optional)'
                 : language === 'ru'
-                  ? 'Локации по городу'
-                  : 'Şəhərdaxili lokasiya seçimi'}{' '}
+                  ? 'Локации по городу (опционально)'
+                  : 'Şəhərdaxili lokasiya seçimi (ixtiyari)'}{' '}
               <span className="dashboard-count-pill">{locationTags.length}</span>
             </label>
             {locationTags.length > 0 && (
@@ -189,6 +189,13 @@ export const CityLocationPicker = React.memo<CityLocationPickerProps>(({
             onChange={(e) => setLocationSearch(e.target.value)}
             style={{ marginBottom: '12px' }}
           />
+          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '12px' }}>
+            {language === 'en'
+              ? '💡 Selecting a location helps with search results, but it\'s optional'
+              : language === 'ru'
+                ? '💡 Выбор локации помогает в поиске, но это опционально'
+                : '💡 Lokasiya seçimi axtarışda kömək edir, lakin ixtiyaridir'}
+          </p>
 
           {/* Location Options */}
           <div className="city-option-list">

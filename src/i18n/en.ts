@@ -318,7 +318,15 @@ export const en: Translations = {
     standardDesc: "For small business",
     premiumDesc: "Professional service",
     vipDesc: "Premium with top visibility",
-    perMonth: "/month"
+    perMonth: "/month",
+    plans: "pricing plans",
+    selectDuration: "Select duration",
+    days14: "14 days",
+    days30: "30 days",
+    vipFeatures: "✓ VIP badge on listing, priority moderation",
+    premiumFeatures: "✓ Premium badge, top placement, unlimited photos",
+    vipDisplays: "Top 3 week visibility",
+    premiumDisplays: "Professional tier with all features"
   },
   validation: {
     emailInvalid: "Enter a valid email address",
@@ -425,7 +433,9 @@ export const en: Translations = {
     moveDown: "Move down",
     copy: "Copy link",
     yes: "Yes",
-    no: "No"
+    no: "No",
+    show: "Show",
+    hide: "Hide"
   },
   common: {
     night: "night",
@@ -609,11 +619,83 @@ export const en: Translations = {
     terms: {
       title: "Terms and Conditions",
       lastUpdated: "Last Updated: 30.03.2026",
-      sections: []
+      sections: [
+        {
+          number: "1",
+          title: "General Information",
+          content: "Birklik.az is a platform that allows users to list, search, and book short-term rental properties. These Terms and Conditions govern your use of our website and services. By accessing and using Birklik.az, you agree to be bound by these terms."
+        },
+        {
+          number: "2",
+          title: "User Responsibilities",
+          content: "Users are responsible for maintaining the confidentiality of their account credentials and for all activities that occur under their account. You agree to provide accurate and complete information when creating listings or making bookings. Any misuse of the platform may result in suspension or termination of your account."
+        },
+        {
+          number: "3",
+          title: "Property Listings",
+          content: "Property owners and managers must ensure that all information provided is accurate, current, and complies with local regulations. All listings must comply with applicable laws and regulations. Birklik.az reserves the right to remove any listing that violates these terms or local laws."
+        },
+        {
+          number: "4",
+          title: "Booking and Cancellation",
+          content: "Guests and hosts can modify or cancel bookings according to the cancellation policy specified in each listing. Cancellation policies vary by property. Users are responsible for understanding the cancellation terms before confirming a booking. Disputes regarding bookings will be handled according to Birklik.az policies."
+        },
+        {
+          number: "5",
+          title: "Payment and Fees",
+          content: "All payments are processed securely through our payment system. Birklik.az may charge service fees for using the platform. Hosts are responsible for paying any applicable taxes on their rental income. Users acknowledge that prices displayed may not include taxes and additional fees."
+        },
+        {
+          number: "6",
+          title: "Limitation of Liability",
+          content: "Birklik.az is provided on an 'as-is' basis. We do not warrant that the platform will be uninterrupted or error-free. To the maximum extent permitted by law, Birklik.az is not liable for any indirect, incidental, or consequential damages arising from your use of the platform."
+        },
+        {
+          number: "7",
+          title: "Changes to Terms",
+          content: "Birklik.az reserves the right to modify these terms at any time. Changes will be effective immediately upon posting to the website. Your continued use of the platform following the posting of revised terms means that you accept and agree to the changes."
+        }
+      ]
     },
     privacy: {
       title: "Privacy Policy",
-      sections: []
+      sections: [
+        {
+          number: "1",
+          title: "Information We Collect",
+          content: "We collect information you provide directly to us, such as when you create an account, list a property, or make a booking. This includes your name, email address, phone number, payment information, and property details. We also automatically collect certain information about your device and how you interact with our website."
+        },
+        {
+          number: "2",
+          title: "How We Use Your Information",
+          content: "We use your information to provide and improve our services, process transactions, send communications, prevent fraud, and comply with legal obligations. Your information helps us personalize your experience and send you relevant updates about properties and bookings."
+        },
+        {
+          number: "3",
+          title: "Information Sharing",
+          content: "We do not sell or share your personal information with third parties for marketing purposes. We may share your information with service providers who assist us in operating our website and conducting our business. We may also disclose information when required by law or to protect our rights."
+        },
+        {
+          number: "4",
+          title: "Data Security",
+          content: "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no security system is impenetrable, and we cannot guarantee absolute security of your data."
+        },
+        {
+          number: "5",
+          title: "Your Rights",
+          content: "You have the right to access, correct, or delete your personal information. You can manage your privacy preferences through your account settings. To exercise these rights or inquire about your data, please contact our support team."
+        },
+        {
+          number: "6",
+          title: "Cookies and Tracking",
+          content: "We use cookies and similar technologies to enhance your experience on our platform. These help us remember your preferences and understand how users interact with our website. You can control cookie settings through your browser preferences."
+        },
+        {
+          number: "7",
+          title: "Contact Us",
+          content: "If you have any questions about our privacy practices or wish to exercise your privacy rights, please contact us at support@birklik.az or through the contact form on our website. We are committed to addressing your privacy concerns promptly."
+        }
+      ]
     }
   },
   listing: {

@@ -57,15 +57,6 @@ const isPremiumActive = (property: Property): boolean => {
   return property.premiumExpiresAt >= today
 }
 
-const getPremiumRemainingDays = (property: Property): number => {
-  if (!property.premiumExpiresAt) return 0
-  const today = new Date(getTodayISO())
-  const expiryDate = new Date(property.premiumExpiresAt)
-  const timeDiff = expiryDate.getTime() - today.getTime()
-  const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24))
-  return Math.max(0, daysDiff)
-}
-
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
@@ -101,9 +92,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileMessage, setProfileMessage] = React.useState('')
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
-  const [renewalPropertyId, setRenewalPropertyId] = React.useState<string | null>(null)
-  const [showRenewalModal, setShowRenewalModal] = React.useState(false)
-  const [selectedRenewalDays, setSelectedRenewalDays] = React.useState<14 | 30>(30)
+  const [expandedPricingPlan, setExpandedPricingPlan] = React.useState<ListingTier | null>(null)
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -126,54 +115,37 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const listingPlans = [
     {
       id: 'standard' as ListingTier,
-      title: language === 'en' ? 'Standard' : language === 'ru' ? 'Стандарт' : 'Standart',
+      title: t.pricing.standard,
       isFree: true,
-      period: language === 'en' ? 'Forever' : language === 'ru' ? 'Навсегда' : 'Həmişə',
-      description: language === 'en' ? 'Basic listing' : language === 'ru' ? 'Базовое объявление' : 'Əsas elan',
-      features: [
-        language === 'en' ? 'Up to 20 photos' : language === 'ru' ? 'До 20 фото' : 'Maksimum 20 şəkil',
-        language === 'en' ? 'Full description' : language === 'ru' ? 'Полное описание' : 'Tam təsvir',
-        language === 'en' ? 'Open location' : language === 'ru' ? 'Открытая локация' : 'Açıq lokasiya'
-      ],
-      placement: language === 'en' ? 'Standard search results' : language === 'ru' ? 'Стандартные результаты поиска' : 'Standart axtarış nəticələri',
-      badge: language === 'en' ? 'Free' : language === 'ru' ? 'Бесплатно' : 'Pulsuz'
+      price: t.pricing.free,
+      features: [t.pricing_info.standard_features],
+      emphasis: t.pricing.standardDesc,
+      ribbon: '🎁 ' + t.pricing.free // Ribbon for Free
     },
     {
       id: 'vip' as ListingTier,
-      title: language === 'en' ? 'VIP' : language === 'ru' ? 'VIP' : 'VIP',
+      title: t.pricing.vip,
       isFree: false,
-      description: language === 'en' ? 'Premium visibility' : language === 'ru' ? 'Премиум видимость' : 'Premium görünürlük',
-      features: [
-        language === 'en' ? 'Up to 20 photos' : language === 'ru' ? 'До 20 фото' : 'Maksimum 20 şəkil',
-        language === 'en' ? 'Full description' : language === 'ru' ? 'Полное описание' : 'Tam təsvir',
-        language === 'en' ? 'Open location' : language === 'ru' ? 'Открытая локация' : 'Açıq lokasiya'
+      features: [t.pricing_info.vip_features, t.pricing.vipFeatures, t.pricing.vipDisplays],
+      emphasis: t.pricing.vipDesc,
+      pricingOptions: [
+        { duration: '14days', label: t.pricing.days14, price: '20 AZN' },
+        { duration: '30days', label: t.pricing.days30, price: '30 AZN' }
       ],
-      placement: language === 'en' ? 'VIP block + first pages in region search (random order)' : language === 'ru' ? 'Блок VIP + первые страницы поиска по региону (случайный порядок)' : 'VIP blok + regionda axtarışın ilk səhifələri (təsadüfi sırada)',
-      pricing: {
-        '14': 20,
-        '30': 30
-      },
-      durations: ['14', '30'],
-      periodLabel: language === 'en' ? 'days' : language === 'ru' ? 'дней' : 'gün'
+      showPricingDropdown: true
     },
     {
       id: 'premium' as ListingTier,
-      title: language === 'en' ? 'Premium' : language === 'ru' ? 'Premium' : 'Premium',
+      title: t.pricing.premium,
       isFree: false,
-      description: language === 'en' ? 'Maximum visibility' : language === 'ru' ? 'Максимальная видимость' : 'Maksimum görünürlük',
-      features: [
-        language === 'en' ? 'More than 20 photos' : language === 'ru' ? 'Более 20 фото' : '20-dən çox şəkil',
-        language === 'en' ? 'Full description' : language === 'ru' ? 'Полное описание' : 'Tam təsvir',
-        language === 'en' ? 'Open location' : language === 'ru' ? 'Открытая локация' : 'Açıq lokasiya'
+      features: [t.pricing_info.premium_features, t.pricing.premiumFeatures, t.pricing.premiumDisplays],
+      emphasis: t.pricing.premiumDesc,
+      pricingOptions: [
+        { duration: '14days', label: t.pricing.days14, price: '30 AZN' },
+        { duration: '30days', label: t.pricing.days30, price: '55 AZN' }
       ],
-      placement: language === 'en' ? 'Home page «Recommendations» + top of region search' : language === 'ru' ? 'Главная страница «Рекомендации» + топ поиска по региону' : 'Əsas səhifə «Tövsiyyələr» + regionda axtarışın yuxarısı',
-      pricing: {
-        '14': 30,
-        '30': 55
-      },
-      durations: ['14', '30'],
-      periodLabel: language === 'en' ? 'days' : language === 'ru' ? 'дней' : 'gün',
-      highlighted: true
+      showPricingDropdown: true,
+      highlighted: true // Premium is highlighted
     }
   ]
 
@@ -244,6 +216,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     title: '',
     description: '',
     listingTier: 'standard' as ListingTier,
+    tierPlanDuration: '30days' as '14days' | '30days', // VIP/Premium duration
     type: '' as PropertyType | '',
     district: '' as District | '',
     address: '',
@@ -283,6 +256,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       title: '',
       description: '',
       listingTier: 'standard',
+      tierPlanDuration: '30days',
       type: '',
       district: '',
       address: '',
@@ -305,6 +279,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setListingCoordinates(DEFAULT_COORDINATES)
     setLocationSearch('')
     setLocationSearchError('')
+    setExpandedPricingPlan(null)
   }, [user])
 
   const handleDeletePhoto = React.useCallback((index: number) => {
@@ -430,13 +405,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    // Validate location/district selection
-    if (!newListing.locationTags || newListing.locationTags.length === 0) {
-      if (newListing.city === 'Baku') {
-        setError(t.listing.selectDistrictMetro)
-      } else {
-        setError(t.listing.selectDistrict)
-      }
+    // Validate city selection (required)
+    if (!newListing.city) {
+      setError(t.listing.selectCity)
       setIsSubmitting(false)
       return
     }
@@ -744,8 +715,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     await loadListings()
   }
 
-  const handleExtendPremium = async (propertyId: string, days: number = 30) => {
-    const newExpiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const handleExtendPremium = async (propertyId: string) => {
+    const newExpiryDate = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     try {
       const property = listings.find((p: Property) => p.id === propertyId)
       if (!property) return
@@ -779,23 +750,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       }
       
       await loadListings()
-      setShowRenewalModal(false)
       alert(t.errors.premiumExtendedSuccess)
     } catch (error) {
       logger.error('Error extending premium:', error)
       alert(t.dashboard.failedToExtendPremium)
-    }
-  }
-
-  const handleOpenRenewalModal = (propertyId: string) => {
-    setRenewalPropertyId(propertyId)
-    setShowRenewalModal(true)
-    setSelectedRenewalDays(30)
-  }
-
-  const handleConfirmRenewal = async () => {
-    if (renewalPropertyId) {
-      await handleExtendPremium(renewalPropertyId, selectedRenewalDays)
     }
   }
 
@@ -869,7 +827,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setNewListing({
       title: property.title.az || property.title.en,
       description: property.description.az || property.description.en,
-      listingTier: property.listingTier || 'free',
+      listingTier: property.listingTier || 'standard',
+      tierPlanDuration: property.tierPlanDuration || '30days',
       type: property.type,
       district: property.district,
       address: property.address.az || property.address.en,
@@ -1275,17 +1234,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 </p>
                               )}
                               {property.listingTier === 'premium' && isPremiumActive(property) && (
-                                <div style={{ fontSize: '0.82rem', color: '#ffa500', marginTop: '0.12rem', backgroundColor: '#fff8e1', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ffd54f' }}>
-                                  <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
-                                    <span>⭐ Premium</span>
-                                    <span style={{ fontSize: '0.75rem', backgroundColor: '#ffa500', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '12px', fontWeight: 'bold' }}>
-                                      {getPremiumRemainingDays(property)} {isEnglish ? 'days' : isRussian ? 'дней' : 'gün'}
-                                    </span>
-                                  </div>
-                                  <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.75rem' }}>
-                                    {isEnglish ? `Active until ${property.premiumExpiresAt}` : isRussian ? `Активно до ${property.premiumExpiresAt}` : `${property.premiumExpiresAt} tarixinə qədər aktiv`}
-                                  </p>
-                                </div>
+                                <p style={{ fontSize: '0.82rem', color: '#ffa500', marginTop: '0.12rem' }}>
+                                  ⭐ {isEnglish ? `Premium active until ${property.premiumExpiresAt}` : isRussian ? `Премиум активен до ${property.premiumExpiresAt}` : `Premium ${property.premiumExpiresAt} tarixinə qədər aktiv`}
+                                </p>
                               )}
                               {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (
                                 <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
@@ -1305,13 +1256,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   </button>
                                 )}
                                 {property.listingTier === 'premium' && isPremiumExpired(property) && (
-                                  <button className="btn btn-sm" style={{ backgroundColor: '#ffa500', color: 'white', border: 'none' }} onClick={() => handleOpenRenewalModal(property.id)}>
+                                  <button className="btn btn-sm" style={{ backgroundColor: '#ffa500', color: 'white', border: 'none' }} onClick={() => handleExtendPremium(property.id)}>
                                     ⭐ {isEnglish ? 'Extend' : isRussian ? 'Продлить' : 'Uzat'}
-                                  </button>
-                                )}
-                                {property.listingTier === 'premium' && isPremiumActive(property) && (
-                                  <button className="btn btn-sm" style={{ backgroundColor: '#1976d2', color: 'white', border: 'none' }} onClick={() => handleOpenRenewalModal(property.id)}>
-                                    🔄 {isEnglish ? 'Renew' : isRussian ? 'Продлить' : 'Yenilə'}
                                   </button>
                                 )}
                                 <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>
@@ -1390,130 +1336,190 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       </div>
 
                       <div className="listing-plans-grid">
-                        {listingPlans.map((plan: any) => (
-                          <button
-                            type="button"
+                        {listingPlans.map((plan) => (
+                          <div
                             key={plan.id}
-                            className={`listing-plan-card ${newListing.listingTier === plan.id ? 'selected' : ''} ${plan.highlighted ? 'highlighted' : ''} ${plan.isFree ? 'free-plan' : ''}`}
-                            onClick={() => setNewListing({ ...newListing, listingTier: plan.id })}
+                            className={`listing-plan-card ${newListing.listingTier === plan.id ? 'selected' : ''} ${plan.highlighted ? 'highlighted' : ''}`}
                             style={{
-                              border: newListing.listingTier === plan.id ? '3px solid #28a745' : '2px solid #e0e0e0',
-                              transition: 'all 0.3s ease'
+                              border: newListing.listingTier === plan.id ? '2px solid #28a745' : '2px solid #e0e7ff',
+                              transition: 'all 0.3s ease',
+                              position: 'relative',
+                              display: 'flex',
+                              flexDirection: 'column'
                             }}
                           >
+                            {/* Free Ribbon */}
                             {plan.isFree && (
                               <div style={{
                                 position: 'absolute',
-                                top: 0,
-                                right: -8,
-                                backgroundColor: '#ff6b6b',
+                                top: '12px',
+                                right: '-2px',
+                                backgroundColor: '#28a745',
                                 color: 'white',
                                 padding: '4px 12px',
+                                borderRadius: '4px 0 0 4px',
+                                fontSize: '12px',
                                 fontWeight: 'bold',
-                                fontSize: '0.75rem',
-                                transform: 'rotate(45deg)',
-                                transformOrigin: 'right top',
-                                minWidth: '80px',
-                                textAlign: 'center',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                zIndex: 2
                               }}>
-                                {plan.badge}
+                                {plan.ribbon}
                               </div>
                             )}
 
+                            {/* Selection Checkmark */}
                             {newListing.listingTier === plan.id && (
                               <div style={{
                                 position: 'absolute',
-                                top: '12px',
-                                right: '12px',
+                                top: '8px',
+                                left: '8px',
                                 backgroundColor: '#28a745',
                                 color: 'white',
                                 borderRadius: '50%',
-                                width: '28px',
-                                height: '28px',
+                                width: '24px',
+                                height: '24px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '16px',
-                                fontWeight: 'bold'
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                zIndex: 3
                               }}>
                                 ✓
                               </div>
                             )}
 
-                            <div className="listing-plan-head">
-                              <h4>{plan.title}</h4>
-                              <p style={{ color: '#666', fontSize: '0.9rem', margin: '0.5rem 0' }}>{plan.description}</p>
-                            </div>
-
-                            <ul style={{ marginBottom: '1rem' }}>
-                              {plan.features.map((feature: string) => (
-                                <li key={feature} style={{ fontSize: '0.9rem', marginBottom: '0.4rem' }}>✓ {feature}</li>
-                              ))}
-                            </ul>
-
-                            <div style={{ borderTop: '1px solid #e0e0e0', paddingTop: '0.8rem', marginBottom: '0.8rem' }}>
-                              <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                                <strong>{language === 'en' ? 'Where it appears:' : language === 'ru' ? 'Где отображается:' : 'Harada görünür:'}</strong>
+                            {/* Main Button to Select Plan */}
+                            <button
+                              type="button"
+                              className="plan-select-btn"
+                              onClick={() => {
+                                setNewListing({ ...newListing, listingTier: plan.id })
+                                setExpandedPricingPlan(null)
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '1.5rem 1rem',
+                                border: 'none',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem'
+                              }}
+                            >
+                              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>
+                                {plan.title}
+                              </h4>
+                              <p style={{ margin: 0, fontSize: '0.9rem', color: '#666', minHeight: '1.2em' }}>
+                                {plan.emphasis}
                               </p>
-                              <p style={{ fontSize: '0.85rem', color: '#555' }}>{plan.placement}</p>
-                            </div>
+                              {plan.isFree ? (
+                                <p style={{ margin: '0.5rem 0 0 0', fontSize: '1rem', color: '#28a745', fontWeight: 'bold' }}>
+                                  {plan.price}
+                                </p>
+                              ) : (
+                                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#007bff', fontWeight: '500' }}>
+                                  {expandedPricingPlan === plan.id ? t.buttons.hide : t.buttons.show} {t.pricing.plans}
+                                </p>
+                              )}
+                            </button>
 
-                            {plan.isFree ? (
+                            {/* Pricing Options (for VIP/Premium) */}
+                            {!plan.isFree && (
                               <div style={{
-                                backgroundColor: '#f0f0f0',
-                                padding: '0.6rem',
-                                borderRadius: '4px',
-                                textAlign: 'center',
-                                fontWeight: 'bold',
-                                color: '#28a745'
-                              }}>
-                                {plan.badge}
-                              </div>
-                            ) : (
-                              <div style={{
-                                borderTop: '1px solid #e0e0e0',
-                                paddingTop: '0.8rem'
+                                borderTop: '1px solid #e0e7ff',
+                                padding: '1rem'
                               }}>
                                 <button
                                   type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    const elem = document.getElementById(`pricing-${plan.id}`)
-                                    if (elem) {
-                                      elem.style.display = elem.style.display === 'none' ? 'block' : 'none'
-                                    }
-                                  }}
+                                  className="plan-pricing-toggle"
+                                  onClick={() => setExpandedPricingPlan(
+                                    expandedPricingPlan === plan.id ? null : plan.id
+                                  )}
                                   style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid #007bff',
+                                    borderRadius: '6px',
+                                    background: '#e7f3ff',
                                     color: '#007bff',
+                                    fontWeight: '600',
                                     cursor: 'pointer',
-                                    padding: 0,
-                                    fontSize: '0.9rem',
-                                    textDecoration: 'underline'
+                                    transition: 'all 0.3s ease',
+                                    marginBottom: expandedPricingPlan === plan.id ? '1rem' : 0,
+                                    fontSize: '0.9rem'
                                   }}
                                 >
-                                  {language === 'en' ? 'View pricing' : language === 'ru' ? 'Просмотр цен' : 'Qiymətləri görün'} ↓
+                                  {expandedPricingPlan === plan.id ? '▼' : '▶'} {t.pricing.selectDuration}
                                 </button>
 
-                                <div id={`pricing-${plan.id}`} style={{ display: 'none', marginTop: '0.8rem' }}>
-                                  {plan.durations.map((duration: string) => (
-                                    <div key={duration} style={{
-                                      display: 'flex',
-                                      justifyContent: 'space-between',
-                                      alignItems: 'center',
-                                      padding: '0.5rem 0',
-                                      borderBottom: '1px solid #f0f0f0'
-                                    }}>
-                                      <span style={{ fontSize: '0.9rem' }}>{duration} {plan.periodLabel}</span>
-                                      <strong style={{ fontSize: '1rem', color: '#ff6b6b' }}>{plan.pricing[duration]} AZN</strong>
-                                    </div>
-                                  ))}
-                                </div>
+                                {expandedPricingPlan === plan.id && (
+                                  <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.75rem',
+                                    marginTop: '1rem'
+                                  }}>
+                                    {plan.pricingOptions?.map((option) => (
+                                      <button
+                                        type="button"
+                                        key={option.duration}
+                                        className={`pricing-option-btn ${newListing.tierPlanDuration === option.duration ? 'selected' : ''}`}
+                                        onClick={() => setNewListing({
+                                          ...newListing,
+                                          tierPlanDuration: option.duration as '14days' | '30days'
+                                        })}
+                                        style={{
+                                          padding: '0.75rem',
+                                          border: newListing.tierPlanDuration === option.duration
+                                            ? '2px solid #28a745'
+                                            : '1px solid #e0e7ff',
+                                          borderRadius: '6px',
+                                          background: newListing.tierPlanDuration === option.duration
+                                            ? '#f0fdf4'
+                                            : '#fff',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s ease',
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
+                                          fontSize: '0.9rem'
+                                        }}
+                                      >
+                                        <span style={{ fontWeight: '500' }}>
+                                          {option.label}
+                                        </span>
+                                        <span style={{
+                                          fontWeight: 'bold',
+                                          color: '#28a745',
+                                          fontSize: '1.1rem'
+                                        }}>
+                                          {option.price}
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             )}
-                          </button>
+
+                            {/* Features List */}
+                            {plan.features && plan.features.length > 0 && (
+                              <div style={{
+                                borderTop: '1px solid #e0e7ff',
+                                padding: '1rem',
+                                fontSize: '0.85rem',
+                                color: '#666'
+                              }}>
+                                <ul style={{ margin: 0, paddingLeft: '1.5rem', lineHeight: '1.6' }}>
+                                  {plan.features.map((feature, idx) => (
+                                    <li key={idx}>{feature}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
 
@@ -2035,73 +2041,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
               </button>
               <button type="button" className="btn btn-accent" onClick={handleSetInactiveWithDates} disabled={isSavingAvailability}>
                         {isSavingAvailability ? t.messages.loading : (language === 'en' ? 'Set non active' : language === 'ru' ? 'Сделать неактивным' : 'Qeyri-aktiv et')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showRenewalModal && (
-        <div className="availability-modal-overlay" onClick={() => setShowRenewalModal(false)}>
-          <div className="availability-modal card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-            <h3>⭐ {isEnglish ? 'Renew Premium' : isRussian ? 'Продлить Премиум' : 'Premium Uzat'}</h3>
-            <p>
-              {isEnglish ? 'Choose how many days you want to extend your premium listing:'
-                : isRussian ? 'Выберите, на сколько дней вы хотите продлить свое премиум объявление:'
-                : 'Premium elancınızı neçə gün uzatmaq istədiyinizi seçin:'}
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-              <button 
-                type="button" 
-                style={{
-                  backgroundColor: selectedRenewalDays === 14 ? '#1976d2' : '#fff',
-                  color: selectedRenewalDays === 14 ? 'white' : '#333',
-                  border: '2px solid ' + (selectedRenewalDays === 14 ? '#1976d2' : '#ccc'),
-                  cursor: 'pointer',
-                  padding: '1.2rem',
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  borderRadius: '8px',
-                  transition: 'all 0.2s ease',
-                  boxShadow: selectedRenewalDays === 14 ? '0 2px 8px rgba(25,118,210,0.3)' : 'none'
-                }}
-                onClick={() => setSelectedRenewalDays(14)}
-              >
-                <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>14</div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>
-                  {isEnglish ? 'days' : isRussian ? 'дней' : 'gün'}
-                </div>
-              </button>
-              <button 
-                type="button"
-                style={{
-                  backgroundColor: selectedRenewalDays === 30 ? '#1976d2' : '#fff',
-                  color: selectedRenewalDays === 30 ? 'white' : '#333',
-                  border: '2px solid ' + (selectedRenewalDays === 30 ? '#1976d2' : '#ccc'),
-                  cursor: 'pointer',
-                  padding: '1.2rem',
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  borderRadius: '8px',
-                  transition: 'all 0.2s ease',
-                  boxShadow: selectedRenewalDays === 30 ? '0 2px 8px rgba(25,118,210,0.3)' : 'none'
-                }}
-                onClick={() => setSelectedRenewalDays(30)}
-              >
-                <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>30</div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>
-                  {isEnglish ? 'days' : isRussian ? 'дней' : 'gün'}
-                </div>
-              </button>
-            </div>
-
-            <div className="availability-actions">
-              <button type="button" className="btn btn-ghost" onClick={() => setShowRenewalModal(false)}>
-                {t.form.cancel}
-              </button>
-              <button type="button" className="btn btn-accent" onClick={handleConfirmRenewal}>
-                ✓ {isEnglish ? 'Confirm' : isRussian ? 'Подтвердить' : 'Təsdiq et'}
               </button>
             </div>
           </div>

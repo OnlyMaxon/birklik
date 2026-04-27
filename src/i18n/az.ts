@@ -307,15 +307,23 @@ export const az: Translations = {
     subtitle: "Villalar, koteclər və mənzillər — ən ideal qiymətlərlə"
   },
   pricing: {
-    free: "Free",
-    standard: "Standard",
+    free: "Pulsuz",
+    standard: "Standart",
     premium: "Premium",
     vip: "VIP",
-    freeDesc: "Başlamaq üçün",
+    freeDesc: "Pulsuz",
     standardDesc: "Kiçik müəssisə üçün",
     premiumDesc: "Peşəkar xidmət",
-    vipDesc: "Yüksək görünürlüklü premium",
-    perMonth: "/ay"
+    vipDesc: "VIP paket",
+    perMonth: "/ay",
+    days14: "14 gün",
+    days30: "30 gün",
+    vipFeatures: "Funksiyalar: 20 foto, tam təsvir, açıq lokasiya",
+    vipDisplays: "Göstəriliş yeri: VIP blokunda və bölgənin ilk səhifələrində",
+    premiumFeatures: "Funksiyalar: 20+ foto, tam təsvir, açıq lokasiya",
+    premiumDisplays: "Göstəriliş yeri: Ana səhifədə \'Tövsiyyələrdə\' + bölgə axtarışının yuxarısında",
+    selectDuration: "Müddət seçin",
+    plans: "paket planlar"
   },
   validation: {
     emailInvalid: "Etibarlı email ünvanı daxil edin",
@@ -329,10 +337,10 @@ export const az: Translations = {
     roomsRequired: "Otaq sayı daxil edin"
   },
   pricing_info: {
-    free_features: "4 foto, qısa təsvir, gizli lokasiya",
-    standard_features: "20 foto, tam təsvir, lokasiya göstərilir",
-    premium_features: "✓ Limitsiz foto, ana səhifədə 3 həftə, görünən məkan",
-    vip_features: "✓ VIP nişanı, prioritet yoxlama, limitsiz foto"
+    free_features: "4 şəkil, qısa təsvir, gizli lokasiya",
+    standard_features: "🎁 Pulsuz paket - 4 foto, qısa təsvir, gizli lokasiya",
+    vip_features: "20 foto, tam təsvir, açıq lokasiya",
+    premium_features: "20+ foto, tam təsvir, açıq lokasiya"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",
@@ -422,7 +430,9 @@ export const az: Translations = {
     moveDown: "Aşağıya keçir",
     copy: "Keçidi kopyala",
     yes: "Bəli",
-    no: "Xeyr"
+    no: "Xeyr",
+    show: "Göstər",
+    hide: "Gizlət"
   },
   common: {
     night: "gecə",
@@ -606,11 +616,83 @@ export const az: Translations = {
     terms: {
       title: "Şərtlər və Qaydalar",
       lastUpdated: "Son yenilənmə tarixi: 30.03.2026",
-      sections: []
+      sections: [
+        {
+          number: "1",
+          title: "Ümumi Məlumat",
+          content: "Birklik.az istifadəçilərə qısamüddətli kirayə verən mülkləri sadalamaq, axtarmaq və bron etməyə imkan verən platformadır. Bu Şərtlər və Qaydalar bizim veb-saytımızdan və xidmətlərimizdən istifadənizi tənzimləyir. Birklik.az istifadə edərək, siz bu şərtləri qəbul etməyi razı olursunuz."
+        },
+        {
+          number: "2",
+          title: "İstifadəçi Məsuliyyətləri",
+          content: "İstifadəçilər hesab məlumatlarının məxfiliyini saxlamaqda və hesab altında baş verən bütün fəaliyyətlərdə məsul olurlar. Elanlar yaratarkən və ya bron edərkən dəqiq və tam məlumat vermərsiniz. Platformanın istənilən yanlış istifadəsi hesabınızın dayandırılması və ya ləğv edilməsinə səbəb ola biləcəyi."
+        },
+        {
+          number: "3",
+          title: "Mülk Elanları",
+          content: "Mülk sahibləri və menecerləri bütün təqdim edilən məlumatın dəqiq, aktual və yerli qanunvericiliyə uyğun olduğundan əmin olmalıdırlar. Bütün elanlar müvafiq qanunlara və qaydalara uyğun olmalıdır. Birklik.az bu şərtləri və ya yerli qanunları pozan hər hansı elanı silməyə hüququ saxlayır."
+        },
+        {
+          number: "4",
+          title: "Bronirovka və Ləğv",
+          content: "Qonaqlar və ev sahibləri hər bir elanda göstərilən ləğv siyasətinə uyğun bronikləri dəyişə və ya ləğv edə bilərlər. Ləğv siyasətləri müxtəlif mülklər üçün fərqlidir. İstifadəçilər bronikləri təsdiq etməzdən əvvəl ləğv şərtlərini anlamaqda məsuldurlar. Bronirovka ilə bağlı mübahisələr Birklik.az siyasətinə uyğun işlənir."
+        },
+        {
+          number: "5",
+          title: "Ödəmələr və Komissiyalar",
+          content: "Bütün ödəmələr bizim ödəmə sistemi vasitəsilə güvənli şəkildə işlənir. Birklik.az platformadan istifadə üçün xidmət haqqı tələb edə bilər. Ev sahibləri kirayə gəlirinə aid hər hansı vergiləri ödəməkdə məsuldurlar. İstifadəçilər göstərilən qiymətlərin vergini və əlavə rüsumları ehtiva etməyə biləcəyini qəbul edirlər."
+        },
+        {
+          number: "6",
+          title: "Məsuliyyətin Məhdudlaşdırılması",
+          content: "Birklik.az 'olduğu kimi' təqdim edilir. Biz platformanın qətilənən təsirə məruz qalmayacağını və ya səhvsiz olacağını təmin etmirik. Qanunla müsaadə edilən həddinin məhdud əhatə daxilində, Birklik.az platformanın istifadəsindən yaranan heç bir dolayısı, təsadüfi və ya nəticə əsasında zərərdən məsul deyil."
+        },
+        {
+          number: "7",
+          title: "Şərtlərin Dəyişdirilməsi",
+          content: "Birklik.az bu şərtləri istənilən vaxt dəyişdirmək hüququnu saxlayır. Dəyişikliklər veb-saytda dərc edildikdən dərhal sonra qüvvəyə minir. Dəyişdirilmiş şərtlərin dərc edilməsindən sonra platformanın istifadəsiniz davam etdirməniz, dəyişlikləri qəbul etdiyinizi və razı olduğunuzu göstərir."
+        }
+      ]
     },
     privacy: {
       title: "Məxfilik Siyasəti",
-      sections: []
+      sections: [
+        {
+          number: "1",
+          title: "Topladığımız Məlumat",
+          content: "Hesab yaratdığınız zaman, mülk sadaladığınız zaman və ya bron edərkən bizə birbaşa təqdim etdiyiniz məlumatları toplayırıq. Bura adınız, elektron poçt ünvanınız, telefon nömrəniz, ödəmə məlumatları və mülk detalları daxildir. Biz həmçinin cihazınız haqqında müəyyən məlumatları və veb-saytımızla necə əlaqə qurduğunuzu avtomatik olaraq toplayırıq."
+        },
+        {
+          number: "2",
+          title: "Məlumatınızdan Necə İstifadə Edirik",
+          content: "Xidmətlərimizi təmin etmək və yaxşılaşdırmaq, işləmələri emal etmək, məktublar göndərmək, saxta əhəmiyyət qoymaq və qanuni öhdəlikləri yerinə yetirmək üçün məlumatınızdan istifadə edirik. Məlumatınız sizin təcrübənizi fərdiləşdirmənizə və mülklər və broniklərlə bağlı müvafiq yenilikləri göndərməyimizə kömək edir."
+        },
+        {
+          number: "3",
+          title: "Məlumat Mübadiləsi",
+          content: "Biz şəxsi məlumatınızı marketinq məqsədləri üçün üçüncü tərəflərə satmırıq və paylaşmırıq. Veb-saytımızı idarə etməyə və iş aparmasına kömək edən xidmət təminatçılarına məlumatınızı ötürə bilərik. Qanunla tələb edildikdə və ya hüquqlarımızı qorumaq üçün məlumatı da açıqlaya bilərik."
+        },
+        {
+          number: "4",
+          title: "Məlumatların Keyfiyyəti",
+          content: "Şəxsi məlumatınızı icazəsiz daxilolma, dəyişdirmə, açıqlanma və ya məhvdən qorumaq üçün müvafiq texniki və təşkilati tədbirlər tətbiq edirik. Ancaq heç bir mühafizə sistemi tamamilə etibarlı deyil və biz məlumatlarınızın mütləq keyfiyyətini təmin edə bilmərik."
+        },
+        {
+          number: "5",
+          title: "Sizin Hüquqlarınız",
+          content: "Şəxsi məlumatınıza daxilolma, düzəltmə və ya silmə hüququna maliksiniz. Hesab parametrləri vasitəsilə məxfilik üstünlüklərini idarə edə bilərsiniz. Bu hüquqlardan istifadə etmək və ya məlumatlar haqqında səhəh almaq üçün dəstək komandasına müraciət edin."
+        },
+        {
+          number: "6",
+          title: "Kuki-lər və Qeyd Etmə",
+          content: "Platformamızda sizin təcrübənizi artırmaq üçün cookie-lər və bənzər texnologiyalardan istifadə edirik. Bu, bizə sizin parametrlərinizi yadda saxlamağa və istifadəçilərin veb-saytımızla necə əlaqə qurduğunu anlamağa kömək edir. Brauzer parametrləriniz vasitəsilə cookie parametrlərini kontrol edə bilərsiniz."
+        },
+        {
+          number: "7",
+          title: "Biz ilə Əlaqə Saxlayın",
+          content: "Əgər məxfilik təcrübələrimiz haqqında suallarınız varsa və ya məxfilik hüquqlarınızı həyata keçirmək istəyirsinizsə, support@birklik.az ünvanına müraciət edin və ya saytımızdakı əlaqə forması vasitəsilə bizə yazın. Biz hər hansı məxfilik göstərişlərinizi tez həll etməyə səbəb olmağa məramlıdır."
+        }
+      ]
     }
   },
   listing: {

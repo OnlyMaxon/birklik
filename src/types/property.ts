@@ -95,7 +95,9 @@ export interface Property {
   createdAt?: string
   updatedAt?: string
   city?: string
-  premiumExpiresAt?: string // ISO date when premium status expires (3 weeks from creation)
+  premiumExpiresAt?: string // ISO date when premium status expires
+  vipExpiresAt?: string // ISO date when VIP status expires
+  tierPlanDuration?: '14days' | '30days' // Selected plan duration for current tier
 }
 
 export interface User {

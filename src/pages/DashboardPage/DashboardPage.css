@@ -96,6 +96,13 @@
   margin-bottom: 1.5rem;
 }
 
+/* Properties Grid for Favorites/Results */
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.6rem;
+}
+
 /* Listings */
 .listings-list {
   display: flex;
@@ -259,60 +266,65 @@
 .listing-plans-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 0.75rem;
   margin-bottom: 1.2rem;
 }
 
 .listing-plan-card {
   text-align: left;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  background: white;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  position: relative;
-  min-height: 550px;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.listing-plan-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
-}
-
-.listing-plan-card.free-plan {
-  background: linear-gradient(135deg, #f9f9f9, #ffffff);
+  border: 1px solid rgba(121, 99, 72, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fffefb, #f7efe3);
+  padding: 0.85rem;
+  transition: var(--transition);
 }
 
 .listing-plan-card.highlighted {
-  border: 2px solid #d4a574;
-  background: linear-gradient(135deg, #fffaf5, #fff5e6);
-  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.15);
+  background: linear-gradient(165deg, rgba(183, 146, 93, 0.16), rgba(255, 241, 217, 0.28));
 }
 
 .listing-plan-card.selected {
-  border: 3px solid #28a745;
-  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+  border-color: #9b7448;
+  box-shadow: 0 0 0 3px rgba(155, 116, 72, 0.2);
 }
 
 .listing-plan-head {
-  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: baseline;
 }
 
 .listing-plan-head h4 {
-  font-size: 1.4rem;
-  color: #333;
-  margin: 0;
+  font-size: 1rem;
+  color: #4f3f2d;
+}
+
+.listing-plan-price strong {
+  font-size: 1rem;
+  color: #4f3f2d;
+}
+
+.listing-plan-price span {
+  font-size: 0.78rem;
+  color: #7d6f5d;
+  margin-left: 0.25rem;
+}
+
+.listing-plan-emphasis {
+  margin-top: 0.35rem;
+  color: #8a6a41;
+  font-size: 0.82rem;
   font-weight: 700;
 }
 
-.listing-plan-head p {
-  margin: 0.5rem 0 0 0;
-  color: #666;
-  font-size: 0.9rem;
+.listing-plan-card ul {
+  margin-top: 0.45rem;
+  padding-left: 1rem;
+  color: #6f5f4b;
+  font-size: 0.8rem;
+  display: grid;
+  gap: 0.25rem;
 }
 
 .form-grid {

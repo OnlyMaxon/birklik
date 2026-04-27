@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { isModerator } from '../../config/constants'
@@ -11,6 +11,7 @@ export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage()
   const { isAuthenticated, user, firebaseUser, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = React.useState(false)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0)
@@ -96,6 +97,15 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  const handleLogoClick = () => {
+    setMenuOpen(false)
+    if (location.pathname === '/') {
+      window.location.reload()
+    } else {
+      navigate('/')
+    }
+  }
+
   const languages = [
     { code: 'az' as const, label: 'AZ' },
     { code: 'en' as const, label: 'EN' },
@@ -120,10 +130,10 @@ export const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="header-content">
-        <Link to="/" className="logo" onClick={() => setMenuOpen(false)}>
+        <div className="logo" onClick={handleLogoClick} role="button" tabIndex={0} style={{ cursor: 'pointer' }}>
           <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
           <span className="logo-tagline">{t.site.tagline}</span>
-        </Link>
+        </div>
 
         <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
             <NavLink to="/" end className={getNavClass} onClick={() => setMenuOpen(false)}>
