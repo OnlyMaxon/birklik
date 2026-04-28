@@ -9,7 +9,12 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "logo:generate": "node scripts/generate-logo-assets.mjs"
+    "logo:generate": "node scripts/generate-logo-assets.mjs",
+    "functions:build": "cd functions && npm run build",
+    "functions:deploy": "firebase deploy --only functions",
+    "functions:logs": "firebase functions:log",
+    "cleanup:dry": "cd functions && npm run cleanup:dry",
+    "cleanup:execute": "cd functions && npm run cleanup:execute"
   },
   "dependencies": {
     "firebase": "^12.10.0",

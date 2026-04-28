@@ -1,0 +1,25 @@
+{
+  "name": "firebase-functions",
+  "description": "Cloud Functions for Birklik.az",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "cleanup:dry": "ts-node src/cleanup/admin.ts --dry-run",
+    "cleanup:execute": "ts-node src/cleanup/admin.ts --execute"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}
