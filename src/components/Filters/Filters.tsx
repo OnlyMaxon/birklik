@@ -13,6 +13,7 @@ interface FiltersProps {
   hideFilterToggle?: boolean
   isOpen?: boolean
   onOpenChange?: (isOpen: boolean) => void
+  onSearch?: () => void
   mapToggle?: {
     active: boolean
     label: string
@@ -23,7 +24,7 @@ interface FiltersProps {
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
-export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, hideFilterToggle = false, isOpen = false, onOpenChange, mapToggle }) => {
+export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, hideFilterToggle = false, isOpen = false, onOpenChange, onSearch, mapToggle }) => {
   const { t, language } = useLanguage()
 
   const [showMore, setShowMore] = React.useState(false)
@@ -138,6 +139,15 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
             </svg>
             {t.search.filters}
             {totalActiveCount > 0 && <span className="filters-active-count">{totalActiveCount}</span>}
+          </button>
+        )}
+        {onSearch && (
+          <button className="btn btn-primary" onClick={onSearch} title={t.search.button}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            {t.search.button}
           </button>
         )}
         {mapToggle && (
@@ -325,6 +335,15 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
         )}
 
         <div className="filters-actions">
+          {onSearch && (
+            <button className="btn btn-primary" onClick={onSearch}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              {t.search.button}
+            </button>
+          )}
           <button className="btn btn-ghost" onClick={resetAdvancedOnly}>
             {t.filters.resetAdvanced}
           </button>

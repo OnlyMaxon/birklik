@@ -168,6 +168,7 @@ export const HomePage: React.FC = () => {
             hideFilterToggle={true}
             isOpen={showFilters}
             onOpenChange={setShowFilters}
+            onSearch={handleSearchSubmit}
             mapToggle={!isDesktop ? {
               active: showMap,
               label: mapLabel,

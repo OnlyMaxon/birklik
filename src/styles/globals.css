@@ -60,13 +60,10 @@ body {
   font-size: 16px;
   line-height: 1.58;
   color: var(--gray-800);
-  background:
-    radial-gradient(circle at 8% -20%, rgba(215, 183, 133, 0.24), transparent 33%),
-    radial-gradient(circle at 90% -12%, rgba(255, 247, 232, 0.2), transparent 36%),
-    linear-gradient(180deg, #faf6f0 0%, #f3ebe0 100%);
-  background-color: #4e3d2b;
+  background: linear-gradient(160deg, #2e241b 0%, #4e3d2b 100%);
   min-height: 100dvh;
   overflow-x: clip;
+  overscroll-behavior-y: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

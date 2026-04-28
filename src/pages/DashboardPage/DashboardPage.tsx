@@ -1256,7 +1256,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   </button>
                                 )}
                                 {property.listingTier === 'premium' && isPremiumExpired(property) && (
-                                  <button className="btn btn-sm" style={{ backgroundColor: '#ffa500', color: 'white', border: 'none' }} onClick={() => handleExtendPremium(property.id)}>
+                                  <button className="btn btn-primary btn-sm" onClick={() => handleExtendPremium(property.id)}>
                                     ⭐ {isEnglish ? 'Extend' : isRussian ? 'Продлить' : 'Uzat'}
                                   </button>
                                 )}

@@ -3,7 +3,8 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { isModerator } from '../../config/constants'
-import { getUnreadNotificationsCount, getModerationNotificationsCount } from '../../services/notificationsService'
+import { getUnreadNotificationsCount } from '../../services/notificationsService'
+import { getPendingModerationCount } from '../../services/propertyService'
 import './Header.css'
 import * as logger from '../../services/logger'
 
@@ -52,16 +53,16 @@ export const Header: React.FC = () => {
 
   React.useEffect(() => {
     const loadModerationCount = async () => {
-      if (!isModeratorUser || !user?.id) {
+      if (!isModeratorUser) {
         setModerationNotificationCount(0)
         return
       }
 
       try {
-        const count = await getModerationNotificationsCount(user.id)
+        const count = await getPendingModerationCount()
         setModerationNotificationCount(count)
       } catch (error) {
-        logger.error('Error loading moderation notifications count:', error)
+        logger.error('Error loading moderation count:', error)
       }
     }
 
@@ -71,7 +72,7 @@ export const Header: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [isModeratorUser, user?.id])
+  }, [isModeratorUser])
 
   React.useEffect(() => {
     if (!menuOpen) {

@@ -415,6 +415,24 @@ export const getAllProperties = async (): Promise<Property[]> => {
 }
 
 /**
+ * Get count of properties pending moderation
+ * @returns {Promise<number>} Count of properties with status 'pending'
+ */
+export const getPendingModerationCount = async (): Promise<number> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('status', '==', 'pending')
+    )
+    const snapshot = await getDocs(q)
+    return snapshot.size
+  } catch (error) {
+    logger.error('Error getting pending moderation count:', error)
+    return 0
+  }
+}
+
+/**
  * Approve a pending property and make it publicly visible
  * @param {string} id - Property Firestore document ID
  * @returns {Promise<boolean>} True on success, false if property not found or update fails

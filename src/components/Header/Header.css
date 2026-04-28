@@ -2,7 +2,7 @@
   position: sticky;
   top: 0;
   z-index: 120;
-  width: 100w;
+  width: 100%;
   background:
     radial-gradient(circle at 8% -20%, rgba(203, 173, 131, 0.28), transparent 42%),
     radial-gradient(circle at 98% 0%, rgba(255, 255, 255, 0.1), transparent 36%),
@@ -20,8 +20,6 @@
   gap: 1.1rem;
   min-height: var(--header-height);
   width: 100%;
-  max-width: 1520px;
-  margin: 0 auto;
   padding: 0 1rem;
 }
 

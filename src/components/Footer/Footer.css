@@ -12,8 +12,6 @@
 
 .footer-content-wrapper {
   width: 100%;
-  max-width: 1520px;
-  margin: 0 auto;
   padding: 2rem 1rem 1rem;
   display: flex;
   flex-direction: column;
