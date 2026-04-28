@@ -1,19 +1,22 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /properties/{allPaths=**} {
+    match /properties/{userId}/{allPaths=**} {
       // Read: anyone
       allow read: if true;
-      // Create: authenticated users can upload images
+      // Create: only the user who owns the property can upload
       allow create: if request.auth != null
+        && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
-      // Update: authenticated users can update
+      // Update: only the owner can update
       allow update: if request.auth != null
+        && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
-      // Delete: authenticated users can delete
-      allow delete: if request.auth != null;
+      // Delete: only the owner can delete
+      allow delete: if request.auth != null
+        && request.auth.uid == userId;
     }
 
     match /avatars/{userId}/{allPaths=**} {

@@ -7,6 +7,29 @@ const COLLECTION_NAME = 'users'
 const NOTIFICATIONS_SUBCOLLECTION = 'notifications'
 
 /**
+ * Generic function to create any notification type
+ * @param {string} userId - User Firestore ID
+ * @param {Object} notificationData - Notification data
+ * @returns {Promise<string|null>} Notification ID or null on error
+ */
+const createNotification = async (
+  userId: string,
+  notificationData: Omit<Notification, 'id' | 'createdAt'>
+): Promise<string | null> => {
+  try {
+    const notificationsRef = collection(db, COLLECTION_NAME, userId, NOTIFICATIONS_SUBCOLLECTION)
+    const docRef = await addDoc(notificationsRef, {
+      ...notificationData,
+      createdAt: new Date().toISOString()
+    })
+    return docRef.id
+  } catch (error) {
+    logger.error('Error creating notification:', error)
+    return null
+  }
+}
+
+/**
  * Get all notifications for a user
  * @param {string} userId - User Firestore ID
  * @returns {Promise<Notification[]>} Array of notifications ordered by date
@@ -66,22 +89,10 @@ export const getModerationNotificationsCount = async (userId: string): Promise<n
  * @param {BookingNotification} notificationData - Booking notification details
  * @returns {Promise<string|null>} Notification ID or null on error
  */
-export const createBookingNotification = async (
+export const createBookingNotification = (
   ownerId: string,
   notificationData: Omit<BookingNotification, 'id' | 'createdAt'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating booking notification:', error)
-    return null
-  }
-}
+): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
 /**
  * Create comment notification for property owner
@@ -89,22 +100,10 @@ export const createBookingNotification = async (
  * @param {CommentNotification} notificationData - Comment notification details
  * @returns {Promise<string|null>} Notification ID or null on error
  */
-export const createCommentNotification = async (
+export const createCommentNotification = (
   ownerId: string,
   notificationData: Omit<CommentNotification, 'id' | 'createdAt'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating comment notification:', error)
-    return null
-  }
-}
+): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
 /**
  * Create favorite notification for property owner
@@ -112,22 +111,10 @@ export const createCommentNotification = async (
  * @param {FavoriteNotification} notificationData - Favorite notification details
  * @returns {Promise<string|null>} Notification ID or null on error
  */
-export const createFavoriteNotification = async (
+export const createFavoriteNotification = (
   ownerId: string,
   notificationData: Omit<FavoriteNotification, 'id' | 'createdAt'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating favorite notification:', error)
-    return null
-  }
-}
+): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
 /**
  * Mark notification as read
@@ -169,22 +156,10 @@ export const deleteNotification = async (userId: string, notificationId: string)
  * @param {PremiumNotification} notificationData - Premium notification details
  * @returns {Promise<string|null>} Notification ID or null on error
  */
-export const createPremiumNotification = async (
+export const createPremiumNotification = (
   ownerId: string,
   notificationData: Omit<PremiumNotification, 'id' | 'createdAt'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating premium notification:', error)
-    return null
-  }
-}
+): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
 /**
  * Create comment report notification for all moderators

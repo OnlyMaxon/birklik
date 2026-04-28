@@ -338,9 +338,9 @@ export const az: Translations = {
   },
   pricing_info: {
     free_features: "4 şəkil, qısa təsvir, gizli lokasiya",
-    standard_features: "🎁 Pulsuz paket - 4 foto, qısa təsvir, gizli lokasiya",
-    vip_features: "20 foto, tam təsvir, açıq lokasiya",
-    premium_features: "20+ foto, tam təsvir, açıq lokasiya"
+    standard_features: "20 şəkil, tam təsvir, açıq lokasiya",
+    premium_features: "✓ Sonsuz foto, 3 həftə əsas səhifədə, açıq lokasiya",
+    vip_features: "✓ VIP nişanı, prioritetli moderasyon, sonsuz foto"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",

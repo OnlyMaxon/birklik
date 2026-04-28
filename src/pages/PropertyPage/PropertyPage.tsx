@@ -11,6 +11,7 @@ import { createBooking, hasUserBookedProperty } from '../../services'
 import { getCsrfToken } from '../../services/csrfService'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
 import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
+import { sanitizeInput } from '../../utils/sanitization'
 import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
@@ -295,12 +296,14 @@ export const PropertyPage: React.FC = () => {
     if (!isAuthenticated || !user || !property || !newComment.trim()) return
 
     setIsPostingComment(true)
+    const csrfToken = getCsrfToken()
     const success = await addCommentToProperty(
       property.id,
       user.id,
       user.name,
       user.avatar,
-      newComment.trim()
+      newComment.trim(),
+      csrfToken
     )
 
     if (success) {
@@ -346,7 +349,8 @@ export const PropertyPage: React.FC = () => {
 
     setIsSubmittingRating(true)
     try {
-      const result = await addRatingToProperty(property.id, user.id, rating, user.name || 'User')
+      const csrfToken = getCsrfToken()
+      const result = await addRatingToProperty(property.id, user.id, rating, user.name || 'User', csrfToken)
       if (result.success) {
         setUserRating(rating)
         setNotificationMessage(t.property.rateSaved)
@@ -411,7 +415,8 @@ export const PropertyPage: React.FC = () => {
 
     setIsFavoriting(true)
     try {
-      await toggleFavorite(property.id, user.id, isFavorited)
+      const csrfToken = getCsrfToken()
+      await toggleFavorite(property.id, user.id, isFavorited, csrfToken)
       
       // Send favorite notification to property owner (only if adding to favorites)
       if (!isFavorited) {
@@ -1135,7 +1140,7 @@ export const PropertyPage: React.FC = () => {
                               </button>
                             )}
                           </div>
-                          <p className="comment-text">{comment.text}</p>
+                          <p className="comment-text">{sanitizeInput(comment.text)}</p>
                           <p className="comment-date">{formatDate(comment.createdAt)}</p>
                           
                           {/* Interaction Buttons */}

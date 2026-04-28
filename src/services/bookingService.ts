@@ -1,5 +1,5 @@
 import { db } from '../config/firebase'
-import { collection, doc, addDoc, query, where, getDocs, getDoc } from 'firebase/firestore'
+import { collection, doc, addDoc, query, where, getDocs, getDoc, runTransaction, QueryConstraint } from 'firebase/firestore'
 import { Booking } from '../types'
 import { validateCsrfToken } from './csrfService'
 import * as logger from './logger'
@@ -15,52 +15,76 @@ export class BookingConflictError extends Error {
 }
 
 /**
- * Create a new booking record with CSRF protection
+ * Create a new booking record with CSRF protection and atomic conflict checking
+ * Uses Firestore transactions to prevent race conditions
  * @param {Omit<Booking, 'id' | 'createdAt'>} booking - Booking data (excluding id and creation timestamp)
  * @param {string} csrfToken - CSRF token for validation
  * @returns {Promise<Booking | null>} Created booking with id and timestamp, or null on failure
  * @throws {Error} On Firestore write failure, CSRF validation failure, or if booking conflicts with existing booking
- * @example
- * const booking = await createBooking({
- *   propertyId: 'prop_123',
- *   userId: 'user_456',
- *   checkInDate: '2024-04-01',
- *   checkOutDate: '2024-04-05',
- *   totalPrice: 250,
- *   userName: 'John',
- *   userEmail: 'john@example.com',
- *   userPhone: '+1234567890',
- *   nights: 4
- * }, csrfToken)
  */
 export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, csrfToken: string): Promise<Booking | null> => {
   try {
-    
     // Validate CSRF token
     if (!validateCsrfToken(csrfToken)) {
       logger.error('CSRF token validation failed')
       throw new Error('Security validation failed. Please try again.')
     }
 
-    // Check for date conflicts before creating booking
-    const hasConflict = await checkBookingConflict(booking.propertyId, booking.checkInDate, booking.checkOutDate)
-    if (hasConflict) {
-      logger.error('Booking conflict: dates are already booked for this property')
-      throw new BookingConflictError('These dates are already booked for this property')
-    }
-
     const now = new Date().toISOString()
-
     const bookingData = {
       ...booking,
       createdAt: now,
       status: 'pending' as const
     }
 
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), bookingData)
-    const result = { id: docRef.id, ...bookingData } as Booking
-    return result
+    // Use transaction for atomic conflict check and booking creation
+    const result = await runTransaction(db, async (transaction) => {
+      // Read conflicting bookings atomically
+      const qApproved = query(
+        collection(db, COLLECTION_NAME),
+        where('propertyId', '==', booking.propertyId),
+        where('status', '==', 'approved')
+      )
+      const qPending = query(
+        collection(db, COLLECTION_NAME),
+        where('propertyId', '==', booking.propertyId),
+        where('status', '==', 'pending')
+      )
+      
+      const snapshotApproved = await transaction.getQuery(qApproved)
+      const snapshotPending = await transaction.getQuery(qPending)
+      
+      const allSnapshots = [...snapshotApproved.docs, ...snapshotPending.docs]
+
+      // Check for conflicts
+      const proposedCheckIn = new Date(booking.checkInDate).getTime()
+      const proposedCheckOut = new Date(booking.checkOutDate).getTime()
+
+      for (const doc of allSnapshots) {
+        const existingBooking = doc.data() as Omit<Booking, 'id'>
+        const existingCheckIn = new Date(existingBooking.checkInDate).getTime()
+        const existingCheckOut = new Date(existingBooking.checkOutDate).getTime()
+
+        // Check for overlap
+        if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
+          throw new BookingConflictError('These dates are already booked for this property')
+        }
+      }
+
+      // No conflicts found - create booking
+      const collectionRef = collection(db, COLLECTION_NAME)
+      const newDocRef = doc(collectionRef)
+      transaction.set(newDocRef, bookingData)
+      
+      return { id: newDocRef.id, ...bookingData }
+    })
+
+    return result as Booking
   } catch (error) {
+    if (error instanceof BookingConflictError) {
+      logger.error('Booking conflict:', error.message)
+      throw error
+    }
     logger.error('Error creating booking:', error)
     return null
   }

@@ -27,7 +27,13 @@ interface GeocodeResult {
   lon: string
 }
 const TEST_LISTING_MARKER = '[TEST_DATA]'
-const getTodayISO = (): string => new Date().toISOString().split('T')[0]
+const getTodayISO = (): string => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 const isOccupationExpired = (property: Property): boolean => {
   if (!property.unavailableTo) return false

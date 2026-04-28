@@ -228,7 +228,7 @@ export const createProperty = async (
       images: imageUrls.length > 0 ? imageUrls : property.images,
       createdAt: now,
       updatedAt: now,
-      isActive: true
+      status: 'pending'
     }
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), propertyData)
@@ -453,7 +453,6 @@ export const approveProperty = async (id: string): Promise<boolean> => {
 
     await updateDoc(docRef, {
       status: 'active',
-      isActive: true,
       isFeatured: currentData.listingTier === 'premium',
       updatedAt: new Date().toISOString()
     })
@@ -499,19 +498,24 @@ export const rejectProperty = async (id: string): Promise<boolean> => {
  * @param {string} userName - Display name of the commenter
  * @param {string | undefined} userAvatar - Optional URL to user's avatar image
  * @param {string} text - Comment text content
+ * @param {string} csrfToken - CSRF token for validation
  * @returns {Promise<boolean>} True on success, false if property not found or update fails
- * @throws {Error} On Firestore update failure
- * @example
- * const added = await addCommentToProperty('prop_789', 'user_123', 'John', 'https://...', 'Nice place!')
  */
 export const addCommentToProperty = async (
   propertyId: string,
   userId: string,
   userName: string,
   userAvatar: string | undefined,
-  text: string
+  text: string,
+  csrfToken: string
 ): Promise<boolean> => {
   try {
+    const { validateCsrfToken } = await import('./csrfService')
+    if (!validateCsrfToken(csrfToken)) {
+      logger.error('CSRF token validation failed for addCommentToProperty')
+      throw new Error('Security validation failed. Please try again.')
+    }
+
     const docRef = doc(db, COLLECTION_NAME, propertyId)
     const current = await getDoc(docRef)
 
@@ -643,23 +647,29 @@ export const toggleLikeProperty = async (propertyId: string, userId: string): Pr
 }
 
 /**
- * Add rating to a property by a user (1-5 stars)
+ * Add rating to a property by a user (1-5 stars) with CSRF protection
  * Only users who have booked the property can rate it
  * @param {string} propertyId - Property Firestore document ID
  * @param {string} userId - User Firestore ID
  * @param {number} rating - Rating value (1-5)
  * @param {string} userName - User's name for notification
+ * @param {string} csrfToken - CSRF token for validation
  * @returns {Promise<{success: boolean; hasBooked?: boolean}>} Success status and booking check
- * @example
- * const result = await addRatingToProperty('prop_111', 'user_456', 5, 'John Doe')
  */
 export const addRatingToProperty = async (
   propertyId: string,
   userId: string,
   rating: number,
-  userName: string = 'User'
+  userName: string = 'User',
+  csrfToken: string = ''
 ): Promise<{ success: boolean; hasBooked?: boolean }> => {
   try {
+    const { validateCsrfToken } = await import('./csrfService')
+    if (!validateCsrfToken(csrfToken)) {
+      logger.error('CSRF token validation failed for addRatingToProperty')
+      throw new Error('Security validation failed. Please try again.')
+    }
+
     if (rating < 1 || rating > 5) {
       logger.error('Invalid rating: must be 1-5')
       return { success: false }

@@ -1,24 +1,31 @@
 import { db } from '../config/firebase'
 import * as logger from './logger'
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
+import { validateCsrfToken } from './csrfService'
 
 /**
  * Toggle favorite status for a property for a user (add or remove from favorites)
+ * Requires valid CSRF token for security
  * @param {string} propertyId - Property Firestore document ID
  * @param {string} userId - User Firestore ID
  * @param {boolean} isFavorited - Current favorite status (true if currently favorited)
+ * @param {string} csrfToken - CSRF token for validation
  * @returns {Promise<boolean>} True on success
- * @throws {Error} On Firestore update failure
- * @example
- * await toggleFavorite('prop_123', 'user_456', false) // Add to favorites
- * await toggleFavorite('prop_123', 'user_456', true) // Remove from favorites
+ * @throws {Error} On Firestore update failure or CSRF validation failure
  */
 export const toggleFavorite = async (
   propertyId: string,
   userId: string,
-  isFavorited: boolean
+  isFavorited: boolean,
+  csrfToken: string
 ): Promise<boolean> => {
   try {
+    // Validate CSRF token
+    if (!validateCsrfToken(csrfToken)) {
+      logger.error('CSRF token validation failed for toggleFavorite')
+      throw new Error('Security validation failed. Please try again.')
+    }
+
     const propertyRef = doc(db, 'properties', propertyId)
     
     if (isFavorited) {

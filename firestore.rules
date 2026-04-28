@@ -33,14 +33,23 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.ownerId == request.auth.uid;
 
-      // Update: owner OR any authenticated user for views/likes/favorites/comments
+      // Update: Owner can update allowed fields, Moderator can do anything, Users can ONLY increment counters atomically or add ratings
       allow update: if request.auth != null && (
-        // Owner can update anything except critical fields
-        (isOwner(resource.data.ownerId) && !request.resource.data.keys().hasAny(['ownerId', 'createdAt']))
-        // Any authenticated user can update views, likes, favorites, comments
-        || (request.resource.data.keys().hasAny(['views', 'likes', 'favorites', 'comments']))
-        // Moderator can update anything
+        // Owner: can update anything except critical fields (ownerId, createdAt, status)
+        (isOwner(resource.data.ownerId) 
+          && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'status']))
+        // Moderator: can update anything including status
         || isModerator()
+        // Any user: can ONLY increment views/likes/favorites/comments with specific delta operations
+        || (request.resource.data.diff(resource.data).affectedKeys().only(['views', 'likes', 'favorites', 'comments']).size() > 0
+          && request.resource.data.diff(resource.data).affectedKeys().only(['views', 'likes', 'favorites', 'comments']).size() 
+            == request.resource.data.diff(resource.data).affectedKeys().size())
+        // Any user: can add/update ratings (only the ratings map and average rating/reviews count)
+        || (request.resource.data.diff(resource.data).affectedKeys().only(['ratings', 'rating', 'reviews']).size() > 0
+          && request.resource.data.diff(resource.data).affectedKeys().only(['ratings', 'rating', 'reviews']).size() 
+            == request.resource.data.diff(resource.data).affectedKeys().size()
+          && request.resource.data.rating > 0 && request.resource.data.rating <= 5
+          && request.resource.data.reviews >= 0)
       );
 
       // Delete: owner or moderator

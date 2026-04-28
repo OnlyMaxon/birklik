@@ -1,5 +1,5 @@
 import React from 'react'
-import { Header, Footer } from '../components'
+import { Header, Footer, ErrorBoundary } from '../components'
 import './Layout.css'
 
 interface LayoutProps {
@@ -8,12 +8,14 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="layout">
-      <Header />
-      <main className="main-content">
-        {children}
-      </main>
-      <Footer />
-    </div>
+    <ErrorBoundary>
+      <div className="layout">
+        <Header />
+        <main className="main-content">
+          {children}
+        </main>
+        <Footer />
+      </div>
+    </ErrorBoundary>
   )
 }
