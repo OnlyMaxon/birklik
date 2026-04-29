@@ -1,5 +1,5 @@
 import { db } from '../config/firebase'
-import { collection, doc, addDoc, query, where, getDocs, getDoc, runTransaction, QueryConstraint } from 'firebase/firestore'
+import { collection, doc, query, where, getDocs, getDoc, runTransaction } from 'firebase/firestore'
 import { Booking } from '../types'
 import { validateCsrfToken } from './csrfService'
 import * as logger from './logger'
@@ -51,8 +51,8 @@ export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, 
         where('status', '==', 'pending')
       )
       
-      const snapshotApproved = await transaction.getQuery(qApproved)
-      const snapshotPending = await transaction.getQuery(qPending)
+      const snapshotApproved = await getDocs(qApproved)
+      const snapshotPending = await getDocs(qPending)
       
       const allSnapshots = [...snapshotApproved.docs, ...snapshotPending.docs]
 

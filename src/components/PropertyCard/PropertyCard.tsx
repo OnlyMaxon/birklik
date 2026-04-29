@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
+import { getCsrfToken } from '../../services/csrfService'
 import { Property, Language } from '../../types'
 import './PropertyCard.css'
 import * as logger from '../../services/logger'
@@ -47,7 +48,8 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
 
     setIsFavoriting(true)
     try {
-      await toggleFavorite(property.id, user.id, isFavorited)
+      const csrfToken = getCsrfToken()
+      await toggleFavorite(property.id, user.id, isFavorited, csrfToken)
       setIsFavorited(!isFavorited)
       onFavoriteToggle?.(property.id, !isFavorited)
     } catch (error) {
