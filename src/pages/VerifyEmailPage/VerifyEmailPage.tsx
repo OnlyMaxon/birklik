@@ -69,7 +69,7 @@ export const VerifyEmailPage: React.FC = () => {
         language === 'en'
           ? 'Verification email sent! Check your inbox.'
           : language === 'ru'
-            ? 'Письмо подтверждения отправлено! Проверьте папку "Входящие".'
+            ? 'Письмо подтверждения отправлено! Проверьте папку "Входящие" или папку "Спам".'
             : 'Doğrulama e-poçtu göndərildi! Gələn xanənizi yoxlayın.'
       )
 
