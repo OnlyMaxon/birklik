@@ -324,14 +324,14 @@ export const ru: Translations = {
     days14: '14 дней',
     days30: '30 дней',
     vipFeatures: '✓ VIP значок на объявлении, приоритетная модерация',
-    premiumFeatures: '✓ Значок премиум, топовое размещение, безлимит фото',
+    premiumFeatures: '✓ Премиум-бедж, топовое размещение, 30 фото',
     vipDisplays: 'Видимость топ 3 недели',
     premiumDisplays: 'Профессиональный тариф со всеми функциями'
   },
   validation: {
     emailInvalid: 'Введите корректный email',
     phoneRequired: 'Требуется номер телефона',
-    photoLimit: 'Максимум 4 фото для бесплатного тарифа',
+    photoLimit: 'Максимум фото (Standard/VIP: 20, Premium: 30)',
     descriptionTooLong: 'Описание не более 35 слов',
     addressRequired: 'Для Standard и Premium требуется адрес',
     typeRequired: 'Выберите тип жилья',
@@ -340,10 +340,10 @@ export const ru: Translations = {
     roomsRequired: 'Укажите количество комнат'
   },
   pricing_info: {
-    free_features: '4 фото, короткое описание, скрытая локация',
+    free_features: '20 фото, полное описание, видимая локация',
     standard_features: '20 фото, полное описание, видимая локация',
-    premium_features: '✓ Безлимит фото, 3 недели на главной, видимая локация',
-    vip_features: '✓ VIP значок, приоритетная очередь, безлимит фото'
+    premium_features: '✓ 30 фото, 3 недели на главной, видимая локация',
+    vip_features: '✓ VIP значок, приоритетная модерация, 20 фото'
   },
   support: {
     waitingForReview: 'Объявление на проверке, с вами свяжется поддержка',
@@ -457,7 +457,7 @@ export const ru: Translations = {
     reviews: 'отзывов',
     locationHidden: 'Локация скрыта для плана Стандарт',
     dragDropUpload: 'Перетащите или нажмите чтобы загрузить',
-    maxImages: 'Максимум 4 фото для плана Стандарт',
+    maxImages: 'Максимум 20 фото для планов Standard и VIP',
     maxWords: 'Максимум 35 слов для плана Стандарт',
     minPhotos: 'Пожалуйста, добавьте минимум 2 фото',
     selectDateRange: 'Выберите даты заезда и выезда',
@@ -706,7 +706,8 @@ export const ru: Translations = {
     selectDistrict: 'Выберите район',
     enterPrice: 'Введите действительную цену',
     enterRooms: 'Введите количество комнат',
-    maxImagesStandard: 'Максимум 4 изображения для плана Standard',
+    maxImagesStandard: 'Максимум 20 изображений для планов Standard и VIP',
+    maxImagesPremium: 'Максимум 30 изображений для плана Premium',
     minPhotos: 'Пожалуйста, добавьте минимум 2 фотографии',
     maxWordsStandard: 'Максимум 35 слов для плана Standard',
     setLocationMap: 'Установите локацию на карте',

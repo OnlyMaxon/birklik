@@ -324,14 +324,14 @@ export const en: Translations = {
     days14: "14 days",
     days30: "30 days",
     vipFeatures: "✓ VIP badge on listing, priority moderation",
-    premiumFeatures: "✓ Premium badge, top placement, unlimited photos",
+    premiumFeatures: "✓ Premium badge, top placement, 30 photos",
     vipDisplays: "Top 3 week visibility",
     premiumDisplays: "Professional tier with all features"
   },
   validation: {
     emailInvalid: "Enter a valid email address",
     phoneRequired: "Phone number is required",
-    photoLimit: "Maximum 4 photos for free tier",
+    photoLimit: "Maximum photos (Standard/VIP: 20, Premium: 30)",
     descriptionTooLong: "Keep description to maximum 35 words",
     addressRequired: "Address is required for Standard and Premium",
     typeRequired: "Select property type",
@@ -340,10 +340,10 @@ export const en: Translations = {
     roomsRequired: "Enter number of rooms"
   },
   pricing_info: {
-    free_features: "4 photos, short description, hidden location",
+    free_features: "20 photos, full description, location visible",
     standard_features: "20 photos, full description, location visible",
-    premium_features: "✓ Unlimited photos, featured 3 weeks on homepage, visible location",
-    vip_features: "✓ VIP badge, priority moderation, unlimited photos"
+    premium_features: "✓ 30 photos, featured 3 weeks on homepage, visible location",
+    vip_features: "✓ VIP badge, priority moderation, 20 photos"
   },
   support: {
     waitingForReview: "Listing pending - support team will contact you",
@@ -457,7 +457,7 @@ export const en: Translations = {
     reviews: "reviews",
     locationHidden: "Location is hidden for Standard plan",
     dragDropUpload: "Drag & drop or click to upload",
-    maxImages: "Maximum 4 images for Standard plan",
+    maxImages: "Maximum 20 images for Standard and VIP plans",
     maxWords: "Maximum 35 words for Standard plan",
     minPhotos: "Please add at least 2 photos",
     selectDateRange: "Select both start and end dates",
@@ -706,7 +706,8 @@ export const en: Translations = {
     selectDistrict: "Please select a district",
     enterPrice: "Please enter a valid price",
     enterRooms: "Please enter number of rooms",
-    maxImagesStandard: "Maximum 4 images for Standard plan",
+    maxImagesStandard: "Maximum 20 images for Standard and VIP plans",
+    maxImagesPremium: "Maximum 30 images for Premium plan",
     minPhotos: "Please add at least 2 photos",
     maxWordsStandard: "Maximum 35 words for Standard plan",
     setLocationMap: "Please set location on map",

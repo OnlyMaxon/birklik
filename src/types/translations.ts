@@ -622,6 +622,7 @@ export interface Translations {
     enterPrice: string
     enterRooms: string
     maxImagesStandard: string
+    maxImagesPremium: string
     minPhotos: string
     maxWordsStandard: string
     setLocationMap: string

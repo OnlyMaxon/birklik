@@ -328,7 +328,7 @@ export const az: Translations = {
   validation: {
     emailInvalid: "Etibarlı email ünvanı daxil edin",
     phoneRequired: "Telefon nömrəsi daxil edin",
-    photoLimit: "Ödənişsiz paket üçün maksimum 4 foto",
+    photoLimit: "Maksimum fotolar (Standard/VIP: 20, Premium: 30)",
     descriptionTooLong: "Təsviri maksimum 35 sözə qısaldın",
     addressRequired: "Standart və Premium paketlər üçün ünvan daxil edin",
     typeRequired: "Mülk növü seçin",
@@ -337,10 +337,10 @@ export const az: Translations = {
     roomsRequired: "Otaq sayı daxil edin"
   },
   pricing_info: {
-    free_features: "4 şəkil, qısa təsvir, gizli lokasiya",
+    free_features: "20 şəkil, tam təsvir, açıq lokasiya",
     standard_features: "20 şəkil, tam təsvir, açıq lokasiya",
-    premium_features: "✓ Sonsuz foto, 3 həftə əsas səhifədə, açıq lokasiya",
-    vip_features: "✓ VIP nişanı, prioritetli moderasyon, sonsuz foto"
+    premium_features: "✓ 30 şəkil, 3 həftə əsas səhifədə, açıq lokasiya",
+    vip_features: "✓ VIP nişanı, prioritetli moderasyon, 20 şəkil"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",
@@ -454,7 +454,7 @@ export const az: Translations = {
     reviews: "şərh",
     locationHidden: "Standart paket üçün məkan gizlidir",
     dragDropUpload: "Sürükləyin və ya yükləmə üçün klikləyin",
-    maxImages: "Standart paket üçün maksimum 4 şəkil",
+    maxImages: "Standard və VIP paketlər üçün maksimum 20 şəkil",
     maxWords: "Standart paket üçün maksimum 35 söz",
     minPhotos: "Ən azı 2 şəkil əlavə edin",
     selectDateRange: "Giriş və çıxış tarixini seçin",
@@ -703,7 +703,8 @@ export const az: Translations = {
     selectDistrict: "Rayon seçin",
     enterPrice: "Düzgün qiymət daxil edin",
     enterRooms: "Otaqların sayını daxil edin",
-    maxImagesStandard: "Standard plan üçün maksimum 4 şəkil",
+    maxImagesStandard: "Standard və VIP planı üçün maksimum 20 şəkil",
+    maxImagesPremium: "Premium planı üçün maksimum 30 şəkil",
     minPhotos: "Zəhmət olmasa ən azı 2 fotoşəkil əlavə edin",
     maxWordsStandard: "Standard plan üçün maksimum 35 söz",
     setLocationMap: "Xəritədə lokasiyonuzu qoyun",

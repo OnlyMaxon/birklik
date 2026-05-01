@@ -446,8 +446,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    if (newListing.listingTier === 'standard' && selectedFiles.length > 4) {
+    if ((newListing.listingTier === 'standard' || newListing.listingTier === 'vip') && selectedFiles.length > 20) {
       setError(t.listing.maxImagesStandard)
+      setIsSubmitting(false)
+      return
+    }
+
+    if (newListing.listingTier === 'premium' && selectedFiles.length > 30) {
+      setError(t.listing.maxImagesPremium)
       setIsSubmitting(false)
       return
     }
@@ -1832,7 +1838,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>{newListing.listingTier === 'standard' ? (language === 'ru' ? 'Максимум 4 фото' : language === 'en' ? 'Maximum 4 photos' : 'Maksimum 4 şəkil') : (language === 'en' ? 'Drag & drop or click to upload' : language === 'ru' ? 'Перетащите файлы или нажмите для загрузки' : 'Yükləmək üçün faylları sürüşdürün və ya klik edin')}</p>
+                            <p>
+                              {newListing.listingTier === 'standard' || newListing.listingTier === 'vip' ? (
+                                language === 'en' ? 'Maximum 20 photos' : language === 'ru' ? 'Максимум 20 фото' : 'Maksimum 20 şəkil'
+                              ) : newListing.listingTier === 'premium' ? (
+                                language === 'en' ? 'Maximum 30 photos' : language === 'ru' ? 'Максимум 30 фото' : 'Maksimum 30 şəkil'
+                              ) : (
+                                language === 'en' ? 'Select a plan first' : language === 'ru' ? 'Сначала выберите тариф' : 'Əvvəlcə paket seçin'
+                              )}
+                            </p>
                             {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : language === 'ru' ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>}
                           </div>
                           {selectedFilePreviews.length > 0 && (
