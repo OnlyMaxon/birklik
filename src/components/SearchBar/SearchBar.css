@@ -7,8 +7,8 @@
   padding: 14px 12px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.98);
-  border: 3px solid #ffb703;
-  box-shadow: 0 8px 24px rgba(26, 24, 21, 0.12);
+  border: 3px solid #FF7A00;
+  box-shadow: 0 8px 24px rgba(46, 125, 91, 0.15);
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -76,10 +76,10 @@
   padding: 10px 35px 10px 10px;
   font-size: 15px;
   font-weight: 500;
-  border: 1px solid rgba(205, 186, 154, 0.4);
+  border: 1px solid rgba(203, 213, 225, 0.6);
   border-radius: 8px;
-  background: #fffcf7;
-  color: #2f2a24;
+  background: #F8F9FA;
+  color: #1A1A1A;
   transition: all 0.2s ease;
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
@@ -94,8 +94,8 @@
 
 .search-field-input:focus {
   outline: none;
-  border-color: rgba(184, 143, 73, 0.6);
-  box-shadow: 0 0 0 3px rgba(187, 149, 82, 0.12);
+  border-color: #2E7D5B;
+  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.14);
 }
 
 .search-suggestions {
@@ -104,10 +104,10 @@
   right: 0;
   top: calc(100% + 4px);
   z-index: 20;
-  border: 1px solid rgba(162, 130, 86, 0.25);
+  border: 1px solid rgba(203, 213, 225, 0.6);
   border-radius: 8px;
-  background: #fffdf9;
-  box-shadow: 0 8px 20px rgba(48, 35, 20, 0.12);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(46, 125, 91, 0.12);
   padding: 4px;
   max-height: 200px;
   overflow-y: auto;
@@ -120,7 +120,7 @@
   padding: 8px 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #4a3928;
+  color: #1A1A1A;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -129,7 +129,7 @@
 
 .search-suggestion-item:hover,
 .search-suggestion-item.active {
-  background: rgba(183, 146, 93, 0.15);
+  background: rgba(46, 125, 91, 0.1);
 }
 
 /* Dates Field */
@@ -172,10 +172,10 @@
   flex: 1;
   min-width: 0;
   box-sizing: border-box;
-  border: 1px solid rgba(205, 186, 154, 0.4);
+  border: 1px solid rgba(203, 213, 225, 0.6);
   border-radius: 8px;
-  background: #fffcf7;
-  color: #2f2a24;
+  background: #F8F9FA;
+  color: #1A1A1A;
   -webkit-appearance: none;
   -webkit-border-radius: 8px;
   -webkit-box-sizing: border-box;
@@ -239,7 +239,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #b7925d;
+  background: #2E7D5B;
   color: white;
   border: none;
   border-radius: 10px;
@@ -253,7 +253,7 @@
 }
 
 .search-btn-filters:active {
-  background: #9b7a48;
+  background: #1d5940;
 }
 
 .search-filter-badge {
@@ -276,7 +276,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #b7925d;
+  background: linear-gradient(135deg, #cc6200, #FF7A00);
   color: white;
   border: none;
   border-radius: 10px;
@@ -288,7 +288,7 @@
 }
 
 .search-btn-main:active {
-  background: #9b7a48;
+  background: #cc6200;
 }
 
 /* Mobile Optimizations */
@@ -446,8 +446,8 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: #fffcf7;
-  border: 1px solid rgba(205, 186, 154, 0.4);
+  background: #F8F9FA;
+  border: 1px solid rgba(203, 213, 225, 0.6);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -456,13 +456,13 @@
 }
 
 .search-date-button:hover {
-  border-color: rgba(184, 143, 73, 0.6);
-  box-shadow: 0 0 0 3px rgba(187, 149, 82, 0.12);
+  border-color: #2E7D5B;
+  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.12);
 }
 
 .search-date-button svg {
   flex-shrink: 0;
-  color: #9b7448;
+  color: #2E7D5B;
   width: 20px;
   height: 20px;
 }

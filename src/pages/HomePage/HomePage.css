@@ -41,7 +41,7 @@
 }
 
 .properties-section {
-  background: linear-gradient(180deg, #faf6f0 0%, #f3ebe0 100%);
+  background: linear-gradient(180deg, #F8F9FA 0%, #F1F5F9 100%);
   padding-top: 2.6rem;
 }
 
@@ -81,11 +81,11 @@
   position: sticky;
   top: 88px;
   align-self: start;
-  background: #faf6f0;
-  border: 1px solid #e7dac8;
+  background: #F8F9FA;
+  border: 1px solid #E2E8F0;
   border-radius: 22px;
   padding: 0.65rem;
-  box-shadow: 0 10px 18px rgba(70, 53, 36, 0.1);
+  box-shadow: 0 10px 18px rgba(46, 125, 91, 0.1);
 }
 
 .premium-results-map .map-container {
@@ -101,7 +101,7 @@
 .premium-properties-grid {
   display: grid;
   margin-top: 0;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.72rem;
 }
 
@@ -115,22 +115,38 @@
   }
 }
 
+/* Compact view — desktop */
+.premium-properties-grid.compact-view {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.55rem;
+}
+
+.premium-results-shell.with-map .premium-properties-grid.compact-view {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1320px) {
+  .premium-results-shell.with-map .premium-properties-grid.compact-view {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .premium-results-list::-webkit-scrollbar {
   width: 8px;
 }
 
 .premium-results-list::-webkit-scrollbar-track {
-  background: #efe5d8;
+  background: #E2E8F0;
   border-radius: 999px;
 }
 
 .premium-results-list::-webkit-scrollbar-thumb {
-  background: #b99f7e;
+  background: #94A3B8;
   border-radius: 999px;
 }
 
 .premium-results-list::-webkit-scrollbar-thumb:hover {
-  background: #9f8462;
+  background: #6B7280;
 }
 
 .premium-properties-grid .property-card {
@@ -197,7 +213,12 @@
   }
 
   .premium-properties-grid {
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .premium-properties-grid.compact-view {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
   }
 }
 
@@ -214,8 +235,13 @@
   }
 
   .premium-properties-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.55rem;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 0.6rem;
+  }
+
+  .premium-properties-grid.compact-view {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem;
   }
 }
 
@@ -238,7 +264,12 @@
   }
 
   .premium-properties-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(1, 1fr);
+    gap: 0.5rem;
+  }
+
+  .premium-properties-grid.compact-view {
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
   }
 

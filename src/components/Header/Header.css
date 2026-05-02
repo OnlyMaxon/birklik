@@ -4,12 +4,12 @@
   z-index: 120;
   width: 100%;
   background:
-    radial-gradient(circle at 8% -20%, rgba(203, 173, 131, 0.28), transparent 42%),
-    radial-gradient(circle at 98% 0%, rgba(255, 255, 255, 0.1), transparent 36%),
-    linear-gradient(120deg, rgba(42, 34, 26, 0.94), rgba(59, 49, 37, 0.92));
+    radial-gradient(circle at 8% -20%, rgba(74, 153, 113, 0.2), transparent 42%),
+    radial-gradient(circle at 98% 0%, rgba(77, 168, 218, 0.08), transparent 36%),
+    linear-gradient(120deg, rgba(18, 46, 33, 0.97), rgba(26, 64, 46, 0.95));
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(236, 219, 191, 0.2);
-  box-shadow: 0 12px 30px rgba(29, 23, 17, 0.34);
+  border-bottom: 1px solid rgba(74, 153, 113, 0.25);
+  box-shadow: 0 12px 30px rgba(18, 46, 33, 0.3);
   --header-height: 86px;
 }
 
@@ -48,7 +48,7 @@
   height: auto;
   display: block;
   image-rendering: -webkit-optimize-contrast;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.34)) contrast(1.1) saturate(1.05);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
   object-fit: contain;
 }
 
@@ -76,13 +76,13 @@
 }
 
 .nav-link:hover {
-  color: #e9c892;
-  border-bottom-color: #e9c892;
+  color: #FF7A00;
+  border-bottom-color: #FF7A00;
 }
 
 .nav-link.active {
-  color: #e9c892;
-  border-bottom-color: #e9c892;
+  color: #FF7A00;
+  border-bottom-color: #FF7A00;
 }
 
 .nav-link.active ~ .user-menu button,
@@ -145,7 +145,7 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: #d84949;
+  background-color: #FF7A00;
   color: white;
   font-size: 0.65rem;
   font-weight: 700;
@@ -156,16 +156,16 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 2px solid rgba(42, 34, 26, 0.94);
+  border: 2px solid rgba(18, 46, 33, 0.97);
   animation: pulse-badge 2s infinite;
 }
 
 @keyframes pulse-badge {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(216, 73, 73, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 122, 0, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(216, 73, 73, 0);
+    box-shadow: 0 0 0 6px rgba(255, 122, 0, 0);
   }
 }
 
@@ -188,12 +188,12 @@
 }
 
 .user-profile:hover {
-  background-color: rgba(203, 173, 131, 0.15);
+  background-color: rgba(74, 153, 113, 0.15);
   transform: translateY(-2px);
 }
 
 .user-profile:focus-visible {
-  outline: 2px solid rgba(203, 173, 131, 0.5);
+  outline: 2px solid rgba(255, 122, 0, 0.5);
   outline-offset: 2px;
 }
 
@@ -201,13 +201,13 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #b7925d, #d4ad76);
+  background: linear-gradient(135deg, #2E7D5B, #4a9971);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  border: 2px solid rgba(236, 219, 191, 0.3);
+  border: 2px solid rgba(74, 153, 113, 0.4);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -218,7 +218,7 @@
 }
 
 .avatar-placeholder {
-  color: #2f2419;
+  color: #ffffff;
   font-weight: 700;
   font-size: 1.1rem;
 }
@@ -242,17 +242,17 @@
   width: 38px;
   height: 38px;
   border-radius: 8px;
-  border: 1px solid rgba(236, 219, 191, 0.25);
-  background: rgba(255, 247, 234, 0.1);
-  color: rgba(255, 247, 234, 0.94);
+  border: 1px solid rgba(74, 153, 113, 0.3);
+  background: rgba(74, 153, 113, 0.1);
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.24s ease;
   padding: 0;
 }
 
 .logout-btn:hover {
-  background: rgba(216, 73, 73, 0.15);
-  border-color: rgba(216, 73, 73, 0.3);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
   color: #ff7b7b;
 }
 
@@ -273,14 +273,14 @@
 }
 
 .header .btn-accent {
-  background: linear-gradient(135deg, #b7925d 0%, #d4ad76 100%);
-  color: #2f2419;
-  box-shadow: 0 10px 22px rgba(55, 43, 29, 0.28);
+  background: linear-gradient(135deg, #cc6200 0%, #FF7A00 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(255, 122, 0, 0.3);
 }
 
 .header .btn-accent:hover {
-  background: linear-gradient(135deg, #d4ad76 0%, #b7925d 100%);
-  color: #2f2419;
+  background: linear-gradient(135deg, #FF7A00 0%, #ff9833 100%);
+  color: #ffffff;
 }
 
 .header .btn-ghost {
@@ -317,8 +317,8 @@
 .language-switcher {
   display: flex;
   gap: 0.22rem;
-  background: rgba(255, 246, 232, 0.12);
-  border: 1px solid rgba(236, 219, 191, 0.25);
+  background: rgba(74, 153, 113, 0.12);
+  border: 1px solid rgba(74, 153, 113, 0.28);
   border-radius: 999px;
   padding: 0.2rem;
 }
@@ -327,7 +327,7 @@
   padding: 0.36rem 0.7rem;
   font-size: 0.78rem;
   font-weight: 700;
-  color: rgba(240, 225, 201, 0.78);
+  color: rgba(255, 255, 255, 0.78);
   border-radius: 999px;
   transition: var(--transition);
 }
@@ -337,8 +337,8 @@
 }
 
 .lang-btn.active {
-  background: linear-gradient(135deg, #b7925d, #d8b27f);
-  color: #2f2419;
+  background: linear-gradient(135deg, #FF7A00, #ff9833);
+  color: #ffffff;
 }
 
 .menu-toggle {
@@ -346,13 +346,13 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  border: 1px solid rgba(236, 219, 191, 0.28);
-  background: rgba(255, 247, 234, 0.1);
+  border: 1px solid rgba(74, 153, 113, 0.3);
+  background: rgba(74, 153, 113, 0.1);
   transition: var(--transition);
 }
 
 .menu-toggle:hover {
-  background: rgba(255, 247, 234, 0.18);
+  background: rgba(74, 153, 113, 0.2);
 }
 
 .mobile-menu-backdrop {
@@ -418,7 +418,7 @@
     --header-height: 72px;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: linear-gradient(120deg, #2a221a 0%, #3b3126 100%);
+    background: linear-gradient(120deg, #12302110%, #1a4030 100%);
   }
 
   .menu-toggle {
@@ -459,13 +459,13 @@
     right: 0.75rem;
     bottom: auto;
     max-height: calc(100dvh - 88px);
-    background: linear-gradient(170deg, #3d3124 0%, #2d241b 100%);
+    background: linear-gradient(170deg, #1a4030 0%, #122e20 100%);
     flex-direction: column;
     align-items: stretch;
     padding: 1rem;
     gap: 0.5rem;
     border-radius: 16px;
-    border: 1px solid rgba(236, 219, 191, 0.24);
+    border: 1px solid rgba(74, 153, 113, 0.28);
     transform: translateY(-16px) scale(0.98);
     opacity: 0;
     visibility: hidden;
@@ -522,7 +522,7 @@
     flex-direction: column;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(236, 219, 191, 0.15);
+    border-top: 1px solid rgba(74, 153, 113, 0.2);
   }
 
   .user-profile {

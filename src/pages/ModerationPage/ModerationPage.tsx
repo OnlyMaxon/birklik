@@ -6,11 +6,12 @@ import { useAuth, useLanguage } from '../../context'
 import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty } from '../../services'
 import { createListingRejectedNotification } from '../../services/notificationsService'
 import { getAllReports, closeReport } from '../../services/reportService'
+import { getAllUsers, UserRecord } from '../../services/userService'
 import { isModerator } from '../../config/constants'
 import { Language, Property, CommentReport } from '../../types'
 import './ModerationPage.css'
 
-type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings'
+type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'people'
 
 export const ModerationPage: React.FC = () => {
   const { isAuthenticated, firebaseUser } = useAuth()
@@ -27,6 +28,9 @@ export const ModerationPage: React.FC = () => {
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
   const [isClosingReport, setIsClosingReport] = React.useState<string | null>(null)
   const [isDeletingListing, setIsDeletingListing] = React.useState<string | null>(null)
+  const [allUsers, setAllUsers] = React.useState<UserRecord[]>([])
+  const [userSearch, setUserSearch] = React.useState('')
+  const [selectedUser, setSelectedUser] = React.useState<UserRecord | null>(null)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [error, setError] = React.useState('')
@@ -57,16 +61,18 @@ export const ModerationPage: React.FC = () => {
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)
     setError('')
-    const [listings, comments, reports, allProps] = await Promise.all([
+    const [listings, comments, reports, allProps, users] = await Promise.all([
       getPendingProperties(),
       getAllCommentsForModeration(),
       getAllReports(),
-      getAllProperties()
+      getAllProperties(),
+      getAllUsers()
     ])
     setPendingListings(listings)
     setAllComments(comments)
     setAllReports(reports)
     setAllListings(allProps)
+    setAllUsers(users)
     setIsLoading(false)
   }, [])
 
@@ -219,6 +225,12 @@ export const ModerationPage: React.FC = () => {
               onClick={() => setActiveTab('allListings')}
             >
               {language === 'en' ? 'All Listings' : language === 'ru' ? 'Все объявления' : 'Bütün Elanlar'} ({allListings.length})
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'people' ? 'active' : ''}`}
+              onClick={() => setActiveTab('people')}
+            >
+              {language === 'en' ? 'People' : language === 'ru' ? 'Люди' : 'İnsanlar'} ({allUsers.length})
             </button>
           </div>
 
@@ -483,10 +495,107 @@ export const ModerationPage: React.FC = () => {
                 </div>
               )}
             </div>
+          ) : activeTab === 'people' ? (
+            // PEOPLE TAB
+            <div>
+              <input
+                type="text"
+                className="people-search-input"
+                placeholder={language === 'en' ? 'Search by name or email...' : language === 'ru' ? 'Поиск по имени или email...' : 'Ad və ya email ilə axtarın...'}
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+              />
+
+              {allUsers.length === 0 ? (
+                <div className="people-empty">
+                  {language === 'en' ? 'No users found.' : language === 'ru' ? 'Пользователи не найдены.' : 'İstifadəçi tapılmadı.'}
+                </div>
+              ) : (
+                <div className="people-list">
+                  {allUsers
+                    .filter(u => {
+                      const q = userSearch.toLowerCase()
+                      return !q || u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)
+                    })
+                    .map(u => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        className="people-list-item"
+                        onClick={() => setSelectedUser(u)}
+                      >
+                        <div className="people-avatar">
+                          {u.avatar
+                            ? <img src={u.avatar} alt={u.name} />
+                            : (u.name?.charAt(0) || '?').toUpperCase()}
+                        </div>
+                        <div className="people-info">
+                          <div className="people-name">{u.name || '—'}</div>
+                          <div className="people-email">{u.email || '—'}</div>
+                        </div>
+                        <svg className="people-chevron" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
           ) : null
           }
           </div>
         </div>
+
+        {/* User Info Popup */}
+        {selectedUser && (
+          <div className="user-popup-overlay" onClick={() => setSelectedUser(null)}>
+            <div className="user-popup" onClick={e => e.stopPropagation()}>
+              <button type="button" className="user-popup-close" onClick={() => setSelectedUser(null)}>✕</button>
+
+              <div className="user-popup-avatar">
+                {selectedUser.avatar
+                  ? <img src={selectedUser.avatar} alt={selectedUser.name} />
+                  : (selectedUser.name?.charAt(0) || '?').toUpperCase()}
+              </div>
+
+              <div className="user-popup-name">{selectedUser.name || '—'}</div>
+
+              <div className="user-popup-details">
+                <div className="user-popup-row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  <div>
+                    <div className="user-popup-label">Email</div>
+                    <span>{selectedUser.email || '—'}</span>
+                  </div>
+                </div>
+                {selectedUser.phone && (
+                  <div className="user-popup-row">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.64 3.41 2 2 0 0 1 3.62 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <div>
+                      <div className="user-popup-label">{language === 'en' ? 'Phone' : language === 'ru' ? 'Телефон' : 'Telefon'}</div>
+                      <span>{selectedUser.phone}</span>
+                    </div>
+                  </div>
+                )}
+                {selectedUser.createdAt && (
+                  <div className="user-popup-row">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <div>
+                      <div className="user-popup-label">{language === 'en' ? 'Registered' : language === 'ru' ? 'Зарегистрирован' : 'Qeydiyyat'}</div>
+                      <span>{new Date(selectedUser.createdAt).toLocaleDateString(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Rejection Modal */}
         {showRejectModal && selectedPropertyForReject && (

@@ -16,25 +16,25 @@
 }
 
 .filters-top-row .btn-outline {
-  border-color: rgba(121, 99, 72, 0.34);
-  color: #6e5436;
-  background: rgba(255, 253, 248, 0.86);
+  border-color: rgba(46, 125, 91, 0.35);
+  color: #2E7D5B;
+  background: rgba(248, 249, 250, 0.9);
 }
 
 .filters-top-row .btn-outline:hover {
-  border-color: #9b7448;
-  color: #5f462c;
-  background: rgba(184, 151, 93, 0.18);
+  border-color: #2E7D5B;
+  color: #1d5940;
+  background: rgba(46, 125, 91, 0.1);
 }
 
 .filters-top-row .btn-primary {
-  background: linear-gradient(135deg, #9b7448 0%, #b7925d 100%);
-  color: #fff8ef;
-  box-shadow: 0 10px 20px rgba(80, 62, 40, 0.22);
+  background: linear-gradient(135deg, #1d5940 0%, #2E7D5B 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(46, 125, 91, 0.22);
 }
 
 .filters-top-row .btn-primary:hover {
-  background: linear-gradient(135deg, #b7925d 0%, #9b7448 100%);
+  background: linear-gradient(135deg, #2E7D5B 0%, #4a9971 100%);
 }
 
 .filters-toggle {
@@ -42,11 +42,11 @@
 }
 
 .filters-panel {
-  background: linear-gradient(180deg, rgba(255, 254, 251, 0.98), rgba(246, 239, 230, 0.98));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(241, 245, 249, 0.99));
   border-radius: 20px;
   padding: 1.4rem;
-  border: 1px solid rgba(121, 99, 72, 0.2);
-  box-shadow: 0 18px 34px rgba(71, 57, 37, 0.11);
+  border: 1px solid rgba(46, 125, 91, 0.15);
+  box-shadow: 0 18px 34px rgba(46, 125, 91, 0.1);
   display: none;
 }
 
@@ -69,32 +69,32 @@
 
 .city-inline-filter {
   grid-column: 1 / -1;
-  border: 1px solid rgba(121, 99, 72, 0.2);
+  border: 1px solid rgba(46, 125, 91, 0.15);
   border-radius: 12px;
   padding: 0.72rem;
-  background: rgba(255, 252, 246, 0.84);
+  background: rgba(248, 249, 250, 0.9);
 }
 
 .filter-group label {
   font-weight: 700;
-  color: #5a4a38;
+  color: #374151;
   font-size: 0.875rem;
 }
 
 .filter-group select,
 .filter-group input {
   padding: 0.68rem 0.8rem;
-  border: 1px solid rgba(126, 101, 73, 0.24);
+  border: 1px solid rgba(203, 213, 225, 0.8);
   border-radius: 12px;
   font-size: 0.875rem;
-  background-color: #fffdf8;
+  background-color: #ffffff;
 }
 
 .filter-group select:focus,
 .filter-group input:focus {
-  border-color: #b38a57;
+  border-color: #2E7D5B;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(179, 138, 87, 0.2);
+  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.15);
 }
 
 .filters-active-count {
@@ -104,7 +104,7 @@
   min-width: 1.3rem;
   height: 1.3rem;
   border-radius: 999px;
-  background: #9b7448;
+  background: #FF7A00;
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
@@ -122,10 +122,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  border: 1px solid rgba(153, 115, 66, 0.3);
+  border: 1px solid rgba(46, 125, 91, 0.3);
   border-radius: 999px;
-  background: rgba(184, 151, 93, 0.14);
-  color: #654e33;
+  background: rgba(46, 125, 91, 0.1);
+  color: #1d5940;
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.24rem 0.56rem;
@@ -154,10 +154,10 @@
 
 .filters-extended {
   margin-top: 0.95rem;
-  border: 1px solid rgba(121, 99, 72, 0.2);
+  border: 1px solid rgba(46, 125, 91, 0.15);
   border-radius: 14px;
   padding: 0.9rem;
-  background: rgba(255, 252, 246, 0.82);
+  background: rgba(248, 249, 250, 0.85);
   display: grid;
   gap: 0.9rem;
 }
@@ -165,7 +165,7 @@
 .extended-block h4 {
   margin-bottom: 0.55rem;
   font-size: 0.87rem;
-  color: #654d31;
+  color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -193,16 +193,16 @@
   height: 1.25rem;
   border-radius: 999px;
   font-size: 0.72rem;
-  background: #9b7448;
+  background: #FF7A00;
   color: #fff;
   font-weight: 700;
 }
 
 .section-clear-btn {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid rgba(46, 125, 91, 0.24);
   border-radius: 999px;
-  background: #fffdf9;
-  color: #735736;
+  background: #ffffff;
+  color: #2E7D5B;
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.2rem 0.55rem;
@@ -216,18 +216,19 @@
 }
 
 .quick-chip {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid rgba(203, 213, 225, 0.7);
   border-radius: 999px;
-  background: rgba(255, 253, 250, 0.95);
-  color: #705538;
+  background: rgba(255, 255, 255, 0.95);
+  color: #374151;
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.24rem 0.58rem;
 }
 
 .quick-chip.active {
-  border-color: #9b7448;
-  background: rgba(184, 151, 93, 0.2);
+  border-color: #2E7D5B;
+  background: rgba(46, 125, 91, 0.12);
+  color: #1d5940;
 }
 
 .chip-grid {
@@ -246,10 +247,10 @@
   gap: 0.45rem;
   padding: 0.45rem 0.5rem;
   border-radius: 10px;
-  border: 1px solid rgba(121, 99, 72, 0.2);
-  background: #fffdf8;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  background: #ffffff;
   font-size: 0.82rem;
-  color: #644e34;
+  color: #374151;
 }
 
 .filter-chip input {
@@ -266,7 +267,7 @@ input[type="checkbox"],
   appearance: checkbox !important;
   -webkit-appearance: checkbox !important;
   -moz-appearance: checkbox !important;
-  accent-color: #9b7448 !important;
+  accent-color: #2E7D5B !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
   padding: 0 !important;
@@ -285,16 +286,16 @@ input[type="checkbox"],
 .city-picker-header label {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #5f4b34;
+  color: #374151;
 }
 
 .city-picker-header select,
 .city-search-input {
   padding: 0.58rem 0.7rem;
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid rgba(203, 213, 225, 0.7);
   border-radius: 10px;
   font-size: 0.84rem;
-  background: #fffdf8;
+  background: #ffffff;
 }
 
 .city-tabs {
@@ -305,19 +306,19 @@ input[type="checkbox"],
 }
 
 .city-tab {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid rgba(203, 213, 225, 0.7);
   border-radius: 999px;
   padding: 0.35rem 0.65rem;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #6f5537;
-  background: #fffdf8;
+  color: #4B5563;
+  background: #ffffff;
 }
 
 .city-tab.active {
-  background: #9b7448;
+  background: #2E7D5B;
   color: #fff;
-  border-color: #9b7448;
+  border-color: #2E7D5B;
 }
 
 .city-search-input {
@@ -328,9 +329,9 @@ input[type="checkbox"],
 .city-option-list {
   max-height: 190px;
   overflow-y: auto;
-  border: 1px solid rgba(121, 99, 72, 0.2);
+  border: 1px solid rgba(203, 213, 225, 0.7);
   border-radius: 10px;
-  background: #fffdf9;
+  background: #ffffff;
   padding: 0.2rem;
 }
 
@@ -341,18 +342,18 @@ input[type="checkbox"],
   padding: 0.42rem 0.5rem;
   border-radius: 8px;
   font-size: 0.82rem;
-  color: #6b5539;
+  color: #374151;
 }
 
 .city-option-item:hover {
-  background: rgba(184, 151, 93, 0.14);
+  background: rgba(46, 125, 91, 0.1);
 }
 
 .empty-option-list {
   margin: 0;
   padding: 0.65rem;
   font-size: 0.8rem;
-  color: #877866;
+  color: #6B7280;
 }
 
 @media (max-width: 640px) {

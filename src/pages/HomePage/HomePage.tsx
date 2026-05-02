@@ -31,6 +31,7 @@ export const HomePage: React.FC = () => {
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(true)
   const [showFilters, setShowFilters] = React.useState(false)
+  const [viewMode, setViewMode] = React.useState<'normal' | 'compact'>('normal')
   const [isDesktop, setIsDesktop] = React.useState(() => window.innerWidth >= 1024)
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
@@ -168,12 +169,15 @@ export const HomePage: React.FC = () => {
             hideFilterToggle={true}
             isOpen={showFilters}
             onOpenChange={setShowFilters}
-            onSearch={handleSearchSubmit}
             mapToggle={!isDesktop ? {
               active: showMap,
               label: mapLabel,
               onClick: () => setShowMap(!showMap)
             } : undefined}
+            viewToggle={{
+              mode: viewMode,
+              onToggle: setViewMode
+            }}
           />
 
           {isLoading && <Loading message={t.messages.loading} />}
@@ -187,10 +191,10 @@ export const HomePage: React.FC = () => {
           {!isLoading && filteredProperties.length > 0 ? (
             <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
               <div className="premium-results-list">
-                <div className="properties-grid premium-properties-grid">
+                <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
                   {filteredProperties.map((property) => (
-                    <PropertyCard 
-                      key={property.id} 
+                    <PropertyCard
+                      key={property.id}
                       property={property}
                       checkIn={filters.checkIn}
                       checkOut={filters.checkOut}

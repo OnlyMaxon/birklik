@@ -19,12 +19,16 @@ interface FiltersProps {
     label: string
     onClick: () => void
   }
+  viewToggle?: {
+    mode: 'normal' | 'compact'
+    onToggle: (mode: 'normal' | 'compact') => void
+  }
 }
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
-export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, hideFilterToggle = false, isOpen = false, onOpenChange, onSearch, mapToggle }) => {
+export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onClear, hideTypeFilter = false, hideFilterToggle = false, isOpen = false, onOpenChange, onSearch, mapToggle, viewToggle }) => {
   const { t, language } = useLanguage()
 
   const [showMore, setShowMore] = React.useState(false)
@@ -157,6 +161,28 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
               <circle cx="12" cy="10" r="3"/>
             </svg>
             {mapToggle.label}
+          </button>
+        )}
+        {viewToggle && (
+          <button
+            className={`btn ${viewToggle.mode === 'compact' ? 'btn-primary' : 'btn-outline'} view-toggle-btn`}
+            onClick={() => viewToggle.onToggle(viewToggle.mode === 'compact' ? 'normal' : 'compact')}
+            title={viewToggle.mode === 'compact'
+              ? (language === 'en' ? 'Normal view' : language === 'ru' ? 'Обычный вид' : 'Normal görünüş')
+              : (language === 'en' ? 'Compact view' : language === 'ru' ? 'Компактный вид' : 'Kompakt görünüş')}
+          >
+            {viewToggle.mode === 'compact' ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="9" height="9"/><rect x="13" y="2" width="9" height="9"/><rect x="2" y="13" width="9" height="9"/><rect x="13" y="13" width="9" height="9"/>
+              </svg>
+            )}
+            {viewToggle.mode === 'compact'
+              ? (language === 'en' ? 'Normal' : language === 'ru' ? 'Обычный' : 'Normal')
+              : (language === 'en' ? 'Compact' : language === 'ru' ? 'Компактный' : 'Kompakt')}
           </button>
         )}
       </div>
