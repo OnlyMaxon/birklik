@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(node -e ' *)",
+      "Bash(grep -r \"rgba\\(46, 125, 91\" src/ --include=\"*.css\" -l)",
+      "Bash(grep -r \"#2E7D5B\\\\|#4a9971\\\\|#1d5940\\\\|#FF7A00\\\\|ff7a00\\\\|#4DA8DA\" src/ --include=\"*.css\" -l)"
     ]
   }
 }
