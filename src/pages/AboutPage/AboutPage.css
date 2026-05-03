@@ -5,7 +5,7 @@
 }
 
 .about-hero {
-  background: linear-gradient(135deg, #b7925d 0%, #9b7448 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
   padding: 4rem 2rem;
   text-align: center;
@@ -20,9 +20,9 @@
 
 .about-content {
   flex: 1;
-  background: white;
+  background: var(--white);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(48, 35, 20, 0.08);
+  box-shadow: var(--shadow-sm);
   margin: 2rem;
   padding: 3rem;
   max-width: 900px;
@@ -41,14 +41,14 @@
 .about-section h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #b7925d;
+  color: var(--primary-color);
   margin: 0 0 1rem 0;
 }
 
 .about-section p {
   font-size: 1.05rem;
   line-height: 1.8;
-  color: #2f2a24;
+  color: var(--text-color);
   margin: 0;
 }
 
@@ -61,7 +61,7 @@
 .about-list li {
   font-size: 1.05rem;
   line-height: 1.8;
-  color: #2f2a24;
+  color: var(--text-color);
   margin-bottom: 0.75rem;
 }
 

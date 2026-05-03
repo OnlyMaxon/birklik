@@ -1,5 +1,5 @@
 .terms-hero {
-  background: linear-gradient(135deg, #b7925d 0%, #9b7a48 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   padding: 3rem 0;
   margin-bottom: 2rem;
   color: white;
@@ -25,10 +25,10 @@
 }
 
 .terms-body {
-  background: white;
+  background: var(--white);
   border-radius: 16px;
   padding: 2.5rem;
-  box-shadow: 0 4px 16px rgba(48, 35, 20, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .terms-section {
@@ -45,19 +45,19 @@
   gap: 0.75rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #2f2a24;
+  color: var(--text-color);
   margin-bottom: 1rem;
   line-height: 1.4;
 }
 
 .section-number {
-  color: #b7925d;
+  color: var(--primary-color);
   flex-shrink: 0;
   font-weight: 700;
 }
 
 .terms-section-content {
-  color: #4a3f35;
+  color: var(--gray-700);
   font-size: 0.95rem;
   line-height: 1.7;
 }
@@ -77,7 +77,7 @@
 
 .terms-section-content strong {
   font-weight: 700;
-  color: #2f2a24;
+  color: var(--text-color);
 }
 
 @media (max-width: 768px) {

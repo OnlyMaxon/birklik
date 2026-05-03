@@ -1,6 +1,6 @@
 .moderation-page {
   padding: 2rem 0;
-  background: linear-gradient(180deg, #F8F9FA 0%, #F1F5F9 100%);
+  background: linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%);
   min-height: calc(100dvh - 180px);
 }
 
@@ -17,11 +17,11 @@
 .moderation-header h1 {
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 3vw, 2rem);
-  color: #1A1A1A;
+  color: var(--text-color);
 }
 
 .moderation-header p {
-  color: #6B7280;
+  color: var(--neutral);
 }
 
 /* Tabs */
@@ -39,7 +39,7 @@
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #6B7280;
+  color: var(--neutral);
   cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 3px solid transparent;
@@ -47,12 +47,12 @@
 }
 
 .tab-btn:hover {
-  color: #1A1A1A;
+  color: var(--text-color);
 }
 
 .tab-btn.active {
-  color: #2E7D5B;
-  border-bottom-color: #2E7D5B;
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
 }
 
 .moderation-empty {
@@ -75,7 +75,7 @@
   align-items: center;
   padding: 1rem;
   border: 1px solid var(--gray-200);
-  background: #ffffff;
+  background: var(--white);
   min-width: 0;
 }
 
@@ -87,21 +87,21 @@
 }
 
 .moderation-content h3 {
-  color: #1A1A1A;
+  color: var(--text-color);
   margin-bottom: 0.3rem;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .moderation-meta {
-  color: #2E7D5B;
+  color: var(--primary-color);
   font-weight: 700;
   font-size: 0.9rem;
   margin-bottom: 0.3rem;
 }
 
 .moderation-description {
-  color: #4B5563;
+  color: var(--gray-600);
   font-size: 0.9rem;
   margin-bottom: 0.4rem;
   display: -webkit-box;
@@ -112,7 +112,7 @@
 }
 
 .moderation-owner {
-  color: #6B7280;
+  color: var(--neutral);
   font-size: 0.84rem;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -128,7 +128,7 @@
 .moderation-comment {
   padding: 1rem;
   border: 1px solid var(--gray-200);
-  background: #ffffff;
+  background: var(--white);
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -143,12 +143,12 @@
 }
 
 .comment-header strong {
-  color: #1A1A1A;
+  color: var(--text-color);
   font-weight: 700;
 }
 
 .comment-date {
-  color: #6B7280;
+  color: var(--neutral);
   font-size: 0.85rem;
   white-space: nowrap;
 }
@@ -164,12 +164,12 @@
 }
 
 .property-label {
-  color: #6B7280;
+  color: var(--neutral);
   font-weight: 600;
 }
 
 .property-link {
-  color: #2E7D5B;
+  color: var(--primary-color);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
@@ -178,12 +178,12 @@
 }
 
 .property-link:hover {
-  color: #1d5940;
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 
 .comment-text {
-  color: #1A1A1A;
+  color: var(--text-color);
   line-height: 1.5;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -254,13 +254,13 @@
 .moderation-modal h2 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #4f3f2d;
+  color: var(--text-color);
   font-family: var(--font-display);
 }
 
 .rejection-title {
   font-weight: 600;
-  color: #4f3f2d;
+  color: var(--text-color);
   margin-bottom: 1.5rem;
   font-size: 1.1rem;
 }
@@ -268,7 +268,7 @@
 .moderation-modal label {
   display: block;
   font-weight: 600;
-  color: #4f3f2d;
+  color: var(--text-color);
   margin-bottom: 0.5rem;
   margin-top: 1rem;
 }
@@ -276,7 +276,7 @@
 .rejection-textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--gray-300);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.95rem;
@@ -285,7 +285,7 @@
 
 .rejection-textarea:focus {
   outline: none;
-  border-color: #2E7D5B;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.12);
 }
 
@@ -302,11 +302,11 @@
 
 .error-message {
   background: #fef2f2;
-  color: #dc2626;
+  color: var(--error);
   padding: 0.75rem 1rem;
   border-radius: 6px;
   margin-bottom: 1rem;
-  border-left: 4px solid #dc2626;
+  border-left: 4px solid var(--error);
 }
 
 /* ===== PEOPLE TAB ===== */
@@ -316,7 +316,7 @@
   border: 1.5px solid var(--gray-300);
   border-radius: 10px;
   font-size: 0.95rem;
-  background: #ffffff;
+  background: var(--white);
   color: var(--text-color);
   margin-bottom: 1.25rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -324,7 +324,7 @@
 
 .people-search-input:focus {
   outline: none;
-  border-color: #2E7D5B;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.14);
 }
 
@@ -338,7 +338,7 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem 1rem;
-  background: #ffffff;
+  background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: 12px;
   cursor: pointer;
@@ -346,7 +346,7 @@
 }
 
 .people-list-item:hover {
-  border-color: #2E7D5B;
+  border-color: var(--primary-color);
   background: rgba(46, 125, 91, 0.04);
   box-shadow: 0 2px 8px rgba(46, 125, 91, 0.1);
 }
@@ -355,11 +355,11 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2E7D5B, #4a9971);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--white);
   font-weight: 700;
   font-size: 1rem;
   flex-shrink: 0;
@@ -380,7 +380,7 @@
 .people-name {
   font-weight: 700;
   font-size: 0.95rem;
-  color: #1A1A1A;
+  color: var(--text-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -388,7 +388,7 @@
 
 .people-email {
   font-size: 0.8rem;
-  color: #6B7280;
+  color: var(--neutral);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -396,7 +396,7 @@
 }
 
 .people-chevron {
-  color: #94A3B8;
+  color: var(--gray-400);
   flex-shrink: 0;
 }
 
@@ -414,7 +414,7 @@
 }
 
 .user-popup {
-  background: #ffffff;
+  background: var(--white);
   border-radius: 16px;
   padding: 1.75rem;
   max-width: 400px;
@@ -434,8 +434,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F1F5F9;
-  color: #6B7280;
+  background: var(--gray-100);
+  color: var(--neutral);
   border: none;
   cursor: pointer;
   font-size: 1.1rem;
@@ -444,19 +444,19 @@
 }
 
 .user-popup-close:hover {
-  background: #E2E8F0;
-  color: #1A1A1A;
+  background: var(--gray-200);
+  color: var(--text-color);
 }
 
 .user-popup-avatar {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2E7D5B, #4a9971);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--white);
   font-weight: 700;
   font-size: 1.8rem;
   margin: 0 auto 1.1rem;
@@ -474,7 +474,7 @@
   text-align: center;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--text-color);
   margin-bottom: 1rem;
 }
 
@@ -488,18 +488,18 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.65rem 0.9rem;
-  background: #F8F9FA;
+  background: var(--gray-50);
   border-radius: 10px;
   font-size: 0.9rem;
 }
 
 .user-popup-row svg {
-  color: #2E7D5B;
+  color: var(--primary-color);
   flex-shrink: 0;
 }
 
 .user-popup-row span {
-  color: #374151;
+  color: var(--gray-700);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -507,7 +507,7 @@
 .user-popup-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #6B7280;
+  color: var(--neutral);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 0.25rem;
@@ -516,6 +516,6 @@
 .people-empty {
   text-align: center;
   padding: 2.5rem 1rem;
-  color: #6B7280;
+  color: var(--neutral);
   font-size: 0.95rem;
 }

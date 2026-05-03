@@ -2,8 +2,8 @@
   padding: 2.1rem 0;
   min-height: calc(100dvh - 200px);
   background:
-    radial-gradient(circle at 90% -15%, rgba(214, 184, 140, 0.24), transparent 34%),
-    linear-gradient(180deg, #f9f6ef 0%, #f3ece1 100%);
+    radial-gradient(circle at 90% -15%, rgba(255,122,0,0.1), transparent 34%),
+    linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%);
 }
 
 .dashboard-header {
@@ -21,8 +21,8 @@
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #b7925d;
-  box-shadow: 0 8px 18px rgba(63, 49, 33, 0.2);
+  border: 3px solid var(--accent-color);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
 }
 
 .user-info h1 {
@@ -44,10 +44,10 @@
 
 /* Sidebar */
 .dashboard-sidebar {
-  background: linear-gradient(170deg, #3d3124 0%, #2e241b 100%);
+  background: linear-gradient(170deg, var(--primary-dark) 0%, var(--primary-dark) 100%);
   border-radius: 20px;
   padding: 1rem;
-  box-shadow: 0 18px 36px rgba(30, 22, 15, 0.28);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.18);
   height: fit-content;
   position: sticky;
   top: 90px;
@@ -65,7 +65,7 @@
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   border-radius: 12px;
-  color: rgba(247, 238, 224, 0.9);
+  color: rgba(255,255,255,0.85);
   font-weight: 700;
   text-align: left;
   transition: var(--transition);
@@ -77,8 +77,8 @@
 }
 
 .nav-item.active {
-  background: linear-gradient(120deg, #b7925d, #d6b17d);
-  color: #2f2419;
+  background: linear-gradient(120deg, var(--accent-color), var(--accent-color));
+  color: var(--primary-dark);
 }
 
 .nav-item svg {
@@ -92,7 +92,7 @@
 
 .tab-content h2 {
   font-size: 1.5rem;
-  color: #4f3f2d;
+  color: var(--text-color);
   margin-bottom: 1.5rem;
 }
 
@@ -116,10 +116,10 @@
   gap: 1.5rem;
   padding: 1rem;
   align-items: center;
-  border: 1px solid rgba(121, 99, 72, 0.2);
+  border: 1px solid var(--gray-200);
   border-radius: 16px;
-  background: linear-gradient(180deg, #fffcf7, #f7efe3);
-  box-shadow: 0 12px 24px rgba(63, 49, 33, 0.12);
+  background: linear-gradient(180deg, var(--white), var(--gray-50));
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
 }
 
 .listing-image {
@@ -159,7 +159,7 @@
 }
 
 .listing-price {
-  color: #8a6a41;
+  color: var(--accent-color);
   font-weight: 800;
 }
 
@@ -198,10 +198,10 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  background: linear-gradient(180deg, #fffefb, #f6eee3);
+  background: linear-gradient(180deg, var(--white), var(--gray-50));
   border-radius: 20px;
-  border: 1px solid rgba(121, 99, 72, 0.2);
-  box-shadow: 0 16px 34px rgba(63, 49, 33, 0.12);
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.06);
 }
 
 .empty-state svg {
@@ -223,10 +223,10 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-  background: linear-gradient(180deg, #fffefb, #f3ecdf);
+  background: linear-gradient(180deg, var(--white), var(--gray-50));
   border-radius: 20px;
   border: 1px solid rgba(16, 133, 107, 0.16);
-  box-shadow: 0 16px 34px rgba(63, 49, 33, 0.12);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.06);
   color: var(--success);
 }
 
@@ -242,10 +242,10 @@
 /* Add Listing Form */
 .add-listing-form {
   padding: 1.7rem;
-  border: 1px solid rgba(121, 99, 72, 0.2);
+  border: 1px solid var(--gray-200);
   border-radius: 20px;
-  background: linear-gradient(180deg, #fffcf7, #f7efe3);
-  box-shadow: 0 16px 32px rgba(63, 49, 33, 0.13);
+  background: linear-gradient(180deg, var(--white), var(--gray-50));
+  box-shadow: 0 16px 32px rgba(0,0,0,0.06);
 }
 
 .listing-plans-header {
@@ -254,12 +254,12 @@
 
 .listing-plans-header h3 {
   font-size: 1.15rem;
-  color: #4f3f2d;
+  color: var(--text-color);
   margin-bottom: 0.2rem;
 }
 
 .listing-plans-header p {
-  color: #7d6f5d;
+  color: var(--neutral);
   font-size: 0.9rem;
 }
 
@@ -272,20 +272,20 @@
 
 .listing-plan-card {
   text-align: left;
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid var(--gray-200);
   border-radius: 14px;
-  background: linear-gradient(180deg, #fffefb, #f7efe3);
+  background: linear-gradient(180deg, var(--white), var(--gray-50));
   padding: 0.85rem;
   transition: var(--transition);
 }
 
 .listing-plan-card.highlighted {
-  background: linear-gradient(165deg, rgba(183, 146, 93, 0.16), rgba(255, 241, 217, 0.28));
+  background: linear-gradient(165deg, rgba(255,122,0,0.08), rgba(255,122,0,0.06));
 }
 
 .listing-plan-card.selected {
-  border-color: #9b7448;
-  box-shadow: 0 0 0 3px rgba(155, 116, 72, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(46,125,91,0.15);
 }
 
 .listing-plan-head {
@@ -297,23 +297,23 @@
 
 .listing-plan-head h4 {
   font-size: 1rem;
-  color: #4f3f2d;
+  color: var(--text-color);
 }
 
 .listing-plan-price strong {
   font-size: 1rem;
-  color: #4f3f2d;
+  color: var(--text-color);
 }
 
 .listing-plan-price span {
   font-size: 0.78rem;
-  color: #7d6f5d;
+  color: var(--neutral);
   margin-left: 0.25rem;
 }
 
 .listing-plan-emphasis {
   margin-top: 0.35rem;
-  color: #8a6a41;
+  color: var(--accent-color);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -321,7 +321,7 @@
 .listing-plan-card ul {
   margin-top: 0.45rem;
   padding-left: 1rem;
-  color: #6f5f4b;
+  color: var(--gray-600);
   font-size: 0.8rem;
   display: grid;
   gap: 0.25rem;
@@ -389,16 +389,16 @@
   height: 1.25rem;
   border-radius: 999px;
   font-size: 0.72rem;
-  background: #9b7448;
+  background: var(--primary-color);
   color: #fff;
   font-weight: 700;
 }
 
 .dashboard-section-clear {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid var(--gray-200);
   border-radius: 999px;
   background: #fff;
-  color: #6f5537;
+  color: var(--gray-700);
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.2rem 0.55rem;
@@ -412,25 +412,25 @@
 }
 
 .dashboard-quick-chip {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid var(--gray-200);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.95);
-  color: #6f5537;
+  color: var(--gray-700);
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.24rem 0.58rem;
 }
 
 .dashboard-quick-chip.active {
-  border-color: #9b7448;
-  background: rgba(183, 146, 93, 0.2);
+  border-color: var(--primary-color);
+  background: rgba(255,122,0,0.1);
 }
 
 .location-tags-section {
   border: 1px solid rgba(16, 68, 140, 0.14);
   border-radius: 14px;
   padding: 0.9rem;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255,255,255,0.72);
 }
 
 .city-picker-form-header {
@@ -448,26 +448,26 @@
 }
 
 .city-tab {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid var(--gray-200);
   border-radius: 999px;
   padding: 0.35rem 0.65rem;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #6f5537;
-  background: #fffdf8;
+  color: var(--gray-700);
+  background: var(--white);
 }
 
 .city-tab.active {
-  background: #9b7448;
+  background: var(--primary-color);
   color: #fff;
-  border-color: #9b7448;
+  border-color: var(--primary-color);
 }
 
 .form-city-option-list {
   max-height: 220px;
   border-radius: 10px;
-  border: 1px solid rgba(121, 99, 72, 0.2);
-  background: #fffdf9;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
   padding: 0.22rem;
   overflow-y: auto;
 }
@@ -479,11 +479,11 @@
   padding: 0.42rem 0.5rem;
   border-radius: 8px;
   font-size: 0.82rem;
-  color: #6b5539;
+  color: var(--gray-700);
 }
 
 .city-option-item:hover {
-  background: rgba(183, 146, 93, 0.14);
+  background: rgba(255,122,0,0.06);
 }
 
 .city-option-item input {
@@ -494,7 +494,7 @@
   margin: 0;
   padding: 0.65rem;
   font-size: 0.8rem;
-  color: #877866;
+  color: var(--neutral);
 }
 
 .checkbox-label {
@@ -512,7 +512,7 @@
 
 .file-upload {
   position: relative;
-  border: 2px dashed rgba(121, 99, 72, 0.26);
+  border: 2px dashed rgba(46,125,91,0.15);
   border-radius: 14px;
   padding: 2rem;
   text-align: center;
@@ -522,7 +522,7 @@
 }
 
 .file-upload:hover {
-  border-color: #9b7448;
+  border-color: var(--primary-color);
 }
 
 .file-upload input {
@@ -545,7 +545,7 @@
 }
 
 .upload-preview-item {
-  border: 1px solid rgba(121, 99, 72, 0.2);
+  border: 1px solid var(--gray-200);
   border-radius: 10px;
   overflow: hidden;
   background: #fff;
@@ -610,30 +610,30 @@
 }
 
 .control-btn.delete-btn {
-  background: rgba(231, 76, 60, 0.9);
+  background: rgba(239,68,68,0.9);
   color: #fff;
 }
 
 .control-btn.delete-btn:hover {
-  background: #e74c3c;
+  background: var(--error);
 }
 
 .control-btn.move-up-btn,
 .control-btn.move-down-btn {
-  background: rgba(52, 152, 219, 0.9);
+  background: rgba(77,168,218,0.9);
   color: #fff;
 }
 
 .control-btn.move-up-btn:hover,
 .control-btn.move-down-btn:hover {
-  background: #3498db;
+  background: var(--secondary-color);
 }
 
 .upload-preview-item .filename {
   display: block;
   padding: 0.35rem 0.4rem;
   font-size: 0.72rem;
-  color: #6b5539;
+  color: var(--gray-700);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -642,7 +642,7 @@
 .location-hint {
   margin: 0 0 0.55rem;
   font-size: 0.82rem;
-  color: #7d6f5d;
+  color: var(--neutral);
 }
 
 .location-search-row {
@@ -658,12 +658,12 @@
 
 .location-search-error {
   margin: 0 0 0.65rem;
-  color: #c03a3a;
+  color: var(--error);
   font-size: 0.82rem;
 }
 
 .listing-location-picker {
-  border: 1px solid rgba(121, 99, 72, 0.24);
+  border: 1px solid var(--gray-200);
   border-radius: 14px;
   overflow: hidden;
   background: #fff;
@@ -694,7 +694,7 @@
 .success-inline-message {
   background-color: #eefaf3;
   border: 1px solid #b9e5cb;
-  color: #1f7a42;
+  color: var(--success);
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
   margin-bottom: 1rem;
@@ -715,9 +715,9 @@
   padding: 1.7rem;
   max-width: min(100%, 500px);
   border-radius: 20px;
-  border: 1px solid rgba(121, 99, 72, 0.2);
-  background: linear-gradient(180deg, #fffefb, #f7efe3);
-  box-shadow: 0 16px 32px rgba(63, 49, 33, 0.13);
+  border: 1px solid var(--gray-200);
+  background: linear-gradient(180deg, var(--white), var(--gray-50));
+  box-shadow: 0 16px 32px rgba(0,0,0,0.06);
 }
 
 .profile-header {
@@ -775,7 +775,7 @@
   position: fixed;
   inset: 0;
   z-index: 190;
-  background: rgba(20, 15, 10, 0.52);
+  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -790,12 +790,12 @@
 
 .availability-modal h3 {
   font-size: 1.18rem;
-  color: #4f3f2d;
+  color: var(--text-color);
   margin-bottom: 0.3rem;
 }
 
 .availability-modal p {
-  color: #7d6f5d;
+  color: var(--neutral);
   margin-bottom: 0.8rem;
   font-size: 0.9rem;
 }
