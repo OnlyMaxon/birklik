@@ -423,7 +423,7 @@
 
 .availability-day.selectable:hover:not(.busy) {
   background: rgba(255,122,0,0.1);
-  border-color: rgba(121, 99, 72, 0.3);
+  border-color: rgba(46, 125, 91, 0.25);
 }
 
 .availability-day.outside {
@@ -431,7 +431,7 @@
 }
 
 .availability-day.busy {
-  background: linear-gradient(165deg, rgba(255, 183, 3, 0.3), rgba(244, 111, 66, 0.28));
+  background: linear-gradient(165deg, rgba(255, 122, 0, 0.25), rgba(255, 122, 0, 0.25));
   border-color: rgba(245,158,11,0.3);
   color: var(--accent-dark);
   font-weight: 700;
@@ -483,7 +483,7 @@
 
 .availability-user-range {
   margin-top: 0.7rem;
-  border-top: 1px dashed rgba(121, 99, 72, 0.28);
+  border-top: 1px dashed rgba(46, 125, 91, 0.22);
   padding-top: 0.7rem;
 }
 

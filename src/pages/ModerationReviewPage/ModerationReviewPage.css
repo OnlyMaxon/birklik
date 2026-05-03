@@ -165,7 +165,7 @@
 .rejection-textarea:focus {
   outline: none;
   border-color: var(--warning);
-  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
 }
 
 .review-actions {
@@ -265,7 +265,7 @@
 .form-textarea:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(214, 177, 125, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.08);
   background: var(--white);
 }
 

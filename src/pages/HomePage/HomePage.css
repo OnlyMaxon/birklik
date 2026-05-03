@@ -13,8 +13,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 18%, rgba(232, 201, 154, 0.22), transparent 46%),
-    linear-gradient(120deg, rgba(21, 19, 17, 0.76), rgba(36, 33, 29, 0.6));
+    radial-gradient(circle at 15% 18%, rgba(46, 125, 91, 0.12), transparent 46%),
+    linear-gradient(120deg, rgba(15, 25, 20, 0.72), rgba(15, 25, 20, 0.55));
 }
 
 .hero-pattern {
