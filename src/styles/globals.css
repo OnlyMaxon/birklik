@@ -5,37 +5,56 @@
   --font-body: 'Manrope', 'Segoe UI', sans-serif;
   --font-display: 'Sora', 'Segoe UI', sans-serif;
   --font-hero: 'Outfit', 'Segoe UI', sans-serif;
-  --primary-color: #2E7D5B;
-  --primary-light: #4a9971;
-  --primary-dark: #1d5940;
-  --secondary-color: #4DA8DA;
-  --secondary-light: #72bce4;
-  --secondary-dark: #2d88ba;
-  --accent-color: #FF7A00;
-  --accent-light: #ff9833;
-  --accent-dark: #cc6200;
+
+  /* Primary — Forest & Dark Green */
+  --primary-color: #2E4F3A;
+  --primary-light: #3D6B50;
+  --primary-dark: #0F2A1F;
+
+  /* Secondary — Teal accent */
+  --secondary-color: #2BB8C8;
+  --secondary-light: #55CCE0;
+  --secondary-dark: #1A96A8;
+
+  /* Accent — Wood Brown */
+  --accent-color: #6B4A2F;
+  --accent-light: #8A6347;
+  --accent-dark: #4A3320;
+
+  /* Nature palette extras */
+  --nature-beige: #D9C4A8;
+  --nature-blue: #AFC9D9;
+
+  /* Neutral UI */
   --text-color: #1A1A1A;
-  --bg-color: #F8F9FA;
-  --neutral: #6B7280;
+  --bg-color: #F5F5F5;
+  --neutral: #6F6F6F;
   --white: #ffffff;
-  --gray-50: #F8F9FA;
-  --gray-100: #F1F5F9;
-  --gray-200: #E2E8F0;
-  --gray-300: #CBD5E1;
-  --gray-400: #94A3B8;
-  --gray-500: #6B7280;
-  --gray-600: #4B5563;
-  --gray-700: #374151;
-  --gray-800: #1F2937;
-  --gray-900: #111827;
+
+  /* Gray scale */
+  --gray-50: #F5F5F5;
+  --gray-100: #EBEBEB;
+  --gray-200: #E0E0E0;
+  --gray-300: #CACACA;
+  --gray-400: #A0A0A0;
+  --gray-500: #6F6F6F;
+  --gray-600: #4A4A4A;
+  --gray-700: #333333;
+  --gray-800: #1F1F1F;
+  --gray-900: #111111;
+
+  /* Semantic */
   --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --shadow-sm: 0 4px 10px rgba(46, 125, 91, 0.08);
-  --shadow: 0 10px 20px rgba(46, 125, 91, 0.1);
-  --shadow-md: 0 14px 30px rgba(46, 125, 91, 0.12);
-  --shadow-lg: 0 20px 42px rgba(46, 125, 91, 0.15);
-  --shadow-xl: 0 30px 56px rgba(46, 125, 91, 0.18);
+  --warning: #F4C542;
+  --error: #E05A4F;
+
+  /* Shadows — keyed to dark green */
+  --shadow-sm: 0 4px 10px rgba(15, 42, 31, 0.07);
+  --shadow: 0 8px 20px rgba(15, 42, 31, 0.09);
+  --shadow-md: 0 14px 30px rgba(15, 42, 31, 0.11);
+  --shadow-lg: 0 20px 42px rgba(15, 42, 31, 0.14);
+  --shadow-xl: 0 30px 56px rgba(15, 42, 31, 0.18);
+
   --radius-sm: 0.35rem;
   --radius: 0.75rem;
   --radius-md: 0.95rem;
@@ -153,7 +172,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(46, 125, 91, 0.16);
+  box-shadow: 0 0 0 4px rgba(46, 79, 58, 0.15);
 }
 
 /* Container */
@@ -196,7 +215,7 @@ input:focus, select:focus, textarea:focus {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
   color: var(--white);
-  box-shadow: 0 10px 20px rgba(46, 125, 91, 0.26);
+  box-shadow: 0 10px 20px rgba(46, 79, 58, 0.26);
 }
 
 .btn-primary:hover {
@@ -206,13 +225,13 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-color) 100%);
+  background: linear-gradient(135deg, var(--secondary-dark) 0%, var(--secondary-color) 100%);
   color: var(--white);
-  box-shadow: 0 10px 20px rgba(255, 122, 0, 0.28);
+  box-shadow: 0 10px 20px rgba(43, 184, 200, 0.28);
 }
 
 .btn-accent:hover {
-  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+  background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-light) 100%);
   color: var(--white);
   transform: translateY(-1px);
 }
@@ -497,7 +516,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #f59e0b;
+  color: #F4C542;
 }
 
 /* Loading Spinner */

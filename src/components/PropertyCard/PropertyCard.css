@@ -109,7 +109,7 @@
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
-  background: rgba(46, 125, 91, 0.9); /* primary-color with opacity */
+  background: rgba(46, 79, 58, 0.9); /* primary-color with opacity */
   border: none;
   border-radius: 50%;
   width: 2.2rem;
@@ -127,9 +127,9 @@
 }
 
 .property-favorite-btn:hover:not(:disabled) {
-  background: rgba(46, 125, 91, 1);
+  background: rgba(46, 79, 58, 1);
   transform: scale(1.12);
-  box-shadow: 0 4px 12px rgba(46, 125, 91, 0.4);
+  box-shadow: 0 4px 12px rgba(46, 79, 58, 0.4);
 }
 
 .property-favorite-btn:disabled {
@@ -375,7 +375,7 @@
 }
 
 .property-rating svg {
-  color: #f59e0b;
+  color: #F4C542;
 }
 
 .property-rating span {
