@@ -98,7 +98,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileMessage, setProfileMessage] = React.useState('')
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
-  const [expandedPricingPlan, setExpandedPricingPlan] = React.useState<ListingTier | null>(null)
+
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -285,7 +285,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setListingCoordinates(DEFAULT_COORDINATES)
     setLocationSearch('')
     setLocationSearchError('')
-    setExpandedPricingPlan(null)
   }, [user])
 
   const handleDeletePhoto = React.useCallback((index: number) => {
@@ -1348,194 +1347,57 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       </div>
 
                       <div className="listing-plans-grid">
-                        {listingPlans.map((plan) => (
-                          <div
-                            key={plan.id}
-                            className={`listing-plan-card ${newListing.listingTier === plan.id ? 'selected' : ''} ${plan.highlighted ? 'highlighted' : ''}`}
-                            style={{
-                              border: newListing.listingTier === plan.id ? '2px solid #28a745' : '2px solid #e0e7ff',
-                              transition: 'all 0.3s ease',
-                              position: 'relative',
-                              display: 'flex',
-                              flexDirection: 'column'
-                            }}
-                          >
-                            {/* Free Ribbon */}
-                            {plan.isFree && (
-                              <div style={{
-                                position: 'absolute',
-                                top: '12px',
-                                right: '-2px',
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '4px 0 0 4px',
-                                fontSize: '12px',
-                                fontWeight: 'bold',
-                                zIndex: 2
-                              }}>
-                                {plan.ribbon}
-                              </div>
-                            )}
-
-                            {/* Selection Checkmark */}
-                            {newListing.listingTier === plan.id && (
-                              <div style={{
-                                position: 'absolute',
-                                top: '8px',
-                                left: '8px',
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                borderRadius: '50%',
-                                width: '24px',
-                                height: '24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '14px',
-                                fontWeight: 'bold',
-                                zIndex: 3
-                              }}>
-                                ✓
-                              </div>
-                            )}
-
-                            {/* Main Button to Select Plan */}
-                            <button
-                              type="button"
-                              className="plan-select-btn"
-                              onClick={() => {
-                                setNewListing({ ...newListing, listingTier: plan.id })
-                                setExpandedPricingPlan(null)
-                              }}
-                              style={{
-                                flex: 1,
-                                padding: '1.5rem 1rem',
-                                border: 'none',
-                                background: 'transparent',
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.5rem'
-                              }}
+                        {listingPlans.map((plan) => {
+                          const isSelected = newListing.listingTier === plan.id
+                          const durActive = (dur: string) => isSelected && newListing.tierPlanDuration === dur
+                          return (
+                            <div
+                              key={plan.id}
+                              className={['plan-card', isSelected ? 'plan-card--selected' : '', plan.id === 'vip' ? 'plan-card--vip' : '', plan.highlighted ? 'plan-card--premium' : ''].filter(Boolean).join(' ')}
                             >
-                              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>
-                                {plan.title}
-                              </h4>
-                              <p style={{ margin: 0, fontSize: '0.9rem', color: '#666', minHeight: '1.2em' }}>
-                                {plan.emphasis}
-                              </p>
-                              {plan.isFree ? (
-                                <p style={{ margin: '0.5rem 0 0 0', fontSize: '1rem', color: '#28a745', fontWeight: 'bold' }}>
-                                  {plan.price}
-                                </p>
-                              ) : (
-                                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#007bff', fontWeight: '500' }}>
-                                  {expandedPricingPlan === plan.id ? t.buttons.hide : t.buttons.show} {t.pricing.plans}
-                                </p>
-                              )}
-                            </button>
+                              {isSelected && <div className="plan-card__check">✓</div>}
+                              {plan.isFree && <div className="plan-card__ribbon">{t.pricing.free}</div>}
 
-                            {/* Pricing Options (for VIP/Premium) */}
-                            {!plan.isFree && (
-                              <div style={{
-                                borderTop: '1px solid #e0e7ff',
-                                padding: '1rem'
-                              }}>
-                                <button
-                                  type="button"
-                                  className="plan-pricing-toggle"
-                                  onClick={() => setExpandedPricingPlan(
-                                    expandedPricingPlan === plan.id ? null : plan.id
-                                  )}
-                                  style={{
-                                    width: '100%',
-                                    padding: '0.75rem',
-                                    border: '1px solid #007bff',
-                                    borderRadius: '6px',
-                                    background: '#e7f3ff',
-                                    color: '#007bff',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    marginBottom: expandedPricingPlan === plan.id ? '1rem' : 0,
-                                    fontSize: '0.9rem'
-                                  }}
-                                >
-                                  {expandedPricingPlan === plan.id ? '▼' : '▶'} {t.pricing.selectDuration}
-                                </button>
+                              <button
+                                type="button"
+                                className="plan-card__btn"
+                                onClick={() => { setNewListing({ ...newListing, listingTier: plan.id }) }}
+                              >
+                                <div className="plan-card__icon">
+                                  {plan.id === 'standard' ? '🎁' : plan.id === 'vip' ? '⭐' : '👑'}
+                                </div>
+                                <div className="plan-card__name">{plan.title}</div>
+                                <div className="plan-card__desc">{plan.emphasis}</div>
+                                {plan.isFree && <div className="plan-card__price">{plan.price}</div>}
+                              </button>
 
-                                {expandedPricingPlan === plan.id && (
-                                  <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '0.75rem',
-                                    marginTop: '1rem'
-                                  }}>
-                                    {plan.pricingOptions?.map((option) => (
-                                      <button
-                                        type="button"
-                                        key={option.duration}
-                                        className={`pricing-option-btn ${newListing.tierPlanDuration === option.duration ? 'selected' : ''}`}
-                                        onClick={() => setNewListing({
-                                          ...newListing,
-                                          tierPlanDuration: option.duration as '14days' | '30days'
-                                        })}
-                                        style={{
-                                          padding: '0.75rem',
-                                          border: newListing.tierPlanDuration === option.duration
-                                            ? '2px solid #28a745'
-                                            : '1px solid #e0e7ff',
-                                          borderRadius: '6px',
-                                          background: newListing.tierPlanDuration === option.duration
-                                            ? '#f0fdf4'
-                                            : '#fff',
-                                          cursor: 'pointer',
-                                          transition: 'all 0.2s ease',
-                                          display: 'flex',
-                                          justifyContent: 'space-between',
-                                          alignItems: 'center',
-                                          fontSize: '0.9rem'
-                                        }}
-                                      >
-                                        <span style={{ fontWeight: '500' }}>
-                                          {option.label}
-                                        </span>
-                                        <span style={{
-                                          fontWeight: 'bold',
-                                          color: '#28a745',
-                                          fontSize: '1.1rem'
-                                        }}>
-                                          {option.price}
-                                        </span>
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Features List */}
-                            {plan.features && plan.features.length > 0 && (
-                              <div style={{
-                                borderTop: '1px solid #e0e7ff',
-                                padding: '1rem',
-                                fontSize: '0.85rem',
-                                color: '#666'
-                              }}>
-                                <ul style={{ margin: 0, paddingLeft: '1.5rem', lineHeight: '1.6' }}>
-                                  {plan.features.map((feature, idx) => (
-                                    <li key={idx}>{feature}</li>
+                              {!plan.isFree && plan.pricingOptions && (
+                                <div className="plan-card__duration">
+                                  {plan.pricingOptions.map((option) => (
+                                    <button
+                                      key={option.duration}
+                                      type="button"
+                                      className={'plan-duration-btn' + (durActive(option.duration) ? ' active' : '')}
+                                      onClick={() => setNewListing({ ...newListing, listingTier: plan.id, tierPlanDuration: option.duration as '14days' | '30days' })}
+                                    >
+                                      <span className="plan-duration-label">{option.label}</span>
+                                      <span className="plan-duration-price">{option.price}</span>
+                                    </button>
                                   ))}
+                                </div>
+                              )}
+
+                              {plan.features && plan.features.length > 0 && (
+                                <ul className="plan-card__features">
+                                  {plan.features.map((feature, idx) => <li key={idx}>{feature}</li>)}
                                 </ul>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
 
-                      <div className="form-grid">
+                                            <div className="form-grid">
                         <div className="form-group">
                           <label>Email *</label>
                           <input

@@ -11,20 +11,32 @@ export const Loading: React.FC<LoadingProps> = ({ fullScreen = false, message, b
   const content = (
     <div className="loading-wrapper">
       {brand ? (
-        <div className="brand-loader" aria-label="Brand loading animation">
-          <div className="brand-orbit">
-            <div className="brand-core"></div>
+        <div className="brand-loader" aria-label="Loading">
+          <div className="brand-loader-top">
+            <div className="brand-orbit">
+              <div className="brand-core" />
+            </div>
+            <img
+              className="brand-wordmark"
+              src="/brand/generated/logo-1024x256.png"
+              alt="Birklik.az"
+            />
           </div>
-          <img className="brand-wordmark" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" />
+          <div className="brand-progress-track">
+            <div className="brand-progress-bar" />
+          </div>
+          {message && <p className="loading-message">{message}</p>}
         </div>
       ) : (
-        <div className="loading-spinner">
-          <div className="spinner-ring"></div>
-          <div className="spinner-ring"></div>
-          <div className="spinner-ring"></div>
-        </div>
+        <>
+          <div className="loading-spinner">
+            <div className="spinner-ring" />
+            <div className="spinner-ring" />
+            <div className="spinner-ring" />
+          </div>
+          {message && <p className="loading-message">{message}</p>}
+        </>
       )}
-      {message && <p className="loading-message">{message}</p>}
     </div>
   )
 
