@@ -109,7 +109,7 @@
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
-  background: rgba(46, 125, 91, 0.9);
+  background: rgba(46, 125, 91, 0.9); /* primary-color with opacity */
   border: none;
   border-radius: 50%;
   width: 2.2rem;
@@ -203,21 +203,21 @@
 }
 
 .property-title-link:hover .property-title {
-  color: #2E7D5B;
+  color: var(--primary-color);
 }
 
 .property-location {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #6B7280;
+  color: var(--neutral);
   font-size: 0.7rem;
   font-weight: 500;
   margin-top: 0.1rem;
 }
 
 .property-location svg {
-  color: #2E7D5B;
+  color: var(--primary-color);
   flex-shrink: 0;
   width: 12px;
   height: 12px;
@@ -233,13 +233,13 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #6B7280;
+  color: var(--neutral);
   font-size: 0.68rem;
   font-weight: 500;
 }
 
 .feature svg {
-  color: #2E7D5B;
+  color: var(--primary-color);
   flex-shrink: 0;
   width: 12px;
   height: 12px;
@@ -268,7 +268,7 @@
   align-items: flex-end;
   justify-content: space-between;
   padding-top: 0.6rem;
-  border-top: 1px solid #E2E8F0;
+  border-top: 1px solid var(--gray-200);
   margin-top: auto;
   gap: 0.4rem;
 }
@@ -320,7 +320,7 @@
 .price-nights {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #2E7D5B;
+  color: var(--primary-color);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }

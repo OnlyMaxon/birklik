@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Loading } from './components'
 import { useAuth } from './context'
 import { isModerator } from './config/constants'
@@ -124,19 +124,6 @@ const CatchAllRoute: React.FC = () => {
 
 function App() {
   const { isLoading } = useAuth()
-  const location = useLocation()
-  const [showRouteLoader, setShowRouteLoader] = React.useState(false)
-  const isInitialMount = React.useRef(true)
-
-  React.useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-    setShowRouteLoader(true)
-    const timeout = window.setTimeout(() => setShowRouteLoader(false), 420)
-    return () => window.clearTimeout(timeout)
-  }, [location.pathname])
 
   // Show loading screen while checking auth state
   if (isLoading) {
@@ -145,7 +132,6 @@ function App() {
 
   return (
     <>
-      {showRouteLoader && <Loading fullScreen message="Birklik.az" brand />}
       <React.Suspense fallback={<Loading fullScreen message="Birklik.az" brand />}>
         <Routes>
           <Route path="/" element={<HomePage />} />

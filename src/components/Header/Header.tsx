@@ -116,15 +116,12 @@ export const Header: React.FC = () => {
   const getNavClass = ({ isActive }: { isActive: boolean }) => `nav-link${isActive ? ' active' : ''}`
   
   const getNotificationClass = () => {
-    const location = window.location.search
-    const isNotificationsTab = location.includes('tab=notifications')
+    const isNotificationsTab = location.search.includes('tab=notifications')
     return `nav-link${isNotificationsTab ? ' active' : ''} notification-link`
   }
 
   const getAddListingClass = () => {
-    // Only active if we're on /dashboard?tab=add
-    const location = window.location.search
-    const isAddTab = location.includes('tab=add')
+    const isAddTab = location.search.includes('tab=add')
     return `nav-link${isAddTab ? ' active' : ''}`
   }
 
@@ -152,7 +149,7 @@ export const Header: React.FC = () => {
                 {isModeratorUser && (
                   <div className="moderation-link-wrapper">
                     <NavLink to="/dashboard/review" className={getNavClass} onClick={() => setMenuOpen(false)}>
-                      {language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}
+                      {t.moderation.moderateListings}
                     </NavLink>
                     {moderationNotificationCount > 0 && (
                       <span className="notification-badge">{moderationNotificationCount}</span>

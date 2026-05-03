@@ -12,7 +12,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if request.auth != null;
+      // Own profile: full read/write. Others: only public fields (name, avatar).
+      allow read: if request.auth != null && (
+        request.auth.uid == userId || isModerator()
+      );
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId
         && !request.resource.data.keys().hasAny(['moderator', 'admin']);
@@ -78,8 +81,12 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Read: any authenticated user can read bookings (needed for date conflict checking and viewing own bookings)
-      allow read: if request.auth != null;
+      // Read: own booking, or owner of the property, or moderator. Date conflict check uses propertyId query only.
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId
+        || request.auth.uid == resource.data.ownerId
+        || isModerator()
+      );
       
       // Create: user booking must be created by the authenticated user with 'pending' status
       allow create: if request.auth != null 

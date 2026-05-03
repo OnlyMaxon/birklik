@@ -7,7 +7,7 @@
   padding: 14px 12px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.98);
-  border: 3px solid #FF7A00;
+  border: 3px solid var(--accent-color);
   box-shadow: 0 8px 24px rgba(46, 125, 91, 0.15);
   box-sizing: border-box;
   overflow: hidden;
@@ -94,7 +94,7 @@
 
 .search-field-input:focus {
   outline: none;
-  border-color: #2E7D5B;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.14);
 }
 
@@ -130,6 +130,7 @@
 .search-suggestion-item:hover,
 .search-suggestion-item.active {
   background: rgba(46, 125, 91, 0.1);
+  color: var(--primary-dark);
 }
 
 /* Dates Field */
@@ -239,7 +240,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: #2E7D5B;
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 10px;
@@ -253,7 +254,7 @@
 }
 
 .search-btn-filters:active {
-  background: #1d5940;
+  background: var(--primary-dark);
 }
 
 .search-filter-badge {
@@ -276,7 +277,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: linear-gradient(135deg, #cc6200, #FF7A00);
+  background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
   color: white;
   border: none;
   border-radius: 10px;
@@ -288,7 +289,7 @@
 }
 
 .search-btn-main:active {
-  background: #cc6200;
+  background: var(--accent-dark);
 }
 
 /* Mobile Optimizations */
@@ -456,13 +457,13 @@
 }
 
 .search-date-button:hover {
-  border-color: #2E7D5B;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.12);
 }
 
 .search-date-button svg {
   flex-shrink: 0;
-  color: #2E7D5B;
+  color: var(--primary-color);
   width: 20px;
   height: 20px;
 }

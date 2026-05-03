@@ -76,13 +76,13 @@
 }
 
 .nav-link:hover {
-  color: #FF7A00;
-  border-bottom-color: #FF7A00;
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
 }
 
 .nav-link.active {
-  color: #FF7A00;
-  border-bottom-color: #FF7A00;
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
 }
 
 .nav-link.active ~ .user-menu button,
@@ -145,7 +145,7 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: #FF7A00;
+  background-color: var(--accent-color);
   color: white;
   font-size: 0.65rem;
   font-weight: 700;
@@ -156,7 +156,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 2px solid rgba(18, 46, 33, 0.97);
+  border: 2px solid var(--primary-dark);
   animation: pulse-badge 2s infinite;
 }
 
@@ -201,7 +201,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2E7D5B, #4a9971);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -273,13 +273,13 @@
 }
 
 .header .btn-accent {
-  background: linear-gradient(135deg, #cc6200 0%, #FF7A00 100%);
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-color) 100%);
   color: #ffffff;
   box-shadow: 0 10px 22px rgba(255, 122, 0, 0.3);
 }
 
 .header .btn-accent:hover {
-  background: linear-gradient(135deg, #FF7A00 0%, #ff9833 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
   color: #ffffff;
 }
 
@@ -337,7 +337,7 @@
 }
 
 .lang-btn.active {
-  background: linear-gradient(135deg, #FF7A00, #ff9833);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
   color: #ffffff;
 }
 

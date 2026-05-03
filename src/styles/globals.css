@@ -194,25 +194,25 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #1d5940 0%, #2E7D5B 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
   color: var(--white);
   box-shadow: 0 10px 20px rgba(46, 125, 91, 0.26);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #2E7D5B 0%, #4a9971 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: var(--white);
   transform: translateY(-1px);
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, #cc6200 0%, #FF7A00 100%);
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-color) 100%);
   color: var(--white);
   box-shadow: 0 10px 20px rgba(255, 122, 0, 0.28);
 }
 
 .btn-accent:hover {
-  background: linear-gradient(135deg, #FF7A00 0%, #ff9833 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
   color: var(--white);
   transform: translateY(-1px);
 }

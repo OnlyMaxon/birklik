@@ -159,7 +159,7 @@ export const en: Translations = {
   propertyTypes: {
     villa: "Villa",
     apartment: "Apartment",
-    house: "Bagh evi",
+    house: "Country house",
     cottage: "Cottage",
     penthouse: "Penthouse"
   },
@@ -197,7 +197,7 @@ export const en: Translations = {
     profile: "Profile",
     settings: "Settings",
     noListings: "You haven't added any listings yet",
-    listingAdded: "Listing added successfully (mock)",
+    listingAdded: "Listing added successfully",
     edit: "Edit",
     delete: "Delete",
     active: "Active",
@@ -294,7 +294,7 @@ export const en: Translations = {
     getItOn: "Get it on"
   },
   messages: {
-    contactSuccess: "Your request has been received! We will contact you soon (mock)",
+    contactSuccess: "Your request has been received! We will contact you soon.",
     noResults: "No results found",
     loading: "Loading...",
     error: "An error occurred",

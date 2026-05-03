@@ -4,7 +4,7 @@ import { useLanguage } from '../../context'
 import './Footer.css'
 
 export const Footer: React.FC = () => {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
 
   return (
     <footer className="footer">
@@ -12,21 +12,17 @@ export const Footer: React.FC = () => {
         <div className="footer-app-panel">
           <div className="footer-app-copy">
             <p className="footer-app-kicker">Birklik.az</p>
-            <h2>{language === 'en' ? 'What we do' : 'Biz nə edirik'}</h2>
-            <p>
-              {language === 'en'
-                ? 'We connect guests with trusted villas, apartments and holiday homes across Azerbaijan.'
-                : 'Azərbaycan üzrə villa, mənzil və bağ evlərinin kirayəsini bir platformada birləşdiririk.'}
-            </p>
+            <h2>{t.footer.whatWeDo}</h2>
+            <p>{t.site.tagline}</p>
           </div>
 
           <div className="footer-app-right">
-            <p className="footer-store-title">{language === 'en' ? 'Our apps' : 'Tətbiqlərimiz'}</p>
+            <p className="footer-store-title">{t.footer.ourApps}</p>
             <div className="footer-store-buttons" aria-label="Store buttons mock">
               <button type="button" className="footer-store-btn" aria-label="Apple App Store mock">
-                <span className="footer-store-icon" aria-hidden="true"></span>
+                <span className="footer-store-icon" aria-hidden="true"></span>
                 <span className="footer-store-text">
-                  <small>{language === 'en' ? 'Download on the' : 'Yükləyin'}</small>
+                  <small>{t.footer.downloadOn}</small>
                   <strong>App Store</strong>
                 </span>
               </button>
@@ -34,7 +30,7 @@ export const Footer: React.FC = () => {
               <button type="button" className="footer-store-btn" aria-label="Google Play mock">
                 <span className="footer-store-icon" aria-hidden="true">▶</span>
                 <span className="footer-store-text">
-                  <small>{language === 'en' ? 'Get it on' : 'Yükləyin'}</small>
+                  <small>{t.footer.getItOn}</small>
                   <strong>Google Play</strong>
                 </span>
               </button>
