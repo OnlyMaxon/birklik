@@ -125,8 +125,23 @@ export const Header: React.FC = () => {
     return `nav-link${isAddTab ? ' active' : ''}`
   }
 
+  const [headerHidden, setHeaderHidden] = React.useState(false)
+  React.useEffect(() => {
+    let lastY = window.scrollY
+    const onScroll = () => {
+      if (menuOpen) return
+      const y = window.scrollY
+      if (y < 80) { setHeaderHidden(false) }
+      else if (y > lastY + 4) { setHeaderHidden(true) }
+      else if (y < lastY - 4) { setHeaderHidden(false) }
+      lastY = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [menuOpen])
+
   return (
-    <header className="header">
+    <header className={`header${headerHidden ? ' header--hidden' : ''}`}>
       <div className="header-content">
         <div className="logo" onClick={handleLogoClick} role="button" tabIndex={0} style={{ cursor: 'pointer' }}>
           <picture>

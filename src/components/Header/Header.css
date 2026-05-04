@@ -1,12 +1,20 @@
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 120;
   width: 100%;
   background: var(--white);
   border-bottom: 1px solid var(--gray-200);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
   --header-height: 72px;
+  transform: translateY(0);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header--hidden {
+  transform: translateY(-100%);
 }
 
 .header-content {

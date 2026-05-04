@@ -3,6 +3,15 @@
   flex-direction: column;
   min-height: 100dvh;
   position: relative;
+  padding-top: 72px;
+}
+
+@media (max-width: 768px) {
+  .layout { padding-top: 64px; }
+}
+
+@media (max-width: 480px) {
+  .layout { padding-top: 60px; }
 }
 
 .layout::before {
