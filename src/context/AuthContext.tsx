@@ -12,6 +12,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { auth, db, storage } from '../config/firebase'
 import { User } from '../types'
 import * as logger from '../services/logger'
+import { compressAvatarImage } from '../utils/imageCompression'
 import { clearCsrfToken } from '../services/csrfService'
 import { validatePhoneNumber, validatePassword, validateEmail, validateName } from '../utils/validators'
 
@@ -183,11 +184,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Upload file FIRST, fail fast if upload fails
       if (payload.avatarFile) {
-        const fileName = `avatars/${firebaseUser.uid}/${Date.now()}_${payload.avatarFile.name}`
+        const compressed = await compressAvatarImage(payload.avatarFile)
+        const fileName = `avatars/${firebaseUser.uid}/${Date.now()}_${compressed.name}`
         const avatarRef = ref(storage, fileName)
-        
+
         try {
-          await uploadBytes(avatarRef, payload.avatarFile)
+          await uploadBytes(avatarRef, compressed)
           uploadedAvatarUrl = await getDownloadURL(avatarRef)
           uploadedAvatarPath = fileName
           avatarUrl = uploadedAvatarUrl

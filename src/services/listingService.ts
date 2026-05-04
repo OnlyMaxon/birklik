@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../config/firebase'
+import { compressPropertyImage } from '../utils/imageCompression'
 import { Property } from '../types'
 import * as logger from './logger'
 
@@ -169,10 +170,11 @@ export const listingService = {
    */
   async uploadPropertyImage(propertyId: string, file: File): Promise<string> {
     try {
-      const fileName = `${Date.now()}_${file.name}`
+      const compressed = await compressPropertyImage(file)
+      const fileName = `${Date.now()}_${compressed.name}`
       const storageRef = ref(storage, `properties/${propertyId}/${fileName}`)
 
-      const snapshot = await uploadBytes(storageRef, file)
+      const snapshot = await uploadBytes(storageRef, compressed)
       const downloadUrl = await getDownloadURL(snapshot.ref)
 
       return downloadUrl

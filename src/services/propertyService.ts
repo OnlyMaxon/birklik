@@ -15,6 +15,7 @@ import {
   QueryConstraint
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { compressPropertyImage } from '../utils/imageCompression'
 import { db, storage } from '../config/firebase'
 import { Property, PropertyType, Language, Comment } from '../types'
 import * as logger from './logger'
@@ -333,11 +334,12 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
 
   for (const file of files) {
     try {
+      const compressed = await compressPropertyImage(file)
       const timestamp = Date.now()
-      const fileName = `properties/${timestamp}_${file.name}`
+      const fileName = `properties/${timestamp}_${compressed.name}`
       const storageRef = ref(storage, fileName)
 
-      await uploadBytes(storageRef, file)
+      await uploadBytes(storageRef, compressed)
       const url = await getDownloadURL(storageRef)
       urls.push(url)
     } catch (error) {

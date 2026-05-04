@@ -9,6 +9,12 @@
   background-position: center;
 }
 
+@media (max-width: 768px) {
+  .hero {
+    background-image: url('https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=768&q=75');
+  }
+}
+
 .hero-overlay {
   position: absolute;
   inset: 0;
