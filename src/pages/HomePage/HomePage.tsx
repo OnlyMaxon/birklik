@@ -132,6 +132,18 @@ export const HomePage: React.FC = () => {
   return (
     <Layout>
       <section className="hero">
+        <img
+          src="https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1920&q=80"
+          srcSet="https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=768&q=75 768w, https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1920&q=80 1920w"
+          sizes="100vw"
+          className="hero-bg-img"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          loading="eager"
+          width="1920"
+          height="1080"
+        />
         <div className="hero-overlay"></div>
         <div className="hero-pattern"></div>
         <div className="container hero-content">

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import L from 'leaflet'
 import { useLanguage } from '../../context'
 import { Property, Language } from '../../types'
-import 'leaflet/dist/leaflet.css'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
@@ -33,6 +32,10 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
 }) => {
   const { language, t } = useLanguage()
   const navigate = useNavigate()
+
+  React.useEffect(() => {
+    import('leaflet/dist/leaflet.css')
+  }, [])
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 

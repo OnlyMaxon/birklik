@@ -4,15 +4,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url('https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
 }
 
-@media (max-width: 768px) {
-  .hero {
-    background-image: url('https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=768&q=75');
-  }
+.hero-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .hero-overlay {

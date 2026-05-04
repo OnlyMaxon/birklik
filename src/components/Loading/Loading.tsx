@@ -16,11 +16,16 @@ export const Loading: React.FC<LoadingProps> = ({ fullScreen = false, message, b
             <div className="brand-orbit">
               <div className="brand-core" />
             </div>
-            <img
-              className="brand-wordmark"
-              src="/brand/generated/logo-1024x256.png"
-              alt="Birklik.az"
-            />
+            <picture>
+              <source srcSet="/brand/generated/logo-1024x256.webp" type="image/webp" />
+              <img
+                className="brand-wordmark"
+                src="/brand/generated/logo-1024x256.png"
+                alt="Birklik.az"
+                width="1024"
+                height="256"
+              />
+            </picture>
           </div>
           <div className="brand-progress-track">
             <div className="brand-progress-bar" />

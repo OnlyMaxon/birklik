@@ -129,7 +129,10 @@ export const Header: React.FC = () => {
     <header className="header">
       <div className="header-content">
         <div className="logo" onClick={handleLogoClick} role="button" tabIndex={0} style={{ cursor: 'pointer' }}>
-          <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" width="1024" height="256" />
+          <picture>
+            <source srcSet="/brand/generated/logo-1024x256.webp" type="image/webp" />
+            <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" width="1024" height="256" />
+          </picture>
           <span className="logo-tagline">{t.site.tagline}</span>
         </div>
 
