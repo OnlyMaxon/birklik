@@ -68,7 +68,7 @@ html {
   overflow-x: clip;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  background: var(--bg-color);
+  background: #0d1f17;
   overscroll-behavior-y: auto;
   width: 100vw;
   max-width: 100%;
@@ -669,10 +669,9 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* Safe area insets for notched devices */
+/* Safe area insets for notched devices — padding-top handled by fixed header */
 @supports (padding-top: env(safe-area-inset-top)) {
   body {
-    padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);

@@ -3,15 +3,15 @@
   flex-direction: column;
   min-height: 100dvh;
   position: relative;
-  padding-top: 72px;
+  padding-top: calc(72px + env(safe-area-inset-top, 0px));
 }
 
 @media (max-width: 768px) {
-  .layout { padding-top: 64px; }
+  .layout { padding-top: calc(64px + env(safe-area-inset-top, 0px)); }
 }
 
 @media (max-width: 480px) {
-  .layout { padding-top: 60px; }
+  .layout { padding-top: calc(60px + env(safe-area-inset-top, 0px)); }
 }
 
 .layout::before {
