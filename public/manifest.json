@@ -1,0 +1,99 @@
+{
+  "name": "Birklik.az - Azərbaycanda ev kirayəsi",
+  "short_name": "Birklik.az",
+  "description": "Azərbaycanda ev kirayəsi və yaşayış məkanlarının icarəsi üçün ən böyük platform",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#2E7D5B",
+  "background_color": "#FFFFFF",
+  "categories": ["productivity", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/brand/generated/logo-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/brand/generated/logo-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "form_factor": "narrow"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/brand/generated/logo-16x16.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "/brand/generated/logo-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "/brand/generated/logo-64x64.png",
+      "type": "image/png",
+      "sizes": "64x64"
+    },
+    {
+      "src": "/brand/generated/logo-96x96.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "/brand/generated/logo-128x128.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    },
+    {
+      "src": "/brand/generated/logo-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/generated/logo-256x256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "/brand/generated/logo-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Объявления",
+      "short_name": "Объявления",
+      "description": "Посмотреть все объявления",
+      "url": "/?tab=listings",
+      "icons": [
+        {
+          "src": "/brand/generated/logo-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Мой кабинет",
+      "short_name": "Кабинет",
+      "description": "Перейти в личный кабинет",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/brand/generated/logo-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
