@@ -73,8 +73,8 @@ export const NotificationsTab = React.memo(() => {
 
     switch (notification.type) {
       case 'booking':
-        // Перейти на вкладку бронирований в Dashboard
-        navigate('/dashboard?tab=bookings')
+        // Перейти на вкладку "Запросы на бронирование" в Dashboard
+        navigate('/dashboard?tab=bookings&subtab=requests')
         break
 
       case 'comment':

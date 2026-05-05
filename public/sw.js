@@ -109,3 +109,50 @@ self.addEventListener('message', (event) => {
     self.skipWaiting()
   }
 })
+
+// Notification click handler - обработка клика на push-уведомления
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  
+  // Получаем тип уведомления из data
+  const notificationType = event.notification.data?.type
+  const propertyId = event.notification.data?.propertyId
+  
+  let targetUrl = '/'
+  
+  // Определяем URL в зависимости от типа уведомления
+  if (notificationType === 'booking') {
+    // Запрос на бронирование - открыть вкладку "Запросы на бронирование"
+    targetUrl = '/dashboard?tab=bookings&subtab=requests'
+  } else if (notificationType === 'bookingApproved' || notificationType === 'bookingRejected') {
+    // Одобрение/отклонение бронирования - открыть "Мои бронирования"
+    targetUrl = '/dashboard?tab=bookings&subtab=my-bookings'
+  } else if (notificationType === 'comment' || notificationType === 'reply') {
+    // Комментарий - открыть страницу свойства
+    targetUrl = propertyId ? `/property/${propertyId}` : '/'
+  } else if (notificationType === 'favorite') {
+    // Добавление в избранное - открыть страницу свойства
+    targetUrl = propertyId ? `/property/${propertyId}` : '/'
+  } else if (notificationType === 'rating') {
+    // Оценка - открыть страницу свойства
+    targetUrl = propertyId ? `/property/${propertyId}` : '/'
+  }
+  
+  // Открываем окно с правильным URL
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      // Проверяем, есть ли уже открытое окно приложения
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i]
+        if (client.url === '/' || client.url.includes('birklik')) {
+          // Если окно уже открыто, просто фокусируем его и обновляем URL
+          return client.focus().then(() => {
+            client.navigate(targetUrl)
+          })
+        }
+      }
+      // Если окна нет, открываем новое
+      return clients.openWindow(targetUrl)
+    })
+  )
+})
