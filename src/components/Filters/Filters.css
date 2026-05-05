@@ -155,14 +155,13 @@
 }
 
 .filters-search-btn {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-  box-shadow: 0 4px 14px rgba(46, 125, 91, 0.28);
+  box-shadow: 0 4px 14px rgba(255, 122, 0, 0.28);
   font-weight: 700;
 }
 
 .filters-search-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(46, 125, 91, 0.36);
+  box-shadow: 0 8px 20px rgba(255, 122, 0, 0.38);
 }
 
 .more-toggle-wrap {
