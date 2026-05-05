@@ -529,7 +529,7 @@ export const en: Translations = {
     approved: "Approved",
     rejected: "Rejected",
     moderateComments: "Moderate comments",
-    moderateListings: "Moderate listings",
+    moderateListings: "Moderation",
     viewReports: "View reports",
     review: "Review",
     rejectListing: "Reject Listing",

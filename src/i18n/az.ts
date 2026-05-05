@@ -526,7 +526,7 @@ export const az: Translations = {
     approved: "Təsdiqləndi",
     rejected: "Rədd olundu",
     moderateComments: "Şərfləri moderasiya et",
-    moderateListings: "Elanları moderasiya et",
+    moderateListings: "Moderasiya",
     viewReports: "Şikayətləri bax",
     review: "Bax",
     rejectListing: "Elanı Rədd Et",

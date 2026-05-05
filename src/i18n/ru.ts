@@ -529,7 +529,7 @@ export const ru: Translations = {
     approved: 'Одобрено',
     rejected: 'Отклонено',
     moderateComments: 'Модерировать комментарии',
-    moderateListings: 'Модерировать объявления',
+    moderateListings: 'Модерация',
     viewReports: 'Просмотреть жалобы',
     review: 'Проверить',
     rejectListing: 'Отклонить объявление',
