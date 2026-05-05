@@ -232,7 +232,7 @@
 @media (max-width: 768px) {
   .hero {
     min-height: 76dvh;
-    background-image: url('https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1280&q=76');
+    background-image: url('/hero.jpeg');
   }
 
   .hero-content {
