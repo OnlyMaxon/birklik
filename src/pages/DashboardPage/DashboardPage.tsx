@@ -1349,284 +1349,390 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       <p>{editingListingId ? savedMessage : t.dashboard.listingAdded}</p>
                     </div>
                   ) : (
-                    <form onSubmit={handleAddListing} className="add-listing-form card">
-                      <div className="listing-plans-header">
-                        <h3>
-                          {t.home.plansTitle}
-                          {newListing.listingTier ? (
-                            <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#28a745', fontWeight: 'normal' }}>
-                              ✓ {newListing.listingTier === 'standard' ? t.pricing.standard : newListing.listingTier === 'vip' ? t.pricing.vip : t.pricing.premium}
-                            </span>
-                          ) : (
-                            <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#dc3545', fontWeight: 'bold' }}>
-                              ({t.form.required})
-                            </span>
-                          )}
-                        </h3>
-                        <p>{t.home.plansSubtitle}</p>
-                      </div>
+                    <form onSubmit={handleAddListing} className="add-listing-form">
 
-                      <div className="listing-plans-grid">
-                        {listingPlans.map((plan) => {
-                          const isSelected = newListing.listingTier === plan.id
-                          const durActive = (dur: string) => isSelected && newListing.tierPlanDuration === dur
-                          return (
-                            <div
-                              key={plan.id}
-                              className={['plan-card', isSelected ? 'plan-card--selected' : '', plan.id === 'vip' ? 'plan-card--vip' : '', plan.highlighted ? 'plan-card--premium' : ''].filter(Boolean).join(' ')}
-                            >
-                              {isSelected && <div className="plan-card__check">✓</div>}
-                              {plan.isFree && <div className="plan-card__ribbon">{t.pricing.free}</div>}
-
-                              <button
-                                type="button"
-                                className="plan-card__btn"
-                                onClick={() => { setNewListing({ ...newListing, listingTier: plan.id }) }}
-                              >
-                                <div className="plan-card__icon">
-                                  {plan.id === 'standard' ? '🎁' : plan.id === 'vip' ? '⭐' : '👑'}
-                                </div>
-                                <div className="plan-card__name">{plan.title}</div>
-                                <div className="plan-card__desc">{plan.emphasis}</div>
-                                {plan.isFree && <div className="plan-card__price">{plan.price}</div>}
-                              </button>
-
-                              {!plan.isFree && plan.pricingOptions && (
-                                <div className="plan-card__duration">
-                                  {plan.pricingOptions.map((option) => (
-                                    <button
-                                      key={option.duration}
-                                      type="button"
-                                      className={'plan-duration-btn' + (durActive(option.duration) ? ' active' : '')}
-                                      onClick={() => setNewListing({ ...newListing, listingTier: plan.id, tierPlanDuration: option.duration as '14days' | '30days' })}
-                                    >
-                                      <span className="plan-duration-label">{option.label}</span>
-                                      <span className="plan-duration-price">{option.price}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-
-                              {plan.features && plan.features.length > 0 && (
-                                <ul className="plan-card__features">
-                                  {plan.features.map((feature, idx) => <li key={idx}>{feature}</li>)}
-                                </ul>
+                      {/* Plan Selection */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--accent">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-header-text">
+                            <div className="form-section-title">
+                              {isEnglish ? 'Select Plan' : isRussian ? 'Выберите тариф' : 'Paket seçin'}
+                              {newListing.listingTier ? (
+                                <span className="form-section-title-badge form-section-title-badge--ok">
+                                  {newListing.listingTier === 'standard' ? t.pricing.standard : newListing.listingTier === 'vip' ? t.pricing.vip : t.pricing.premium}
+                                </span>
+                              ) : (
+                                <span className="form-section-title-badge form-section-title-badge--req">
+                                  {t.form.required}
+                                </span>
                               )}
                             </div>
-                          )
-                        })}
+                            <div className="form-section-subtitle">{t.home.plansSubtitle}</div>
+                          </div>
+                        </div>
+                        <div className="form-section-body">
+                          <div className="listing-plans-grid">
+                            {listingPlans.map((plan) => {
+                              const isSelected = newListing.listingTier === plan.id
+                              const durActive = (dur: string) => isSelected && newListing.tierPlanDuration === dur
+                              return (
+                                <div
+                                  key={plan.id}
+                                  className={['plan-card', isSelected ? 'plan-card--selected' : '', plan.id === 'vip' ? 'plan-card--vip' : '', plan.highlighted ? 'plan-card--premium' : ''].filter(Boolean).join(' ')}
+                                >
+                                  {isSelected && <div className="plan-card__check">✓</div>}
+                                  {plan.isFree && <div className="plan-card__ribbon">{t.pricing.free}</div>}
+                                  <button
+                                    type="button"
+                                    className="plan-card__btn"
+                                    onClick={() => { setNewListing({ ...newListing, listingTier: plan.id }) }}
+                                  >
+                                    <div className="plan-card__icon">
+                                      {plan.id === 'standard' ? '🎁' : plan.id === 'vip' ? '⭐' : '👑'}
+                                    </div>
+                                    <div className="plan-card__name">{plan.title}</div>
+                                    <div className="plan-card__desc">{plan.emphasis}</div>
+                                    {plan.isFree && <div className="plan-card__price">{plan.price}</div>}
+                                  </button>
+                                  {!plan.isFree && plan.pricingOptions && (
+                                    <div className="plan-card__duration">
+                                      {plan.pricingOptions.map((option) => (
+                                        <button
+                                          key={option.duration}
+                                          type="button"
+                                          className={'plan-duration-btn' + (durActive(option.duration) ? ' active' : '')}
+                                          onClick={() => setNewListing({ ...newListing, listingTier: plan.id, tierPlanDuration: option.duration as '14days' | '30days' })}
+                                        >
+                                          <span className="plan-duration-label">{option.label}</span>
+                                          <span className="plan-duration-price">{option.price}</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {plan.features && plan.features.length > 0 && (
+                                    <ul className="plan-card__features">
+                                      {plan.features.map((feature, idx) => <li key={idx}>{feature}</li>)}
+                                    </ul>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
                       </div>
 
-                                            <div className="form-grid">
-                        <div className="form-group">
-                          <label>Email *</label>
-                          <input
-                            type="email"
-                            value={newListing.contactEmail}
-                            onChange={(e) => setNewListing({...newListing, contactEmail: e.target.value})}
-                            placeholder="your@email.com"
-                            required
-                          />
+                      {/* Contact Details */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-title">
+                            {isEnglish ? 'Contact Details' : isRussian ? 'Контактные данные' : 'Əlaqə məlumatları'}
+                          </div>
                         </div>
-
-                        <div className="form-group">
-                          <label>Telefon *</label>
-                          <input
-                            type="tel"
-                            value={newListing.contactPhone}
-                            onChange={(e) => setNewListing({...newListing, contactPhone: e.target.value})}
-                            placeholder="+994 XX XXX XX XX"
-                            required
-                          />
+                        <div className="form-section-body">
+                          <div className="form-grid">
+                            <div className="form-group">
+                              <label>Email *</label>
+                              <input
+                                type="email"
+                                value={newListing.contactEmail}
+                                onChange={(e) => setNewListing({...newListing, contactEmail: e.target.value})}
+                                placeholder="your@email.com"
+                                required
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>Telefon *</label>
+                              <input
+                                type="tel"
+                                value={newListing.contactPhone}
+                                onChange={(e) => setNewListing({...newListing, contactPhone: e.target.value})}
+                                placeholder="+994 XX XXX XX XX"
+                                required
+                              />
+                            </div>
+                          </div>
                         </div>
+                      </div>
 
-                        <div className="form-group full-width">
-                          <label>{t.form.title} *</label>
-                          <input
-                            type="text"
-                            value={newListing.title}
-                            onChange={(e) => setNewListing({...newListing, title: e.target.value})}
-                            required
-                          />
+                      {/* Listing Info */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                              <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-title">
+                            {isEnglish ? 'Listing Info' : isRussian ? 'Информация об объявлении' : 'Elan məlumatları'}
+                          </div>
                         </div>
-
-                        <div className="form-group">
-                          <label>{t.search.propertyType} *</label>
-                          <select
-                            value={newListing.type}
-                            onChange={(e) => setNewListing({...newListing, type: e.target.value as PropertyType})}
-                            required
-                          >
-                            <option value="">{t.form.selectType}</option>
-                            {propertyTypes.map(type => (
-                              <option key={type} value={type}>{t.propertyTypes[type]}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <CityLocationPicker
-                          city={newListing.city}
-                          locationTags={newListing.locationTags}
-                          locationCategory={newListing.locationCategory}
-                          onCityChange={(city) => setNewListing(prev => ({...prev, city, locationTags: []}))}
-                          onLocationTagsChange={(tags) => setNewListing(prev => ({...prev, locationTags: tags}))}
-                          onLocationCategoryChange={(category) => setNewListing(prev => ({...prev, locationCategory: category}))}
-                        />
-
-                        <div className="form-group full-width">
-                          <label>{t.form.address} *</label>
-                          <input
-                            type="text"
-                            value={newListing.address}
-                            onChange={(e) => setNewListing({...newListing, address: e.target.value})}
-                            required={true}
-                            placeholder=""
-                          />
-                        </div>
-
-                        <div className="form-group full-width">
-                          <label>Xəritədə nöqtə *</label>
-                          <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
-                          <div className="location-search-row">
-                            <input
-                              type="text"
-                              value={locationSearch}
-                              onChange={(e) => setLocationSearch(e.target.value)}
-                              placeholder={t.dashboard.searchAddressPlaceholder}
+                        <div className="form-section-body">
+                          <div className="form-grid">
+                            <div className="form-group full-width">
+                              <label>{t.form.title} *</label>
+                              <input
+                                type="text"
+                                value={newListing.title}
+                                onChange={(e) => setNewListing({...newListing, title: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>{t.search.propertyType} *</label>
+                              <select
+                                value={newListing.type}
+                                onChange={(e) => setNewListing({...newListing, type: e.target.value as PropertyType})}
+                                required
+                              >
+                                <option value="">{t.form.selectType}</option>
+                                {propertyTypes.map(type => (
+                                  <option key={type} value={type}>{t.propertyTypes[type]}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <CityLocationPicker
+                              city={newListing.city}
+                              locationTags={newListing.locationTags}
+                              locationCategory={newListing.locationCategory}
+                              onCityChange={(city) => setNewListing(prev => ({...prev, city, locationTags: []}))}
+                              onLocationTagsChange={(tags) => setNewListing(prev => ({...prev, locationTags: tags}))}
+                              onLocationCategoryChange={(category) => setNewListing(prev => ({...prev, locationCategory: category}))}
                             />
-                            <button
-                              type="button"
-                              className="btn btn-outline btn-sm"
-                              onClick={handleSearchLocation}
-                              disabled={isSearchingLocation}
-                            >
-                              {isSearchingLocation ? t.messages.loading : t.buttons.findOnMap}
-                            </button>
                           </div>
-                          {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
-                          <div className="listing-location-picker">
-                            <MapContainer
-                              center={[listingCoordinates.lat, listingCoordinates.lng]}
-                              zoom={13}
-                              scrollWheelZoom={true}
-                              className="listing-location-map"
-                            >
-                              <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                              />
-                              <MapCenterUpdater coordinates={listingCoordinates} />
-                              <LocationPicker
-                                coordinates={listingCoordinates}
-                                onChange={setListingCoordinates}
-                                onAddressReverse={(address) => setNewListing({...newListing, address})}
-                              />
-                            </MapContainer>
+                        </div>
+                      </div>
+
+                      {/* Address & Map */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--purple">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                              <circle cx="12" cy="10" r="3"/>
+                            </svg>
                           </div>
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => setListingCoordinates(DEFAULT_COORDINATES)}
-                          >
-                            Koordinatı sıfırla (Bakı mərkəzi)
-                          </button>
+                          <div className="form-section-title">
+                            {isEnglish ? 'Address & Map' : isRussian ? 'Адрес и карта' : 'Ünvan və xəritə'}
+                          </div>
                         </div>
-
-                        <div className="form-group">
-                          <label>{t.form.price} (AZN) *</label>
-                          <input
-                            type="number"
-                            value={newListing.price}
-                            onChange={(e) => setNewListing({...newListing, price: e.target.value})}
-                            required
-                            min="0"
-                          />
+                        <div className="form-section-body">
+                          <div className="form-grid">
+                            <div className="form-group full-width">
+                              <label>{t.form.address} *</label>
+                              <input
+                                type="text"
+                                value={newListing.address}
+                                onChange={(e) => setNewListing({...newListing, address: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div className="form-group full-width">
+                              <label>Xəritədə nöqtə *</label>
+                              <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
+                              <div className="location-search-row">
+                                <input
+                                  type="text"
+                                  value={locationSearch}
+                                  onChange={(e) => setLocationSearch(e.target.value)}
+                                  placeholder={t.dashboard.searchAddressPlaceholder}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn btn-outline btn-sm"
+                                  onClick={handleSearchLocation}
+                                  disabled={isSearchingLocation}
+                                >
+                                  {isSearchingLocation ? t.messages.loading : t.buttons.findOnMap}
+                                </button>
+                              </div>
+                              {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
+                              <div className="listing-location-picker">
+                                <MapContainer
+                                  center={[listingCoordinates.lat, listingCoordinates.lng]}
+                                  zoom={13}
+                                  scrollWheelZoom={true}
+                                  className="listing-location-map"
+                                >
+                                  <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                  />
+                                  <MapCenterUpdater coordinates={listingCoordinates} />
+                                  <LocationPicker
+                                    coordinates={listingCoordinates}
+                                    onChange={setListingCoordinates}
+                                    onAddressReverse={(address) => setNewListing({...newListing, address})}
+                                  />
+                                </MapContainer>
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-ghost btn-sm"
+                                onClick={() => setListingCoordinates(DEFAULT_COORDINATES)}
+                              >
+                                Koordinatı sıfırla (Bakı mərkəzi)
+                              </button>
+                            </div>
+                          </div>
                         </div>
+                      </div>
 
-                        <div className="form-group">
-                          <label>{t.form.rooms} *</label>
-                          <input
-                            type="number"
-                            value={newListing.rooms}
-                            onChange={(e) => setNewListing({...newListing, rooms: e.target.value})}
-                            required
-                            min="1"
-                          />
+                      {/* Details */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--amber">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="8" y1="6" x2="21" y2="6"/>
+                              <line x1="8" y1="12" x2="21" y2="12"/>
+                              <line x1="8" y1="18" x2="21" y2="18"/>
+                              <line x1="3" y1="6" x2="3.01" y2="6"/>
+                              <line x1="3" y1="12" x2="3.01" y2="12"/>
+                              <line x1="3" y1="18" x2="3.01" y2="18"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-title">
+                            {isEnglish ? 'Details' : isRussian ? 'Детали' : 'Detallar'}
+                          </div>
                         </div>
-
-                        <div className="form-group">
-                          <label>{t.form.minGuests} *</label>
-                          <select
-                            value={newListing.minGuests}
-                            onChange={(e) => handleMinGuestsChange(e.target.value)}
-                            required
-                          >
-                            <option value="">Select min</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                          </select>
+                        <div className="form-section-body">
+                          <div className="form-grid">
+                            <div className="form-group">
+                              <label>{t.form.price} (AZN) *</label>
+                              <input
+                                type="number"
+                                value={newListing.price}
+                                onChange={(e) => setNewListing({...newListing, price: e.target.value})}
+                                required
+                                min="0"
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>{t.form.rooms} *</label>
+                              <input
+                                type="number"
+                                value={newListing.rooms}
+                                onChange={(e) => setNewListing({...newListing, rooms: e.target.value})}
+                                required
+                                min="1"
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>{t.form.minGuests} *</label>
+                              <select
+                                value={newListing.minGuests}
+                                onChange={(e) => handleMinGuestsChange(e.target.value)}
+                                required
+                              >
+                                <option value="">Select min</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                              </select>
+                            </div>
+                            <div className="form-group">
+                              <label>{t.form.maxGuests} *</label>
+                              <select
+                                value={newListing.maxGuests}
+                                onChange={(e) => handleMaxGuestsChange(e.target.value)}
+                                required
+                              >
+                                <option value="">Select max</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10+</option>
+                              </select>
+                            </div>
+                            <div className="form-group">
+                              <label>{t.form.area}</label>
+                              <input
+                                type="number"
+                                value={newListing.area}
+                                onChange={(e) => setNewListing({...newListing, area: e.target.value})}
+                                min="0"
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>{t.search.pool}</label>
+                              <select
+                                value={newListing.amenities.includes('pool') ? 'yes' : 'no'}
+                                onChange={(e) => handlePoolSelection(e.target.value as 'yes' | 'no')}
+                              >
+                                <option value="yes">{t.search.yes}</option>
+                                <option value="no">{t.search.no}</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
+                      </div>
 
-                        <div className="form-group">
-                          <label>{t.form.maxGuests} *</label>
-                          <select
-                            value={newListing.maxGuests}
-                            onChange={(e) => handleMaxGuestsChange(e.target.value)}
-                            required
-                          >
-                            <option value="">Select max</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10+</option>
-                          </select>
+                      {/* Description */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                              <polyline points="14 2 14 8 20 8"/>
+                              <line x1="16" y1="13" x2="8" y2="13"/>
+                              <line x1="16" y1="17" x2="8" y2="17"/>
+                              <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-title">
+                            {isEnglish ? 'Description' : isRussian ? 'Описание' : 'Təsvir'}
+                          </div>
                         </div>
-
-                        <div className="form-group">
-                          <label>{t.form.area}</label>
-                          <input
-                            type="number"
-                            value={newListing.area}
-                            onChange={(e) => setNewListing({...newListing, area: e.target.value})}
-                            min="0"
-                          />
+                        <div className="form-section-body">
+                          <div className="form-grid">
+                            <div className="form-group full-width">
+                              <label>{t.form.description}</label>
+                              <textarea
+                                value={newListing.description}
+                                onChange={(e) => setNewListing({...newListing, description: e.target.value})}
+                                rows={4}
+                              />
+                            </div>
+                          </div>
                         </div>
+                      </div>
 
-                        <div className="form-group">
-                          <label>{t.search.pool}</label>
-                          <select
-                            value={newListing.amenities.includes('pool') ? 'yes' : 'no'}
-                            onChange={(e) => handlePoolSelection(e.target.value as 'yes' | 'no')}
-                          >
-                            <option value="yes">{t.search.yes}</option>
-                            <option value="no">{t.search.no}</option>
-                          </select>
+                      {/* Amenities */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="9 11 12 14 22 4"/>
+                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-title">
+                            {isEnglish ? 'Amenities' : isRussian ? 'Удобства' : 'Şərait'}
+                          </div>
                         </div>
-
-                        <div className="form-group full-width">
-                          <label>{t.form.description}</label>
-                          <textarea
-                            value={newListing.description}
-                            onChange={(e) => setNewListing({...newListing, description: e.target.value})}
-                            rows={4}
-                          />
-                        </div>
-
-                        <div className="form-group full-width">
-                          <label>{t.form.selectAmenities}</label>
+                        <div className="form-section-body">
                           <div className="amenities-checkboxes">
                             {selectableAmenities.map(amenity => (
                               <label key={amenity} className="checkbox-label">
@@ -1640,16 +1746,33 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             ))}
                           </div>
                         </div>
+                      </div>
 
-                        <div className="form-group full-width">
-                          <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'More' : language === 'ru' ? 'Дополнительно' : 'Əlavə'} <span className="dashboard-count-pill">{newListing.extraFeatures.length}</span></label>
-                            {newListing.extraFeatures.length > 0 && (
-                              <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('extraFeatures')}>
-                                {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
-                              </button>
-                            )}
+                      {/* More Features */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--purple">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <line x1="12" y1="8" x2="12" y2="16"/>
+                              <line x1="8" y1="12" x2="16" y2="12"/>
+                            </svg>
                           </div>
+                          <div className="form-section-header-text">
+                            <div className="form-section-title">
+                              {isEnglish ? 'More Features' : isRussian ? 'Дополнительно' : 'Əlavə xüsusiyyətlər'}
+                              {newListing.extraFeatures.length > 0 && (
+                                <span className="form-section-count">{newListing.extraFeatures.length}</span>
+                              )}
+                            </div>
+                          </div>
+                          {newListing.extraFeatures.length > 0 && (
+                            <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('extraFeatures')}>
+                              {isEnglish ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
+                            </button>
+                          )}
+                        </div>
+                        <div className="form-section-body">
                           <div className="dashboard-quick-chip-row">
                             {popularMoreOptions.map((option) => (
                               <button
@@ -1675,16 +1798,32 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             ))}
                           </div>
                         </div>
+                      </div>
 
-                        <div className="form-group full-width">
-                          <div className="dashboard-section-head">
-                            <label>{language === 'en' ? 'Near' : language === 'ru' ? 'Рядом' : 'Yaxında'} <span className="dashboard-count-pill">{newListing.nearbyPlaces.length}</span></label>
-                            {newListing.nearbyPlaces.length > 0 && (
-                              <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('nearbyPlaces')}>
-                                {language === 'en' ? 'Clear' : language === 'ru' ? 'Очистить' : 'Təmizlə'}
-                              </button>
-                            )}
+                      {/* Nearby Places */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--amber">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <path d="M12 8v4l3 3"/>
+                            </svg>
                           </div>
+                          <div className="form-section-header-text">
+                            <div className="form-section-title">
+                              {isEnglish ? 'Nearby Places' : isRussian ? 'Рядом' : 'Yaxın yerlər'}
+                              {newListing.nearbyPlaces.length > 0 && (
+                                <span className="form-section-count">{newListing.nearbyPlaces.length}</span>
+                              )}
+                            </div>
+                          </div>
+                          {newListing.nearbyPlaces.length > 0 && (
+                            <button type="button" className="dashboard-section-clear" onClick={() => clearListingSection('nearbyPlaces')}>
+                              {isEnglish ? 'Clear' : isRussian ? 'Очистить' : 'Təmizlə'}
+                            </button>
+                          )}
+                        </div>
+                        <div className="form-section-body">
                           <div className="dashboard-quick-chip-row">
                             {popularNearOptions.map((option) => (
                               <button
@@ -1710,9 +1849,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             ))}
                           </div>
                         </div>
+                      </div>
 
-                        <div className="form-group full-width">
-                          <label>{t.form.photos}</label>
+                      {/* Photos */}
+                      <div className="form-section">
+                        <div className="form-section-header">
+                          <div className="form-section-icon form-section-icon--rose">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                              <circle cx="8.5" cy="8.5" r="1.5"/>
+                              <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                          </div>
+                          <div className="form-section-header-text">
+                            <div className="form-section-title">{t.form.photos}</div>
+                            <div className="form-section-subtitle">
+                              {newListing.listingTier === 'standard' || newListing.listingTier === 'vip'
+                                ? (isEnglish ? 'Max 20 photos' : isRussian ? 'Макс. 20 фото' : 'Maks. 20 şəkil')
+                                : newListing.listingTier === 'premium'
+                                ? (isEnglish ? 'Max 30 photos' : isRussian ? 'Макс. 30 фото' : 'Maks. 30 şəkil')
+                                : (isEnglish ? 'Select a plan first' : isRussian ? 'Сначала выберите тариф' : 'Əvvəlcə paket seçin')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="form-section-body">
                           <div className="file-upload">
                             <input
                               type="file"
@@ -1720,16 +1880,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               accept="image/*"
                               onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                             />
-                            <p>
-                              {newListing.listingTier === 'standard' || newListing.listingTier === 'vip' ? (
-                                language === 'en' ? 'Maximum 20 photos' : language === 'ru' ? 'Максимум 20 фото' : 'Maksimum 20 şəkil'
-                              ) : newListing.listingTier === 'premium' ? (
-                                language === 'en' ? 'Maximum 30 photos' : language === 'ru' ? 'Максимум 30 фото' : 'Maksimum 30 şəkil'
-                              ) : (
-                                language === 'en' ? 'Select a plan first' : language === 'ru' ? 'Сначала выберите тариф' : 'Əvvəlcə paket seçin'
-                              )}
-                            </p>
-                            {selectedFiles.length > 0 && <p>{selectedFiles.length} {language === 'en' ? 'file(s) selected' : language === 'ru' ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>}
+                            {selectedFiles.length > 0 && (
+                              <p>{selectedFiles.length} {isEnglish ? 'file(s) selected' : isRussian ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>
+                            )}
                           </div>
                           {selectedFilePreviews.length > 0 && (
                             <div className="upload-preview-grid">
@@ -1777,20 +1930,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                             </div>
                           )}
                         </div>
-
-                        <div className="form-group full-width" style={{ backgroundColor: 'rgba(183, 146, 93, 0.14)', padding: '1rem', borderRadius: '8px', borderLeft: '4px solid #b7925d' }}>
-                          <p style={{ margin: 0, fontSize: '0.9rem', color: '#5e4830', lineHeight: '1.5' }}>
-                            <strong>{isEnglish ? 'Note:' : isRussian ? 'Примечание:' : 'Qeyd:'}</strong>{' '}
-                            {isEnglish
-                              ? 'All listings, including Free plan, are sent to moderation and published after approval.'
-                              : language === 'ru'
-                                ? 'Все объявления, включая бесплатный тариф, отправляются на модерацию и публикуются после одобрения.'
-                                : 'Bütün elanlar, o cümlədən pulsuz paket, moderasiyaya göndərilir və təsdiqdən sonra yayımlanır.'}
-                          </p>
-                        </div>
                       </div>
 
-                      {error && <div className="error-message" style={{ marginBottom: '1.5rem' }}>{error}</div>}
+                      <div className="form-note">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <p style={{ margin: 0 }}>
+                          <strong>{isEnglish ? 'Note:' : isRussian ? 'Примечание:' : 'Qeyd:'}</strong>{' '}
+                          {isEnglish
+                            ? 'All listings, including Free plan, are sent to moderation and published after approval.'
+                            : isRussian
+                              ? 'Все объявления, включая бесплатный тариф, отправляются на модерацию и публикуются после одобрения.'
+                              : 'Bütün elanlar, o cümlədən pulsuz paket, moderasiyaya göndərilir və təsdiqdən sonra yayımlanır.'}
+                        </p>
+                      </div>
+
+                      {error && <div className="error-message">{error}</div>}
 
                       <div className="form-actions">
                         <button type="button" className="btn btn-ghost" onClick={() => {
