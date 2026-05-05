@@ -246,7 +246,8 @@
     gap: 0.6rem;
   }
 
-  .premium-properties-grid.compact-view {
+  .premium-properties-grid.compact-view,
+  .premium-results-shell.with-map .premium-properties-grid.compact-view {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.45rem;
   }
@@ -275,7 +276,8 @@
     gap: 0.5rem;
   }
 
-  .premium-properties-grid.compact-view {
+  .premium-properties-grid.compact-view,
+  .premium-results-shell.with-map .premium-properties-grid.compact-view {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
   }

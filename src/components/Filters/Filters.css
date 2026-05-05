@@ -378,11 +378,18 @@ input[type="checkbox"],
 @media (max-width: 640px) {
   .filters-top-row {
     align-items: stretch;
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
-  .filters-top-row .btn {
-    width: 100%;
+  .filters-toggle,
+  .filters-top-row .btn-primary {
+    flex: 0 0 100%;
+    justify-content: center;
+  }
+
+  .view-toggle-btn,
+  .filters-top-row .btn:not(.filters-toggle):not(.btn-primary) {
+    flex: 1;
     justify-content: center;
   }
 
