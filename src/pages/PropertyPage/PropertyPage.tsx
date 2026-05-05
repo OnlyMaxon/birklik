@@ -955,6 +955,9 @@ export const PropertyPage: React.FC = () => {
                       const isDisabled = isCellDisabled(cell.dateISO)
                       const isBusy = !!cell.dateISO && !!property.unavailableFrom && !!property.unavailableTo
                         && cell.dateISO >= property.unavailableFrom && cell.dateISO <= property.unavailableTo
+                      const isBookedBlocked = !isBusy && !!cell.dateISO && cell.inMonth && !!propertyBookings?.some(
+                        b => b.status === 'approved' && cell.dateISO! >= b.checkInDate && cell.dateISO! < b.checkOutDate
+                      )
                       const isCheckIn = cell.dateISO === selectedCheckIn
                       const isCheckOut = cell.dateISO === selectedCheckOut
                       const isInRange = selectedCheckIn && selectedCheckOut && cell.dateISO && isDateInSelectedRange(cell.dateISO, selectedCheckIn, selectedCheckOut)
@@ -963,7 +966,7 @@ export const PropertyPage: React.FC = () => {
                           key={`${cell.dateISO || 'empty'}-${index}`}
                           onClick={() => !isDisabled && handleCalendarDateClick(cell.dateISO)}
                           disabled={isDisabled || !cell.inMonth}
-                          className={['availability-day', cell.inMonth ? '' : 'outside', isBusy ? 'busy' : '', isCheckIn ? 'check-in' : '', isCheckOut ? 'check-out' : '', isInRange ? 'in-range' : '', !isDisabled && cell.inMonth ? 'selectable' : ''].filter(Boolean).join(' ')}
+                          className={['availability-day', cell.inMonth ? '' : 'outside', isBusy ? 'busy' : '', isBookedBlocked ? 'booked' : '', isCheckIn ? 'check-in' : '', isCheckOut ? 'check-out' : '', isInRange ? 'in-range' : '', !isDisabled && cell.inMonth ? 'selectable' : ''].filter(Boolean).join(' ')}
                           type="button"
                         >
                           {cell.label}
