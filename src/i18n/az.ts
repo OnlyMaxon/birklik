@@ -18,7 +18,7 @@ export const az: Translations = {
   search: {
     placeholder: "Məkan, rayon və ya ünvan daxil edin...",
     button: "Axtar",
-    filters: "Filterlər",
+    filters: "Filtrlər",
     priceRange: "Qiymət aralığı",
     rooms: "Otaq sayı",
     pool: "Hovuz",
@@ -29,8 +29,8 @@ export const az: Translations = {
     any: "Hamısı",
     yes: "Var",
     no: "Yoxdur",
-    clearFilters: "Filterləri təmizlə",
-    whereGoing: "Hara gedirsiz",
+    clearFilters: "Filtrləri təmizlə",
+    whereGoing: "Hara gedirsiniz",
     when: "Nə vaxt",
     selectDates: "Tarixləri seçin",
     selectedDates: "Seçilmiş tarixlər:",
@@ -39,11 +39,11 @@ export const az: Translations = {
     min: "Min",
     max: "Maks",
     clear: "Təmizlə",
-    showFilters: "Filterləri göstər",
-    filterLabel: "Filterlər",
+    showFilters: "Filtrləri göstər",
+    filterLabel: "Filtrlər",
     confirmBtn: "Təsdiq et",
     cancelBtn: "Ləğv et",
-    moreFilters: "Əlavə Filterlər",
+    moreFilters: "Əlavə filtrlər",
     near: "Yaxında",
     city: "Şəhər"
   },
@@ -63,7 +63,7 @@ export const az: Translations = {
     area: "Sahə",
     sqm: "m²",
     bookingRequest: "Sorğu göndər",
-    bookingSending: "Sifariş...",
+    bookingSending: "Sifariş edilir...",
     bookingSent: "✓ Göndərildi",
     bookingError: "Sifariş yaradılmasında xəta",
     bookingConflict: "Bu tarixlər artıq sifariş edilmişdir",
@@ -87,10 +87,10 @@ export const az: Translations = {
     reviewsCount: "rəylər",
     notRated: "Hələ qiymətləndirilməyib",
     star: "ulduz",
-    views: "görüntülər",
+    views: "baxış sayı",
     availability: "Əlçatarlılıq təqvimi",
     currentlyAvailable: "Hazırda sifariş üçün əlçatardır",
-    temporaryOccupied: "Müvəqqət olaraq məşğul və gizli",
+    temporaryOccupied: "Müvəqqəti olaraq məşğul və gizli",
     availableFrom: "Buradan əlçatardır",
     busyFrom: "Buradan məşğuldur",
     busyUntil: "Buraya qədər məşğuldur",
@@ -98,25 +98,25 @@ export const az: Translations = {
     checkOut: "Çıxış",
     city: "Şəhər",
     premiumDaysRemaining: "Premium siyahı",
-    signInBookmark: "Qeydiyyat təstiqi üçün daxil olun",
+    signInBookmark: "Sevimlilərə əlavə etmək üçün daxil olun",
     bookmarkAdded: "Sevimlilərə əlavə edildi",
     signInComment: "Şərh yazmaq üçün daxil olun",
     cannotSelectPastDates: "Keçmiş tarixləri seçə bilməzsiniz",
     dateNotAvailable: "Bu tarix mövcud deyil",
-    bookingAddedToCabinet: "Sizin sifariş siz kabinetinizə əlavə edildI",
+    bookingAddedToCabinet: "Sifarişiniz şəxsi kabinetinizə əlavə edildi",
     availableForBooking: "Hazırda sifariş üçün açıqdır",
     temporarilyOccupied: "Müvəqqəti məşğuldur və ümumi siyahıda göstərilmir",
     availableAgainFrom: "Yenidən əlçatar olacaq",
     weekDayLabels: ["B.e", "Ç.a", "Ç", "C.a", "C", "Ş", "B"],
-    signInToBookmark: "İşarələmək üçün giriş edin",
+    signInToBookmark: "Yadda saxlamaq üçün giriş edin",
     premiumRemainingDays: "Premium siyahı - {days} gün qalır",
     near: "Yaxında",
     more: "Əlavə",
-    contactAfterBooking: "Məlumata bron etdikdən sonra nəzər salacaq",
+    contactAfterBooking: "Məlumatlara sifariş etdikdən sonra nəzər sala bilərsiniz",
     bookingButton: "Sifariş edilir...",
     sendRequest: "Sorğu göndər",
     post: "Paylaş",
-    report: "Şikayyət",
+    report: "Şikayət",
     replyCount: "cavab|cavablar",
     replyingTo: "Cavab: ",
     writeReplyPlaceholder: "Cavab yazın..."
@@ -181,7 +181,7 @@ export const az: Translations = {
     fullName: "Ad və soyad",
     phone: "Telefon",
     rememberMe: "Məni xatırla",
-    forgotPassword: "Şifrəni unutdunuz?",
+    forgotPassword: "Şifrəni unutmusunuz?",
     noAccount: "Hesabınız yoxdur?",
     hasAccount: "Hesabınız var?",
     loginSuccess: "Uğurla daxil oldunuz!",
@@ -200,21 +200,21 @@ export const az: Translations = {
     active: "Aktiv",
     pending: "Gözləmədə",
     editListing: "Elanı redaktə et",
-    viewBookings: "Sifarişləri bax",
+    viewBookings: "Sifarişlərə bax",
     viewComments: "Şərhlərə bax",
     premiumStatus: "Premium statusu",
     activeListing: "Aktiv",
     inactiveListing: "Aktiv deyil",
-    planExpires: "Paket bitəcəkdir",
+    planExpires: "Paketin vaxtı bitəcək",
     favorites: "Sevimlilər",
     bookings: "Sifarişlər",
     notifications: "Bildirişlər",
     moderation: "Moderasiya",
     startDate: "Başlama tarixi",
     endDate: "Bitmə tarixi",
-    setNonActive: "Qeyri-aktiv qeyd et",
+    setNonActive: "Qeyri-aktiv et",
     setInactive: "Qeyri-aktiv olaraq qeyd et",
-    profilePhoto: "Profil Şəkli",
+    profilePhoto: "Profil şəkli",
     choosePhoto: "Şəkil seç",
     remove: "Sil",
     near: "Yaxın",
@@ -228,11 +228,11 @@ export const az: Translations = {
     fullNameRequired: "Ad və soyad tələb olunur",
     profileUpdateFailed: "Profil yenilənmədi",
     profileUpdated: "Profil uğurla yeniləndi",
-    premiumExtended: "Premium Uzadılmışdır",
+    premiumExtended: "Premium uzadıldı",
     premiumExtendedAlert: "Premium 3 həftə daha uzadıldı!",
-    failedToExtendPremium: "Premium uzada bilmədi",
+    failedToExtendPremium: "Premium uzadıla bilmədi",
     selectBothDates: "Başlama və bitmə tarixlərini seçin",
-    startBeforeEnd: "Başlama tarixi bitmə tarixindən böyük ola bilməz",
+    startBeforeEnd: "Başlama tarixi bitmə tarixindən sonra ola bilməz",
     selectListingPlan: "Lütfən bir paket seçin (Pulsuz, Standart və ya Premium)",
     required: "Zəruri",
     locationHiddenStandard: "Standart paketdə lokasiya gizlədilir",
@@ -241,26 +241,26 @@ export const az: Translations = {
     dragDropOrClick: "Yükləmək üçün faylları sürüşdürün və ya klik edin",
     filesSelected: "fayl seçildi",
     bookingStatus: "Status",
-    bookingWaiting: "Gözləmə",
+    bookingWaiting: "Gözləmədə",
     bookingApproved: "Qəbul edildi",
     bookingRejected: "Rədd edildi",
-    bookingAccept: "Qəbul Et",
-    bookingReject: "Rədd Et",
-    bookingCancel: "Sifarişi Ləğv Et",
+    bookingAccept: "Qəbul et",
+    bookingReject: "Rədd et",
+    bookingCancel: "Sifarişi ləğv et",
     bookingGuest: "Qonaq",
     bookingDates: "Tarixlər",
     bookingNights: "gecə",
     bookingTotal: "Cəmi",
     bookingPhone: "Telefon",
-    bookingEmail: "Email",
+    bookingEmail: "E-poçt",
     bookingNoBookings: "Heç bir sifariş yoxdur",
-    bookingMyBookings: "Mənim Sifarişlərim",
-    bookmarkProperties: "Yadda Saxlanan Elanlar",
+    bookingMyBookings: "Mənim sifarişlərim",
+    bookmarkProperties: "Yadda saxlanan elanlar",
     vipListing: "VIP elan",
     premiumListing: "Premium elan",
     city: "Şəhər",
     selectCity: "Şəhər seçin",
-    bookingRequests: "Sifariş Sorğuları"
+    bookingRequests: "Sifariş sorğuları"
   },
   form: {
     title: "Başlıq",
@@ -268,8 +268,8 @@ export const az: Translations = {
     price: "Qiymət",
     address: "Ünvan",
     rooms: "Otaq sayı",
-    minGuests: "Min qonaq",
-    maxGuests: "Maks qonaq",
+    minGuests: "Min. qonaq",
+    maxGuests: "Maks. qonaq",
     area: "Sahə (m²)",
     photos: "Şəkillər",
     selectType: "Növ seçin",
@@ -291,12 +291,12 @@ export const az: Translations = {
     getItOn: "Yükləyin"
   },
   messages: {
-    contactSuccess: "Müraciətiniz qəbul edildi! Tezliklə sizinlə əlaqə saxlanılacaq (mock)",
+    contactSuccess: "Müraciətiniz qəbul edildi! Tezliklə sizinlə əlaqə saxlanılacaq",
     noResults: "Nəticə tapılmadı",
     loading: "Yüklənir...",
     error: "Xəta baş verdi",
-    bookingError: "Sifariş yaratılma xətası",
-    ratingError: "Reytinq kayd edilməsi xətası",
+    bookingError: "Sifariş yaradılma xətası",
+    ratingError: "Reytinq qeyd edilməsi xətası",
     errorUpdatingFavorites: "Sevimlilər yenilənərkən xəta yarandı",
     listingSaved: "Elan uğurla yadda saxlanıldı",
     profileUpdated: "Profil uğurla yeniləndi",
@@ -328,7 +328,7 @@ export const az: Translations = {
   validation: {
     emailInvalid: "Etibarlı email ünvanı daxil edin",
     phoneRequired: "Telefon nömrəsi daxil edin",
-    photoLimit: "Maksimum fotolar (Standard/VIP: 20, Premium: 30)",
+    photoLimit: "Maksimum fotolar (Standart/VIP: 20, Premium: 30)",
     descriptionTooLong: "Təsviri maksimum 35 sözə qısaldın",
     addressRequired: "Standart və Premium paketlər üçün ünvan daxil edin",
     typeRequired: "Mülk növü seçin",
@@ -340,17 +340,17 @@ export const az: Translations = {
     free_features: "20 şəkil, tam təsvir, açıq lokasiya",
     standard_features: "20 şəkil, tam təsvir, açıq lokasiya",
     premium_features: "✓ 30 şəkil, 3 həftə əsas səhifədə, açıq lokasiya",
-    vip_features: "✓ VIP nişanı, prioritetli moderasyon, 20 şəkil"
+    vip_features: "✓ VIP nişanı, prioritetli moderasiya, 20 şəkil"
   },
   support: {
     waitingForReview: "Elan yoxlamadadır - təsdiqdən sonra yayımlanacaq",
-    listed: "Elanınız aktiv",
+    listed: "Elanınız aktivdir",
     contactSupport: "Dəstəklə əlaqə saxlayın"
   },
   testData: {
     addTest: "Test məlumatı əlavə et",
     removeTest: "Test məlumatını sil",
-    testListings: "Test Elanları"
+    testListings: "Test elanları"
   },
   home: {
     showMap: "Xəritədə göstər",
@@ -363,12 +363,12 @@ export const az: Translations = {
     ctaSubtitle: "Evinizi bu gün elan edin və rezervasiya qəbul etməyə başlayın."
   },
   errors: {
-    addressForSearch: "Axtarış üçün ünvan girin",
+    addressForSearch: "Axtarış üçün ünvan daxil edin",
     addressNotFound: "Ünvan tapılmadı. Daha spesifik ünvan daxil edin",
     invalidCoordinates: "Yanlış koordinatlar alındı",
     locationSearchFailed: "Məkan axtarışı uğursuz oldu. Yenidən cəhd edin",
     pleaseSignIn: "Elan əlavə etmək üçün daxil olun",
-    pleaseSignInBookmark: "Seçkilərə əlavə etmək üçün daxil olun",
+    pleaseSignInBookmark: "Sevimlilərə əlavə etmək üçün daxil olun",
     pleaseSignInBook: "Sifariş etmək üçün daxil olun",
     pleaseSignInComment: "Şərh yazmaq üçün daxil olun",
     pleaseSignInReport: "Məzmundan şikayət etmək üçün daxil olun",
@@ -376,16 +376,16 @@ export const az: Translations = {
     selectPropertyType: "Mülk növü seçin",
     selectCity: "Şəhər seçin",
     selectDistrict: "Rayon seçin",
-    createListingFailed: "Elan yaratma səhvində. Məlumatları yoxlayıb yenidən cəhd edin",
+    createListingFailed: "Elan yaradılmasında xəta. Məlumatları yoxlayıb yenidən cəhd edin",
     updateProfileFailed: "Profil yeniləmə xətası",
     updateProfileSuccess: "Profil uğurla yeniləndi",
     premiumExtendedSuccess: "Premium 3 həftə uzadıldı",
     sessionExpired: "Sessiya bitdi. Yenidən daxil olun",
     accountIssue: "Hesab problemi. Yenidən daxil olun",
-    errorUpdatingFavorites: "Seçkilər yenilərkən xəta",
+    errorUpdatingFavorites: "Sevimlilər yenilənərkən xəta",
     errorMakingBooking: "Sifariş verərkən xəta",
     errorBadRequest: "Yanlış məlumat. Formu yoxlayın",
-    errorUnauthorized: "Daxil olmaq üçün daxil olun",
+    errorUnauthorized: "Daxil olmaq üçün giriş edin",
     errorNotFound: "Resurs tapılmadı",
     errorTooManyRequests: "Çox saylı sorğular. Sonra cəhd edin",
     errorServer: "Server xətası. Sonra cəhd edin",
@@ -405,11 +405,11 @@ export const az: Translations = {
     clear: "Təmizlə",
     search: "Axtar",
     filter: "Filtr",
-    reset: "Filterləri sıfırla",
+    reset: "Filtrləri sıfırla",
     login: "Daxil ol",
     register: "Qeydiyyat",
     logout: "Çıxış",
-    bookmark: "Yaddaşda saxla",
+    bookmark: "Yadda saxla",
     share: "Paylaş",
     report: "Şikayət et",
     reply: "Cavab ver",
@@ -425,7 +425,7 @@ export const az: Translations = {
     extendPremium: "Premiumu uzat",
     upgradePlan: "Paketi yüksəlt",
     createListing: "Elan yarat",
-    browseListings: "Elanları bax",
+    browseListings: "Elanlara bax",
     moveUp: "Yuxarıya keçir",
     moveDown: "Aşağıya keçir",
     copy: "Keçidi kopyala",
@@ -450,11 +450,11 @@ export const az: Translations = {
     reply: "cavab",
     replies: "cavab",
     views: "baxış",
-    likes: "bəyər",
+    likes: "bəyənmə",
     reviews: "şərh",
     locationHidden: "Standart paket üçün məkan gizlidir",
-    dragDropUpload: "Sürükləyin və ya yükləmə üçün klikləyin",
-    maxImages: "Standard və VIP paketlər üçün maksimum 20 şəkil",
+    dragDropUpload: "Sürükləyin və ya yükləmək üçün klikləyin",
+    maxImages: "Standart və VIP paketlər üçün maksimum 20 şəkil",
     maxWords: "Standart paket üçün maksimum 35 söz",
     minPhotos: "Ən azı 2 şəkil əlavə edin",
     selectDateRange: "Giriş və çıxış tarixini seçin",
@@ -464,12 +464,12 @@ export const az: Translations = {
     bookingCancelled: "Sifariş ləğv olundu",
     commentApproved: "Şərh təsdiqləndi",
     commentRejected: "Şərh rədd olundu",
-    alreadyReported: "Bu şərhdən artıq şikayət etmisiniz",
+    alreadyReported: "Bu şərhlə bağlı artıq şikayət etmisiniz",
     reportedSuccess: "Şikayət uğurla göndərildi"
   },
   notifications: {
-    favoriteAdded: "Seçkilərə əlavə olundu",
-    favoriteRemoved: "Seçkilərdən silindi",
+    favoriteAdded: "Sevimlilərə əlavə olundu",
+    favoriteRemoved: "Sevimlilərdən silindi",
     bookingCreated: "Sifariş sorğusu göndərildi",
     bookingCancelled: "Sifariş ləğv olundu",
     commentPosted: "Şərh dərc olundu",
@@ -478,22 +478,22 @@ export const az: Translations = {
     newComment: "Elanınızda yeni şərh",
     listingApproved: "Elanınız təsdiqləndi",
     listingRejected: "Elanınız rədd olundu",
-    premiumExpiring: "Premiumunuz 3 gün sonra bitəcəkdir",
+    premiumExpiring: "Premium paketiniz 3 gün sonra bitəcək",
     linkCopied: "Keçid kopyalandı!",
     failedToCopyLink: "Keçidi kopyalamaq uğursuz oldu",
     selectReason: "Zəhmət olmasa səbəb seçin",
     reportedSuccess: "Şikayət uğurla göndərildi"
   },
   filters: {
-    moreFilters: "Əlavə Filterlər",
+    moreFilters: "Əlavə filtrlər",
     nearbyPlaces: "Yaxında",
     city: "Şəhər",
     district: "Rayon",
     priceRange: "Qiymət aralığı",
     sortBy: "Sıralama",
     near: "Yaxında",
-    removeFilter: "Filteri sil",
-    resetAdvanced: "Təkmil seçənəkləri sıfırla"
+    removeFilter: "Filtri sil",
+    resetAdvanced: "Təkmil seçimləri sıfırla"
   },
   booking: {
     nights: "gecə",
@@ -512,10 +512,10 @@ export const az: Translations = {
     submitComment: "Şərh göndər",
     yourComment: "Sizin şərhiniz",
     reportComment: "Şərhdən şikayət et",
-    reportReason: "Şikayət sebebi",
+    reportReason: "Şikayət səbəbi",
     spam: "Spam",
-    inappropriate: "Uygunsuz məzmun",
-    offensive: "Kobub ifadə",
+    inappropriate: "Uyğunsuz məzmun",
+    offensive: "Kobud ifadə",
     misleading: "Yanlış məlumat",
     other: "Digər",
     additionalDetails: "Əlavə detallar (istəyə bağlı)",
@@ -525,18 +525,18 @@ export const az: Translations = {
     pending: "Yoxlamada",
     approved: "Təsdiqləndi",
     rejected: "Rədd olundu",
-    moderateComments: "Şərfləri moderasiya et",
+    moderateComments: "Şərhləri moderasiya et",
     moderateListings: "Moderasiya",
-    viewReports: "Şikayətləri bax",
-    review: "Bax",
-    rejectListing: "Elanı Rədd Et",
-    rejectWithReason: "Şərh ilə Rədd Et",
+    viewReports: "Şikayətlərə bax",
+    review: "Baxış",
+    rejectListing: "Elanı rədd et",
+    rejectWithReason: "Səbəblə rədd et",
     rejectionReason: "Rədd səbəbi",
     rejectionReasonPlaceholder: "Rədd səbəbini qeyd edin...",
     sendInvoice: "Faktura",
-    confirmRejection: "Rədd Etməyi Təsdiq Et",
-    rejectionReasonHint: "Rədd səbəbini qeyd edin. Sahib bildirim alacaq.",
-    listingReviewPage: "Elanı Baxış",
+    confirmRejection: "Rədd etməyi təsdiq et",
+    rejectionReasonHint: "Rədd səbəbini qeyd edin. Sahibi bildiriş alacaq.",
+    listingReviewPage: "Elana baxış",
     backButton: "← Geri",
     packageLabel: "Paket"
   },
@@ -544,10 +544,10 @@ export const az: Translations = {
     days: {
       sun: "Baz",
       mon: "B.e",
-      tue: "Çar",
-      wed: "Çax",
-      thu: "Cum",
-      fri: "C.e",
+      tue: "Ç.a",
+      wed: "Çər",
+      thu: "C.a",
+      fri: "Cüm",
       sat: "Şən"
     },
     months: {
@@ -570,7 +570,7 @@ export const az: Translations = {
       title: "Haqqımızda",
       sections: [
         {
-          title: "Birklik.az Nədir?",
+          title: "Birklik.az nədir?",
           content: "Birklik.az – ölkə daxilində günlük və qısamüddətli kirayə bazarını daha əlçatan, təhlükəsiz və rahat etmək məqsədilə yaradılmış rəqəmsal platformadır. Layihəmizin əsas məqsədi şəhər və rayonlarda yerləşən evləri, villaları, istirahət mərkəzlərini və digər məkanları bir məkanda toplayaraq istifadəçilərə sürətli və etibarlı bron imkanı təqdim etməkdir."
         },
         {
@@ -579,14 +579,14 @@ export const az: Translations = {
         },
         {
           title: "Platformamız",
-          content: "Platformamız həm kirayə götürənlər, həm də əmlak sahibləri üçün faydalı bir mühit yaradır. Əmlak sahibləri öz məkanlarını daha geniş auditoriyaya təqdim edərək gəlir əldə edə, istifadəçilər isə ehtiyaclarına uyğun ən uyğun variantı rahatlıqla tapa bilirlər."
+          content: "Platformamız həm kirayə götürənlər, həm də əmlak sahibləri üçün faydalı bir mühit yaradır. Əmlak sahibləri öz məkanlarını daha geniş auditoriyaya təqdim edərək gəlir əldə edə, istifadəçilər isə ehtiyaclarına uyğun ən yaxşı variantı rahatlıqla tapa bilirlər."
         },
         {
-          title: "Gələcəkdə",
-          content: "Gələcək planlarımız arasında xidmət sahəmizi genişləndirərək və digər istirahət xidmətlərini də platformaya inteqrasiya etmək yer alır. Məqsədimiz istifadəçilərə bir platforma üzərindən bütün istirahət və planlaşdırma ehtiyaclarını qarşılamaq imkanı yaratmaqdır."
+          title: "Gələcək planlarımız",
+          content: "Gələcək planlarımız arasında xidmət sahəmizi genişləndirərək digər istirahət xidmətlərini də platformaya inteqrasiya etmək yer alır. Məqsədimiz istifadəçilərə bir platforma üzərindən bütün istirahət və planlaşdırma ehtiyaclarını qarşılamaq imkanı yaratmaqdır."
         },
         {
-          title: "Əsas Dəyərlərimiz",
+          title: "Əsas dəyərlərimiz",
           content: "Etibarlılıq və şəffaflıq, İstifadəçi məmnuniyyəti, Rahat və sürətli xidmət, Davamlı inkişaf və yenilik",
           isList: true
         },
@@ -607,7 +607,7 @@ export const az: Translations = {
       addressValue: "Bakı şəhəri, Azərbaycan",
       workingHours: "İş saatları",
       mondayFriday: "Bazar ertəsi – Cümə: 09:00 – 18:00",
-      weekendClosed: "Şənbə – Bazar: bağlıdır",
+      weekendClosed: "Şənbə – Bazar: Bağlıdır",
       socialNetworks: "Sosial şəbəkələr",
       facebook: "facebook.com/birklikaz",
       instagram: "instagram.com/birklikaz",
@@ -619,115 +619,115 @@ export const az: Translations = {
       sections: [
         {
           number: "1",
-          title: "Ümumi Məlumat",
-          content: "Birklik.az istifadəçilərə qısamüddətli kirayə verən mülkləri sadalamaq, axtarmaq və bron etməyə imkan verən platformadır. Bu Şərtlər və Qaydalar bizim veb-saytımızdan və xidmətlərimizdən istifadənizi tənzimləyir. Birklik.az istifadə edərək, siz bu şərtləri qəbul etməyi razı olursunuz."
+          title: "Ümumi məlumat",
+          content: "Birklik.az istifadəçilərə qısamüddətli kirayə verilən mülkləri sıralamaq, axtarmaq və bron etməyə imkan verən platformadır. Bu Şərtlər və Qaydalar veb-saytımızdan və xidmətlərimizdən istifadənizi tənzimləyir. Birklik.az-dan istifadə edərək, siz bu şərtləri qəbul etməyə razı olursunuz."
         },
         {
           number: "2",
-          title: "İstifadəçi Məsuliyyətləri",
-          content: "İstifadəçilər hesab məlumatlarının məxfiliyini saxlamaqda və hesab altında baş verən bütün fəaliyyətlərdə məsul olurlar. Elanlar yaratarkən və ya bron edərkən dəqiq və tam məlumat vermərsiniz. Platformanın istənilən yanlış istifadəsi hesabınızın dayandırılması və ya ləğv edilməsinə səbəb ola biləcəyi."
+          title: "İstifadəçi məsuliyyətləri",
+          content: "İstifadəçilər hesab məlumatlarının məxfiliyini saxlamaqda və hesab altında baş verən bütün fəaliyyətlərdə məsuliyyət daşıyırlar. Elanlar yaradarkən və ya bron edərkən dəqiq və tam məlumat verməlisiniz. Platformanın hər hansı yanlış istifadəsi hesabınızın dayandırılmasına və ya ləğv edilməsinə səbəb ola bilər."
         },
         {
           number: "3",
-          title: "Mülk Elanları",
-          content: "Mülk sahibləri və menecerləri bütün təqdim edilən məlumatın dəqiq, aktual və yerli qanunvericiliyə uyğun olduğundan əmin olmalıdırlar. Bütün elanlar müvafiq qanunlara və qaydalara uyğun olmalıdır. Birklik.az bu şərtləri və ya yerli qanunları pozan hər hansı elanı silməyə hüququ saxlayır."
+          title: "Mülk elanları",
+          content: "Mülk sahibləri və menecerləri təqdim edilən bütün məlumatların dəqiq, aktual və yerli qanunvericiliyə uyğun olduğundan əmin olmalıdırlar. Bütün elanlar müvafiq qanunlara və qaydalara uyğun olmalıdır. Birklik.az bu şərtləri və ya yerli qanunları pozan hər hansı elanı silmək hüququnu özündə saxlayır."
         },
         {
           number: "4",
-          title: "Bronirovka və Ləğv",
-          content: "Qonaqlar və ev sahibləri hər bir elanda göstərilən ləğv siyasətinə uyğun bronikləri dəyişə və ya ləğv edə bilərlər. Ləğv siyasətləri müxtəlif mülklər üçün fərqlidir. İstifadəçilər bronikləri təsdiq etməzdən əvvəl ləğv şərtlərini anlamaqda məsuldurlar. Bronirovka ilə bağlı mübahisələr Birklik.az siyasətinə uyğun işlənir."
+          title: "Sifariş və ləğv",
+          content: "Qonaqlar və ev sahibləri hər bir elanda göstərilən ləğv siyasətinə uyğun olaraq sifarişləri dəyişə və ya ləğv edə bilərlər. Ləğv siyasətləri müxtəlif mülklər üçün fərqlidir. İstifadəçilər sifarişi təsdiq etməzdən əvvəl ləğv şərtlərini anlamağa məsuldurlar. Sifarişlə bağlı mübahisələr Birklik.az siyasətinə uyğun həll edilir."
         },
         {
           number: "5",
-          title: "Ödəmələr və Komissiyalar",
-          content: "Bütün ödəmələr bizim ödəmə sistemi vasitəsilə güvənli şəkildə işlənir. Birklik.az platformadan istifadə üçün xidmət haqqı tələb edə bilər. Ev sahibləri kirayə gəlirinə aid hər hansı vergiləri ödəməkdə məsuldurlar. İstifadəçilər göstərilən qiymətlərin vergini və əlavə rüsumları ehtiva etməyə biləcəyini qəbul edirlər."
+          title: "Ödənişlər və komissiyalar",
+          content: "Bütün ödənişlər bizim ödəniş sistemimiz vasitəsilə təhlükəsiz şəkildə həyata keçirilir. Birklik.az platformadan istifadə üçün xidmət haqqı tələb edə bilər. Ev sahibləri kirayə gəlirinə aid hər hansı vergiləri ödəməkdə məsuldurlar. İstifadəçilər göstərilən qiymətlərin vergini və əlavə rüsumları ehtiva etməyə biləcəyini qəbul edirlər."
         },
         {
           number: "6",
-          title: "Məsuliyyətin Məhdudlaşdırılması",
-          content: "Birklik.az 'olduğu kimi' təqdim edilir. Biz platformanın qətilənən təsirə məruz qalmayacağını və ya səhvsiz olacağını təmin etmirik. Qanunla müsaadə edilən həddinin məhdud əhatə daxilində, Birklik.az platformanın istifadəsindən yaranan heç bir dolayısı, təsadüfi və ya nəticə əsasında zərərdən məsul deyil."
+          title: "Məsuliyyətin məhdudlaşdırılması",
+          content: "Birklik.az 'olduğu kimi' təqdim edilir. Biz platformanın kəsintisiz və ya səhvsiz olacağına zəmanət vermirik. Qanunla icazə verilən hədd daxilində, Birklik.az platformanın istifadəsindən yaranan heç bir dolayısı, təsadüfi və ya nəticə etibarilə yaranan zərərə görə məsuliyyət daşımır."
         },
         {
           number: "7",
-          title: "Şərtlərin Dəyişdirilməsi",
-          content: "Birklik.az bu şərtləri istənilən vaxt dəyişdirmək hüququnu saxlayır. Dəyişikliklər veb-saytda dərc edildikdən dərhal sonra qüvvəyə minir. Dəyişdirilmiş şərtlərin dərc edilməsindən sonra platformanın istifadəsiniz davam etdirməniz, dəyişlikləri qəbul etdiyinizi və razı olduğunuzu göstərir."
+          title: "Şərtlərin dəyişdirilməsi",
+          content: "Birklik.az bu şərtləri istənilən vaxt dəyişdirmək hüququnu özündə saxlayır. Dəyişikliklər veb-saytda dərc edildikdən dərhal sonra qüvvəyə minir. Şərtlər dəyişdirildikdən sonra platformadan istifadəni davam etdirməyiniz dəyişiklikləri qəbul etdiyinizi bildirir."
         }
       ]
     },
     privacy: {
-      title: "Məxfilik Siyasəti",
+      title: "Məxfilik siyasəti",
       sections: [
         {
           number: "1",
-          title: "Topladığımız Məlumat",
-          content: "Hesab yaratdığınız zaman, mülk sadaladığınız zaman və ya bron edərkən bizə birbaşa təqdim etdiyiniz məlumatları toplayırıq. Bura adınız, elektron poçt ünvanınız, telefon nömrəniz, ödəmə məlumatları və mülk detalları daxildir. Biz həmçinin cihazınız haqqında müəyyən məlumatları və veb-saytımızla necə əlaqə qurduğunuzu avtomatik olaraq toplayırıq."
+          title: "Topladığımız məlumat",
+          content: "Hesab yaratdığınız zaman, mülk yerləşdirdiyiniz və ya bron etdiyiniz zaman bizə birbaşa təqdim etdiyiniz məlumatları toplayırıq. Bura adınız, elektron poçt ünvanınız, telefon nömrəniz, ödəniş məlumatları və mülk detalları daxildir. Biz həmçinin cihazınız haqqında müəyyən məlumatları və veb-saytımızla necə əlaqə qurduğunuzu avtomatik olaraq toplayırıq."
         },
         {
           number: "2",
-          title: "Məlumatınızdan Necə İstifadə Edirik",
-          content: "Xidmətlərimizi təmin etmək və yaxşılaşdırmaq, işləmələri emal etmək, məktublar göndərmək, saxta əhəmiyyət qoymaq və qanuni öhdəlikləri yerinə yetirmək üçün məlumatınızdan istifadə edirik. Məlumatınız sizin təcrübənizi fərdiləşdirmənizə və mülklər və broniklərlə bağlı müvafiq yenilikləri göndərməyimizə kömək edir."
+          title: "Məlumatınızdan necə istifadə edirik",
+          content: "Xidmətlərimizi təmin etmək və yaxşılaşdırmaq, əməliyyatları emal etmək, bildirişlər göndərmək, saxtakarlığın qarşısını almaq və qanuni öhdəlikləri yerinə yetirmək üçün məlumatınızdan istifadə edirik. Məlumatınız təcrübənizi fərdiləşdirməyə və mülklərlə bağlı yenilikləri göndərməyimizə kömək edir."
         },
         {
           number: "3",
-          title: "Məlumat Mübadiləsi",
-          content: "Biz şəxsi məlumatınızı marketinq məqsədləri üçün üçüncü tərəflərə satmırıq və paylaşmırıq. Veb-saytımızı idarə etməyə və iş aparmasına kömək edən xidmət təminatçılarına məlumatınızı ötürə bilərik. Qanunla tələb edildikdə və ya hüquqlarımızı qorumaq üçün məlumatı da açıqlaya bilərik."
+          title: "Məlumat mübadiləsi",
+          content: "Biz şəxsi məlumatınızı marketinq məqsədləri üçün üçüncü tərəflərə satmırıq və paylaşmırıq. Veb-saytımızı idarə etməyə kömək edən xidmət təminatçılarına məlumatınızı ötürə bilərik. Qanunla tələb edildikdə və ya hüquqlarımızı qorumaq üçün məlumatı açıqlaya bilərik."
         },
         {
           number: "4",
-          title: "Məlumatların Keyfiyyəti",
-          content: "Şəxsi məlumatınızı icazəsiz daxilolma, dəyişdirmə, açıqlanma və ya məhvdən qorumaq üçün müvafiq texniki və təşkilati tədbirlər tətbiq edirik. Ancaq heç bir mühafizə sistemi tamamilə etibarlı deyil və biz məlumatlarınızın mütləq keyfiyyətini təmin edə bilmərik."
+          title: "Məlumatların təhlükəsizliyi",
+          content: "Şəxsi məlumatınızı icazəsiz daxilolma, dəyişdirmə, açıqlanma və ya məhvdən qorumaq üçün müvafiq texniki və təşkilati tədbirlər tətbiq edirik. Ancaq heç bir mühafizə sistemi tamamilə etibarlı deyil və biz məlumatlarınızın mütləq təhlükəsizliyinə zəmanət verə bilmərik."
         },
         {
           number: "5",
-          title: "Sizin Hüquqlarınız",
-          content: "Şəxsi məlumatınıza daxilolma, düzəltmə və ya silmə hüququna maliksiniz. Hesab parametrləri vasitəsilə məxfilik üstünlüklərini idarə edə bilərsiniz. Bu hüquqlardan istifadə etmək və ya məlumatlar haqqında səhəh almaq üçün dəstək komandasına müraciət edin."
+          title: "Sizin hüquqlarınız",
+          content: "Şəxsi məlumatınıza daxil olmaq, onları düzəltmək və ya silmək hüququna maliksiniz. Hesab parametrləri vasitəsilə məxfilik üstünlüklərini idarə edə bilərsiniz. Bu hüquqlardan istifadə etmək və ya məlumatlar haqqında məlumat almaq üçün dəstək komandasına müraciət edin."
         },
         {
           number: "6",
-          title: "Kuki-lər və Qeyd Etmə",
-          content: "Platformamızda sizin təcrübənizi artırmaq üçün cookie-lər və bənzər texnologiyalardan istifadə edirik. Bu, bizə sizin parametrlərinizi yadda saxlamağa və istifadəçilərin veb-saytımızla necə əlaqə qurduğunu anlamağa kömək edir. Brauzer parametrləriniz vasitəsilə cookie parametrlərini kontrol edə bilərsiniz."
+          title: "Kukilər (Cookies) və izləmə",
+          content: "Platformamızda təcrübənizi artırmaq üçün kuki-lər və bənzər texnologiyalardan istifadə edirik. Bu, bizə sizin parametrlərinizi yadda saxlamağa və istifadəçilərin veb-saytımızla necə əlaqə qurduğunu anlamağa kömək edir. Brauzer parametrləri vasitəsilə kuki-ləri idarə edə bilərsiniz."
         },
         {
           number: "7",
-          title: "Biz ilə Əlaqə Saxlayın",
-          content: "Əgər məxfilik təcrübələrimiz haqqında suallarınız varsa və ya məxfilik hüquqlarınızı həyata keçirmək istəyirsinizsə, support@birklik.az ünvanına müraciət edin və ya saytımızdakı əlaqə forması vasitəsilə bizə yazın. Biz hər hansı məxfilik göstərişlərinizi tez həll etməyə səbəb olmağa məramlıdır."
+          title: "Bizimlə əlaqə",
+          content: "Əgər məxfilik təcrübələrimiz haqqında suallarınız varsa və ya məxfilik hüquqlarınızı həyata keçirmək istəyirsinizsə, support@birklik.az ünvanına müraciət edin. Biz məxfiliklə bağlı müraciətlərinizi tez bir zamanda həll etməyə çalışacağıq."
         }
       ]
     }
   },
   listing: {
     createTitle: "Başlıq daxil edin",
-    selectType: "Mülk tipini seçin",
+    selectType: "Mülk növünü seçin",
     selectCity: "Şəhər seçin",
-    selectDistrictMetro: "Rayon yoxsa metro seçin",
+    selectDistrictMetro: "Rayon və ya metro seçin",
     selectDistrict: "Rayon seçin",
     enterPrice: "Düzgün qiymət daxil edin",
     enterRooms: "Otaqların sayını daxil edin",
-    maxImagesStandard: "Standard və VIP planı üçün maksimum 20 şəkil",
-    maxImagesPremium: "Premium planı üçün maksimum 30 şəkil",
+    maxImagesStandard: "Standart və VIP plan üçün maksimum 20 şəkil",
+    maxImagesPremium: "Premium plan üçün maksimum 30 şəkil",
     minPhotos: "Zəhmət olmasa ən azı 2 fotoşəkil əlavə edin",
-    maxWordsStandard: "Standard plan üçün maksimum 35 söz",
-    setLocationMap: "Xəritədə lokasiyonuzu qoyun",
-    locationHidden: "Standard plan üçün lokasiya gizlidir",
-    searchAddressPlaceholder: "Ünvan axtarışı (məsələn. Mardakan, Bakı)",
+    maxWordsStandard: "Standart plan üçün maksimum 35 söz",
+    setLocationMap: "Xəritədə yerinizi qeyd edin",
+    locationHidden: "Standart plan üçün lokasiya gizlidir",
+    searchAddressPlaceholder: "Ünvan axtarışı (məs: Mərdəkan, Bakı)",
     findOnMap: "Xəritədə tap",
-    selectPlan: "Zəhmət olmasa elan planını seçin (Pulsuz, Standard və ya Premium)",
+    selectPlan: "Zəhmət olmasa elan planını seçin (Pulsuz, Standart və ya Premium)",
     required: "Tələb olunur",
-    newBooking: "Yeni Sifariş",
-    newComment: "Yeni Şərh",
-    createdFailed: "Elan yaratmaq uğursuz oldu. Zəhmət olmasa məlumatlarınızı yoxlayıb yenidən cəhd edin",
-    updateFailed: "Elanı yeniləmə uğursuz oldu. Zəhmət olmasa yenidən cəhd edin",
+    newBooking: "Yeni sifariş",
+    newComment: "Yeni şərh",
+    createdFailed: "Elan yaratmaq uğursuz oldu. Məlumatları yoxlayıb yenidən cəhd edin",
+    updateFailed: "Elanı yeniləmə uğursuz oldu. Yenidən cəhd edin",
     locationSearchError: "Axtarış üçün ünvan daxil edin",
     addressNotFound: "Ünvan tapılmadı. Daha dəqiq ünvan yazın",
     invalidCoords: "Koordinatlar düzgün alınmadı",
     searchFailed: "Ünvan axtarışı uğursuz oldu. Yenidən cəhd edin",
-    datesRequired: "Başlanğıc və bitmə tarixlərini seçin",
-    startBeforeEnd: "Başlanğıc tarixi bitmə tarixindən əvvəl olmalıdır",
+    datesRequired: "Başlama və bitmə tarixlərini seçin",
+    startBeforeEnd: "Başlama tarixi bitmə tarixindən əvvəl olmalıdır",
     profileRequired: "Tam ad tələb olunur",
     extendFailed: "Premium uzatmaq uğursuz oldu",
     extendSuccess: "Premium 3 həftə uzadıldı",
-    premiumExtended: "Premium Uzadıldı",
-    contactAfterBooking: "Kontakt məlumatları sifariş vermədən sonra göstəriləcəkdir"
+    premiumExtended: "Premium uzadıldı",
+    contactAfterBooking: "Əlaqə məlumatları sifarişdən sonra göstəriləcək"
   },
   offline: {
     banner: "İnternet bağlantısı yoxdur",
