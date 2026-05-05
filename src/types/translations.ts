@@ -647,4 +647,11 @@ export interface Translations {
     premiumExtended: string
     contactAfterBooking: string
   }
+  offline: {
+    banner: string
+    toastOffline: string
+    toastOfflineSub: string
+    toastOnline: string
+    toastOnlineSub: string
+  }
 }

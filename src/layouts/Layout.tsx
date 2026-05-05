@@ -1,5 +1,5 @@
 import React from 'react'
-import { Header, Footer, ErrorBoundary } from '../components'
+import { Header, Footer, ErrorBoundary, OfflineNotifier } from '../components'
 import './Layout.css'
 
 interface LayoutProps {
@@ -11,6 +11,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     <ErrorBoundary>
       <div className="layout">
         <Header />
+        <OfflineNotifier />
         <main className="main-content">
           {children}
         </main>

@@ -731,5 +731,12 @@ export const en: Translations = {
     extendSuccess: "Premium extended for 3 more weeks",
     premiumExtended: "Premium Extended",
     contactAfterBooking: "Contact info will appear after booking"
+  },
+  offline: {
+    banner: "No internet connection",
+    toastOffline: "Connection lost",
+    toastOfflineSub: "You're working in offline mode",
+    toastOnline: "Connection restored",
+    toastOnlineSub: "Content is updating..."
   }
 }

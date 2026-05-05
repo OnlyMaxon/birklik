@@ -728,5 +728,12 @@ export const az: Translations = {
     extendSuccess: "Premium 3 həftə uzadıldı",
     premiumExtended: "Premium Uzadıldı",
     contactAfterBooking: "Kontakt məlumatları sifariş vermədən sonra göstəriləcəkdir"
+  },
+  offline: {
+    banner: "İnternet bağlantısı yoxdur",
+    toastOffline: "Bağlantı kəsildi",
+    toastOfflineSub: "Oflayn rejimdə işləyirsiniz",
+    toastOnline: "Bağlantı bərpa edildi",
+    toastOnlineSub: "Məzmun yenilənir..."
   }
 }

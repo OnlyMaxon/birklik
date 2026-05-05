@@ -731,5 +731,12 @@ export const ru: Translations = {
     extendSuccess: 'Премиум продлен на 3 недели',
     premiumExtended: 'Премиум продлен',
     contactAfterBooking: 'Контактная информация будет отображаться после бронирования'
+  },
+  offline: {
+    banner: 'Нет подключения к интернету',
+    toastOffline: 'Соединение потеряно',
+    toastOfflineSub: 'Работаете в офлайн-режиме',
+    toastOnline: 'Соединение восстановлено',
+    toastOnlineSub: 'Контент обновляется...'
   }
 }
