@@ -8,11 +8,70 @@ import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooki
 import { createBookingApprovedNotification, createBookingRejectedNotification } from '../../services/notificationsService'
 import { Loading } from '../../components'
 import * as logger from '../../services/logger'
+import './BookingsTab.css'
 
 interface BookingWithProperty extends Booking {
   propertyTitle?: string
   propertyImage?: string
 }
+
+const IconCalendar = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+)
+
+const IconMoon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+)
+
+const IconTag = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+  </svg>
+)
+
+const IconPhone = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </svg>
+)
+
+const IconMail = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+  </svg>
+)
+
+const IconCheck = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+)
+
+const IconEdit = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+)
+
+const IconTrash = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+)
+
+const IconPhoto = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+  </svg>
+)
+
+const StatusDot = () => (
+  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', display: 'inline-block', flexShrink: 0 }} />
+)
 
 export const BookingsTab: React.FC = () => {
   const { language } = useLanguage()
@@ -45,18 +104,37 @@ export const BookingsTab: React.FC = () => {
     pending: language === 'en' ? 'Waiting' : language === 'ru' ? 'Ожидание' : 'Gözləmə',
     approved: language === 'en' ? 'Approved' : language === 'ru' ? 'Принято' : 'Qəbul edildi',
     rejected: language === 'en' ? 'Rejected' : language === 'ru' ? 'Отклонено' : 'Rədd edildi',
+    cancelled: language === 'en' ? 'Cancelled' : language === 'ru' ? 'Отменено' : 'Ləğv edildi',
+    cancellationRequested: language === 'en' ? 'Cancellation Requested' : language === 'ru' ? 'Отправлено' : 'Ləğv edilmə istənib',
+    cancellationSent: language === 'en' ? 'Cancellation sent' : language === 'ru' ? 'Запрос отправлен' : 'Sorğu göndərildi',
     accept: language === 'en' ? 'Accept' : language === 'ru' ? 'Принять' : 'Qəbul Et',
     reject: language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et',
+    save: language === 'en' ? 'Save' : language === 'ru' ? 'Сохранить' : 'Saxla',
+    edit: language === 'en' ? 'Edit' : language === 'ru' ? 'Изменить' : 'Redaktə Et',
+    delete: language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil',
+    cancelEdit: language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv Et',
+    checkIn: language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş',
+    checkOut: language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış',
     actionError: language === 'en' ? 'Failed to complete action' : language === 'ru' ? 'Не удалось выполнить действие' : 'Fəal tamamlana bilmədi',
     sort: language === 'en' ? 'Sort' : language === 'ru' ? 'Сортировка' : 'Sıralama',
     sortDateNewest: language === 'en' ? 'Date (newest first)' : language === 'ru' ? 'Дата (новие сначала)' : 'Tarix (yeni əvvəl)',
     sortDateOldest: language === 'en' ? 'Date (oldest first)' : language === 'ru' ? 'Дата (старые сначала)' : 'Tarix (eski əvvəl)',
     sortPriceHigh: language === 'en' ? 'Price (high to low)' : language === 'ru' ? 'Цена (выше)' : 'Qiymət (yüksəkdən aşağıya)',
     sortPriceLow: language === 'en' ? 'Price (low to high)' : language === 'ru' ? 'Цена (ниже)' : 'Qiymət (aşağıdan yüksəyə)',
-    sortName: language === 'en' ? 'Name (A-Z)' : language === 'ru' ? 'Название (А-Я)' : 'Ad (A-Z)'
+    sortName: language === 'en' ? 'Name (A-Z)' : language === 'ru' ? 'Название (А-Я)' : 'Ad (A-Z)',
+    canceling: language === 'en' ? 'Canceling...' : language === 'ru' ? 'Отмена...' : 'Ləğv edilir...'
   }
 
-  // Helper function to check if booking is completed (checkout date passed)
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'approved': return t.approved
+      case 'rejected': return t.rejected
+      case 'cancelled': return t.cancelled
+      case 'cancellation_requested': return t.cancellationRequested
+      default: return t.pending
+    }
+  }
+
   const isBookingCompleted = (checkOutDate: string): boolean => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -65,20 +143,15 @@ export const BookingsTab: React.FC = () => {
     return checkOut < today
   }
 
-  // Helper function to get property title with fallback to other languages
   const getPropertyTitle = (property: Property | undefined): string => {
     if (!property?.title) return 'Property'
-    // Try current language first
     if (property.title[language]) return property.title[language]
-    // Fallback to other languages
     if (property.title['en']) return property.title['en']
     if (property.title['ru']) return property.title['ru']
     if (property.title['az']) return property.title['az']
-    // Last resort
     return Object.values(property.title)[0] || 'Property'
   }
 
-  // Helper function to sort bookings
   const sortBookings = (bookings: BookingWithProperty[]): BookingWithProperty[] => {
     const sorted = [...bookings]
     switch (sortBy) {
@@ -97,7 +170,6 @@ export const BookingsTab: React.FC = () => {
     }
   }
 
-  // Load my bookings (bookings user made as guest)
   const loadMyBookings = React.useCallback(async () => {
     if (!user?.id) return
 
@@ -110,16 +182,9 @@ export const BookingsTab: React.FC = () => {
         return
       }
 
-      // Filter out rejected, cancelled, and completed bookings
       const activeBookings = bookings.filter(booking => {
-        // Exclude rejected and cancelled bookings
-        if (booking.status === 'rejected' || booking.status === 'cancelled') {
-          return false
-        }
-        // Exclude completed bookings (checkout date passed)
-        if (isBookingCompleted(booking.checkOutDate)) {
-          return false
-        }
+        if (booking.status === 'rejected' || booking.status === 'cancelled') return false
+        if (isBookingCompleted(booking.checkOutDate)) return false
         return true
       })
 
@@ -128,12 +193,10 @@ export const BookingsTab: React.FC = () => {
         return
       }
 
-      // Get unique property IDs
       const uniquePropertyIds = [...new Set(activeBookings.map(b => b.propertyId))]
       const propsRef = collection(db, 'properties')
       const propertiesMap = new Map<string, Property>()
 
-      // Batch fetch properties in chunks of 10 (Firestore `in` limit is 10)
       for (let i = 0; i < uniquePropertyIds.length; i += 10) {
         const chunk = uniquePropertyIds.slice(i, i + 10)
         const propsQuery = query(propsRef, where('__name__', 'in', chunk))
@@ -143,10 +206,8 @@ export const BookingsTab: React.FC = () => {
         })
       }
 
-      // Combine bookings with property details - only if property exists
       activeBookings.forEach(booking => {
         const property = propertiesMap.get(booking.propertyId)
-        // Skip bookings for deleted properties
         if (property) {
           bookingsWithDetails.push({
             ...booking,
@@ -163,7 +224,6 @@ export const BookingsTab: React.FC = () => {
     }
   }, [user?.id, language])
 
-  // Load incoming booking requests (all bookings on user's properties - not rejected)
   const loadIncomingRequests = React.useCallback(async () => {
     if (!user?.id) return
 
@@ -182,7 +242,6 @@ export const BookingsTab: React.FC = () => {
       const bookingsRef = collection(db, 'bookings')
       const allBookings: BookingWithProperty[] = []
 
-      // Batch query bookings in chunks of 10 (Firestore 'in' limit)
       for (let i = 0; i < propertyIds.length; i += 10) {
         const chunk = propertyIds.slice(i, i + 10)
         const bookingsQuery = query(bookingsRef, where('propertyId', 'in', chunk))
@@ -190,10 +249,8 @@ export const BookingsTab: React.FC = () => {
 
         bookingsSnap.docs.forEach(bookingDoc => {
           const booking = bookingDoc.data() as Omit<Booking, 'id'>
-          // Filter out rejected, cancelled, and completed bookings
           if (booking.status !== 'rejected' && booking.status !== 'cancelled' && !isBookingCompleted(booking.checkOutDate)) {
             const property = propertiesMap.get(booking.propertyId)
-            // Only add if property exists
             if (property) {
               allBookings.push({
                 id: bookingDoc.id,
@@ -215,13 +272,11 @@ export const BookingsTab: React.FC = () => {
   React.useEffect(() => {
     setIsLoading(true)
     setError('')
-
     const load = async () => {
       await loadMyBookings()
       await loadIncomingRequests()
       setIsLoading(false)
     }
-
     load()
   }, [loadMyBookings, loadIncomingRequests])
 
@@ -233,8 +288,7 @@ export const BookingsTab: React.FC = () => {
       setActionInProgress({ type: 'cancel', bookingId })
       const result = await cancelBooking(bookingId)
       if (result.success) {
-        // Update booking status to cancellation_requested instead of removing it
-        setMyBookings(prev => prev.map(b => 
+        setMyBookings(prev => prev.map(b =>
           b.id === bookingId ? { ...b, status: 'cancellation_requested' } : b
         ))
         setError('')
@@ -252,10 +306,8 @@ export const BookingsTab: React.FC = () => {
   const handleAcceptBooking = async (booking: BookingWithProperty) => {
     try {
       setActionInProgress({ type: 'accept', bookingId: booking.id })
-      
       const updated = await acceptBooking(booking.id)
       if (updated) {
-        // Send notification to guest
         await createBookingApprovedNotification(booking.userId, {
           type: 'bookingApproved',
           title: language === 'en' ? '✅ Your booking is approved!' : language === 'ru' ? '✅ Ваше бронирование принято!' : '✅ Sizin bölmə qəbul edildi!',
@@ -268,9 +320,7 @@ export const BookingsTab: React.FC = () => {
           checkOutDate: booking.checkOutDate,
           ownerName: user?.name || ''
         })
-
-        // Update the booking status in the list instead of removing
-        setIncomingRequests(prev => prev.map(b => 
+        setIncomingRequests(prev => prev.map(b =>
           b.id === booking.id ? { ...b, status: 'approved' } : b
         ))
         setError('')
@@ -287,13 +337,11 @@ export const BookingsTab: React.FC = () => {
 
   const handleRejectBooking = async (booking: BookingWithProperty) => {
     const reason = language === 'en' ? 'Not available on these dates' : language === 'ru' ? 'Недоступно на эти даты' : 'Bu tarixlərdə əlçatan deyil'
-    
+
     try {
       setActionInProgress({ type: 'reject', bookingId: booking.id })
-      
       const updated = await rejectBooking(booking.id, reason)
       if (updated) {
-        // Send notification to guest
         await createBookingRejectedNotification(booking.userId, {
           type: 'bookingRejected',
           title: language === 'en' ? '❌ Your booking was rejected' : language === 'ru' ? '❌ Ваше бронирование отклонено' : '❌ Sizin bölmə rədd edildi',
@@ -307,10 +355,7 @@ export const BookingsTab: React.FC = () => {
           ownerName: user?.name || '',
           rejectionReason: reason
         })
-
-        // Remove from incoming requests
         setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
-        // Also remove from my bookings if visible there
         setMyBookings(prev => prev.filter(b => b.id !== booking.id))
         setError('')
       } else {
@@ -330,10 +375,8 @@ export const BookingsTab: React.FC = () => {
 
     try {
       setActionInProgress({ type: 'reject', bookingId: booking.id })
-      
       const success = await deleteBooking(booking.id)
       if (success) {
-        // Remove from list
         setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
         setError('')
       } else {
@@ -349,18 +392,12 @@ export const BookingsTab: React.FC = () => {
 
   const handleEditApprovedBooking = (booking: BookingWithProperty) => {
     setEditingBookingId(booking.id)
-    setEditingDates({
-      checkIn: booking.checkInDate,
-      checkOut: booking.checkOutDate
-    })
+    setEditingDates({ checkIn: booking.checkInDate, checkOut: booking.checkOutDate })
   }
 
   const handleNavigateToProperty = (propertyId: string, e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't navigate if clicking on a button, input, or interactive element
     const target = e.target as HTMLElement
-    if (target.closest('button') || target.closest('input') || target.closest('textarea') || target.closest('a')) {
-      return
-    }
+    if (target.closest('button') || target.closest('input') || target.closest('textarea') || target.closest('a')) return
     navigate(`/property/${propertyId}`)
   }
 
@@ -369,21 +406,17 @@ export const BookingsTab: React.FC = () => {
 
     try {
       setActionInProgress({ type: 'accept', bookingId: editingBookingId })
-      
-      // Update the booking using service function
       const updated = await editBooking(editingBookingId, {
         checkInDate: editingDates.checkIn,
         checkOutDate: editingDates.checkOut
       } as Partial<Booking>)
 
       if (updated) {
-        // Update in local state
         setIncomingRequests(prev => prev.map(b =>
           b.id === editingBookingId
             ? { ...b, checkInDate: editingDates.checkIn, checkOutDate: editingDates.checkOut }
             : b
         ))
-
         setEditingBookingId(null)
         setEditingDates(null)
         setError('')
@@ -398,72 +431,49 @@ export const BookingsTab: React.FC = () => {
     }
   }
 
-  const getStatusComponent = (booking: Booking) => {
-    let statusText = t.pending
-    let statusColor = '#ff9800'
-
-    if (booking.status === 'approved') {
-      statusText = t.approved
-      statusColor = '#4caf50'
-    } else if (booking.status === 'rejected') {
-      statusText = t.rejected
-      statusColor = '#f44336'
-    } else if (booking.status === 'cancelled') {
-      statusText = language === 'en' ? 'Cancelled' : language === 'ru' ? 'Отменено' : 'Ləğv edildi'
-      statusColor = '#999'
-    } else if (booking.status === 'cancellation_requested') {
-      statusText = language === 'en' ? 'Cancellation Requested' : language === 'ru' ? 'Отправлено' : 'Ləğv edilmə istənib'
-      statusColor = '#ff6f00'
-    }
-
-    return (
-      <div style={{
-        display: 'inline-block',
-        padding: '0.4rem 0.8rem',
-        borderRadius: '20px',
-        backgroundColor: `${statusColor}20`,
-        color: statusColor,
-        fontSize: '0.85rem',
-        fontWeight: '500'
-      }}>
-        {statusText}
-      </div>
-    )
-  }
-
   if (isLoading) {
     return <Loading message={t.loading} />
   }
 
+  const emptyState = (
+    <div className="bookings-empty">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <p>{t.empty}</p>
+    </div>
+  )
+
+  const imagePlaceholder = (
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gray-300)' }}>
+      <IconPhoto />
+    </div>
+  )
+
   return (
     <div className="bookings-tab">
-      <div className="bookings-tabs-header">
-        <button
-          className={`tab-button ${activeSubTab === 'my-bookings' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('my-bookings')}
-        >
-          {t.myBookings}
-        </button>
-        <button
-          className={`tab-button ${activeSubTab === 'requests' ? 'active' : ''}`}
-          onClick={() => setActiveSubTab('requests')}
-        >
-          {t.requests}
-        </button>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: '500', color: '#666' }}>{t.sort}:</label>
+      <div className="bookings-header">
+        <div className="bookings-subtabs">
+          <button
+            className={`bookings-subtab${activeSubTab === 'my-bookings' ? ' active' : ''}`}
+            onClick={() => setActiveSubTab('my-bookings')}
+          >
+            {t.myBookings}
+          </button>
+          <button
+            className={`bookings-subtab${activeSubTab === 'requests' ? ' active' : ''}`}
+            onClick={() => setActiveSubTab('requests')}
+          >
+            {t.requests}
+          </button>
+        </div>
+
+        <div className="bookings-sort">
+          <span className="bookings-sort-label">{t.sort}:</span>
           <select
+            className="bookings-sort-select"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            style={{
-              padding: '0.5rem 0.8rem',
-              borderRadius: '4px',
-              border: '1px solid #ddd',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-              color: '#333'
-            }}
           >
             <option value="date-newest">{t.sortDateNewest}</option>
             <option value="date-oldest">{t.sortDateOldest}</option>
@@ -474,420 +484,228 @@ export const BookingsTab: React.FC = () => {
         </div>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && (
+        <div className="bookings-error">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {error}
+        </div>
+      )}
 
-      {activeSubTab === 'my-bookings' && (
-        <div className="bookings-grid">
-          {myBookings.length === 0 ? (
-            <div className="empty-state">{t.empty}</div>
-          ) : (
+      <div className="bookings-grid">
+        {activeSubTab === 'my-bookings' && (
+          myBookings.length === 0 ? emptyState : (
             sortBookings(myBookings).map(booking => (
-              <div 
-                key={booking.id} 
+              <div
+                key={booking.id}
                 className="booking-card"
                 onClick={(e) => handleNavigateToProperty(booking.propertyId, e as React.MouseEvent<HTMLDivElement>)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    navigate(`/property/${booking.propertyId}`)
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/property/${booking.propertyId}`) }}
               >
-                {booking.propertyImage && (
-                  <img src={booking.propertyImage} alt="property" className="booking-image" />
-                )}
-                <h4 className="booking-title">{booking.propertyTitle}</h4>
-                
-                <div className="booking-details">
-                  <p>
-                    <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
-                  </p>
-                  <p>
-                    <strong>{t.nights}:</strong> {booking.nights}
-                  </p>
-                  <p className="booking-price">
-                    {booking.totalPrice} AZN
-                  </p>
+                <div className="booking-card__img-wrap">
+                  {booking.propertyImage
+                    ? <img src={booking.propertyImage} alt="" className="booking-card__img" />
+                    : imagePlaceholder
+                  }
+                  <span className={`booking-status-badge booking-status-badge--${booking.status}`}>
+                    <StatusDot />
+                    {getStatusLabel(booking.status)}
+                  </span>
                 </div>
 
-                <div className="booking-status">
-                  <strong>{t.status}:</strong> {getStatusComponent(booking)}
-                </div>
+                <div className="booking-card__body">
+                  <h4 className="booking-card__title">{booking.propertyTitle}</h4>
 
-                {booking.status === 'pending' && (
-                  <button
-                    className="btn btn-cancel"
-                    onClick={() => handleCancelBooking(booking.id)}
-                    disabled={actionInProgress?.bookingId === booking.id}
-                  >
-                    {actionInProgress?.bookingId === booking.id ? (
-                      language === 'en' ? 'Canceling...' : language === 'ru' ? 'Отмена...' : 'Ləğv edilir...'
-                    ) : t.cancel}
-                  </button>
-                )}
-                
-                {booking.status === 'cancellation_requested' && (
-                  <div style={{ 
-                    padding: '0.4rem 0.8rem', 
-                    borderRadius: '4px', 
-                    backgroundColor: '#fff3cd', 
-                    color: '#856404',
-                    fontSize: '0.85rem',
-                    fontWeight: '500'
-                  }}>
-                    {language === 'en' ? '✓ Sent' : language === 'ru' ? '✓ Отправлено' : '✓ Göndərildi'}
+                  <div className="booking-card__info">
+                    <div className="booking-card__info-row">
+                      <IconCalendar />
+                      {booking.checkInDate} — {booking.checkOutDate}
+                    </div>
+                    <div className="booking-card__info-row">
+                      <IconMoon />
+                      {booking.nights} {t.nights}
+                    </div>
+                    <div className="booking-card__info-row">
+                      <IconTag />
+                      <span className="booking-card__info-price">
+                        {booking.totalPrice} AZN
+                      </span>
+                    </div>
                   </div>
-                )}
+
+                  {booking.status === 'cancellation_requested' && (
+                    <div className="booking-sent-badge">
+                      <IconCheck />
+                      {t.cancellationSent}
+                    </div>
+                  )}
+
+                  {booking.status === 'pending' && (
+                    <div className="booking-card__actions">
+                      <button
+                        className="bk-btn bk-btn--cancel"
+                        onClick={() => handleCancelBooking(booking.id)}
+                        disabled={actionInProgress?.bookingId === booking.id}
+                      >
+                        {actionInProgress?.bookingId === booking.id ? t.canceling : t.cancel}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))
-          )}
-        </div>
-      )}
+          )
+        )}
 
-      {activeSubTab === 'requests' && (
-        <div className="bookings-grid">
-          {incomingRequests.length === 0 ? (
-            <div className="empty-state">{t.empty}</div>
-          ) : (
+        {activeSubTab === 'requests' && (
+          incomingRequests.length === 0 ? emptyState : (
             sortBookings(incomingRequests).map(booking => (
-              <div 
-                key={booking.id} 
-                className="booking-request-card"
+              <div
+                key={booking.id}
+                className="booking-card booking-card--request"
                 onClick={(e) => handleNavigateToProperty(booking.propertyId, e as React.MouseEvent<HTMLDivElement>)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    navigate(`/property/${booking.propertyId}`)
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/property/${booking.propertyId}`) }}
               >
-                {booking.propertyImage && (
-                  <img src={booking.propertyImage} alt="property" className="booking-image" />
-                )}
-                <h4 className="booking-title">{booking.propertyTitle}</h4>
-                
-                <div className="booking-details">
-                  {editingBookingId === booking.id && editingDates ? (
-                    <>
-                      <p>
-                        <strong>{language === 'en' ? 'Check-in:' : language === 'ru' ? 'Заезд:' : 'Giriş:'}​</strong>
-                        <input
-                          type="date"
-                          value={editingDates.checkIn}
-                          onChange={(e) => setEditingDates({ ...editingDates, checkIn: e.target.value })}
-                          style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
-                        />
-                      </p>
-                      <p>
-                        <strong>{language === 'en' ? 'Check-out:' : language === 'ru' ? 'Выезд:' : 'Çıxış:'}​</strong>
-                        <input
-                          type="date"
-                          value={editingDates.checkOut}
-                          onChange={(e) => setEditingDates({ ...editingDates, checkOut: e.target.value })}
-                          style={{ marginLeft: '0.5rem', padding: '0.25rem' }}
-                        />
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p>
-                        <strong>{t.dates}:</strong> {booking.checkInDate} — {booking.checkOutDate}
-                      </p>
-                      <p>
-                        <strong>{t.nights}:</strong> {booking.nights}
-                      </p>
-                      <p className="booking-price">
-                        {booking.totalPrice} AZN
-                      </p>
-                    </>
-                  )}
+                <div className="booking-card__img-wrap">
+                  {booking.propertyImage
+                    ? <img src={booking.propertyImage} alt="" className="booking-card__img" />
+                    : imagePlaceholder
+                  }
+                  <span className={`booking-status-badge booking-status-badge--${booking.status}`}>
+                    <StatusDot />
+                    {getStatusLabel(booking.status)}
+                  </span>
                 </div>
 
-                <div className="guest-info">
-                  <h5>{t.guest}</h5>
-                  <p><strong>{booking.userName}</strong></p>
-                  <p>
-                    {t.phone}: <a href={`tel:${booking.userPhone}`}>{booking.userPhone}</a>
-                  </p>
-                  <p>
-                    {t.email}: <a href={`mailto:${booking.userEmail}`}>{booking.userEmail}</a>
-                  </p>
-                </div>
+                <div className="booking-card__body">
+                  <h4 className="booking-card__title">{booking.propertyTitle}</h4>
 
-                <div className="booking-status">
-                  <strong>{t.status}:</strong> {getStatusComponent(booking)}
-                </div>
+                  <div className="booking-card__info">
+                    {editingBookingId === booking.id && editingDates ? (
+                      <div className="booking-card__date-edit">
+                        <div className="booking-card__date-field">
+                          <label>{t.checkIn}</label>
+                          <input
+                            type="date"
+                            value={editingDates.checkIn}
+                            onChange={(e) => setEditingDates({ ...editingDates, checkIn: e.target.value })}
+                          />
+                        </div>
+                        <div className="booking-card__date-field">
+                          <label>{t.checkOut}</label>
+                          <input
+                            type="date"
+                            value={editingDates.checkOut}
+                            onChange={(e) => setEditingDates({ ...editingDates, checkOut: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="booking-card__info-row">
+                          <IconCalendar />
+                          {booking.checkInDate} — {booking.checkOutDate}
+                        </div>
+                        <div className="booking-card__info-row">
+                          <IconMoon />
+                          {booking.nights} {t.nights}
+                        </div>
+                        <div className="booking-card__info-row">
+                          <IconTag />
+                          <span className="booking-card__info-price">
+                            {booking.totalPrice} AZN
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-                <div className="booking-actions">
-                  {booking.status === 'pending' && (
-                    <>
-                      <button
-                        className="btn btn-accept"
-                        onClick={() => handleAcceptBooking(booking)}
-                        disabled={actionInProgress?.bookingId === booking.id}
-                      >
-                        {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' ? '...' : t.accept}
-                      </button>
-                      <button
-                        className="btn btn-reject"
-                        onClick={() => handleRejectBooking(booking)}
-                        disabled={actionInProgress?.bookingId === booking.id}
-                      >
-                        {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' ? '...' : t.reject}
-                      </button>
-                    </>
-                  )}
-                  {booking.status === 'approved' && editingBookingId === booking.id && editingDates ? (
-                    <>
-                      <button
-                        className="btn btn-accept"
-                        onClick={handleSaveEditedBooking}
-                        disabled={actionInProgress?.bookingId === booking.id}
-                      >
-                        {actionInProgress?.bookingId === booking.id ? '...' : (language === 'en' ? 'Save' : language === 'ru' ? 'Сохранить' : 'Saxla')}
-                      </button>
-                      <button
-                        className="btn btn-ghost"
-                        onClick={() => {
-                          setEditingBookingId(null)
-                          setEditingDates(null)
-                        }}
-                        disabled={actionInProgress?.bookingId === booking.id}
-                      >
-                        {language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv Et'}
-                      </button>
-                    </>
-                  ) : booking.status === 'approved' ? (
-                    <>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleEditApprovedBooking(booking)}
-                        title={language === 'en' ? 'Edit booking dates' : language === 'ru' ? 'Редактировать даты' : 'Bölmə tarixlərini redaktə et'}
-                      >
-                        ✏️ {language === 'en' ? 'Edit' : language === 'ru' ? 'Редактировать' : 'Redaktə Et'}
-                      </button>
-                      <button
-                        className="btn btn-reject"
-                        onClick={() => handleDeleteApprovedBooking(booking)}
-                        disabled={actionInProgress?.bookingId === booking.id}
-                        title={language === 'en' ? 'Delete this booking' : language === 'ru' ? 'Удалить бронирование' : 'Bölməni sil'}
-                      >
-                        {actionInProgress?.bookingId === booking.id ? '...' : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
-                      </button>
-                    </>
-                  ) : null}
+                  <div className="booking-card__guest">
+                    <span className="booking-card__guest-label">{t.guest}</span>
+                    <span className="booking-card__guest-name">{booking.userName}</span>
+                    {booking.userPhone && (
+                      <div className="booking-card__guest-row">
+                        <IconPhone />
+                        <a href={`tel:${booking.userPhone}`}>{booking.userPhone}</a>
+                      </div>
+                    )}
+                    {booking.userEmail && (
+                      <div className="booking-card__guest-row">
+                        <IconMail />
+                        <a href={`mailto:${booking.userEmail}`}>{booking.userEmail}</a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="booking-card__actions">
+                    {booking.status === 'pending' && (
+                      <>
+                        <button
+                          className="bk-btn bk-btn--accept"
+                          onClick={() => handleAcceptBooking(booking)}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                        >
+                          {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' ? '...' : t.accept}
+                        </button>
+                        <button
+                          className="bk-btn bk-btn--reject"
+                          onClick={() => handleRejectBooking(booking)}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                        >
+                          {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' ? '...' : t.reject}
+                        </button>
+                      </>
+                    )}
+
+                    {booking.status === 'approved' && editingBookingId === booking.id && editingDates ? (
+                      <>
+                        <button
+                          className="bk-btn bk-btn--accept"
+                          onClick={handleSaveEditedBooking}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                        >
+                          {actionInProgress?.bookingId === booking.id ? '...' : t.save}
+                        </button>
+                        <button
+                          className="bk-btn bk-btn--ghost"
+                          onClick={() => { setEditingBookingId(null); setEditingDates(null) }}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                        >
+                          {t.cancelEdit}
+                        </button>
+                      </>
+                    ) : booking.status === 'approved' ? (
+                      <>
+                        <button
+                          className="bk-btn bk-btn--edit"
+                          onClick={() => handleEditApprovedBooking(booking)}
+                        >
+                          <IconEdit />
+                          {t.edit}
+                        </button>
+                        <button
+                          className="bk-btn bk-btn--reject"
+                          onClick={() => handleDeleteApprovedBooking(booking)}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                        >
+                          {actionInProgress?.bookingId === booking.id ? '...' : (
+                            <><IconTrash />{t.delete}</>
+                          )}
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             ))
-          )}
-        </div>
-      )}
-
-      <style>{`
-        .bookings-tab {
-          padding: 1rem;
-        }
-
-        .bookings-tabs-header {
-          display: flex;
-          gap: 0.5rem;
-          margin-bottom: 1.5rem;
-          border-bottom: 2px solid #e0e0e0;
-        }
-
-        .tab-button {
-          padding: 0.75rem 1.25rem;
-          background: none;
-          border: none;
-          border-bottom: 3px solid transparent;
-          cursor: pointer;
-          font-weight: 500;
-          color: #999;
-          transition: all 0.3s;
-          font-size: 0.95rem;
-        }
-
-        .tab-button:hover {
-          color: #666;
-        }
-
-        .tab-button.active {
-          color: #d6b17d;
-          border-bottom-color: #d6b17d;
-        }
-
-        .bookings-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 1.25rem;
-        }
-
-        .booking-card, .booking-request-card {
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 1rem;
-          background: #fafafa;
-          transition: all 0.3s ease;
-          cursor: pointer;
-        }
-
-        .booking-card:hover, .booking-request-card:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          transform: translateY(-2px);
-        }
-
-        .booking-request-card {
-          border-color: #d6b17d;
-          background: #fffbf5;
-        }
-
-        .booking-image {
-          width: 100%;
-          height: 140px;
-          object-fit: cover;
-          border-radius: 6px;
-          margin-bottom: 0.75rem;
-        }
-
-        .booking-title {
-          font-size: 0.95rem;
-          font-weight: 600;
-          margin: 0.5rem 0;
-          color: #333;
-        }
-
-        .booking-details {
-          background: white;
-          padding: 0.75rem;
-          border-radius: 4px;
-          margin-bottom: 0.75rem;
-          font-size: 0.85rem;
-        }
-
-        .booking-details p {
-          margin: 0.3rem 0;
-          color: #666;
-        }
-
-        .booking-price {
-          font-weight: 600 !important;
-          color: #d6b17d !important;
-          font-size: 0.95rem !important;
-          margin-top: 0.5rem !important;
-        }
-
-        .booking-status {
-          margin-bottom: 0.75rem;
-          font-size: 0.85rem;
-        }
-
-        .guest-info {
-          background: white;
-          padding: 0.75rem;
-          border-radius: 4px;
-          margin-bottom: 0.75rem;
-          font-size: 0.85rem;
-        }
-
-        .guest-info h5 {
-          margin: 0 0 0.5rem 0;
-          font-size: 0.9rem;
-          color: #666;
-        }
-
-        .guest-info p {
-          margin: 0.25rem 0;
-          color: #666;
-        }
-
-        .guest-info a {
-          color: #1976d2;
-          text-decoration: none;
-        }
-
-        .guest-info a:hover {
-          text-decoration: underline;
-        }
-
-        .booking-actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .btn {
-          flex: 1;
-          padding: 0.5rem 0.75rem;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-weight: 500;
-          font-size: 0.85rem;
-          transition: all 0.3s ease;
-        }
-
-        .btn-cancel {
-          background: #f5f5f5;
-          color: #d32f2f;
-          border: 1px solid #d32f2f;
-        }
-
-        .btn-cancel:hover:not(:disabled) {
-          background: #d32f2f;
-          color: white;
-        }
-
-        .btn-accept {
-          background: #4caf50;
-          color: white;
-        }
-
-        .btn-accept:hover:not(:disabled) {
-          background: #45a049;
-        }
-
-        .btn-reject {
-          background: #f44336;
-          color: white;
-        }
-
-        .btn-reject:hover:not(:disabled) {
-          background: #da190b;
-        }
-
-        .btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .empty-state {
-          grid-column: 1 / -1;
-          text-align: center;
-          padding: 3rem 1rem;
-          color: #999;
-          font-size: 0.95rem;
-        }
-
-        .error-message {
-          background: #ffebee;
-          color: #d32f2f;
-          padding: 0.75rem 1rem;
-          border-radius: 4px;
-          margin-bottom: 1rem;
-          font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-          .bookings-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .booking-actions {
-            flex-direction: column;
-          }
-        }
-      `}</style>
+          )
+        )}
+      </div>
     </div>
   )
 }
