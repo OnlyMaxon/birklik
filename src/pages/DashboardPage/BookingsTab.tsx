@@ -310,7 +310,7 @@ export const BookingsTab: React.FC = () => {
       if (updated) {
         await createBookingApprovedNotification(booking.userId, {
           type: 'bookingApproved',
-          title: language === 'en' ? '✅ Your booking is approved!' : language === 'ru' ? '✅ Ваше бронирование принято!' : '✅ Sizin bölmə qəbul edildi!',
+          title: language === 'en' ? '✅ Your booking is approved!' : language === 'ru' ? '✅ Ваше бронирование принято!' : '✅ Müraciətiniz qəbul edildi!',
           message: language === 'en' ? 'Your booking has been approved by the property owner' : language === 'ru' ? 'Ваше бронирование одобрено владельцем' : 'Sizin bölmə sahibi tərəfindən qəbul edildi',
           read: false,
           bookingId: booking.id,
