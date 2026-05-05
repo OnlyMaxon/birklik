@@ -493,7 +493,7 @@ export const az: Translations = {
     sortBy: "Sıralama",
     near: "Yaxında",
     removeFilter: "Filtri sil",
-    resetAdvanced: "Təkmil seçimləri sıfırla"
+    resetAdvanced: "Əlavə seçimləri sıfırla"
   },
   booking: {
     nights: "gecə",
