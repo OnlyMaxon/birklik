@@ -15,6 +15,7 @@ import {
   QueryConstraint
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { auth } from '../config/firebase'
 import { compressPropertyImage } from '../utils/imageCompression'
 import { db, storage } from '../config/firebase'
 import { Property, PropertyType, Language, Comment } from '../types'
@@ -330,13 +331,16 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
  * const urls = await uploadPropertyImages([imageFile1, imageFile2])
  */
 export const uploadPropertyImages = async (files: File[]): Promise<string[]> => {
+  const userId = auth.currentUser?.uid
+  if (!userId) throw new Error('User not authenticated')
+
   const urls: string[] = []
 
   for (const file of files) {
     try {
       const compressed = await compressPropertyImage(file)
       const timestamp = Date.now()
-      const fileName = `properties/${timestamp}_${compressed.name}`
+      const fileName = `properties/${userId}/${timestamp}_${compressed.name}`
       const storageRef = ref(storage, fileName)
 
       await uploadBytes(storageRef, compressed)

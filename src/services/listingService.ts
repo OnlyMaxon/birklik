@@ -14,7 +14,7 @@ import {
   DocumentSnapshot
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { db, storage } from '../config/firebase'
+import { db, storage, auth } from '../config/firebase'
 import { compressPropertyImage } from '../utils/imageCompression'
 import { Property } from '../types'
 import * as logger from './logger'
@@ -168,11 +168,13 @@ export const listingService = {
    * @example
    * const url = await listingService.uploadPropertyImage('prop_111', imageFile)
    */
-  async uploadPropertyImage(propertyId: string, file: File): Promise<string> {
+  async uploadPropertyImage(_propertyId: string, file: File): Promise<string> {
     try {
+      const userId = auth.currentUser?.uid
+      if (!userId) throw new Error('User not authenticated')
       const compressed = await compressPropertyImage(file)
       const fileName = `${Date.now()}_${compressed.name}`
-      const storageRef = ref(storage, `properties/${propertyId}/${fileName}`)
+      const storageRef = ref(storage, `properties/${userId}/${fileName}`)
 
       const snapshot = await uploadBytes(storageRef, compressed)
       const downloadUrl = await getDownloadURL(snapshot.ref)
