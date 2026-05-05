@@ -73,20 +73,28 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className="property-badges">
           {isVIP && (
-            <div className="property-vip-badge badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
-              <span>👑</span> VIP
+            <div className="badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 20" fill="currentColor" width="13" height="11" aria-hidden="true">
+                <path d="M2 18h20v2H2v-2zM2 15L5 4l5 5 2-7 2 7 5-5 3 11H2z"/>
+              </svg>
+              VIP
             </div>
           )}
           {isPremium && (
-            <div className="property-premium-badge badge badge-premium" title={language === 'en' ? 'Premium listing' : language === 'ru' ? 'Премиум объявление' : 'Premium elan'}>
-              <span>⭐</span> Premium
+            <div className="badge badge-premium" title={language === 'en' ? 'Premium listing' : language === 'ru' ? 'Премиум объявление' : 'Premium elan'}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12" aria-hidden="true">
+                <polygon points="12,2 22,10 12,22 2,10"/>
+              </svg>
+              Premium
             </div>
           )}
           {property.amenities?.includes('pool') && (
-            <div className="property-pool-badge badge badge-accent" title={t?.amenities?.pool || 'Pool'}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3b82f6" width="16" height="16">
-                <path d="M12 2C12 2 6 10.5 6 15c0 3.311 2.686 6 6 6s6-2.689 6-6c0-4.5-6-13-6-13z"/>
+            <div className="property-pool-badge" title={t?.amenities?.pool || 'Pool'}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" width="16" height="10" aria-hidden="true">
+                <path d="M2 5c2.5-3.5 5-3.5 7.5 0s5 3.5 7.5 0 5-3.5 7.5 0"/>
+                <path d="M2 11c2.5-3.5 5-3.5 7.5 0s5 3.5 7.5 0 5-3.5 7.5 0"/>
               </svg>
+              <span>{t?.amenities?.pool || 'Pool'}</span>
             </div>
           )}
         </div>
