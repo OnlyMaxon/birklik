@@ -14,6 +14,8 @@ export const Header: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const [langOpen, setLangOpen] = React.useState(false)
+  const langRef = React.useRef<HTMLDivElement>(null)
   const [isModeratorUser, setIsModeratorUser] = React.useState(false)
   const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0)
   const [moderationNotificationCount, setModerationNotificationCount] = React.useState(0)
@@ -124,6 +126,22 @@ export const Header: React.FC = () => {
     const isAddTab = location.search.includes('tab=add')
     return `nav-link${isAddTab ? ' active' : ''}`
   }
+
+  React.useEffect(() => {
+    if (!langOpen) return
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLangOpen(false) }
+    document.addEventListener('mousedown', handler)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [langOpen])
 
   const [headerHidden, setHeaderHidden] = React.useState(false)
   React.useEffect(() => {
@@ -243,16 +261,39 @@ export const Header: React.FC = () => {
           </nav>
 
           <div className="header-actions">
-            <div className="language-switcher">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  className={`lang-btn ${language === lang.code ? 'active' : ''}`}
-                  onClick={() => setLanguage(lang.code)}
-                >
-                  {lang.label}
-                </button>
-              ))}
+            <div className="language-switcher" ref={langRef}>
+              <button
+                className={`lang-current${langOpen ? ' open' : ''}`}
+                onClick={() => setLangOpen(prev => !prev)}
+                aria-haspopup="listbox"
+                aria-expanded={langOpen}
+                aria-label={`Language: ${language.toUpperCase()}`}
+              >
+                <span>{language.toUpperCase()}</span>
+                <svg className="lang-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              {langOpen && (
+                <div className="lang-dropdown" role="listbox" aria-label="Select language">
+                  {languages.map(lang => (
+                    <button
+                      key={lang.code}
+                      className={`lang-option${language === lang.code ? ' active' : ''}`}
+                      role="option"
+                      aria-selected={language === lang.code}
+                      onClick={() => { setLanguage(lang.code); setLangOpen(false) }}
+                    >
+                      {lang.label}
+                      {language === lang.code && (
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button
