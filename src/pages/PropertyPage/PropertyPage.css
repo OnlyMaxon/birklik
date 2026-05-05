@@ -900,6 +900,277 @@
   }
 }
 
+/* ===== TITLE CARD ===== */
+.pp-title-card {
+  padding: 1.4rem 1.6rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 18px;
+  background: var(--white);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.pp-title-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.pp-title-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.pp-title-card__top .property-title {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.pp-title-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--gray-100);
+}
+
+/* ===== DETAILS BAR ===== */
+.pp-details-bar {
+  display: flex;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.pp-detail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 1.1rem 0.5rem;
+  flex: 1;
+  border-right: 1px solid var(--gray-100);
+  text-align: center;
+}
+
+.pp-detail-item:last-child {
+  border-right: none;
+}
+
+.pp-detail-item svg {
+  color: var(--primary-color);
+  margin-bottom: 0.15rem;
+}
+
+.pp-detail-value {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text-color);
+  line-height: 1;
+}
+
+.pp-detail-label {
+  font-size: 0.68rem;
+  color: var(--neutral);
+  font-weight: 500;
+}
+
+.pp-detail-item--price {
+  background: linear-gradient(135deg, rgba(46,125,91,0.06), rgba(46,125,91,0.02));
+}
+
+.pp-detail-price {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--primary-dark);
+  line-height: 1;
+}
+
+/* ===== SECTION CARDS ===== */
+.pp-section {
+  border: 1px solid var(--gray-200);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.pp-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(90deg, var(--gray-50) 0%, var(--white) 60%);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.pp-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.pp-section-icon--blue   { background: var(--secondary-color); }
+.pp-section-icon--amber  { background: #b45309; }
+.pp-section-icon--purple { background: #7c3aed; }
+.pp-section-icon--rose   { background: #e11d48; }
+
+.pp-section-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-color);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.pp-section-body {
+  padding: 1.25rem;
+}
+
+.pp-section-body p {
+  color: var(--gray-600);
+  line-height: 1.75;
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ===== CHIPS ===== */
+.pp-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pp-amenity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.8rem;
+  background: rgba(46, 125, 91, 0.08);
+  border: 1px solid rgba(46, 125, 91, 0.2);
+  border-radius: 999px;
+  color: var(--primary-dark);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pp-amenity-chip svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.pp-extra-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38rem 0.8rem;
+  background: rgba(124, 58, 237, 0.07);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 999px;
+  color: #5b21b6;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pp-near-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38rem 0.8rem;
+  background: rgba(180, 83, 9, 0.07);
+  border: 1px solid rgba(180, 83, 9, 0.2);
+  border-radius: 999px;
+  color: #92400e;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ===== ADDRESS SECTION ===== */
+.pp-address-text {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  margin: 0 0 0.6rem;
+  font-weight: 500;
+}
+
+.pp-city-line {
+  font-size: 0.85rem;
+  color: var(--neutral);
+  margin: 0 0 0.7rem;
+}
+
+.pp-map-wrap {
+  margin-top: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ===== PRICE CARD (sidebar) ===== */
+.pp-price-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--white), var(--gray-50));
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  margin-bottom: 1rem;
+}
+
+.pp-price-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.pp-price-big {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--text-color);
+  line-height: 1;
+}
+
+.pp-price-cur {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.pp-price-per {
+  font-size: 0.82rem;
+  color: var(--neutral);
+  font-weight: 500;
+}
+
+.pp-price-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  flex-shrink: 0;
+}
+
+.pp-price-rating svg {
+  color: #F4C542;
+}
+
 /* ===== TOAST ===== */
 .pp-toast {
   position: fixed;

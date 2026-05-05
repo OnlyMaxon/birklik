@@ -10,7 +10,7 @@ import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesSer
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { getCsrfToken } from '../../services/csrfService'
 import { createBookingNotification, createCommentNotification, createFavoriteNotification } from '../../services/notificationsService'
-import { isPremiumActive, getPremiumRemainingDays } from '../../utils/premiumHelper'
+import { isPremiumActive } from '../../utils/premiumHelper'
 import { sanitizeInput } from '../../utils/sanitization'
 import { Booking } from '../../types'
 import { Language, Property } from '../../types'
@@ -202,12 +202,28 @@ export const PropertyPage: React.FC = () => {
     const today = getTodayISO()
     // Block past dates
     if (dateISO < today) return true
-    // Block booked dates
+    
+    // Block owner's unavailable dates (manual mark)
     if (property?.unavailableFrom && property?.unavailableTo) {
       if (dateISO >= property.unavailableFrom && dateISO <= property.unavailableTo) {
         return true
       }
     }
+    
+    // Block dates with approved bookings
+    // Note: checkOutDate is NOT blocked (guest leaves that day, room is free)
+    if (propertyBookings && propertyBookings.length > 0) {
+      for (const booking of propertyBookings) {
+        // Only block approved bookings
+        if (booking.status === 'approved') {
+          // Block from checkIn to day before checkOut (checkOut day is free)
+          if (dateISO >= booking.checkInDate && dateISO < booking.checkOutDate) {
+            return true
+          }
+        }
+      }
+    }
+    
     return false
   }
 
@@ -636,15 +652,22 @@ export const PropertyPage: React.FC = () => {
 
           {/* Main Content */}
           <div className="property-layout">
-            {/* Left Column - Gallery & Details */}
+            {/* Left Column */}
             <div className="property-main">
-              <ImageGallery 
-                images={property.images} 
-                alt={getLocalizedText(property.title)} 
-              />
+              <ImageGallery images={property.images} alt={getLocalizedText(property.title)} />
 
-              <div className="property-info card">
-                <div className="property-header-top">
+              {/* Title Card */}
+              <div className="pp-title-card">
+                <div className="pp-title-card__badges">
+                  <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
+                  {property.listingTier === 'vip' && (
+                    <span className="badge badge-vip">VIP</span>
+                  )}
+                  {isPremiumActive(property.premiumExpiresAt) && (
+                    <span className="badge badge-premium">Premium</span>
+                  )}
+                </div>
+                <div className="pp-title-card__top">
                   <h1 className="property-title">{getLocalizedText(property.title)}</h1>
                   <div className="pp-header-actions">
                     <button
@@ -658,75 +681,24 @@ export const PropertyPage: React.FC = () => {
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                       </svg>
                     </button>
-                    <button
-                      onClick={handleShare}
-                      className="pp-share-btn"
-                      title={language === 'en' ? 'Share property' : language === 'ru' ? 'Поделиться объявлением' : 'Əmlakı paylaş'}
-                      aria-label="Share property"
-                    >
+                    <button onClick={handleShare} className="pp-share-btn" title={language === 'en' ? 'Share' : language === 'ru' ? 'Поделиться' : 'Paylaş'} aria-label="Share">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="18" cy="5" r="3"/>
-                        <circle cx="6" cy="12" r="3"/>
-                        <circle cx="18" cy="19" r="3"/>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                       </svg>
                     </button>
                   </div>
                 </div>
-                
-                {isOwner && (
-                  <div className="pp-owner-actions">
-                    <button
-                      onClick={handleMoveUp}
-                      className="btn btn-sm btn-primary"
-                      title={language === 'en' ? 'Move up in search results' : language === 'ru' ? 'Переместить вверх в результатах поиска' : 'Axtarış nəticələrində yuxarıya keç'}
-                    >
-                      {language === 'en' ? '↑ Move Up' : language === 'ru' ? '↑ Вперед' : '↑ İreli Çək'}
-                    </button>
-                    {property.listingTier !== 'vip' && property.listingTier !== 'premium' && (
-                      <button
-                        onClick={handleUpgradeToVIP}
-                        className="btn btn-sm pp-owner-btn--vip"
-                        title={language === 'en' ? 'Upgrade to VIP' : language === 'ru' ? 'Обновить до VIP' : 'VIP-ə yüksəlt'}
-                      >
-                        {language === 'en' ? '★ Upgrade to VIP' : language === 'ru' ? '★ Обновить до VIP' : '★ VIP-ə yüksəlt'}
-                      </button>
-                    )}
-                    {property.listingTier !== 'premium' && (
-                      <button
-                        onClick={handleUpgradeToPremium}
-                        className="btn btn-sm pp-owner-btn--premium"
-                        title={language === 'en' ? 'Upgrade to Premium' : language === 'ru' ? 'Обновить до Premium' : 'Premium-a yüksəlt'}
-                      >
-                        {language === 'en' ? '◆ Premium' : language === 'ru' ? '◆ Премиум' : '◆ Premium'}
-                      </button>
-                    )}
-                  </div>
-                )}
-                
-                <div className="property-meta">
-                  <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
-                  {property.listingTier === 'vip' && (
-                    <span className="badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
-                      👑 VIP
-                    </span>
-                  )}
-                  {isPremiumActive(property.premiumExpiresAt) && (
-                    <span className="badge badge-premium" title={language === 'en' ? `Premium listing - ${getPremiumRemainingDays(property.premiumExpiresAt)} days remaining` : language === 'ru' ? `Премиум объявление - осталось ${getPremiumRemainingDays(property.premiumExpiresAt)} дней` : `Premium elan - ${getPremiumRemainingDays(property.premiumExpiresAt)} gün qalıb`}>
-                      ⭐ Premium
-                    </span>
-                  )}
+                <div className="pp-title-card__meta">
                   <span className="location">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                      <circle cx="12" cy="10" r="3"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                     </svg>
                     {t.districts[property.district]}
                   </span>
                   {property.rating && (
                     <span className="rating">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                       </svg>
                       {property.rating} ({property.reviews})
@@ -734,124 +706,217 @@ export const PropertyPage: React.FC = () => {
                   )}
                   {property.views && (
                     <span className="views-badge">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                       </svg>
                       {property.views} {t.property.views}
                     </span>
                   )}
                   {property.likes && property.likes.length > 0 && (
                     <span className="likes-badge">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                       </svg>
                       {property.likes.length}
                     </span>
                   )}
                 </div>
+                {isOwner && (
+                  <div className="pp-owner-actions">
+                    <button onClick={handleMoveUp} className="btn btn-sm btn-primary">
+                      {language === 'en' ? '↑ Move Up' : language === 'ru' ? '↑ Вперед' : '↑ İreli Çək'}
+                    </button>
+                    {property.listingTier !== 'vip' && property.listingTier !== 'premium' && (
+                      <button onClick={handleUpgradeToVIP} className="btn btn-sm pp-owner-btn--vip">
+                        {language === 'en' ? '★ Upgrade to VIP' : language === 'ru' ? '★ VIP' : '★ VIP-ə yüksəlt'}
+                      </button>
+                    )}
+                    {property.listingTier !== 'premium' && (
+                      <button onClick={handleUpgradeToPremium} className="btn btn-sm pp-owner-btn--premium">
+                        {language === 'en' ? '◆ Premium' : language === 'ru' ? '◆ Премиум' : '◆ Premium'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
 
-                <div className="property-features">
-                  <div className="feature">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                      <polyline points="9 22 9 12 15 12 15 22"/>
+              {/* Details Bar */}
+              <div className="pp-details-bar">
+                <div className="pp-detail-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <span className="pp-detail-value">{property.rooms}</span>
+                  <span className="pp-detail-label">{t.property.rooms}</span>
+                </div>
+                <div className="pp-detail-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  </svg>
+                  <span className="pp-detail-value">{property.area}</span>
+                  <span className="pp-detail-label">{t.property.sqm}</span>
+                </div>
+                {(property.maxGuests || property.minGuests) && (
+                  <div className="pp-detail-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
-                    <div>
-                      <span className="feature-value">{property.rooms}</span>
-                      <span className="feature-label">{t.property.rooms}</span>
+                    <span className="pp-detail-value">
+                      {property.minGuests && property.maxGuests ? `${property.minGuests}–${property.maxGuests}` : property.maxGuests || property.minGuests}
+                    </span>
+                    <span className="pp-detail-label">{language === 'en' ? 'Guests' : language === 'ru' ? 'Гости' : 'Qonaqlar'}</span>
+                  </div>
+                )}
+                <div className="pp-detail-item pp-detail-item--price">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  <span className="pp-detail-price">{property.price.daily} {property.price.currency}</span>
+                  <span className="pp-detail-label">/{t.property.perNight}</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              {getLocalizedText(property.description) && (
+                <div className="pp-section">
+                  <div className="pp-section-header">
+                    <div className="pp-section-icon pp-section-icon--blue">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                      </svg>
+                    </div>
+                    <h3 className="pp-section-title">{t.property.description}</h3>
+                  </div>
+                  <div className="pp-section-body">
+                    <p>{getLocalizedText(property.description)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Amenities */}
+              {property.amenities && property.amenities.length > 0 && (
+                <div className="pp-section">
+                  <div className="pp-section-header">
+                    <div className="pp-section-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                      </svg>
+                    </div>
+                    <h3 className="pp-section-title">{t.property.amenities}</h3>
+                  </div>
+                  <div className="pp-section-body">
+                    <div className="pp-chips-wrap">
+                      {property.amenities.map((amenity) => (
+                        <span key={amenity} className="pp-amenity-chip">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                          {t?.amenities?.[amenity] || amenity}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                  <div className="feature">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    </svg>
-                    <div>
-                      <span className="feature-value">{property.area}</span>
-                      <span className="feature-label">{t.property.sqm}</span>
+                </div>
+              )}
+
+              {/* More Features */}
+              {moreLabels.length > 0 && (
+                <div className="pp-section">
+                  <div className="pp-section-header">
+                    <div className="pp-section-icon pp-section-icon--purple">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                      </svg>
                     </div>
+                    <h3 className="pp-section-title">{t.property.more}</h3>
                   </div>
-                </div>
-
-                <div className="property-section">
-                  <h3>{t.property.description}</h3>
-                  <p>{getLocalizedText(property.description)}</p>
-                </div>
-
-                <div className="property-section">
-                  <h3>{t.property.amenities}</h3>
-                  <div className="amenities-grid">
-                    {(property.amenities || []).map((amenity) => (
-                      <span key={amenity} className="amenity-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        {t?.amenities?.[amenity] || amenity}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {moreLabels.length > 0 && (
-                  <div className="property-section">
-                    <h3>{t.property.more}</h3>
-                    <div className="amenities-grid">
+                  <div className="pp-section-body">
+                    <div className="pp-chips-wrap">
                       {moreLabels.map((label) => (
-                        <span key={label} className="amenity-item extra-item">
-                          {label}
-                        </span>
+                        <span key={label} className="pp-extra-chip">{label}</span>
                       ))}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {nearLabels.length > 0 && (
-                  <div className="property-section">
-                    <h3>{t.property.near}</h3>
-                    <div className="amenities-grid">
+              {/* Nearby Places */}
+              {nearLabels.length > 0 && (
+                <div className="pp-section">
+                  <div className="pp-section-header">
+                    <div className="pp-section-icon pp-section-icon--amber">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                      </svg>
+                    </div>
+                    <h3 className="pp-section-title">{t.property.near}</h3>
+                  </div>
+                  <div className="pp-section-body">
+                    <div className="pp-chips-wrap">
                       {nearLabels.map((label) => (
-                        <span key={label} className="amenity-item extra-item">
-                          {label}
-                        </span>
+                        <span key={label} className="pp-near-chip">{label}</span>
                       ))}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                <div className="property-section">
-                  <h3>{t.property.address}</h3>
-                  <p>{getLocalizedText(property.address)}</p>
+              {/* Address & Map */}
+              <div className="pp-section">
+                <div className="pp-section-header">
+                  <div className="pp-section-icon pp-section-icon--purple">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                  <h3 className="pp-section-title">{t.property.address}</h3>
+                </div>
+                <div className="pp-section-body">
+                  <p className="pp-address-text">{getLocalizedText(property.address)}</p>
                   {property.city && (
-                    <p className="property-city-line">
-                      <strong>{t.property.city}:</strong> {property.city}
-                    </p>
+                    <p className="pp-city-line"><strong>{t.property.city}:</strong> {property.city}</p>
                   )}
                   {locationLabels.length > 0 && (
-                    <div className="location-tags-inline">
+                    <div className="pp-chips-wrap" style={{ marginBottom: '0.75rem' }}>
                       {locationLabels.map((label) => (
                         <span key={label} className="location-tag-chip">{label}</span>
                       ))}
                     </div>
                   )}
-                </div>
-
-                <div className="property-section">
-                  <h3>{t.property.location}</h3>
-                  <PropertyMap 
-                    properties={[property]} 
-                    singleProperty={true}
-                  />
+                  <div className="pp-map-wrap">
+                    <PropertyMap properties={[property]} singleProperty={true} />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Booking Card */}
+            {/* Right Column */}
             <div className="property-sidebar">
+
+              {/* Price Card */}
+              <div className="pp-price-card">
+                <div className="pp-price-display">
+                  <span className="pp-price-big">{property.price.daily}</span>
+                  <span className="pp-price-cur">{property.price.currency}</span>
+                  <span className="pp-price-per">/{t.property.perNight}</span>
+                </div>
+                {property.rating && (
+                  <div className="pp-price-rating">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    {property.rating} ({property.reviews})
+                  </div>
+                )}
+              </div>
+
+              {/* Booking Card */}
               <div className="booking-card card">
                 <div className="owner-info owner-info-priority">
                   <h4>{t.property.contact}</h4>
                   <p className="owner-name">{property.owner.name}</p>
-                  
                   {showContactInfo || hasBooked ? (
                     <>
                       <a href={`tel:${property.owner.phone}`} className="owner-phone">
@@ -862,8 +927,7 @@ export const PropertyPage: React.FC = () => {
                       </a>
                       <a href={`mailto:${property.owner.email}`} className="owner-phone owner-email">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 4h16v16H4z"/>
-                          <path d="m22 6-10 7L2 6"/>
+                          <path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/>
                         </svg>
                         {property.owner.email}
                       </a>
@@ -876,7 +940,7 @@ export const PropertyPage: React.FC = () => {
                 <div className="availability-card">
                   <h4>{availabilityTitle}</h4>
                   <p className={`availability-state ${isAvailable ? 'available' : 'busy'}`}>{availabilityNote}</p>
-                  
+
                   <div className="pp-cal-nav">
                     <button type="button" onClick={handlePrevMonth} className="pp-cal-nav-btn">←</button>
                     <div className="availability-month">{monthLabel}</div>
@@ -884,35 +948,22 @@ export const PropertyPage: React.FC = () => {
                   </div>
 
                   <div className="availability-weekdays">
-                    {weekDayLabels.map((label) => (
-                      <span key={label}>{label}</span>
-                    ))}
+                    {weekDayLabels.map((label) => <span key={label}>{label}</span>)}
                   </div>
                   <div className="availability-calendar-grid">
                     {calendarCells.map((cell, index) => {
                       const isDisabled = isCellDisabled(cell.dateISO)
                       const isBusy = !!cell.dateISO && !!property.unavailableFrom && !!property.unavailableTo
-                        && cell.dateISO >= property.unavailableFrom
-                        && cell.dateISO <= property.unavailableTo
-                      
+                        && cell.dateISO >= property.unavailableFrom && cell.dateISO <= property.unavailableTo
                       const isCheckIn = cell.dateISO === selectedCheckIn
                       const isCheckOut = cell.dateISO === selectedCheckOut
                       const isInRange = selectedCheckIn && selectedCheckOut && cell.dateISO && isDateInSelectedRange(cell.dateISO, selectedCheckIn, selectedCheckOut)
-
                       return (
                         <button
                           key={`${cell.dateISO || 'empty'}-${index}`}
                           onClick={() => !isDisabled && handleCalendarDateClick(cell.dateISO)}
                           disabled={isDisabled || !cell.inMonth}
-                          className={`
-                            availability-day 
-                            ${cell.inMonth ? '' : 'outside'} 
-                            ${isBusy ? 'busy' : ''} 
-                            ${isCheckIn ? 'check-in' : ''} 
-                            ${isCheckOut ? 'check-out' : ''} 
-                            ${isInRange ? 'in-range' : ''}
-                            ${!isDisabled && cell.inMonth ? 'selectable' : ''}
-                          `}
+                          className={['availability-day', cell.inMonth ? '' : 'outside', isBusy ? 'busy' : '', isCheckIn ? 'check-in' : '', isCheckOut ? 'check-out' : '', isInRange ? 'in-range' : '', !isDisabled && cell.inMonth ? 'selectable' : ''].filter(Boolean).join(' ')}
                           type="button"
                         >
                           {cell.label}
@@ -920,6 +971,7 @@ export const PropertyPage: React.FC = () => {
                       )
                     })}
                   </div>
+
                   <div className="availability-dates">
                     <div>
                       <span>{t.property.busyFrom}</span>
@@ -948,13 +1000,7 @@ export const PropertyPage: React.FC = () => {
 
                   {selectedNights > 0 && (
                     <div className="availability-total-box">
-                      <p>
-                        {language === 'en'
-                          ? `${selectedNights} night(s)`
-                          : language === 'ru'
-                            ? `${selectedNights} ночей`
-                            : `${selectedNights} gecə`}
-                      </p>
+                      <p>{language === 'en' ? `${selectedNights} night(s)` : language === 'ru' ? `${selectedNights} ночей` : `${selectedNights} gecə`}</p>
                       <strong>{selectedTotal} {property.price.currency}</strong>
                     </div>
                   )}
@@ -970,54 +1016,42 @@ export const PropertyPage: React.FC = () => {
                     </button>
                   )}
 
-                  {hasBooked && (
-                    <div className="pp-booking-success">{t.property.bookingSent}</div>
-                  )}
+                  {hasBooked && <div className="pp-booking-success">{t.property.bookingSent}</div>}
 
                   {selectedRangeBusy && (
                     <p className="availability-range-warning">
-                      {language === 'en'
-                        ? 'Selected dates overlap with occupied period.'
-                        : language === 'ru'
-                          ? 'Выбранные даты пересекаются с занятым периодом.'
-                          : 'Seçilən tarixlər məşğul günlərlə üst-üstə düşür.'}
+                      {language === 'en' ? 'Selected dates overlap with occupied period.' : language === 'ru' ? 'Выбранные даты пересекаются с занятым периодом.' : 'Seçilən tarixlər məşğul günlərlə üst-üstə düşür.'}
                     </p>
                   )}
                   {availableFromNote && <p className="availability-next">{availableFromNote}</p>}
 
-                  <div className="price-section">
-                    <div className="price-row">
-                      <span className="price-label">{t.property.perNight}:</span>
-                      <span className="price-value">{property.price.daily} {property.price.currency}</span>
+                  {propertyBookings.length > 0 && (
+                    <div className="pp-latest-booking">
+                      <p className="pp-latest-booking-label">
+                        {language === 'en' ? 'Latest booking:' : language === 'ru' ? 'Последнее бронирование:' : 'Son sifariş:'}
+                      </p>
+                      <p className="pp-latest-booking-dates">
+                        {propertyBookings[0].checkInDate} → {propertyBookings[0].checkOutDate}
+                      </p>
                     </div>
-                    
-                    {propertyBookings.length > 0 && (
-                      <div className="pp-latest-booking">
-                        <p className="pp-latest-booking-label">
-                          {language === 'en' ? 'Latest booking:' : language === 'ru' ? 'Последнее бронирование:' : 'Son sifariş:'}
-                        </p>
-                        <p className="pp-latest-booking-dates">
-                          {propertyBookings[0].checkInDate} → {propertyBookings[0].checkOutDate}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Interactions Section */}
+              {/* Interactions */}
               <div className="property-interactions-section">
-                {/* Rating Section */}
                 <div className="interactions-rating">
                   <h4>{t.property.rateProperty}</h4>
                   {renderAverageRating()}
                   {renderStars()}
                 </div>
 
-                {/* Comments */}
                 <div className="interactions-comments">
                   <h4>
-                    💬 {t.property.comments} ({property.comments?.length || 0})
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    {t.property.comments} ({property.comments?.length || 0})
                   </h4>
 
                   {isAuthenticated && (
@@ -1029,20 +1063,13 @@ export const PropertyPage: React.FC = () => {
                         placeholder={t.property.addComment}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                       />
-                      <button
-                        onClick={handleAddComment}
-                        disabled={isPostingComment || !newComment.trim()}
-                        className="btn btn-sm btn-primary"
-                      >
+                      <button onClick={handleAddComment} disabled={isPostingComment || !newComment.trim()} className="btn btn-sm btn-primary">
                         {isPostingComment ? '...' : t.property.post}
                       </button>
                     </div>
                   )}
-
                   {!isAuthenticated && (
-                    <p className="comments-sign-in-hint">
-                      {t.property.signInComment}
-                    </p>
+                    <p className="comments-sign-in-hint">{t.property.signInComment}</p>
                   )}
 
                   <div className="comments-list">
@@ -1052,30 +1079,18 @@ export const PropertyPage: React.FC = () => {
                           <div className="comment-header">
                             <span className="comment-author">{comment.userName}</span>
                             {user?.id === comment.userId && (
-                              <button
-                                onClick={() => handleDeleteComment(comment.id)}
-                                className="comment-delete-btn"
-                                title="Delete"
-                              >
-                                ✕
-                              </button>
+                              <button onClick={() => handleDeleteComment(comment.id)} className="comment-delete-btn" title="Delete">✕</button>
                             )}
                           </div>
                           <p className="comment-text">{sanitizeInput(comment.text)}</p>
                           <p className="comment-date">{formatDate(comment.createdAt)}</p>
-                          
+
                           <div className="pp-comment-actions">
-                            <button
-                              onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)}
-                              className="pp-comment-action-btn pp-comment-action-btn--reply"
-                            >
+                            <button onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)} className="pp-comment-action-btn pp-comment-action-btn--reply">
                               {t.property.reply}
                             </button>
                             {isAuthenticated && (
-                              <button
-                                onClick={() => setReportModal({ isOpen: true, commentId: comment.id, commentText: comment.text })}
-                                className="pp-comment-action-btn pp-comment-action-btn--report"
-                              >
+                              <button onClick={() => setReportModal({ isOpen: true, commentId: comment.id, commentText: comment.text })} className="pp-comment-action-btn pp-comment-action-btn--report">
                                 {language === 'en' ? 'Report' : language === 'ru' ? 'Пожаловаться' : 'Şikayyət'}
                               </button>
                             )}
@@ -1110,11 +1125,7 @@ export const PropertyPage: React.FC = () => {
                                   onKeyPress={(e) => e.key === 'Enter' && handleAddReply(comment.id)}
                                   placeholder={language === 'en' ? 'Write a reply...' : language === 'ru' ? 'Написать ответ...' : 'Cavab yazın...'}
                                 />
-                                <button
-                                  onClick={() => handleAddReply(comment.id)}
-                                  disabled={isPostingReply || !replyText.trim()}
-                                  className="pp-reply-submit-btn"
-                                >
+                                <button onClick={() => handleAddReply(comment.id)} disabled={isPostingReply || !replyText.trim()} className="pp-reply-submit-btn">
                                   {isPostingReply ? '...' : (language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver')}
                                 </button>
                               </div>
@@ -1124,7 +1135,7 @@ export const PropertyPage: React.FC = () => {
                       ))
                     ) : (
                       <p className="comments-empty">
-                        {language === 'en' ? 'No comments yet' : language === 'ru' ? 'Комментариев нет' : 'Henüz şərh yoxdur'}
+                        {language === 'en' ? 'No comments yet' : language === 'ru' ? 'Комментариев нет' : 'Hələ şərh yoxdur'}
                       </p>
                     )}
                   </div>
