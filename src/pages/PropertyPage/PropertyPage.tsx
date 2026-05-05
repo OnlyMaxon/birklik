@@ -620,40 +620,9 @@ export const PropertyPage: React.FC = () => {
 
   return (
     <Layout>
-      {/* Toast Notification */}
       {showNotification && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: '#2e7d32',
-          color: 'white',
-          padding: '1rem 1.5rem',
-          borderRadius: '6px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-          zIndex: 1000,
-          animation: 'slideDown 0.3s ease-out',
-          maxWidth: '90%',
-          textAlign: 'center',
-          fontSize: '0.95rem',
-          fontWeight: '500'
-        }}>
-          {notificationMessage}
-        </div>
+        <div className="pp-toast">{notificationMessage}</div>
       )}
-      <style>{`
-        @keyframes slideDown {
-          from {
-            transform: translateX(-50%) translateY(-100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
       <div className="property-page">
         <div className="container">
           {/* Breadcrumb */}
@@ -677,7 +646,7 @@ export const PropertyPage: React.FC = () => {
               <div className="property-info card">
                 <div className="property-header-top">
                   <h1 className="property-title">{getLocalizedText(property.title)}</h1>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div className="pp-header-actions">
                     <button
                       onClick={handleFavoriteClick}
                       disabled={isFavoriting}
@@ -691,24 +660,9 @@ export const PropertyPage: React.FC = () => {
                     </button>
                     <button
                       onClick={handleShare}
-                      className="share-btn"
+                      className="pp-share-btn"
                       title={language === 'en' ? 'Share property' : language === 'ru' ? 'Поделиться объявлением' : 'Əmlakı paylaş'}
                       aria-label="Share property"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#b7925d',
-                        fontSize: '18px',
-                        padding: '0.5rem',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.3s',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(183, 146, 93, 0.1)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="18" cy="5" r="3"/>
@@ -721,36 +675,31 @@ export const PropertyPage: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Owner Actions */}
                 {isOwner && (
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                  <div className="pp-owner-actions">
                     <button
                       onClick={handleMoveUp}
                       className="btn btn-sm btn-primary"
                       title={language === 'en' ? 'Move up in search results' : language === 'ru' ? 'Переместить вверх в результатах поиска' : 'Axtarış nəticələrində yuxarıya keç'}
                     >
-                      ⬆️ {language === 'en' ? 'Move Up' : language === 'ru' ? 'Вперед' : 'İreli Çək'}
+                      {language === 'en' ? '↑ Move Up' : language === 'ru' ? '↑ Вперед' : '↑ İreli Çək'}
                     </button>
-                    
                     {property.listingTier !== 'vip' && property.listingTier !== 'premium' && (
                       <button
                         onClick={handleUpgradeToVIP}
-                        className="btn btn-sm"
-                        style={{ backgroundColor: '#9c27b0', color: 'white', border: 'none' }}
+                        className="btn btn-sm pp-owner-btn--vip"
                         title={language === 'en' ? 'Upgrade to VIP' : language === 'ru' ? 'Обновить до VIP' : 'VIP-ə yüksəlt'}
                       >
-                        👑 {language === 'en' ? 'VIP' : 'VIP'}
+                        {language === 'en' ? '★ Upgrade to VIP' : language === 'ru' ? '★ Обновить до VIP' : '★ VIP-ə yüksəlt'}
                       </button>
                     )}
-                    
                     {property.listingTier !== 'premium' && (
                       <button
                         onClick={handleUpgradeToPremium}
-                        className="btn btn-sm"
-                        style={{ backgroundColor: '#d4a574', color: 'white', border: 'none' }}
+                        className="btn btn-sm pp-owner-btn--premium"
                         title={language === 'en' ? 'Upgrade to Premium' : language === 'ru' ? 'Обновить до Premium' : 'Premium-a yüksəlt'}
                       >
-                        ⭐ {language === 'en' ? 'Premium' : language === 'ru' ? 'Премиум' : 'Premium'}
+                        {language === 'en' ? '◆ Premium' : language === 'ru' ? '◆ Премиум' : '◆ Premium'}
                       </button>
                     )}
                   </div>
@@ -920,9 +869,7 @@ export const PropertyPage: React.FC = () => {
                       </a>
                     </>
                   ) : (
-                    <p style={{ fontSize: '0.9rem', color: '#9b7448', marginTop: '0.5rem' }}>
-                      {t.property.contactAfterBooking}
-                    </p>
+                    <p className="pp-contact-hint">{t.property.contactAfterBooking}</p>
                   )}
                 </div>
 
@@ -930,22 +877,10 @@ export const PropertyPage: React.FC = () => {
                   <h4>{availabilityTitle}</h4>
                   <p className={`availability-state ${isAvailable ? 'available' : 'busy'}`}>{availabilityNote}</p>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <button 
-                      type="button"
-                      onClick={handlePrevMonth}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.3rem 0.5rem', fontSize: '1.2rem', color: '#7a6b5d' }}
-                    >
-                      ←
-                    </button>
+                  <div className="pp-cal-nav">
+                    <button type="button" onClick={handlePrevMonth} className="pp-cal-nav-btn">←</button>
                     <div className="availability-month">{monthLabel}</div>
-                    <button 
-                      type="button"
-                      onClick={handleNextMonth}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.3rem 0.5rem', fontSize: '1.2rem', color: '#7a6b5d' }}
-                    >
-                      →
-                    </button>
+                    <button type="button" onClick={handleNextMonth} className="pp-cal-nav-btn">→</button>
                   </div>
 
                   <div className="availability-weekdays">
@@ -1029,28 +964,14 @@ export const PropertyPage: React.FC = () => {
                       type="button"
                       onClick={handleMakeBooking}
                       disabled={isBooking || !isAuthenticated}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem 0.75rem',
-                        marginTop: '0.75rem',
-                        backgroundColor: isAuthenticated ? '#b7925d' : '#ccc',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '0.9rem',
-                        fontWeight: 'bold',
-                        cursor: isAuthenticated && !isBooking ? 'pointer' : 'not-allowed',
-                        transition: 'background-color 0.3s'
-                      }}
+                      className={`btn pp-book-btn ${isAuthenticated ? 'btn-accent' : 'btn-ghost'}`}
                     >
                       {isBooking ? t.property.bookingButton : t.property.sendRequest}
                     </button>
                   )}
 
                   {hasBooked && (
-                    <div style={{ padding: '0.5rem 0.75rem', marginTop: '0.75rem', backgroundColor: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '6px', textAlign: 'center', color: '#2e7d32', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                      {t.property.bookingSent}
-                    </div>
+                    <div className="pp-booking-success">{t.property.bookingSent}</div>
                   )}
 
                   {selectedRangeBusy && (
@@ -1071,11 +992,11 @@ export const PropertyPage: React.FC = () => {
                     </div>
                     
                     {propertyBookings.length > 0 && (
-                      <div className="first-booking-info" style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #eee' }}>
-                        <p style={{ fontSize: '0.85rem', color: '#666', margin: '0.25rem 0' }}>
-                          <strong>{language === 'en' ? 'Latest booking:' : language === 'ru' ? 'Последнее бронирование:' : 'Son bölmə:'}​</strong>
+                      <div className="pp-latest-booking">
+                        <p className="pp-latest-booking-label">
+                          {language === 'en' ? 'Latest booking:' : language === 'ru' ? 'Последнее бронирование:' : 'Son sifariş:'}
                         </p>
-                        <p style={{ fontSize: '0.8rem', color: '#999', margin: '0.25rem 0' }}>
+                        <p className="pp-latest-booking-dates">
                           {propertyBookings[0].checkInDate} → {propertyBookings[0].checkOutDate}
                         </p>
                       </div>
@@ -1143,98 +1064,56 @@ export const PropertyPage: React.FC = () => {
                           <p className="comment-text">{sanitizeInput(comment.text)}</p>
                           <p className="comment-date">{formatDate(comment.createdAt)}</p>
                           
-                          {/* Interaction Buttons */}
-                          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid #eee' }}>
+                          <div className="pp-comment-actions">
                             <button
                               onClick={() => setReplyingToId(replyingToId === comment.id ? null : comment.id)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#27ae60',
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                fontWeight: 500,
-                                padding: 0,
-                                textDecoration: 'underline',
-                                textDecorationColor: '#27ae60'
-                              }}
+                              className="pp-comment-action-btn pp-comment-action-btn--reply"
                             >
                               {t.property.reply}
                             </button>
                             {isAuthenticated && (
                               <button
                                 onClick={() => setReportModal({ isOpen: true, commentId: comment.id, commentText: comment.text })}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#e74c3c',
-                                  cursor: 'pointer',
-                                  fontSize: '0.85rem',
-                                  fontWeight: 500,
-                                  padding: 0,
-                                  textDecoration: 'underline',
-                                  textDecorationColor: '#e74c3c'
-                                }}
+                                className="pp-comment-action-btn pp-comment-action-btn--report"
                               >
                                 {language === 'en' ? 'Report' : language === 'ru' ? 'Пожаловаться' : 'Şikayyət'}
                               </button>
                             )}
                           </div>
 
-                          {/* Replies */}
                           {comment.replies && comment.replies.length > 0 && (
-                            <div style={{ marginTop: '1rem', marginLeft: '1.5rem', paddingLeft: '1rem', borderLeft: '2px solid #e0e0e0' }}>
-                              <p style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.5rem' }}>
+                            <div className="pp-replies">
+                              <p className="pp-replies-count">
                                 {comment.replies.length} {comment.replies.length === 1 ? (language === 'en' ? 'reply' : language === 'ru' ? 'ответ' : 'cavab') : (language === 'en' ? 'replies' : language === 'ru' ? 'ответов' : 'cavablar')}
                               </p>
                               {comment.replies.map(reply => (
-                                <div key={reply.id} style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f0f0f0' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '0.85rem', color: '#333', fontWeight: 500 }}>{reply.userName}</span>
-                                  </div>
-                                  <p style={{ fontSize: '0.9rem', color: '#555', margin: '0.3rem 0' }}>{reply.text}</p>
-                                  <p style={{ fontSize: '0.75rem', color: '#999' }}>{formatDate(reply.createdAt)}</p>
+                                <div key={reply.id} className="pp-reply-item">
+                                  <p className="pp-reply-author">{reply.userName}</p>
+                                  <p className="pp-reply-text">{reply.text}</p>
+                                  <p className="pp-reply-date">{formatDate(reply.createdAt)}</p>
                                 </div>
                               ))}
                             </div>
                           )}
 
-                          {/* Reply Form */}
                           {replyingToId === comment.id && isAuthenticated && (
-                            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #eee', backgroundColor: '#f9f9f9', padding: '0.75rem' }}>
-                              <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>
-                                {language === 'en' ? 'Replying to: ' : language === 'ru' ? 'Ответ на: ' : 'Cavab: '} 
+                            <div className="pp-reply-form">
+                              <p className="pp-reply-form-label">
+                                {language === 'en' ? 'Replying to: ' : language === 'ru' ? 'Ответ на: ' : 'Cavab: '}
                                 <strong>{comment.userName}</strong>
                               </p>
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <div className="pp-reply-form-row">
                                 <input
                                   type="text"
                                   value={replyText}
                                   onChange={(e) => setReplyText(e.target.value)}
                                   onKeyPress={(e) => e.key === 'Enter' && handleAddReply(comment.id)}
                                   placeholder={language === 'en' ? 'Write a reply...' : language === 'ru' ? 'Написать ответ...' : 'Cavab yazın...'}
-                                  style={{
-                                    flex: 1,
-                                    padding: '0.5rem',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ddd',
-                                    fontSize: '0.9rem'
-                                  }}
                                 />
                                 <button
                                   onClick={() => handleAddReply(comment.id)}
                                   disabled={isPostingReply || !replyText.trim()}
-                                  style={{
-                                    padding: '0.5rem 1rem',
-                                    backgroundColor: '#27ae60',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: isPostingReply || !replyText.trim() ? 'not-allowed' : 'pointer',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 'bold',
-                                    opacity: isPostingReply || !replyText.trim() ? 0.6 : 1
-                                  }}
+                                  className="pp-reply-submit-btn"
                                 >
                                   {isPostingReply ? '...' : (language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver')}
                                 </button>
