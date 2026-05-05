@@ -1005,6 +1005,13 @@
   line-height: 1;
 }
 
+.pp-detail-currency-icon {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  line-height: 1;
+}
+
 /* ===== SECTION CARDS ===== */
 .pp-section {
   border: 1px solid var(--gray-200);
