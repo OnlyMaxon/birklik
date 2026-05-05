@@ -166,7 +166,6 @@ export const Header: React.FC = () => {
             <source srcSet="/brand/generated/logo-1024x256.webp" type="image/webp" />
             <img className="logo-image" src="/brand/generated/logo-1024x256.png" alt="Birklik.az" width="1024" height="256" />
           </picture>
-          <span className="logo-tagline">{t.site.tagline}</span>
         </div>
 
         <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>

@@ -42,11 +42,9 @@
 
 .logo {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  align-items: center;
   text-decoration: none;
   flex-shrink: 0;
-  margin-top: 5px;
 }
 
 .logo-image {
@@ -57,13 +55,6 @@
   object-fit: contain;
 }
 
-.logo-tagline {
-  font-size: 0.74rem;
-  color: var(--neutral);
-  letter-spacing: 0.035em;
-  margin-left: 0.06rem;
-  white-space: nowrap;
-}
 
 .nav {
   display: flex;

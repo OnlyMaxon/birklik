@@ -1211,11 +1211,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               className="listing-image"
                             />
                             <div className="listing-info">
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
+                              <div className="listing-title-row">
                                 <Link to={`/property/${property.id}`} className="listing-title">
                                   {getLocalizedText(property.title)}
                                 </Link>
-                                <span className={`badge ${isPendingModeration ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.75rem', whiteSpace: 'normal', flexShrink: 1, maxWidth: '100%' }}>
+                                <span className={`badge ${isPendingModeration ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`}>
                                   {statusLabel}
                                 </span>
                               </div>
@@ -1225,35 +1225,37 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               <p className="listing-price">
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
                               </p>
-                              {(property.views !== undefined && property.views > 0) && (
-                                <p style={{ fontSize: '0.80rem', color: '#7a6b5d', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                  </svg>
-                                  <span><strong>{property.views}</strong> {isEnglish ? 'views' : isRussian ? 'просмотров' : 'baxış'}</span>
-                                </p>
-                              )}
-                              {property.unavailableFrom && property.unavailableTo && (
-                                <p style={{ fontSize: '0.84rem', color: '#8b5a10', marginTop: '0.15rem' }}>
-                                  <strong>{isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'}</strong> {property.unavailableFrom} - {property.unavailableTo}
-                                </p>
-                              )}
-                              {property.listingTier === 'premium' && isPremiumExpired(property) && (
-                                <p style={{ fontSize: '0.82rem', color: '#c62828', marginTop: '0.12rem', fontWeight: 'bold' }}>
-                                  ⏰ {isEnglish ? 'Premium status expired. Click "Extend" below to revive!' : isRussian ? 'Премиум истек. Нажмите "Продлить" ниже!' : 'Premium sürəsi bitdi. Aşağıda "Uzat"a klik edin!'}
-                                </p>
-                              )}
-                              {property.listingTier === 'premium' && isPremiumActive(property) && (
-                                <p style={{ fontSize: '0.82rem', color: '#ffa500', marginTop: '0.12rem' }}>
-                                  ⭐ {isEnglish ? `Premium active until ${property.premiumExpiresAt}` : isRussian ? `Премиум активен до ${property.premiumExpiresAt}` : `Premium ${property.premiumExpiresAt} tarixinə qədər aktiv`}
-                                </p>
-                              )}
-                              {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (
-                                <p style={{ fontSize: '0.82rem', color: '#4a6288', marginTop: '0.12rem' }}>
-                                  {isEnglish ? 'Click "Activate" to make it active again.' : isRussian ? 'Нажмите "Активировать" чтобы активировать снова.' : 'Yenidən aktiv etmək üçün "Aktiv et" düyməsini sıxın.'}
-                                </p>
-                              )}
+                              <div className="listing-meta">
+                                {(property.views !== undefined && property.views > 0) && (
+                                  <span className="listing-meta-views">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                      <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <strong>{property.views}</strong> {isEnglish ? 'views' : isRussian ? 'просмотров' : 'baxış'}
+                                  </span>
+                                )}
+                                {property.unavailableFrom && property.unavailableTo && (
+                                  <span className="listing-busy-dates">
+                                    {isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'} {property.unavailableFrom} — {property.unavailableTo}
+                                  </span>
+                                )}
+                                {property.listingTier === 'premium' && isPremiumExpired(property) && (
+                                  <span className="listing-premium-expired">
+                                    ⏰ {isEnglish ? 'Premium expired — click Extend!' : isRussian ? 'Премиум истек — нажмите Продлить!' : 'Premium bitdi — Uzat düyməsinə klik!'}
+                                  </span>
+                                )}
+                                {property.listingTier === 'premium' && isPremiumActive(property) && (
+                                  <span className="listing-premium-active">
+                                    ⭐ {isEnglish ? `Premium until ${property.premiumExpiresAt}` : isRussian ? `Премиум до ${property.premiumExpiresAt}` : `Premium ${property.premiumExpiresAt} qədər`}
+                                  </span>
+                                )}
+                                {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && (
+                                  <span className="listing-inactive-hint">
+                                    {isEnglish ? 'Click Activate to restore.' : isRussian ? 'Нажмите Активировать для восстановления.' : '"Aktiv et" düyməsinə klik edin.'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="listing-actions">
                               <div className="action-buttons">

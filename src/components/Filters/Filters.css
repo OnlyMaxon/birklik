@@ -139,7 +139,6 @@
 .filters-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.55rem;
   margin-top: 1.5rem;
@@ -147,11 +146,8 @@
   border-top: 1px solid var(--gray-200);
 }
 
-.filters-actions-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+.filters-actions .filters-search-btn {
+  margin-left: auto;
 }
 
 .filters-search-btn {

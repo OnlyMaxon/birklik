@@ -91,9 +91,15 @@
 }
 
 .tab-content h2 {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  font-weight: 800;
   color: var(--text-color);
   margin-bottom: 1.5rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 2px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 /* Properties Grid for Favorites/Results */
@@ -168,6 +174,65 @@
   gap: 1rem;
   font-size: 0.875rem;
   color: var(--gray-500);
+}
+
+.listing-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.listing-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.25rem;
+}
+
+.listing-meta-views {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--neutral);
+  font-weight: 500;
+}
+
+.listing-meta-views svg {
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.listing-busy-dates {
+  font-size: 0.8rem;
+  color: #7a5a10;
+  font-weight: 500;
+}
+
+.listing-premium-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #b45309;
+  font-weight: 600;
+}
+
+.listing-premium-expired {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--error);
+  font-weight: 700;
+}
+
+.listing-inactive-hint {
+  font-size: 0.78rem;
+  color: #4a6288;
+  font-style: italic;
 }
 
 .listing-actions {
