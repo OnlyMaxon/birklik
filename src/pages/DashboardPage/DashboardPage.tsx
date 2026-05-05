@@ -118,21 +118,39 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ? 'Объявление успешно сохранено'
     : 'Elan uğurla yadda saxlanıldı'
 
+  const planFeatures = {
+    standard: isEnglish
+      ? ['20 photos', 'Full description', 'Open location', 'Free forever']
+      : isRussian
+      ? ['20 фото', 'Полное описание', 'Открытая локация', 'Бесплатно навсегда']
+      : ['20 foto', 'Tam təsvir', 'Açıq lokasiya', 'Həmişəlik pulsuz'],
+    vip: isEnglish
+      ? ['VIP badge on listing', 'Up to 20 photos', 'Priority moderation', '3 weeks top visibility']
+      : isRussian
+      ? ['VIP значок на объявлении', 'До 20 фото', 'Приоритетная модерация', 'Топ видимость 3 недели']
+      : ['Elana VIP nişanı', '20 fotoya qədər', 'Prioritetli moderasiya', '3 həftə üst görünürlük'],
+    premium: isEnglish
+      ? ['Premium badge + top placement', 'Up to 30 photos', 'Featured on homepage 3 weeks', 'Priority moderation']
+      : isRussian
+      ? ['Премиум значок + топ позиция', 'До 30 фото', 'На главной 3 недели', 'Приоритетная модерация']
+      : ['Premium nişanı + üst mövqe', '30 fotoya qədər', 'Əsas səhifədə 3 həftə', 'Prioritetli moderasiya']
+  }
+
   const listingPlans = [
     {
       id: 'standard' as ListingTier,
       title: t.pricing.standard,
       isFree: true,
       price: t.pricing.free,
-      features: [t.pricing_info.standard_features],
+      features: planFeatures.standard,
       emphasis: t.pricing.standardDesc,
-      ribbon: '🎁 ' + t.pricing.free // Ribbon for Free
+      ribbon: '🎁 ' + t.pricing.free
     },
     {
       id: 'vip' as ListingTier,
       title: t.pricing.vip,
       isFree: false,
-      features: [t.pricing_info.vip_features, t.pricing.vipFeatures, t.pricing.vipDisplays],
+      features: planFeatures.vip,
       emphasis: t.pricing.vipDesc,
       pricingOptions: [
         { duration: '14days', label: t.pricing.days14, price: '20 AZN' },
@@ -144,14 +162,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       id: 'premium' as ListingTier,
       title: t.pricing.premium,
       isFree: false,
-      features: [t.pricing_info.premium_features, t.pricing.premiumFeatures, t.pricing.premiumDisplays],
+      features: planFeatures.premium,
       emphasis: t.pricing.premiumDesc,
       pricingOptions: [
         { duration: '14days', label: t.pricing.days14, price: '30 AZN' },
         { duration: '30days', label: t.pricing.days30, price: '55 AZN' }
       ],
       showPricingDropdown: true,
-      highlighted: true // Premium is highlighted
+      highlighted: true
     }
   ]
 

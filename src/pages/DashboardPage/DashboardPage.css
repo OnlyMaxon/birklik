@@ -478,26 +478,52 @@
 
 .plan-card__features {
   list-style: none;
-  padding: 0 0.9rem 0.9rem;
+  padding: 0.65rem 0.9rem 1rem;
   margin: 0;
+  border-top: 1px solid var(--gray-100);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0;
 }
 
 .plan-card__features li {
-  font-size: 0.78rem;
+  font-size: 0.77rem;
   color: var(--gray-600);
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 0.45rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--gray-100);
+  line-height: 1.35;
+}
+
+.plan-card__features li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .plan-card__features li::before {
   content: '✓';
-  color: var(--primary-color);
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
   flex-shrink: 0;
+  margin-top: 0.1rem;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: var(--primary-color);
+}
+
+.plan-card--vip .plan-card__features li::before {
+  background: var(--secondary-color);
+}
+
+.plan-card--premium .plan-card__features li::before {
+  background: var(--accent-color);
 }
 
 .form-grid {
