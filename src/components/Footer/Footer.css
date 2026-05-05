@@ -111,10 +111,95 @@
   margin-bottom: 0.5rem;
 }
 
-/* Bottom copyright */
-.footer-bottom {
+/* Brand row: logo left, store buttons right */
+.footer-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   padding-top: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 2rem;
+}
+
+.footer-logo-wrap {
+  flex-shrink: 0;
+}
+
+.footer-logo-img {
+  display: block;
+  width: 160px;
+  height: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+/* Store buttons */
+.footer-store-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.footer-store-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+.footer-store-btns {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.store-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: var(--transition);
+  cursor: default;
+  user-select: none;
+}
+
+.store-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.38);
+  color: #ffffff;
+}
+
+.store-btn-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.store-btn-sub {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+.store-btn-main {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Bottom copyright */
+.footer-bottom {
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   width: 100%;
   text-align: center;
 }
@@ -141,6 +226,16 @@
   .footer-headline {
     font-size: 1.5rem;
   }
+
+  .footer-brand-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .footer-store-wrap {
+    align-items: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -155,5 +250,15 @@
   .footer-link {
     font-size: 0.85rem;
     padding: 0.35rem 0.7rem;
+  }
+
+  .footer-store-btns {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .store-btn {
+    width: 180px;
+    justify-content: center;
   }
 }
