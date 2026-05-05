@@ -32,3 +32,48 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ===== SIDE AD SLOTS ===== */
+.ad-slot {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 160px;
+  z-index: 40;
+  display: none;
+  pointer-events: none;
+}
+
+.ad-slot--left  { left:  max(6px, calc((100vw - 1280px) / 2 - 168px)); }
+.ad-slot--right { right: max(6px, calc((100vw - 1280px) / 2 - 168px)); }
+
+@media (min-width: 1620px) {
+  .ad-slot { display: block; }
+}
+
+.ad-placeholder {
+  width: 160px;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--gray-50);
+  border: 1.5px dashed var(--gray-200);
+  border-radius: 14px;
+  pointer-events: all;
+}
+
+.ad-placeholder-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-300);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.ad-placeholder-size {
+  font-size: 0.65rem;
+  color: var(--gray-300);
+}

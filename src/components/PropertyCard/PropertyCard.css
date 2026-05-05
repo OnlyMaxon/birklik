@@ -447,12 +447,14 @@
 }
 
 .compact-view .property-card .property-favorite-btn {
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  top: 0.4rem;
+  right: 0.4rem;
 }
 
 .compact-view .property-card .property-favorite-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 11px;
 }
 
