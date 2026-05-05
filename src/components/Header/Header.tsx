@@ -124,7 +124,7 @@ export const Header: React.FC = () => {
 
   const getAddListingClass = () => {
     const isAddTab = location.search.includes('tab=add')
-    return `nav-link${isAddTab ? ' active' : ''}`
+    return `nav-link nav-link--add${isAddTab ? ' active' : ''}`
   }
 
   React.useEffect(() => {
