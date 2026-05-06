@@ -119,39 +119,28 @@ async function main(): Promise<void> {
 
   console.log('');
 
+  if (options.dryRun) {
+    console.log('📋 Dry-run: реальное удаление пропускается. Запустите npm run cleanup:execute для выполнения.\n');
+    process.exit(0);
+  }
+
   try {
-    // Запускаем Firestore cleanup
     console.log('▶️  Starting Firestore cleanup...');
     const firestoreResults = await runAllCleanups();
     printReport(firestoreResults, 'Firestore Cleanup Results');
 
-    // Запускаем Storage cleanup
     console.log('▶️  Starting Storage cleanup...');
     const storageResults = await runAllStorageCleanups();
     printReport(storageResults, 'Storage Cleanup Results');
 
-    // Итоги
-    const totalFirestore = firestoreResults.reduce(
-      (sum, r) => sum + r.count,
-      0
-    );
+    const totalFirestore = firestoreResults.reduce((sum, r) => sum + r.count, 0);
     const totalStorage = storageResults.reduce((sum, r) => sum + r.count, 0);
 
     console.log('📊 TOTAL SUMMARY');
     console.log(`   Firestore items removed: ${totalFirestore}`);
     console.log(`   Storage files deleted: ${totalStorage}`);
     console.log(`   Total operations: ${totalFirestore + totalStorage}`);
-
-    if (options.dryRun) {
-      console.log(
-        '\n✅ DRY RUN COMPLETED - Данные НЕ были удалены'
-      );
-      console.log('Запустите с флагом --execute для реального удаления\n');
-    } else {
-      console.log(
-        '\n✅ CLEANUP COMPLETED SUCCESSFULLY'
-      );
-    }
+    console.log('\n✅ CLEANUP COMPLETED SUCCESSFULLY');
 
     process.exit(0);
   } catch (error) {

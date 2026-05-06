@@ -12,7 +12,14 @@ interface StorageCleanupLog {
 }
 
 /**
- * Удаляет orphaned images (изображения без ссылки в документе)
+ * Удаляет orphaned изображения объявлений.
+ *
+ * Реальный путь в Storage: properties/{userId}/{timestamp}_{filename}
+ * propertyId в пути НЕ хранится, поэтому логика:
+ * 1. Группируем файлы по userId (parts[1])
+ * 2. Для каждого userId получаем все его объявления из Firestore
+ * 3. Собираем все URL изображений из этих объявлений
+ * 4. Файлы старше 7 дней, URL которых нет ни в одном объявлении — orphaned
  */
 export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -22,62 +29,73 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
   try {
     const bucket = admin.storage().bucket();
     const db = admin.firestore();
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // Получаем все files из properties папки
     const [files] = await bucket.getFiles({ prefix: 'properties/' });
 
+    // Группируем файлы по userId (parts[1])
+    const filesByUser = new Map<string, typeof files>();
     for (const file of files) {
-      try {
-        const path = file.name;
-        // Формат: properties/{userId}/{propertyId}/...
-        const parts = path.split('/');
+      const parts = file.name.split('/');
+      // Ожидаем минимум: properties/{userId}/{filename}
+      if (parts.length < 3) continue;
+      const userId = parts[1];
+      if (!filesByUser.has(userId)) filesByUser.set(userId, []);
+      filesByUser.get(userId)!.push(file);
+    }
 
-        if (parts.length < 4) continue; // Skip если неправильный формат
+    for (const [userId, userFiles] of filesByUser) {
+      if (count >= 100) break;
 
-        const propertyId = parts[2];
+      // Получаем все объявления этого пользователя
+      const propertiesSnap = await db
+        .collection('properties')
+        .where('ownerId', '==', userId)
+        .get();
 
-        // Проверяем существует ли этот listing в Firestore
-        const listingDoc = await db.collection('listings').doc(propertyId).get();
+      // Собираем все URL изображений из всех объявлений пользователя
+      const referencedUrls = new Set<string>();
+      for (const doc of propertiesSnap.docs) {
+        const images: string[] = doc.data().images || [];
+        for (const url of images) referencedUrls.add(url);
+      }
 
-        if (!listingDoc.exists) {
-          // Listing удален - удаляем image
-          await file.delete();
-          deletedFiles.push(path);
-          count++;
+      for (const file of userFiles) {
+        if (count >= 100) break;
 
-          if (count >= 100) {
-            break; // Максимум 100 файлов за раз
+        try {
+          const [metadata] = await file.getMetadata();
+          const updatedAt = new Date(metadata.updated as string);
+
+          // Пропускаем свежие файлы (могут ещё не быть привязаны)
+          if (updatedAt > sevenDaysAgo) continue;
+
+          // Проверяем: есть ли URL этого файла в каком-либо объявлении
+          const encodedPath = file.name.split('/').map(encodeURIComponent).join('/');
+          const isReferenced = [...referencedUrls].some(
+            (url) => url.includes(encodedPath) || url.includes(encodeURIComponent(file.name))
+          );
+
+          if (!isReferenced) {
+            await file.delete();
+            deletedFiles.push(file.name);
+            count++;
           }
+        } catch (err) {
+          console.warn(`[WARN] Error processing file ${file.name}:`, err);
         }
-      } catch (error) {
-        console.warn(`[WARN] Error checking file ${file.name}:`, error);
       }
     }
 
-    return {
-      timestamp: new Date(),
-      type: 'orphaned_images',
-      status: 'success',
-      count,
-      deletedFiles,
-      duration: Date.now() - startTime,
-    };
+    return { timestamp: new Date(), type: 'orphaned_images', status: 'success', count, deletedFiles, duration: Date.now() - startTime };
   } catch (error: any) {
     console.error('[ERROR] cleanupOrphanedImages:', error);
-    return {
-      timestamp: new Date(),
-      type: 'orphaned_images',
-      status: 'failed',
-      count,
-      deletedFiles,
-      error: error.message,
-      duration: Date.now() - startTime,
-    };
+    return { timestamp: new Date(), type: 'orphaned_images', status: 'failed', count, deletedFiles, error: error.message, duration: Date.now() - startTime };
   }
 }
 
 /**
- * Удаляет старые временные файлы (temp uploads)
+ * Удаляет временные файлы старше 24 часов из папки temp/.
  */
 export async function cleanupTempFiles(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -88,54 +106,33 @@ export async function cleanupTempFiles(): Promise<StorageCleanupLog> {
     const bucket = admin.storage().bucket();
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    // Получаем все files из temp папки
     const [files] = await bucket.getFiles({ prefix: 'temp/' });
 
     for (const file of files) {
+      if (count >= 100) break;
       try {
         const [metadata] = await file.getMetadata();
-
-        // Проверяем возраст файла
-        const updatedTime = new Date(metadata.updated);
-
-        if (updatedTime < oneDayAgo) {
+        const updatedAt = new Date(metadata.updated as string);
+        if (updatedAt < oneDayAgo) {
           await file.delete();
           deletedFiles.push(file.name);
           count++;
-
-          if (count >= 100) {
-            break;
-          }
         }
-      } catch (error) {
-        console.warn(`[WARN] Error processing temp file:`, error);
+      } catch (err) {
+        console.warn(`[WARN] Error processing temp file ${file.name}:`, err);
       }
     }
 
-    return {
-      timestamp: new Date(),
-      type: 'temp_files',
-      status: 'success',
-      count,
-      deletedFiles,
-      duration: Date.now() - startTime,
-    };
+    return { timestamp: new Date(), type: 'temp_files', status: 'success', count, deletedFiles, duration: Date.now() - startTime };
   } catch (error: any) {
     console.error('[ERROR] cleanupTempFiles:', error);
-    return {
-      timestamp: new Date(),
-      type: 'temp_files',
-      status: 'failed',
-      count,
-      deletedFiles,
-      error: error.message,
-      duration: Date.now() - startTime,
-    };
+    return { timestamp: new Date(), type: 'temp_files', status: 'failed', count, deletedFiles, error: error.message, duration: Date.now() - startTime };
   }
 }
 
 /**
- * Удаляет старые user avatars без обновлений > 1 года
+ * Удаляет аватары пользователей старше 1 года, если у пользователя нет аватара.
+ * Путь: avatars/{userId}/{timestamp}_{filename}
  */
 export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -147,63 +144,41 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
     const db = admin.firestore();
     const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
 
-    // Получаем все avatars
     const [files] = await bucket.getFiles({ prefix: 'avatars/' });
 
     for (const file of files) {
+      if (count >= 50) break;
       try {
         const [metadata] = await file.getMetadata();
-        const updatedTime = new Date(metadata.updated);
+        const updatedAt = new Date(metadata.updated as string);
+        if (updatedAt >= oneYearAgo) continue;
 
-        // Если avatar старше 1 года и нет обновлений в user документе
-        if (updatedTime < oneYearAgo) {
-          const userId = file.name.split('/')[1];
+        const parts = file.name.split('/');
+        if (parts.length < 2) continue;
+        const userId = parts[1];
 
-          const userDoc = await db.collection('users').doc(userId).get();
+        const userDoc = await db.collection('users').doc(userId).get();
+        const userData = userDoc.exists ? userDoc.data() : null;
 
-          if (!userDoc.exists || !userDoc.data().avatar) {
-            await file.delete();
-            deletedFiles.push(file.name);
-            count++;
-
-            if (count >= 50) {
-              break;
-            }
-          }
+        // Удаляем если пользователя нет или у него нет аватара
+        if (!userData || !userData['avatar']) {
+          await file.delete();
+          deletedFiles.push(file.name);
+          count++;
         }
-      } catch (error) {
-        console.warn(`[WARN] Error processing avatar:`, error);
+      } catch (err) {
+        console.warn(`[WARN] Error processing avatar ${file.name}:`, err);
       }
     }
 
-    return {
-      timestamp: new Date(),
-      type: 'old_avatars',
-      status: 'success',
-      count,
-      deletedFiles,
-      duration: Date.now() - startTime,
-    };
+    return { timestamp: new Date(), type: 'old_avatars', status: 'success', count, deletedFiles, duration: Date.now() - startTime };
   } catch (error: any) {
     console.error('[ERROR] cleanupOldAvatars:', error);
-    return {
-      timestamp: new Date(),
-      type: 'old_avatars',
-      status: 'failed',
-      count,
-      deletedFiles,
-      error: error.message,
-      duration: Date.now() - startTime,
-    };
+    return { timestamp: new Date(), type: 'old_avatars', status: 'failed', count, deletedFiles, error: error.message, duration: Date.now() - startTime };
   }
 }
 
-/**
- * Логирует результаты storage cleanup
- */
-export async function logStorageCleanupResult(
-  log: StorageCleanupLog
-): Promise<void> {
+export async function logStorageCleanupResult(log: StorageCleanupLog): Promise<void> {
   try {
     await admin.firestore().collection('cleanup-logs').add(log);
   } catch (error) {
@@ -211,31 +186,25 @@ export async function logStorageCleanupResult(
   }
 }
 
-/**
- * Запускает все storage cleanup функции
- */
 export async function runAllStorageCleanups(): Promise<StorageCleanupLog[]> {
-  console.log('[INFO] Starting storage cleanup...');
+  console.log('[INFO] Starting weekly Storage cleanup...');
 
-  const results: StorageCleanupLog[] = [];
-
-  const cleanups = [
+  const settled = await Promise.allSettled([
     cleanupOrphanedImages(),
     cleanupTempFiles(),
     cleanupOldAvatars(),
-  ];
+  ]);
 
-  const logs = await Promise.allSettled(cleanups);
-
-  for (const result of logs) {
+  const results: StorageCleanupLog[] = [];
+  for (const result of settled) {
     if (result.status === 'fulfilled') {
       results.push(result.value);
       await logStorageCleanupResult(result.value);
     } else {
-      console.error('[ERROR] Storage cleanup failed:', result.reason);
+      console.error('[ERROR] Storage cleanup task failed:', result.reason);
     }
   }
 
-  console.log('[INFO] Storage cleanup completed:', results);
+  console.log('[INFO] Storage cleanup done:', results.map(r => `${r.type}:${r.count}`).join(', '));
   return results;
 }

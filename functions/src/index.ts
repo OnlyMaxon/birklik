@@ -113,23 +113,20 @@ export const weeklyStorageCleanup = functions
 export const manualCleanup = functions
   .region('europe-west1')
   .https.onRequest(async (req, res) => {
-    // Проверяем authorization
     const token = req.headers.authorization?.split('Bearer ')[1];
 
     if (!token || token !== process.env.CLEANUP_TOKEN) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      res.status(403).json({ error: 'Unauthorized' });
+      return;
     }
 
-    // Проверяем метод
     if (req.method !== 'POST') {
-      return res.status(400).json({ error: 'Method not allowed' });
+      res.status(400).json({ error: 'Method not allowed' });
+      return;
     }
 
     const dryRun = req.body.dryRun === true;
-
-    console.log(
-      `[INFO] Manual cleanup requested (dryRun: ${dryRun}) by ${req.ip}`
-    );
+    console.log(`[INFO] Manual cleanup requested (dryRun: ${dryRun}) by ${req.ip}`);
 
     try {
       let results: any[] = [];
@@ -137,11 +134,10 @@ export const manualCleanup = functions
       if (!dryRun) {
         const firestoreResults = await runAllCleanups();
         const storageResults = await runAllStorageCleanups();
-
         results = [...firestoreResults, ...storageResults];
       }
 
-      return res.json({
+      res.json({
         success: true,
         dryRun,
         results: results.map((r) => ({
@@ -153,8 +149,7 @@ export const manualCleanup = functions
       });
     } catch (error) {
       console.error('[ERROR] Manual cleanup failed:', error);
-
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         error: (error as any).message || 'Unknown error',
       });

@@ -54,7 +54,7 @@ export async function validateSafeDelete(
 
   // Проверка 2: Возраст документа
   const ageInDays = calculateAgeInDays(doc.createdAt);
-  const requiredAge = CLEANUP_RULES.minAgeInDays[doc.status];
+  const requiredAge = CLEANUP_RULES.minAgeInDays[doc.status as keyof typeof CLEANUP_RULES.minAgeInDays];
 
   if (requiredAge && ageInDays < requiredAge) {
     return {
@@ -63,8 +63,8 @@ export async function validateSafeDelete(
     };
   }
 
-  // Проверка 3: Активные documents
-  if (doc.isActive === true || doc.isActive === undefined) {
+  // Проверка 3: Активные documents (только явное true блокирует)
+  if (doc.isActive === true) {
     return {
       safe: false,
       reason: 'Document is still active',
@@ -116,35 +116,24 @@ export interface CleanupType {
 export const CLEANUP_TYPES: Record<string, CleanupType> = {
   EXPIRED_PREMIUM: {
     name: 'Expired Premium Listings',
-    collection: 'listings',
+    collection: 'properties',
     query: [
-      { field: 'status', operator: '==', value: 'active' },
-      { field: 'premiumExpiry', operator: '<', value: new Date() },
+      { field: 'listingTier', operator: '==', value: 'premium' },
+      { field: 'premiumExpiresAt', operator: '<', value: new Date().toISOString() },
     ],
     batchSize: 50,
     description: 'Remove premium status from expired listings',
   },
 
-  DRAFT_LISTINGS: {
-    name: 'Old Draft Listings',
-    collection: 'listings',
+  REJECTED_LISTINGS: {
+    name: 'Old Rejected Listings',
+    collection: 'properties',
     query: [
-      { field: 'status', operator: '==', value: 'draft' },
-      { field: 'lastUpdated', operator: '<', value: getDateDaysAgo(30) },
+      { field: 'status', operator: '==', value: 'pending' },
+      { field: 'createdAt', operator: '<', value: getDateDaysAgo(30) },
     ],
     batchSize: 100,
-    description: 'Delete draft listings older than 30 days',
-  },
-
-  FAILED_BOOKINGS: {
-    name: 'Failed Bookings',
-    collection: 'bookings',
-    query: [
-      { field: 'status', operator: '==', value: 'failed' },
-      { field: 'createdAt', operator: '<', value: getDateDaysAgo(14) },
-    ],
-    batchSize: 100,
-    description: 'Delete failed bookings older than 14 days',
+    description: 'Delete pending listings older than 30 days (likely stuck)',
   },
 
   CANCELLED_BOOKINGS: {
@@ -155,26 +144,29 @@ export const CLEANUP_TYPES: Record<string, CleanupType> = {
       { field: 'createdAt', operator: '<', value: getDateDaysAgo(90) },
     ],
     batchSize: 100,
-    description: 'Archive cancelled bookings older than 90 days',
+    description: 'Delete cancelled bookings older than 90 days',
+  },
+
+  REJECTED_BOOKINGS: {
+    name: 'Old Rejected Bookings',
+    collection: 'bookings',
+    query: [
+      { field: 'status', operator: '==', value: 'rejected' },
+      { field: 'createdAt', operator: '<', value: getDateDaysAgo(30) },
+    ],
+    batchSize: 100,
+    description: 'Delete rejected bookings older than 30 days',
   },
 
   TEST_DATA: {
     name: 'Test Data',
-    collection: 'listings',
+    collection: 'properties',
     query: [
       { field: 'isTest', operator: '==', value: true },
       { field: 'createdAt', operator: '<', value: getDateDaysAgo(7) },
     ],
     batchSize: 100,
     description: 'Delete test listings older than 7 days',
-  },
-
-  ORPHANED_COMMENTS: {
-    name: 'Orphaned Comments',
-    collection: 'comments',
-    query: [{ field: 'propertyId', operator: '==', value: null }],
-    batchSize: 100,
-    description: 'Delete comments with missing property references',
   },
 };
 
