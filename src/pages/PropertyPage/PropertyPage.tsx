@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import { ImageGallery, PropertyMap, Loading, ReportCommentModal } from '../../components'
+import { ImageGallery, Loading, ReportCommentModal } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
 import { getPropertyById, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, addReplyToComment, addRatingToProperty, getUserRatingForProperty, getPropertyBookings } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
@@ -16,6 +16,10 @@ import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
 import * as logger from '../../services/logger'
+
+const PropertyMap = React.lazy(() =>
+  import('../../components/Map').then((mod) => ({ default: mod.PropertyMap }))
+)
 
 interface CalendarCell {
   label: string
@@ -886,7 +890,9 @@ export const PropertyPage: React.FC = () => {
                     </div>
                   )}
                   <div className="pp-map-wrap">
-                    <PropertyMap properties={[property]} singleProperty={true} />
+                    <React.Suspense fallback={<div className="pp-map-loading" />}>
+                      <PropertyMap properties={[property]} singleProperty={true} />
+                    </React.Suspense>
                   </div>
                 </div>
               </div>

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { LanguageProvider, AuthProvider } from './context'
+import { ErrorBoundary } from './components'
 import './styles/globals.css'
 
 const ua = window.navigator.userAgent
@@ -74,12 +75,14 @@ if ('serviceWorker' in navigator) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <LanguageProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </LanguageProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <LanguageProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </LanguageProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>,
 )

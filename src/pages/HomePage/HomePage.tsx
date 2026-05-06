@@ -1,11 +1,15 @@
 import React from 'react'
 import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
-import { SearchBar, Filters, PropertyCard, PropertyMap, Loading } from '../../components'
+import { SearchBar, Filters, PropertyCard, Loading } from '../../components'
 import { filterProperties } from '../../data'
 import { FilterState, Property } from '../../types'
 import { getProperties } from '../../services'
 import './HomePage.css'
+
+const PropertyMap = React.lazy(() =>
+  import('../../components/Map').then((mod) => ({ default: mod.PropertyMap }))
+)
 
 const initialFilters: FilterState = {
   search: '',
@@ -216,7 +220,9 @@ export const HomePage: React.FC = () => {
 
               {showMap && (
                 <aside className="premium-results-map">
-                  <PropertyMap properties={filteredProperties} />
+                  <React.Suspense fallback={<div className="pp-map-loading" />}>
+                    <PropertyMap properties={filteredProperties} />
+                  </React.Suspense>
                 </aside>
               )}
             </div>

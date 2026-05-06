@@ -1136,6 +1136,19 @@
   overflow: hidden;
 }
 
+.pp-map-loading {
+  height: 300px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--bg-secondary, #f0f0f0) 25%, var(--bg-tertiary, #e0e0e0) 50%, var(--bg-secondary, #f0f0f0) 75%);
+  background-size: 200% 100%;
+  animation: pp-map-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes pp-map-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ===== PRICE CARD (sidebar) ===== */
 .pp-price-card {
   display: flex;
