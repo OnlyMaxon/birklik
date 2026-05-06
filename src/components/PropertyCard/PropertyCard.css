@@ -303,12 +303,6 @@
   color: #2d2420;
 }
 
-.reviews-count {
-  font-size: 0.65rem;
-  color: #8b7355;
-  font-weight: 500;
-}
-
 .price-breakdown {
   display: flex;
   flex-direction: column;
