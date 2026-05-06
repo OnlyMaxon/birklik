@@ -533,6 +533,19 @@
   height: 1.25rem;
   top: 0.32rem;
   right: 0.32rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.property-favorite-btn.compact:hover:not(:disabled) {
+  box-shadow: 0 2px 6px rgba(46, 125, 91, 0.3);
+}
+
+.property-favorite-btn.compact.bookmarked {
+  box-shadow: 0 1px 5px rgba(231, 76, 60, 0.3);
+}
+
+.property-favorite-btn.compact.bookmarked:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.35);
 }
 
 .property-favorite-btn.compact svg {
@@ -561,6 +574,11 @@
     height: 1.1rem;
     top: 0.28rem;
     right: 0.28rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+
+  .property-favorite-btn.compact.bookmarked {
+    box-shadow: 0 1px 4px rgba(231, 76, 60, 0.25);
   }
 
   .property-favorite-btn.compact svg {

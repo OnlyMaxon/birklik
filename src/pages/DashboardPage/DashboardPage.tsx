@@ -120,10 +120,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
 
   const planFeatures = {
     standard: isEnglish
-      ? ['20 photos', 'Full description', 'Open location', 'Free forever']
+      ? ['20 photos', 'Full description', 'Open location', 'Free']
       : isRussian
-      ? ['20 фото', 'Полное описание', 'Открытая локация', 'Бесплатно навсегда']
-      : ['20 foto', 'Tam təsvir', 'Açıq lokasiya', 'Həmişəlik pulsuz'],
+      ? ['20 фото', 'Полное описание', 'Открытая локация', 'Бесплатно']
+      : ['20 foto', 'Tam təsvir', 'Açıq lokasiya', 'Pulsuz'],
     vip: isEnglish
       ? ['VIP badge on listing', 'Up to 20 photos', 'Priority moderation', '3 weeks top visibility']
       : isRussian
