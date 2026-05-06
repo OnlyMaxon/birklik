@@ -10,11 +10,11 @@
     "test": "vitest",
     "test:run": "vitest run",
     "logo:generate": "node scripts/generate-logo-assets.mjs",
-    "functions:build": "cd functions && npm run build",
-    "functions:deploy": "firebase deploy --only functions",
-    "functions:logs": "firebase functions:log",
-    "cleanup:dry": "cd functions && npm run cleanup:dry",
-    "cleanup:execute": "cd functions && npm run cleanup:execute"
+    "functions:build": "cd firebase-functions && npm run build",
+    "functions:deploy": "firebase deploy --only functions --project birklik-65289 --force",
+    "functions:logs": "firebase functions:log --project birklik-65289",
+    "cleanup:dry": "cd firebase-functions && npm run cleanup:dry",
+    "cleanup:execute": "cd firebase-functions && npm run cleanup:execute"
   },
   "dependencies": {
     "firebase": "^12.10.0",

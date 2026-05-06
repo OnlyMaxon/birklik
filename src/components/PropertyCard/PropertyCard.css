@@ -456,15 +456,17 @@
   height: 9px;
 }
 
-.compact-view .property-card .property-favorite-btn {
-  width: 1.35rem;
-  height: 1.35rem;
-  top: 0.38rem;
-  right: 0.38rem;
+.compact-view .property-card .property-favorite-btn,
+.compact-view .property-card.card .property-favorite-btn {
+  width: 1.25rem;
+  height: 1.25rem;
+  top: 0.32rem;
+  right: 0.32rem;
 }
 
-.compact-view .property-card .property-favorite-btn svg {
-  width: 10px;
-  height: 10px;
+.compact-view .property-card .property-favorite-btn svg,
+.compact-view .property-card.card .property-favorite-btn svg {
+  width: 9px;
+  height: 9px;
 }
 
