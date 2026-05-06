@@ -12,13 +12,15 @@ interface PropertyCardProps {
   property: Property
   checkIn?: string
   checkOut?: string
+  isCompact?: boolean
   onFavoriteToggle?: (propertyId: string, isFavorited: boolean) => void
 }
 
-export const PropertyCard = React.memo<PropertyCardProps>(({ 
-  property, 
-  checkIn, 
+export const PropertyCard = React.memo<PropertyCardProps>(({
+  property,
+  checkIn,
   checkOut,
+  isCompact = false,
   onFavoriteToggle
 }) => {
   const { language, t } = useLanguage()
@@ -71,7 +73,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
     <div className="property-card card">
       <Link to={`/property/${property.id}`} className="property-image">
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
-        <div className="property-badges">
+        <div className={`property-badges${isCompact ? ' compact' : ''}`}>
           {isVIP && (
             <div className="badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 20" fill="currentColor" width="13" height="11" aria-hidden="true">
@@ -103,7 +105,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
       <button
         onClick={handleFavoriteClick}
         disabled={isFavoriting}
-        className={`property-favorite-btn ${isFavorited ? 'bookmarked' : ''}`}
+        className={['property-favorite-btn', isFavorited ? 'bookmarked' : '', isCompact ? 'compact' : ''].filter(Boolean).join(' ')}
         title={!isAuthenticated ? (language === 'en' ? 'Sign in to bookmark' : language === 'ru' ? 'Войдите чтобы добавить в закладки' : 'Bookmarklamaq üçün daxil olun') : ''}
         aria-label="Add to bookmarks"
       >

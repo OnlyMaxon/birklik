@@ -213,6 +213,7 @@ export const HomePage: React.FC = () => {
                       property={property}
                       checkIn={filters.checkIn}
                       checkOut={filters.checkOut}
+                      isCompact={viewMode === 'compact'}
                     />
                   ))}
                 </div>
