@@ -105,8 +105,37 @@
 /* Properties Grid for Favorites/Results */
 .properties-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.properties-grid .property-badges {
+  gap: 0.22rem;
+}
+
+.properties-grid .property-badges .badge,
+.properties-grid .property-badges .property-pool-badge {
+  padding: 0.18rem 0.42rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+}
+
+.properties-grid .property-badges .badge svg,
+.properties-grid .property-badges .property-pool-badge svg {
+  width: 9px;
+  height: 9px;
+}
+
+.properties-grid .property-favorite-btn {
+  width: 1.5rem;
+  height: 1.5rem;
+  top: 0.45rem;
+  right: 0.45rem;
+}
+
+.properties-grid .property-favorite-btn svg {
+  width: 12px;
+  height: 12px;
 }
 
 /* Listings */
