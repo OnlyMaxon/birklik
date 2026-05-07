@@ -620,47 +620,52 @@ export const en: Translations = {
         {
           number: "1",
           title: "General Terms",
-          content: "1.1. This User Agreement defines the terms of use of the Birklik.az platform (hereinafter \"Service\").\n1.2. Terms and Definitions:\n1.2.1. Service — the Birklik.az website located on the Internet, its mobile versions, software, design, database, and all information placed on the platform.\n1.2.2. Administration — a legal or natural person managing the Service and the party with all rights over the Service.\n1.2.3. User — any person who accepts this Agreement and uses the Service.\n1.2.4. Personal Account — the user's personal profile and listings section managed on the platform.\n1.2.5. Personal Account Balance — the balance used by the user for payment transactions on the Service.\n1.2.6. Personal Information — information provided by the user or automatically collected by the system.\n1.2.7. Information — any text, image, video, or other content placed on the Service.\n1.2.8. Spam — advertising or messages sent without the user's consent.\n1.2.9. Real Estate — movable or immovable objects offered for rent or use.\n1.2.10. Parties — the Administration and the User.\n1.3. Terms not specified in this Agreement are explained according to context, with final decision reserved to the Administration.\n1.4. Use of the Service is regulated by the laws of the Republic of Azerbaijan and this Agreement.\n1.5. This document is a public offer.\n1.6. Users of the Service are deemed to have fully accepted this Agreement.\n1.7. The Administration has the right to modify this Agreement at any time.\n1.8. If the user disagrees with changes, they must stop using the Service.\n1.9. The Service provides users with the ability to place and search listings.\n1.10. Materials placed on the Service may be promotional in nature, and the Administration is not responsible for this."
+          content: "1.1. This document establishes rules with legal force for all users of the Birklik.az platform.\n1.2. Each person placing a listing or using the platform confirms they are familiar with and accept these rules.\n1.3. The main purposes of these rules are:\n• Create transparent and reliable communication between users\n• Ensure a safe and fair environment on the platform\n• Make the rental process simple and effective\n1.4. Rules apply to both free listings and paid service listings.\n1.5. Rule violations may result in: listing not being published, listing editing, listing deletion, account blocking.\n1.6. If a rule violation is detected: paid listings may be deleted without refund, repeated violations may result in restrictions.\n1.7. All rules are aimed at creating a safe user experience on the platform.\n1.8. Each rule violation is evaluated individually.\n1.9. The Administration reserves the right to modify these rules."
         },
         {
           number: "2",
-          title: "Service Usage and Listing Placement",
-          content: "2.1. To place a listing on the Service, the user must fill in the provided forms.\n2.2. The user must not:\n• violate laws\n• infringe copyrights\n• interfere with platform operations\n2.3. The Service is not a party to contracts between users and bears no responsibility.\n2.4. The user must provide only accurate and current information.\n2.5. When placing a listing, the user confirms they have rights to the real estate.\n2.6. The user bears full responsibility for information placed on the Service.\n2.7. The user grants the Administration unlimited, royalty-free rights to use the content (broadcasting, editing, etc.).\n2.8. The Service has the right to request additional information and documents.\n2.9. Prohibited:\n• fake listings\n• illegal services\n• advertising of other platforms\n2.10. The Administration has the right to:\n• delete listings\n• edit listings\n• change categories\n• refuse publication\n2.11. Paid services are not refunded if rules are violated."
+          title: "Listing Placement Rules",
+          content: "2.1. One phone number can place only 1 free listing per 30 calendar days. Re-listing the same property is only possible on a paid basis.\n2.2. Standard listing validity period is 30 days. After expiration, the listing is hidden. Reactivation is only possible on a paid basis. A renewed listing is republished and moves up in search results.\n2.3. If the same property is listed by multiple users: the first listing can be free, other users can only list it on a paid basis.\n2.4. Listing must be placed in the correct category.\n2.5. Exact address (location) on the map is mandatory for listing.\n2.6. Any paid service extends listing duration and moves it up in search results.\n2.7. The following listings are considered inactive: property already rented, non-existent property, misleading information. When detected, listing can be deleted.\n2.8. After listing becomes inactive, it can be restored within 180 days. After this period, listing is permanently archived.\n2.9. When a user places a third active listing, status changes for all their listings."
         },
         {
           number: "3",
-          title: "Paid Services",
-          content: "3.1. Paid services may be offered on the Service (Premium, VIP, promotion, etc.).\n3.2. Service prices are shown on the website.\n3.3. The service is activated after payment.\n3.4. Money can be refunded in the following cases:\n• technical error\n• service not provided\n3.5. Refunds are not issued in the following cases:\n• rule violation\n• service was actively used"
+          title: "User Information",
+          content: "3.1. User must provide accurate and active information during registration: name, phone number, email address.\n3.2. Use of fake or third-party information is prohibited.\n3.3. One user can create only one account.\n3.4. In the \"Name\" field, it is prohibited to show commercial names or company names (for individuals)."
         },
         {
           number: "4",
-          title: "Communication",
-          content: "4.1. The Administration may send information to users via:\n• email\n• SMS\n4.2. These messages may be promotional in nature.\n4.3. Users can refuse these messages at any time.\n4.4. The Administration is not responsible for messages sent by other users."
+          title: "Editing Listings",
+          content: "4.1. All listing rules apply when editing listings.\n4.2. Listing can only be edited through personal account.\n4.3. Changes to the following information may be restricted: address, property type, contact information.\n4.4. Changing listing to completely different object is prohibited.\n4.5. User can edit one listing maximum 2 times within 24 hours."
         },
         {
           number: "5",
-          title: "Software and Rights",
-          content: "5.1. All rights to the Service belong to the Administration.\n5.2. Users are granted only usage rights.\n5.3. Prohibited:\n• copying\n• modification\n• sale\n• reverse engineering"
+          title: "Text Description Rules",
+          content: "5.1. Description should contain only property information.\n5.2. Prohibited:\n• Adding contact information\n• Advertising other listings\n• Sharing links\n• Information unrelated to property\n5.3. Transliteration and unclear text are not accepted.\n5.4. Administration may make spelling corrections without changing content."
         },
         {
           number: "6",
-          title: "Limitation of Liability",
-          content: "6.1. The Service is merely a platform and bears no responsibility for transactions.\n6.2. Users assume all risks.\n6.3. The Service does not warrant the accuracy of listings.\n6.4. The Administration is not responsible for:\n• user damages\n• fake listings\n• actions of third parties\n6.5. Disputes between users are resolved independently."
+          title: "Photo Placement Rules",
+          content: "6.1. Only real and relevant photos of the property must be used.\n6.2. Prohibited:\n• Photos from other sources\n• Photos with watermarks and logos\n• Screenshots and collages\n6.3. Photos must be high quality and clear.\n6.4. If misleading photos are detected, listing can be deleted."
         },
         {
           number: "7",
-          title: "Access Restrictions",
-          content: "7.1. The Administration has the right to block a user for:\n• rule violation\n• false information\n• dangerous activity\n7.2. A blocked user cannot register again."
+          title: "User Behavior",
+          content: "7.1. Users must behave ethically on the platform.\n7.2. Prohibited:\n• Insults\n• Misleading information\n• False pricing\n7.3. Repeated violations result in account blocking."
         },
         {
           number: "8",
-          title: "Agreement Duration",
-          content: "8.1. This Agreement comes into force from the moment use begins.\n8.2. It is effective indefinitely.\n8.3. Users can refuse the platform at any time."
+          title: "Paid Services",
+          content: "8.1. Additional paid features may be offered on the platform.\n8.2. After payment, service is activated and not refundable.\n8.3. If rules are violated, paid listings can also be deleted."
         },
         {
           number: "9",
-          title: "Other Terms",
-          content: "9.1. Disputes are resolved through negotiation.\n9.2. Laws of Azerbaijan are applied.\n9.3. The Agreement can be modified unilaterally.\n9.4. Invalidity of separate clauses does not affect other clauses."
+          title: "Responsibility",
+          content: "9.1. Birklik.az is only an intermediary platform.\n9.2. Not responsible for agreements between users.\n9.3. Full responsibility for listing information belongs to listing owner."
+        },
+        {
+          number: "10",
+          title: "Final Provisions",
+          content: "10.1. Everyone using the platform is deemed to accept these rules.\n10.2. In disputed cases, final decision is made by Birklik.az administration."
         }
       ]
     },
