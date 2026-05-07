@@ -175,7 +175,6 @@ export const HomePage: React.FC = () => {
           <aside className="ad-slot ad-slot--left" aria-hidden="true">
             <div className="ad-placeholder">
               <span className="ad-placeholder-label">Reklam</span>
-              <span className="ad-placeholder-size">160 × 600</span>
             </div>
           </aside>
 
@@ -253,7 +252,6 @@ export const HomePage: React.FC = () => {
           <aside className="ad-slot ad-slot--right" aria-hidden="true">
             <div className="ad-placeholder">
               <span className="ad-placeholder-label">Reklam</span>
-              <span className="ad-placeholder-size">160 × 600</span>
             </div>
           </aside>
         </div>
