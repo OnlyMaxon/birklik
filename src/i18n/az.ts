@@ -611,43 +611,53 @@ export const az: Translations = {
       closing: "Biz sizin suallarınıza tez bir zamanda cavab verməyə çalışırıq və hər zaman xidmətinizdəyik."
     },
     terms: {
-      title: "Şərtlər və Qaydalar",
-      lastUpdated: "Son yenilənmə tarixi: 30.03.2026",
+      title: "BIRKLIK.AZ – İSTİFADƏÇİ RAZILAŞMASI",
+      lastUpdated: "Son yenilənmə tarixi: 07.05.2026",
       sections: [
         {
           number: "1",
-          title: "Ümumi məlumat",
-          content: "Birklik.az istifadəçilərə qısamüddətli kirayə verilən mülkləri sıralamaq, axtarmaq və bron etməyə imkan verən platformadır. Bu Şərtlər və Qaydalar veb-saytımızdan və xidmətlərimizdən istifadənizi tənzimləyir. Birklik.az-dan istifadə edərək, siz bu şərtləri qəbul etməyə razı olursunuz."
+          title: "Ümumi şərtlər",
+          content: "1.1. Bu İstifadəçi Razılaşması Birklik.az platformasının (bundan sonra \"Servis\") istifadə şərtlərini müəyyən edir.\n1.2. Terminlər və anlayışlar:\n1.2.1. Servis — internet şəbəkəsində yerləşən Birklik.az veb-saytı, onun mobil versiyaları, proqram təminatı, dizaynı, məlumat bazası və platformada yerləşdirilmiş bütün informasiyadır.\n1.2.2. Administrasiya — Servisin idarə edilməsini həyata keçirən hüquqi və ya fiziki şəxs və Servis üzərində bütün hüquqlara malik tərəfdir.\n1.2.3. İstifadəçi — bu Razılaşmanı qəbul edən və Servisdən istifadə edən istənilən şəxsdir.\n1.2.4. Şəxsi kabinet — istifadəçinin platformada idarə etdiyi şəxsi profil və elanlar bölməsidir.\n1.2.5. Şəxsi hesab — istifadəçinin Servisdə ödəniş əməliyyatları üçün istifadə etdiyi balansdır.\n1.2.6. Şəxsi məlumatlar — istifadəçi tərəfindən təqdim edilən və ya sistem tərəfindən avtomatik toplanan məlumatlardır.\n1.2.7. İnformasiya — Servisdə yerləşdirilmiş istənilən mətn, şəkil, video və digər məlumatlardır.\n1.2.8. Spam — istifadəçinin razılığı olmadan göndərilən reklam və ya mesajlardır.\n1.2.9. Əmlak — kirayə və ya istifadə üçün təqdim edilən daşınmaz və ya digər obyektlərdir.\n1.2.10. Tərəflər — Administrasiya və İstifadəçi.\n1.3. Bu Razılaşmada göstərilməyən terminlər kontekstə uyğun izah edilir və son qərar Administrasiyaya məxsusdur.\n1.4. Servisdən istifadə Azərbaycan Respublikasının qanunvericiliyi və bu Razılaşma ilə tənzimlənir.\n1.5. Bu sənəd ictimai ofertadır.\n1.6. Servisdən istifadə edən İstifadəçi bu Razılaşmanı tam qəbul etmiş sayılır.\n1.7. Administrasiya bu Razılaşmanı istənilən vaxt dəyişdirmək hüququna malikdir.\n1.8. İstifadəçi dəyişikliklərlə razı deyilsə, Servisdən istifadəni dayandırmalıdır.\n1.9. Servis istifadəçilərə elan yerləşdirmək və axtarış etmək imkanı təqdim edir.\n1.10. Servisdə yerləşdirilən materiallar reklam xarakterli ola bilər və Administrasiya buna görə məsuliyyət daşımır."
         },
         {
           number: "2",
-          title: "İstifadəçi məsuliyyətləri",
-          content: "İstifadəçilər hesab məlumatlarının məxfiliyini saxlamaqda və hesab altında baş verən bütün fəaliyyətlərdə məsuliyyət daşıyırlar. Elanlar yaradarkən və ya bron edərkən dəqiq və tam məlumat verməlisiniz. Platformanın hər hansı yanlış istifadəsi hesabınızın dayandırılmasına və ya ləğv edilməsinə səbəb ola bilər."
+          title: "Servisdən istifadə və elan yerləşdirilməsi",
+          content: "2.1. Servisdə elan yerləşdirmək üçün istifadəçi təqdim olunan formaları doldurmalıdır.\n2.2. İstifadəçi aşağıdakıları etməməlidir:\n• qanun pozuntusu\n• müəllif hüquqlarının pozulması\n• platformanın işinə müdaxilə\n2.3. Servis istifadəçilər arasında bağlanan müqavilələrin tərəfi deyil və məsuliyyət daşımır.\n2.4. İstifadəçi yalnız doğru və aktual məlumat təqdim etməlidir.\n2.5. İstifadəçi elan yerləşdirərkən həmin əmlak üzərində hüququ olduğunu təsdiqləyir.\n2.6. İstifadəçi Servisdə yerləşdirdiyi məlumatlara görə tam məsuliyyət daşıyır.\n2.7. İstifadəçi Administrasiyaya yerləşdirdiyi məzmunun istifadəsi üçün müddətsiz və pulsuz hüquq verir (yayım, redaktə və s.).\n2.8. Servis əlavə məlumat və sənədlər tələb etmək hüququna malikdir.\n2.9. Qadağandır:\n• saxta elanlar\n• qeyri-qanuni xidmətlər\n• başqa platformaların reklamı\n2.10. Administrasiya aşağıdakı hüquqlara malikdir:\n• elanları silmək\n• redaktə etmək\n• kateqoriyanı dəyişmək\n• dərcdən imtina etmək\n2.11. Qaydaların pozulması halında ödənişli xidmətlər geri qaytarılmır."
         },
         {
           number: "3",
-          title: "Mülk elanları",
-          content: "Mülk sahibləri və menecerləri təqdim edilən bütün məlumatların dəqiq, aktual və yerli qanunvericiliyə uyğun olduğundan əmin olmalıdırlar. Bütün elanlar müvafiq qanunlara və qaydalara uyğun olmalıdır. Birklik.az bu şərtləri və ya yerli qanunları pozan hər hansı elanı silmək hüququnu özündə saxlayır."
+          title: "Pullu xidmətlər",
+          content: "3.1. Servisdə ödənişli xidmətlər təqdim edilə bilər (Premium, VIP, irəli çəkilmə və s.).\n3.2. Xidmətlərin qiymətləri saytda göstərilir.\n3.3. Ödəniş edildikdən sonra xidmət aktivləşdirilir.\n3.4. Pulun geri qaytarılması aşağıdakı hallarda mümkündür:\n• texniki səhv\n• xidmət göstərilmədikdə\n3.5. Geri qaytarılma aşağıdakı hallarda edilmir:\n• qayda pozuntusu\n• xidmət aktiv istifadə olunubsa"
         },
         {
           number: "4",
-          title: "Sifariş və ləğv",
-          content: "Qonaqlar və ev sahibləri hər bir elanda göstərilən ləğv siyasətinə uyğun olaraq sifarişləri dəyişə və ya ləğv edə bilərlər. Ləğv siyasətləri müxtəlif mülklər üçün fərqlidir. İstifadəçilər sifarişi təsdiq etməzdən əvvəl ləğv şərtlərini anlamağa məsuldurlar. Sifarişlə bağlı mübahisələr Birklik.az siyasətinə uyğun həll edilir."
+          title: "Kommunikasiya",
+          content: "4.1. Administrasiya istifadəçilərə:\n• email\n• SMS\nvasitəsilə məlumat göndərə bilər.\n4.2. Bu mesajlar reklam xarakterli ola bilər.\n4.3. İstifadəçi istənilən vaxt bu mesajlardan imtina edə bilər.\n4.4. Administrasiya digər istifadəçilərin göndərdiyi mesajlara görə məsuliyyət daşımır."
         },
         {
           number: "5",
-          title: "Ödənişlər və komissiyalar",
-          content: "Bütün ödənişlər bizim ödəniş sistemimiz vasitəsilə təhlükəsiz şəkildə həyata keçirilir. Birklik.az platformadan istifadə üçün xidmət haqqı tələb edə bilər. Ev sahibləri kirayə gəlirinə aid hər hansı vergiləri ödəməkdə məsuldurlar. İstifadəçilər göstərilən qiymətlərin vergini və əlavə rüsumları ehtiva etməyə biləcəyini qəbul edirlər."
+          title: "Proqram təminatı və hüquqlar",
+          content: "5.1. Servisə aid bütün hüquqlar Administrasiyaya məxsusdur.\n5.2. İstifadəçiyə yalnız istifadə hüququ verilir.\n5.3. Qadağandır:\n• kopyalama\n• dəyişdirmə\n• satış\n• proqramın sındırılması"
         },
         {
           number: "6",
           title: "Məsuliyyətin məhdudlaşdırılması",
-          content: "Birklik.az 'olduğu kimi' təqdim edilir. Biz platformanın kəsintisiz və ya səhvsiz olacağına zəmanət vermirik. Qanunla icazə verilən hədd daxilində, Birklik.az platformanın istifadəsindən yaranan heç bir dolayısı, təsadüfi və ya nəticə etibarilə yaranan zərərə görə məsuliyyət daşımır."
+          content: "6.1. Servis yalnız platformadır və əməliyyatlara görə məsuliyyət daşımır.\n6.2. İstifadəçi bütün riskləri özü qəbul edir.\n6.3. Servis elanların düzgünlüyünə zəmanət vermir.\n6.4. Administrasiya aşağıdakılara görə məsuliyyət daşımır:\n• istifadəçi zərərləri\n• saxta elanlar\n• üçüncü şəxslərin hərəkətləri\n6.5. İstifadəçilər arasında mübahisələr müstəqil həll olunur."
         },
         {
           number: "7",
-          title: "Şərtlərin dəyişdirilməsi",
-          content: "Birklik.az bu şərtləri istənilən vaxt dəyişdirmək hüququnu özündə saxlayır. Dəyişikliklər veb-saytda dərc edildikdən dərhal sonra qüvvəyə minir. Şərtlər dəyişdirildikdən sonra platformadan istifadəni davam etdirməyiniz dəyişiklikləri qəbul etdiyinizi bildirir."
+          title: "Girişin məhdudlaşdırılması",
+          content: "7.1. Administrasiya istifadəçini bloklamaq hüququna malikdir:\n• qayda pozuntusu\n• saxta məlumat\n• təhlükəli fəaliyyət\n7.2. Bloklanmış istifadəçi yenidən qeydiyyatdan keçə bilməz."
+        },
+        {
+          number: "8",
+          title: "Razılaşmanın qüvvədə olması",
+          content: "8.1. Bu Razılaşma istifadə başladığı andan qüvvəyə minir.\n8.2. Müddətsiz qüvvədədir.\n8.3. İstifadəçi istənilən vaxt platformadan imtina edə bilər."
+        },
+        {
+          number: "9",
+          title: "Digər şərtlər",
+          content: "9.1. Mübahisələr danışıqlar yolu ilə həll olunur.\n9.2. Azərbaycan qanunvericiliyi tətbiq edilir.\n9.3. Razılaşma birtərəfli dəyişdirilə bilər.\n9.4. Ayrı maddələrin etibarsızlığı digər maddələrə təsir etmir."
         }
       ]
     },

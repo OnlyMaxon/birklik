@@ -614,43 +614,53 @@ export const en: Translations = {
       closing: "We aim to respond to your inquiries promptly and are always here to assist you."
     },
     terms: {
-      title: "Terms and Conditions",
-      lastUpdated: "Last Updated: 30.03.2026",
+      title: "BIRKLIK.AZ – USER AGREEMENT",
+      lastUpdated: "Last Updated: 07.05.2026",
       sections: [
         {
           number: "1",
-          title: "General Information",
-          content: "Birklik.az is a platform that allows users to list, search, and book short-term rental properties. These Terms and Conditions govern your use of our website and services. By accessing and using Birklik.az, you agree to be bound by these terms."
+          title: "General Terms",
+          content: "1.1. This User Agreement defines the terms of use of the Birklik.az platform (hereinafter \"Service\").\n1.2. Terms and Definitions:\n1.2.1. Service — the Birklik.az website located on the Internet, its mobile versions, software, design, database, and all information placed on the platform.\n1.2.2. Administration — a legal or natural person managing the Service and the party with all rights over the Service.\n1.2.3. User — any person who accepts this Agreement and uses the Service.\n1.2.4. Personal Account — the user's personal profile and listings section managed on the platform.\n1.2.5. Personal Account Balance — the balance used by the user for payment transactions on the Service.\n1.2.6. Personal Information — information provided by the user or automatically collected by the system.\n1.2.7. Information — any text, image, video, or other content placed on the Service.\n1.2.8. Spam — advertising or messages sent without the user's consent.\n1.2.9. Real Estate — movable or immovable objects offered for rent or use.\n1.2.10. Parties — the Administration and the User.\n1.3. Terms not specified in this Agreement are explained according to context, with final decision reserved to the Administration.\n1.4. Use of the Service is regulated by the laws of the Republic of Azerbaijan and this Agreement.\n1.5. This document is a public offer.\n1.6. Users of the Service are deemed to have fully accepted this Agreement.\n1.7. The Administration has the right to modify this Agreement at any time.\n1.8. If the user disagrees with changes, they must stop using the Service.\n1.9. The Service provides users with the ability to place and search listings.\n1.10. Materials placed on the Service may be promotional in nature, and the Administration is not responsible for this."
         },
         {
           number: "2",
-          title: "User Responsibilities",
-          content: "Users are responsible for maintaining the confidentiality of their account credentials and for all activities that occur under their account. You agree to provide accurate and complete information when creating listings or making bookings. Any misuse of the platform may result in suspension or termination of your account."
+          title: "Service Usage and Listing Placement",
+          content: "2.1. To place a listing on the Service, the user must fill in the provided forms.\n2.2. The user must not:\n• violate laws\n• infringe copyrights\n• interfere with platform operations\n2.3. The Service is not a party to contracts between users and bears no responsibility.\n2.4. The user must provide only accurate and current information.\n2.5. When placing a listing, the user confirms they have rights to the real estate.\n2.6. The user bears full responsibility for information placed on the Service.\n2.7. The user grants the Administration unlimited, royalty-free rights to use the content (broadcasting, editing, etc.).\n2.8. The Service has the right to request additional information and documents.\n2.9. Prohibited:\n• fake listings\n• illegal services\n• advertising of other platforms\n2.10. The Administration has the right to:\n• delete listings\n• edit listings\n• change categories\n• refuse publication\n2.11. Paid services are not refunded if rules are violated."
         },
         {
           number: "3",
-          title: "Property Listings",
-          content: "Property owners and managers must ensure that all information provided is accurate, current, and complies with local regulations. All listings must comply with applicable laws and regulations. Birklik.az reserves the right to remove any listing that violates these terms or local laws."
+          title: "Paid Services",
+          content: "3.1. Paid services may be offered on the Service (Premium, VIP, promotion, etc.).\n3.2. Service prices are shown on the website.\n3.3. The service is activated after payment.\n3.4. Money can be refunded in the following cases:\n• technical error\n• service not provided\n3.5. Refunds are not issued in the following cases:\n• rule violation\n• service was actively used"
         },
         {
           number: "4",
-          title: "Booking and Cancellation",
-          content: "Guests and hosts can modify or cancel bookings according to the cancellation policy specified in each listing. Cancellation policies vary by property. Users are responsible for understanding the cancellation terms before confirming a booking. Disputes regarding bookings will be handled according to Birklik.az policies."
+          title: "Communication",
+          content: "4.1. The Administration may send information to users via:\n• email\n• SMS\n4.2. These messages may be promotional in nature.\n4.3. Users can refuse these messages at any time.\n4.4. The Administration is not responsible for messages sent by other users."
         },
         {
           number: "5",
-          title: "Payment and Fees",
-          content: "All payments are processed securely through our payment system. Birklik.az may charge service fees for using the platform. Hosts are responsible for paying any applicable taxes on their rental income. Users acknowledge that prices displayed may not include taxes and additional fees."
+          title: "Software and Rights",
+          content: "5.1. All rights to the Service belong to the Administration.\n5.2. Users are granted only usage rights.\n5.3. Prohibited:\n• copying\n• modification\n• sale\n• reverse engineering"
         },
         {
           number: "6",
           title: "Limitation of Liability",
-          content: "Birklik.az is provided on an 'as-is' basis. We do not warrant that the platform will be uninterrupted or error-free. To the maximum extent permitted by law, Birklik.az is not liable for any indirect, incidental, or consequential damages arising from your use of the platform."
+          content: "6.1. The Service is merely a platform and bears no responsibility for transactions.\n6.2. Users assume all risks.\n6.3. The Service does not warrant the accuracy of listings.\n6.4. The Administration is not responsible for:\n• user damages\n• fake listings\n• actions of third parties\n6.5. Disputes between users are resolved independently."
         },
         {
           number: "7",
-          title: "Changes to Terms",
-          content: "Birklik.az reserves the right to modify these terms at any time. Changes will be effective immediately upon posting to the website. Your continued use of the platform following the posting of revised terms means that you accept and agree to the changes."
+          title: "Access Restrictions",
+          content: "7.1. The Administration has the right to block a user for:\n• rule violation\n• false information\n• dangerous activity\n7.2. A blocked user cannot register again."
+        },
+        {
+          number: "8",
+          title: "Agreement Duration",
+          content: "8.1. This Agreement comes into force from the moment use begins.\n8.2. It is effective indefinitely.\n8.3. Users can refuse the platform at any time."
+        },
+        {
+          number: "9",
+          title: "Other Terms",
+          content: "9.1. Disputes are resolved through negotiation.\n9.2. Laws of Azerbaijan are applied.\n9.3. The Agreement can be modified unilaterally.\n9.4. Invalidity of separate clauses does not affect other clauses."
         }
       ]
     },
