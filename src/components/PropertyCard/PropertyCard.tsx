@@ -44,7 +44,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
     e.preventDefault()
     
     if (!isAuthenticated || !user) {
-      alert(language === 'en' ? 'Please sign in to add favorites' : language === 'ru' ? 'Пожалуйста, войдите чтобы добавить в избранные' : 'Lütfen favorilere eklemek için giriş yapın')
+      alert(t.property.signInBookmark)
       return
     }
 
@@ -56,7 +56,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
       onFavoriteToggle?.(property.id, !isFavorited)
     } catch (error) {
       logger.error('Error toggling favorite:', error)
-      alert(language === 'en' ? 'Error updating favorites' : language === 'ru' ? 'Ошибка при обновлении избранных' : 'Favori güncellenirken hata oluştu')
+      alert(t.messages.errorUpdatingFavorites)
     } finally {
       setIsFavoriting(false)
     }
@@ -70,7 +70,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
   const isVIP = property.listingTier === 'vip'
 
   return (
-    <div className="property-card card">
+    <div className="property-card">
       <Link to={`/property/${property.id}`} className="property-image">
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className={`property-badges${isCompact ? ' compact' : ''}`}>

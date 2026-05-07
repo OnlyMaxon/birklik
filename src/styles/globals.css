@@ -453,7 +453,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .badge-accent {
-  background-color: var(--secondary-color);
+  background-color: var(--accent-color);
   color: var(--white);
 }
 
