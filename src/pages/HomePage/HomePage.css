@@ -57,7 +57,7 @@
   justify-content: space-between;
   gap: 0.8rem;
   align-items: stretch;
-  min-height: 700px;
+  min-height: 900px;
   width: 100%;
   flex-wrap: nowrap;
 }
@@ -82,7 +82,7 @@
   flex-shrink: 0;
   width: 160px;
   height: 100%;
-  min-height: 700px;
+  min-height: 900px;
 }
 
 @media (min-width: 1280px) {
@@ -99,7 +99,7 @@
 
 .premium-results-shell {
   display: block;
-  min-height: 700px;
+  min-height: 900px;
 }
 
 .premium-results-shell.with-map {
