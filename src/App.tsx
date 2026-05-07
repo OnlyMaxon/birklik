@@ -15,6 +15,7 @@ const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
 const ModerationReviewPage = React.lazy(() => import('./pages/ModerationReviewPage').then((mod) => ({ default: mod.ModerationReviewPage })))
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then((mod) => ({ default: mod.TermsPage })))
+const UserAgreementPage = React.lazy(() => import('./pages/UserAgreementPage').then((mod) => ({ default: mod.UserAgreementPage })))
 const AboutPage = React.lazy(() => import('./pages/AboutPage').then((mod) => ({ default: mod.AboutPage })))
 const ContactPage = React.lazy(() => import('./pages/ContactPage').then((mod) => ({ default: mod.ContactPage })))
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage').then((mod) => ({ default: mod.PrivacyPage })))
@@ -169,6 +170,7 @@ function App() {
             </ModeratorRoute>
           } />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/user-agreement" element={<UserAgreementPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

@@ -27,6 +27,7 @@ export const Footer: React.FC = () => {
                 <Link to="/contact" className="footer-link">{t.footer.contact}</Link>
                 <Link to="/terms" className="footer-link">{t.footer.terms}</Link>
                 <Link to="/privacy" className="footer-link">{t.footer.privacy}</Link>
+                <Link to="/user-agreement" className="footer-link">{t.footer.userAgreement}</Link>
               </nav>
 
               <div className="footer-social">

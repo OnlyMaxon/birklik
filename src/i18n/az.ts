@@ -284,6 +284,7 @@ export const az: Translations = {
     contact: "Əlaqə",
     terms: "Qaydalar",
     privacy: "Məxfilik",
+    userAgreement: "İstifadəçi Razılaşması",
     copyright: "© 2026 Birklik.az. Bütün hüquqlar qorunur.",
     whatWeDo: "Biz nə edirik",
     ourApps: "Bizim tətbiqlərimiz",
@@ -611,43 +612,43 @@ export const az: Translations = {
       closing: "Biz sizin suallarınıza tez bir zamanda cavab verməyə çalışırıq və hər zaman xidmətinizdəyik."
     },
     terms: {
-      title: "BIRKLIK.AZ – İSTİFADƏÇİ RAZILAŞMASI",
+      title: "BIRKLIK.AZ – İSTİFADƏ QAYDALARI",
       lastUpdated: "Son yenilənmə tarixi: 07.05.2026",
       sections: [
         {
           number: "1",
           title: "Ümumi müddəalar",
-          content: "1.1. Bu sənəd Birklik.az platformasından istifadə edən bütün istifadəçilər üçün hüquqi qüvvəyə malik qaydaları müəyyən edir.\n1.2. Platformada elan yerləşdirən və ya platformadan istifadə edən hər bir şəxs bu qaydalarla tanış olduğunu və onları qəbul etdiyini təsdiq edir.\n1.3. Bu qaydaların əsas məqsədi:\n• İstifadəçilər arasında şəffaf və etibarlı əlaqə yaratmaq\n• Platformada təhlükəsiz və ədalətli mühit təmin etmək\n• Kirayə prosesini sadə və effektiv etmək\n1.4. Qaydalar həm pulsuz elanlara, həm də ödənişli xidmətlər tətbiq olunan elanlara şamil edilir.\n1.5. Qaydaların pozulması nəticələrə səbəb ola bilər: elanın dərc edilməməsi, elanın redaktə olunması, elanın silinməsi, hesabın bloklanması.\n1.6. Qayda pozuntusu aşkar edildikdə: ödənişli elanlar geri qaytarılmadan silinə bilər, təkrar pozuntular məhdudiyyətlə nəticələnə bilər.\n1.7. Bütün qaydalar platformada təhlükəsiz istifadə yaratmağa yönəlib.\n1.8. Hər bir qayda pozuntusu fərdi qaydada qiymətləndirilir.\n1.9. Administrasiya bu qaydaları dəyişdirmək hüququna malikdir."
+          content: "1.1. Bu sənəd Birklik.az platformasından istifadə edən bütün istifadəçilər üçün hüquqi qüvvəyə malik qaydaları müəyyən edir.\n1.2. Platformada elan yerləşdirən və ya platformadan istifadə edən hər bir şəxs bu qaydalarla tanış olduğunu və onları qəbul etdiyini təsdiq edir.\n1.3. Bu qaydaların əsas məqsədi: istifadəçilər arasında şəffaf və etibarlı əlaqə yaratmaq, platformada təhlükəsiz və ədalətli mühit təmin etmək, kirayə prosesini sadə və effektiv etmək.\n1.4. Qaydalar həm pulsuz elanlara, həm də ödənişli xidmətlər tətbiq olunan elanlara şamil edilir.\n1.5. Qaydaların pozulması aşağıdakı nəticələrə səbəb ola bilər: elanın dərc edilməməsi, elanın redaktə olunması, elanın silinməsi, hesabın müvəqqəti və ya daimi bloklanması.\n1.6. Qayda pozuntusu aşkar edildikdə: ödənişli elanlar və xidmətlər geri qaytarılmadan silinə bilər, təkrar pozuntular istifadəçinin platformadan istifadəsinin məhdudlaşdırılması ilə nəticələnə bilər.\n1.7. Bütün qaydalar platformada təhlükəsiz və effektiv istifadə təcrübəsinin yaradılmasına yönəlib.\n1.8. Hər bir qayda pozuntusu fərdi qaydada qiymətləndirilir və yekun qərar Birklik.az administrasiyası tərəfindən verilir.\n1.9. Administrasiya bu qaydaları əvvəlcədən xəbərdarlıq etmədən dəyişdirmək və ya yeniləmək hüququnu özündə saxlayır."
         },
         {
           number: "2",
           title: "Elan yerləşdirmə qaydaları",
-          content: "2.1. Bir telefon nömrəsi ilə 30 gün ərzində yalnız 1 pulsuz elan yerləşdirmək mümkündür. Eyni əmlakın təkrar yerləşdirilməsi yalnız ödənişli əsaslarla mümkündür.\n2.2. Elanın standart aktivlik müddəti 30 gündür. Müddət bitdikdən sonra elan gizlədilir. Yenidən aktivləşdirmə yalnız ödənişli əsaslarla mümkündür. Bərpa edilən elan yenidən dərc olunur və axtarış nəticələrində yuxarı çıxarılır.\n2.3. Eyni əmlakın bir neçə istifadəçi tərəfindən yerləşdirilməsi: ilk elan pulsuz ola bilər, digər istifadəçilər üçün yalnız ödənişli əsaslarla yerləşdirilə bilər.\n2.4. Elan mütləq doğru kateqoriyada yerləşdirilməlidir.\n2.5. Elanda xəritə üzərində dəqiq ünvan (lokasiya) göstərilməsi məcburidir.\n2.6. İstənilən ödənişli xidmət elanın müddətini uzadır və onu axtarış nəticələrində irəli çəkir.\n2.7. Aşağıdakı elanlar qeyri-aktual hesab olunur: icarəyə verilmiş əmlak, mövcud olmayan əmlak, yanıltıcı məlumat. Belə hallar aşkar edildikdə elan silinə bilər.\n2.8. Elan deaktiv olduqdan sonra 180 gün ərzində bərpa edilə bilər. Bu müddət keçdikdən sonra elan qəti olaraq arxivləşdirilir.\n2.9. İstifadəçi üçüncü aktiv elanı yerləşdirdikdə onun bütün elanlarında status dəyişdirilir."
+          content: "2.1. Bir telefon nömrəsi ilə 30 təqvim günü ərzində yalnız 1 pulsuz elan yerləşdirmək mümkündür. Eyni əmlaka aid elanın təkrar yerləşdirilməsi yalnız ödənişli əsaslarla mümkündür. İstifadəçi mövcud elanı yenidən yerləşdirməyə cəhd edərsə, ikinci elan (ödənişli olsa belə) qəbul edilməyəcək.\n2.2. Elanın standart aktivlik müddəti 30 gündür. Bu müddət istifadə olunan ödənişli xidmətlərdən asılı olaraq dəyişə bilər. Müddət bitdikdən sonra: elan saytda gizlədilir, yenidən aktivləşdirmə yalnız ödənişli əsaslarla mümkündür. Bərpa edilən elan: yenidən dərc olunur, axtarış nəticələrində yuxarı mövqeyə çıxarılır.\n2.3. İstifadəçi mövcud elanın müddəti bitdikdən sonra eyni əmlakı yeni elan kimi yerləşdirərsə, daha sonra köhnə elanı ödənişlə bərpa edərsə: elanlardan biri administrasiya tərəfindən silinir və ödənilmiş vəsait geri qaytarılmır.\n2.4. Eyni əmlakın bir neçə istifadəçi tərəfindən yerləşdirilməsi: ilk elan pulsuz ola bilər, digər istifadəçilər üçün həmin əmlak yalnız ödənişli əsaslarla yerləşdirilə bilər.\n2.5. Elan mütləq: doğru kateqoriyada, əmlakın növünə uyğun bölmədə yerləşdirilməlidir.\n2.6. Elanda xəritə üzərində dəqiq ünvanın (lokasiyanın) göstərilməsi məcburidir.\n2.7. İstənilən ödənişli xidmət: elanın müddətini uzadır, onu axtarış nəticələrində irəli çəkir.\n2.8. Aşağıdakı elanlar qeyri-aktual hesab olunur: artıq icarəyə verilmiş əmlak, mövcud olmayan əmlak, yanıltıcı məlumat olan elanlar. Belə hallar aşkar edildikdə: elan gizlədilə və ya silinə bilər, ödənişli xidmətlər üzrə vəsait geri qaytarılmır.\n2.9. Elan aşağıdakı hallarda qeyri-aktiv olur: müddəti bitdikdə, istifadəçi tərəfindən silindikdə, moderasiya tərəfindən rədd edildikdə. Elan deaktiv olduqdan sonra: 180 gün ərzində bərpa edilə bilər, bu müddət keçdikdən sonra elan qəti olaraq arxivləşdirilir.\n2.10. İstifadəçi üçüncü aktiv elanı yerləşdirdikdə: onun bütün elanlarında status \"Mülkiyyətçi\"dən \"Vasitəçi (Agent)\"ə dəyişdirilir."
         },
         {
           number: "3",
           title: "İstifadəçi məlumatları",
-          content: "3.1. İstifadəçi qeydiyyat zamanı düzgün və aktiv məlumat təqdim etməlidir: ad, telefon nömrəsi, email ünvanı.\n3.2. Saxta və ya üçüncü şəxslərə aid məlumatlardan istifadə qadağandır.\n3.3. Bir istifadəçi yalnız bir hesab yarada bilər.\n3.4. \"Ad\" bölməsində kommersiya adları, şirkət adları göstərmək qadağandır (fiziki şəxslər üçün)."
+          content: "3.1. İstifadəçi qeydiyyat zamanı düzgün və aktiv məlumat təqdim etməlidir: ad, telefon nömrəsi, email ünvanı.\n3.2. Saxta və ya üçüncü şəxslərə aid məlumatlardan istifadə qadağandır.\n3.3. Bir istifadəçi yalnız bir hesab yarada bilər.\n3.4. \"Ad\" bölməsində: kommersiya adları, şirkət və ya brend adları göstərmək qadağandır (fiziki şəxslər üçün)."
         },
         {
           number: "4",
           title: "Elanların redaktə edilməsi",
-          content: "4.1. Elanların redaktəsi zamanı bütün yerləşdirmə qaydaları qüvvədə qalır.\n4.2. Elan yalnız şəxsi kabinet vasitəsilə redaktə edilə bilər.\n4.3. Aşağıdakı məlumatların dəyişdirilməsi məhdudlaşdırıla bilər: ünvan, əmlak növü, əlaqə məlumatları.\n4.4. Elanın tam fərqli obyektə çevrilməsi qadağandır.\n4.5. İstifadəçi bir elanı 24 saat ərzində maksimum 2 dəfə redaktə edə bilər."
+          content: "4.1. Elanların redaktəsi zamanı bütün yerləşdirmə qaydaları qüvvədə qalır.\n4.2. Elan yalnız istifadəçinin şəxsi kabineti vasitəsilə redaktə edilə bilər.\n4.3. Elanın aşağıdakı məlumatlarının dəyişdirilməsi məhdudlaşdırıla bilər: ünvan, əmlak növü, əlaqə məlumatları.\n4.4. Elanın tam fərqli obyektə çevrilməsi qadağandır.\n4.5. İstifadəçi bir elanı 24 saat ərzində maksimum 2 dəfə redaktə edə bilər."
         },
         {
           number: "5",
           title: "Mətn təsviri qaydaları",
-          content: "5.1. Təsvir yalnız əmlak haqqında məlumatlardan ibarət olmalıdır.\n5.2. Qadağandır:\n• Əlaqə məlumatlarının əlavə yazılması\n• Digər elanların reklamı\n• Link paylaşımı\n• Əmlaka aid olmayan məlumatlar\n5.3. Transliterasiya və anlaşılmaz mətnlər qəbul edilmir.\n5.4. Administrasiya məzmunu dəyişmədən orfoqrafik düzəlişlər edə bilər."
+          content: "5.1. Təsvir yalnız əmlak haqqında məlumatlardan ibarət olmalıdır.\n5.2. Qadağandır: əlaqə məlumatlarının əlavə yazılması, digər elanların reklamı, link paylaşımı, əmlaka aid olmayan məlumatlar.\n5.3. Transliterasiya və ya anlaşılmaz mətnlər qəbul edilmir.\n5.4. Administrasiya məzmunu dəyişmədən orfoqrafik düzəlişlər edə bilər."
         },
         {
           number: "6",
           title: "Şəkillərin yerləşdirilməsi qaydaları",
-          content: "6.1. Yalnız real və həmin əmlaka aid şəkillər istifadə olunmalıdır.\n6.2. Qadağandır:\n• Başqa mənbələrdən götürülmüş şəkillər\n• Watermark və loqo olan şəkillər\n• Screenshot və kollajlar\n6.3. Şəkillər keyfiyyətli və aydın olmalıdır.\n6.4. Yanıltıcı şəkillər aşkar edilərsə elan silinə bilər."
+          content: "6.1. Yalnız real və həmin əmlaka aid şəkillər istifadə olunmalıdır.\n6.2. Qadağandır: başqa mənbələrdən götürülmüş şəkillər, watermark və loqo olan şəkillər, screenshot və kollajlar.\n6.3. Şəkillər keyfiyyətli və aydın olmalıdır.\n6.4. Yanıltıcı şəkillər aşkar edilərsə elan silinə bilər."
         },
         {
           number: "7",
           title: "İstifadəçi davranışı",
-          content: "7.1. İstifadəçilər platformada etik davranmalıdır.\n7.2. Qadağandır:\n• Təhqir\n• Aldadıcı məlumat\n• Saxta qiymət göstərilməsi\n7.3. Təkrar pozuntular hesabın bloklanmasına səbəb olur."
+          content: "7.1. İstifadəçilər platformada etik davranmalıdır.\n7.2. Qadağandır: təhqir, aldadıcı məlumat, saxta qiymət göstərilməsi.\n7.3. Təkrar pozuntular hesabın bloklanmasına səbəb olur."
         },
         {
           number: "8",
@@ -723,6 +724,56 @@ export const az: Translations = {
           number: "11",
           title: "Siyasətdə dəyişikliklər",
           content: "11.1. Administrasiya bu siyasəti istənilən vaxt dəyişdirmək hüququna malikdir.\n11.2. Dəyişikliklər Servisdə dərc edildiyi andan qüvvəyə minir.\n11.3. İstifadəçi dəyişikliklərlə razı deyilsə, Servisdən istifadəni dayandırmalıdır.\n11.4. Servisdən istifadəni davam etdirmək yeni qaydaların qəbul edilməsi deməkdir."
+        }
+      ]
+    },
+    userAgreement: {
+      title: "BIRKLIK.AZ – İSTİFADƏÇİ RAZILAŞMASI",
+      sections: [
+        {
+          number: "1",
+          title: "Ümumi şərtlər",
+          content: "1.1. Bu İstifadəçi Razılaşması Birklik.az platformasının (bundan sonra \"Servis\") istifadə şərtlərini müəyyən edir.\n1.2. Terminlər və anlayışlar: Servis — internet şəbəkəsində yerləşən Birklik.az veb-saytı, onun mobil versiyaları, proqram təminatı, dizaynı, məlumat bazası və platformada yerləşdirilmiş bütün informasiyadır. Administrasiya — Servisin idarə edilməsini həyata keçirən hüquqi və ya fiziki şəxs və Servis üzərində bütün hüquqlara malik tərəfdir. İstifadəçi — bu Razılaşmanı qəbul edən və Servisdən istifadə edən istənilən şəxsdir. Şəxsi kabinet — istifadəçinin platformada idarə etdiyi şəxsi profil və elanlar bölməsidir. Şəxsi hesab — istifadəçinin Servisdə ödəniş əməliyyatları üçün istifadə etdiyi balansdır. Şəxsi məlumatlar — istifadəçi tərəfindən təqdim edilən və ya sistem tərəfindən avtomatik toplanan məlumatlardır. İnformasiya — Servisdə yerləşdirilmiş istənilən mətn, şəkil, video və digər məlumatlardır. Spam — istifadəçinin razılığı olmadan göndərilən reklam və ya mesajlardır. Əmlak — kirayə və ya istifadə üçün təqdim edilən daşınmaz və ya digər obyektlərdir. Tərəflər — Administrasiya və İstifadəçi.\n1.3. Bu Razılaşmada göstərilməyən terminlər kontekstə uyğun izah edilir və son qərar Administrasiyaya məxsusdur.\n1.4. Servisdən istifadə Azərbaycan Respublikasının qanunvericiliyi və bu Razılaşma ilə tənzimlənir.\n1.5. Bu sənəd ictimai ofertadır.\n1.6. Servisdən istifadə edən İstifadəçi bu Razılaşmanı tam qəbul etmiş sayılır.\n1.7. Administrasiya bu Razılaşmanı istənilən vaxt dəyişdirmək hüququna malikdir.\n1.8. İstifadəçi dəyişikliklərlə razı deyilsə, Servisdən istifadəni dayandırmalıdır.\n1.9. Servis istifadəçilərə elan yerləşdirmək və axtarış etmək imkanı təqdim edir.\n1.10. Servisdə yerləşdirilən materiallar reklam xarakterli ola bilər və Administrasiya buna görə məsuliyyət daşımır."
+        },
+        {
+          number: "2",
+          title: "Servisdən istifadə və elan yerləşdirilməsi",
+          content: "2.1. Servisdə elan yerləşdirmək üçün istifadəçi təqdim olunan formaları doldurmalıdır.\n2.2. İstifadəçi aşağıdakıları etməməlidir: qanun pozuntusu, müəllif hüquqlarının pozulması, platformanın işinə müdaxilə.\n2.3. Servis istifadəçilər arasında bağlanan müqavilələrin tərəfi deyil və məsuliyyət daşımır.\n2.4. İstifadəçi yalnız doğru və aktual məlumat təqdim etməlidir.\n2.5. İstifadəçi elan yerləşdirərkən həmin əmlak üzərində hüququ olduğunu təsdiqləyir.\n2.6. İstifadəçi Servisdə yerləşdirdiyi məlumatlara görə tam məsuliyyət daşıyır.\n2.7. İstifadəçi Administrasiyaya yerləşdirdiyi məzmunun istifadəsi üçün müddətsiz və pulsuz hüquq verir (yayım, redaktə və s.).\n2.8. Servis əlavə məlumat və sənədlər tələb etmək hüququna malikdir.\n2.9. Qadağandır: saxta elanlar, qeyri-qanuni xidmətlər, başqa platformaların reklamı.\n2.10. Administrasiya aşağıdakı hüquqlara malikdir: elanları silmək, redaktə etmək, kateqoriyanı dəyişmək, dərcdən imtina etmək.\n2.11. Qaydaların pozulması halında ödənişli xidmətlər geri qaytarılmır."
+        },
+        {
+          number: "3",
+          title: "Pullu xidmətlər",
+          content: "3.1. Servisdə ödənişli xidmətlər təqdim edilə bilər (Premium, VIP, irəli çəkilmə və s.).\n3.2. Xidmətlərin qiymətləri saytda göstərilir.\n3.3. Ödəniş edildikdən sonra xidmət aktivləşdirilir.\n3.4. Pulun geri qaytarılması aşağıdakı hallarda mümkündür: texniki səhv, xidmət göstərilmədikdə.\n3.5. Geri qaytarılma aşağıdakı hallarda edilmir: qayda pozuntusu, xidmət aktiv istifadə olunubsa."
+        },
+        {
+          number: "4",
+          title: "Kommunikasiya",
+          content: "4.1. Administrasiya istifadəçilərə email və SMS vasitəsilə məlumat göndərə bilər.\n4.2. Bu mesajlar reklam xarakterli ola bilər.\n4.3. İstifadəçi istənilən vaxt bu mesajlardan imtina edə bilər.\n4.4. Administrasiya digər istifadəçilərin göndərdiyi mesajlara görə məsuliyyət daşımır."
+        },
+        {
+          number: "5",
+          title: "Proqram təminatı və hüquqlar",
+          content: "5.1. Servisə aid bütün hüquqlar Administrasiyaya məxsusdur.\n5.2. İstifadəçiyə yalnız istifadə hüququ verilir.\n5.3. Qadağandır: kopyalama, dəyişdirmə, satış, proqramın sındırılması."
+        },
+        {
+          number: "6",
+          title: "Məsuliyyətin məhdudlaşdırılması",
+          content: "6.1. Servis yalnız platformadır və əməliyyatlara görə məsuliyyət daşımır.\n6.2. İstifadəçi bütün riskləri özü qəbul edir.\n6.3. Servis elanların düzgünlüyünə zəmanət vermir.\n6.4. Administrasiya aşağıdakılara görə məsuliyyət daşımır: istifadəçi zərərləri, saxta elanlar, üçüncü şəxslərin hərəkətləri.\n6.5. İstifadəçilər arasında mübahisələr müstəqil həll olunur."
+        },
+        {
+          number: "7",
+          title: "Girişin məhdudlaşdırılması",
+          content: "7.1. Administrasiya istifadəçini bloklamaq hüququna malikdir: qayda pozuntusu, saxta məlumat, təhlükəli fəaliyyət.\n7.2. Bloklanmış istifadəçi yenidən qeydiyyatdan keçə bilməz."
+        },
+        {
+          number: "8",
+          title: "Razılaşmanın qüvvədə olması",
+          content: "8.1. Bu Razılaşma istifadə başladığı andan qüvvəyə minir.\n8.2. Müddətsiz qüvvədədir.\n8.3. İstifadəçi istənilən vaxt platformadan imtina edə bilər."
+        },
+        {
+          number: "9",
+          title: "Digər şərtlər",
+          content: "9.1. Mübahisələr danışıqlar yolu ilə həll olunur.\n9.2. Azərbaycan qanunvericiliyi tətbiq edilir.\n9.3. Razılaşma birtərəfli dəyişdirilə bilər.\n9.4. Ayrı maddələrin etibarsızlığı digər maddələrə təsir etmir.\n\nYekun\nİstifadəçi təsdiq edir ki: bu Razılaşmanı oxuyub, bütün şərtlərlə razıdır və onları tam qəbul edir."
         }
       ]
     }

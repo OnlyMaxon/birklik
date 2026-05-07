@@ -220,7 +220,7 @@ export const RegisterPage: React.FC = () => {
                       : language === 'ru'
                         ? 'Я согласен с '
                         : 'Mən '}
-                    <Link to="/terms">
+                    <Link to="/user-agreement">
                       {language === 'en'
                         ? 'Terms and Conditions'
                         : language === 'ru'

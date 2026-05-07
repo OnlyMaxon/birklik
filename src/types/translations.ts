@@ -287,6 +287,7 @@ export interface Translations {
     contact: string
     terms: string
     privacy: string
+    userAgreement: string
     copyright: string
     whatWeDo: string
     ourApps: string
@@ -607,6 +608,15 @@ export interface Translations {
         title: string
         content: string
         isList?: boolean
+      }>
+    }
+    userAgreement: {
+      title: string
+      lastUpdated?: string
+      sections: Array<{
+        number: string
+        title: string
+        content: string
       }>
     }
   }
