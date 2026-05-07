@@ -55,8 +55,8 @@
 .properties-content {
   display: flex;
   justify-content: center;
-  gap: 1.2rem;
-  align-items: flex-start;
+  gap: 0.8rem;
+  align-items: stretch;
 }
 
 .section-header {
@@ -77,6 +77,8 @@
 .ad-slot--right {
   display: none;
   flex-shrink: 0;
+  width: 160px;
+  min-height: 600px;
 }
 
 @media (min-width: 1620px) {
