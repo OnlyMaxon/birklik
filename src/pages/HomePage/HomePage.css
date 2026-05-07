@@ -54,7 +54,7 @@
 
 .properties-content {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   gap: 0.8rem;
   align-items: stretch;
   min-height: 600px;
