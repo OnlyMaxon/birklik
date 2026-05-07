@@ -119,22 +119,57 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     : 'Elan uğurla yadda saxlanıldı'
 
   const planFeatures = {
-    standard: isEnglish
-      ? ['20 photos', 'Full description', 'Open location', 'Free']
-      : isRussian
-      ? ['20 фото', 'Полное описание', 'Открытая локация', 'Бесплатно']
-      : ['20 foto', 'Tam təsvir', 'Açıq lokasiya', 'Pulsuz'],
-    vip: isEnglish
-      ? ['VIP badge on listing', 'Up to 20 photos', 'Priority moderation', '3 weeks top visibility']
-      : isRussian
-      ? ['VIP значок на объявлении', 'До 20 фото', 'Приоритетная модерация', 'Топ видимость 3 недели']
-      : ['Elana VIP nişanı', '20 fotoya qədər', 'Prioritetli moderasiya', '3 həftə üst görünürlük'],
-    premium: isEnglish
-      ? ['Premium badge + top placement', 'Up to 30 photos', 'Featured on homepage 3 weeks', 'Priority moderation']
-      : isRussian
-      ? ['Премиум значок + топ позиция', 'До 30 фото', 'На главной 3 недели', 'Приоритетная модерация']
-      : ['Premium nişanı + üst mövqe', '30 fotoya qədər', 'Əsas səhifədə 3 həftə', 'Prioritetli moderasiya']
-  }
+  standard: isEnglish
+    ? ['20 photos', 'Full description', 'Open location']
+    : isRussian
+    ? ['20 фото', 'Полное описание', 'Открытая локация']
+    : ['20 foto', 'Tam təsvir', 'Açıq lokasiya'],
+    
+  vip: isEnglish
+    ? [
+        'VIP badge on listing', 
+        'Up to 20 photos', 
+        'Open location', // Добавлено
+        'The ad will be randomly displayed at the top of the VIP section and search results in your area' // Добавлено
+      ]
+    : isRussian
+    ? [
+        'VIP значок на объявлении', 
+        'До 20 фото', 
+        'Открытая локация', // Добавлено
+        'Объявление будет отображаться в случайном порядке в топ-позициях в разделе VIP и результатах поиска по вашему региону' // Добавлено
+      ]
+    : [
+        'Elana VIP nişanı', 
+        '20 fotoya qədər', 
+        'Açıq lokasiya', 
+        'Elan VIP bölməsində və sizin ərazi üzrə axtarış nəticələrində təsadüfi qaydada ön sıralarda göstəriləcək'
+      ],
+
+  premium: isEnglish
+    ? [
+        'Full description', // Добавлено
+        'Up to 30 photos', 
+        'Open location', // Добавлено
+        'Priority Ad will be shown on the home page (recommendations)', // Добавлено
+        'The ad will be randomly displayed at the top of the search results in your area' // Добавлено
+      ]
+    : isRussian
+    ? [
+        'Полное описание', // Добавлено
+        'До 30 фото', 
+        'Открытая локация', // Добавлено
+        'Приоритетное объявление будет отображаться на главной странице (в рекомендациях)', // Добавлено
+        'Объявление будет отображаться в случайном порядке в топ-позициях результатов поиска по вашему региону' // Добавлено
+      ]
+    : [
+        'Tam təsvir', 
+        '30 fotoya qədər', 
+        'Açıq lokasiya', 
+        'Prioritetli Elan əsas səhifədə (rekomendasiyalarda) göstəriləcək', 
+        'Sizin ərazi üzrə axtarış nəticələrində təsadüfi qaydada ön sıralarda göstəriləcək'
+      ]
+};
 
   const listingPlans = [
     {
