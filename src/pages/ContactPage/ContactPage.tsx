@@ -39,14 +39,6 @@ export const ContactPage: React.FC = () => {
           </div>
 
           <div className="contact-section">
-            <h2>{content.workingHours}</h2>
-            <div className="working-hours">
-              <p>{content.mondayFriday}</p>
-              <p>{content.weekendClosed}</p>
-            </div>
-          </div>
-
-          <div className="contact-section">
             <h2>{content.socialNetworks}</h2>
             <div className="social-links">
               <a href="https://facebook.com/birklikaz" target="_blank" rel="noopener noreferrer" className="social-item">

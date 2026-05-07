@@ -586,9 +586,6 @@ export interface Translations {
       phoneNumber: string
       emailAddress: string
       addressValue: string
-      workingHours: string
-      mondayFriday: string
-      weekendClosed: string
       socialNetworks: string
       facebook: string
       instagram: string
