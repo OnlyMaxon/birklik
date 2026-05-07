@@ -52,6 +52,13 @@
   padding-top: 2.6rem;
 }
 
+.properties-content {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  align-items: flex-start;
+}
+
 .section-header {
   display: flex;
   align-items: center;
@@ -63,6 +70,20 @@
 .section-header .section-title {
   margin-bottom: 0;
   text-align: left;
+}
+
+/* ===== AD SLOTS (Results page) ===== */
+.ad-slot--left,
+.ad-slot--right {
+  display: none;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1620px) {
+  .ad-slot--left,
+  .ad-slot--right {
+    display: block;
+  }
 }
 
 .premium-results-shell {

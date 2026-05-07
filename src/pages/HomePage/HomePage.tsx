@@ -171,75 +171,91 @@ export const HomePage: React.FC = () => {
       </section>
 
       <section id="premium-results" className="section properties-section" ref={resultsRef}>
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">{t.home.topListingsTitle}</h2>
+        <div className="properties-content">
+          <aside className="ad-slot ad-slot--left" aria-hidden="true">
+            <div className="ad-placeholder">
+              <span className="ad-placeholder-label">Reklam</span>
+              <span className="ad-placeholder-size">160 × 600</span>
+            </div>
+          </aside>
+
+          <div className="container">
+            <div className="section-header">
+              <h2 className="section-title">{t.home.topListingsTitle}</h2>
+            </div>
+
+            <Filters
+              filters={filters}
+              onFilterChange={setFilters}
+              onClear={handleClearFilters}
+              hideTypeFilter={true}
+              hideFilterToggle={true}
+              isOpen={showFilters}
+              onOpenChange={setShowFilters}
+              mapToggle={!isDesktop ? {
+                active: showMap,
+                label: mapLabel,
+                onClick: () => setShowMap(!showMap)
+              } : undefined}
+              viewToggle={{
+                mode: viewMode,
+                onToggle: setViewMode
+              }}
+            />
+
+            {isLoading && <Loading message={t.messages.loading} />}
+
+            {!isLoading && error && (
+              <div className="no-results">
+                <p>{error}</p>
+              </div>
+            )}
+
+            {!isLoading && filteredProperties.length > 0 ? (
+              <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
+                <div className="premium-results-list">
+                  <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
+                    {filteredProperties.map((property) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        checkIn={filters.checkIn}
+                        checkOut={filters.checkOut}
+                        isCompact={viewMode === 'compact'}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {showMap && (
+                  <aside className="premium-results-map">
+                    <React.Suspense fallback={<div className="pp-map-loading" />}>
+                      <PropertyMap properties={filteredProperties} />
+                    </React.Suspense>
+                  </aside>
+                )}
+              </div>
+            ) : !isLoading && !error ? (
+              <div className="no-results">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.3-4.3"/>
+                  <path d="M8 11h6"/>
+                </svg>
+                <p>{t.messages.noResults}</p>
+                <button className="btn btn-outline" onClick={handleClearFilters}>
+                  {t.search.clearFilters}
+                </button>
+              </div>
+            ) : null}
           </div>
 
-          <Filters
-            filters={filters}
-            onFilterChange={setFilters}
-            onClear={handleClearFilters}
-            hideTypeFilter={true}
-            hideFilterToggle={true}
-            isOpen={showFilters}
-            onOpenChange={setShowFilters}
-            mapToggle={!isDesktop ? {
-              active: showMap,
-              label: mapLabel,
-              onClick: () => setShowMap(!showMap)
-            } : undefined}
-            viewToggle={{
-              mode: viewMode,
-              onToggle: setViewMode
-            }}
-          />
-
-          {isLoading && <Loading message={t.messages.loading} />}
-
-          {!isLoading && error && (
-            <div className="no-results">
-              <p>{error}</p>
+          <aside className="ad-slot ad-slot--right" aria-hidden="true">
+            <div className="ad-placeholder">
+              <span className="ad-placeholder-label">Reklam</span>
+              <span className="ad-placeholder-size">160 × 600</span>
             </div>
-          )}
-
-          {!isLoading && filteredProperties.length > 0 ? (
-            <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
-              <div className="premium-results-list">
-                <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
-                  {filteredProperties.map((property) => (
-                    <PropertyCard
-                      key={property.id}
-                      property={property}
-                      checkIn={filters.checkIn}
-                      checkOut={filters.checkOut}
-                      isCompact={viewMode === 'compact'}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {showMap && (
-                <aside className="premium-results-map">
-                  <React.Suspense fallback={<div className="pp-map-loading" />}>
-                    <PropertyMap properties={filteredProperties} />
-                  </React.Suspense>
-                </aside>
-              )}
-            </div>
-          ) : !isLoading && !error ? (
-            <div className="no-results">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.3-4.3"/>
-                <path d="M8 11h6"/>
-              </svg>
-              <p>{t.messages.noResults}</p>
-              <button className="btn btn-outline" onClick={handleClearFilters}>
-                {t.search.clearFilters}
-              </button>
-            </div>
-          ) : null}
+          </aside>
         </div>
       </section>
     </Layout>
