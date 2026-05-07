@@ -67,10 +67,10 @@ export const VerifyEmailPage: React.FC = () => {
       
       setMessage(
         language === 'en'
-          ? 'Verification email sent! Check your inbox.'
+          ? 'Verification email sent! Check your inbox or Spam folder.'
           : language === 'ru'
             ? 'Письмо подтверждения отправлено! Проверьте папку "Входящие" или папку "Спам".'
-            : 'Doğrulama e-poçtu göndərildi! Gələn xanənizi yoxlayın.'
+            : 'Təsdiq e-poçtu göndərildi! Gələn qutusunu və ya Spam qovluğunu yoxlayın.'
       )
 
       // Cooldown 60 seconds before next resend
