@@ -30,15 +30,20 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
     isPropertyFavorited(property.favorites, user?.id ?? '')
   )
 
+  // Sync isFavorited state when user changes
+  React.useEffect(() => {
+    setIsFavorited(isPropertyFavorited(property.favorites, user?.id ?? ''))
+  }, [user?.id, property.favorites])
+
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
-  const calculateNights = () => {
+  const nights = React.useMemo(() => {
     if (!checkIn || !checkOut) return 0
     const checkInDate = new Date(checkIn)
     const checkOutDate = new Date(checkOut)
     const diff = checkOutDate.getTime() - checkInDate.getTime()
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
-  }
+  }, [checkIn, checkOut])
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -62,11 +67,13 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
     }
   }
 
-  const nights = calculateNights()
   const totalPrice = nights > 0 ? property.price.daily * nights : property.price.daily
 
   // Check if premium is still active
-  const isPremium = property.premiumExpiresAt ? new Date(property.premiumExpiresAt).getTime() > Date.now() : false
+  const isPremium = React.useMemo(() =>
+    property.premiumExpiresAt ? new Date(property.premiumExpiresAt).getTime() > Date.now() : false,
+    [property.premiumExpiresAt]
+  )
   const isVIP = property.listingTier === 'vip'
 
   return (
@@ -75,7 +82,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
         <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
         <div className={`property-badges${isCompact ? ' compact' : ''}`}>
           {isVIP && (
-            <div className="badge badge-vip" title={language === 'en' ? 'VIP listing' : language === 'ru' ? 'VIP объявление' : 'VIP elan'}>
+            <div className="badge badge-vip" title={t.dashboard.vipListing}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 20" fill="currentColor" width="13" height="11" aria-hidden="true">
                 <path d="M2 18h20v2H2v-2zM2 15L5 4l5 5 2-7 2 7 5-5 3 11H2z"/>
               </svg>
@@ -83,7 +90,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
             </div>
           )}
           {isPremium && (
-            <div className="badge badge-premium" title={language === 'en' ? 'Premium listing' : language === 'ru' ? 'Премиум объявление' : 'Premium elan'}>
+            <div className="badge badge-premium" title={t.dashboard.premiumListing}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12" aria-hidden="true">
                 <polygon points="12,2 22,10 12,22 2,10"/>
               </svg>
@@ -106,10 +113,10 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
         onClick={handleFavoriteClick}
         disabled={isFavoriting}
         className={['property-favorite-btn', isFavorited ? 'bookmarked' : '', isCompact ? 'compact' : ''].filter(Boolean).join(' ')}
-        title={!isAuthenticated ? (language === 'en' ? 'Sign in to bookmark' : language === 'ru' ? 'Войдите чтобы добавить в закладки' : 'Bookmarklamaq üçün daxil olun') : ''}
+        title={!isAuthenticated ? t.property.signInToBookmark : ''}
         aria-label="Add to bookmarks"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
         </svg>
       </button>
@@ -136,7 +143,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
             {property.rooms}
           </span>
           {property.minGuests || property.maxGuests ? (
-            <span className="feature" title={language === 'en' ? 'Guests' : language === 'ru' ? 'Гости' : 'Qonaqlar'}>
+            <span className="feature" title={t.property.guests}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
@@ -153,10 +160,10 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
             </svg>
-            {property.area}m²
+            {property.area}{t.property.sqm}
           </span>
           {property.views !== undefined && (
-            <span className="feature views-count" title={language === 'en' ? 'Views' : language === 'ru' ? 'Просмотры' : 'Baxışlar'}>
+            <span className="feature views-count" title={t.property.views}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                 <circle cx="12" cy="12" r="3"/>
@@ -165,7 +172,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
             </span>
           )}
           {property.likes && property.likes.length > 0 && (
-            <span className="feature likes-count" title={language === 'en' ? 'Likes' : language === 'ru' ? 'Нравится' : 'Bəyən'}>
+            <span className="feature likes-count" title={t.common.likes}>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
@@ -179,7 +186,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
             {nights > 0 && (
               <div className="price-info">
                 <div className="price-nights">
-                  {nights} {language === 'en' ? 'night' : language === 'ru' ? 'ночь' : 'gecə'}{nights !== 1 ? 's' : ''}
+                  {nights} {nights !== 1 ? t.common.nights : t.common.night}
                 </div>
                 <div className="price-breakdown">
                   <span className="price-per-night">{property.price.daily} {property.price.currency}/{t.property.perNight}</span>
@@ -209,3 +216,5 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
     </div>
   )
 })
+
+PropertyCard.displayName = 'PropertyCard'

@@ -144,7 +144,8 @@ h1, h2, h3, p {
   overflow-wrap: anywhere;
 }
 
-button {
+/* Button reset — use with .btn class */
+.btn {
   cursor: pointer;
   font-family: inherit;
   font-size: inherit;

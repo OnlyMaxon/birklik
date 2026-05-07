@@ -131,6 +131,8 @@
 .property-favorite-btn svg {
   stroke: currentColor;
   fill: currentColor;
+  width: 70%;
+  height: 70%;
 }
 
 .property-content {
@@ -363,6 +365,22 @@
     height: 12px;
   }
 
+  /* Compact mode — mobile — MUST override cascade selectors AND global.css min-width/min-height */
+  .compact-view .property-card .property-favorite-btn.compact {
+    width: 0.9rem;
+    height: 0.9rem;
+    top: 0.28rem;
+    right: 0.28rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    min-width: auto;
+    min-height: auto;
+  }
+
+  .compact-view .property-card .property-favorite-btn.compact svg {
+    width: 5px;
+    height: 5px;
+  }
+
   /* Compact view on mobile — even smaller */
   .compact-view .property-card .property-badges .badge,
   .compact-view .property-card .property-badges .badge.badge-vip,
@@ -495,11 +513,23 @@
 
 /* ===== DIRECT COMPACT CLASS (prop-driven, bypasses cascade) ===== */
 .property-favorite-btn.compact {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   top: 0.32rem;
   right: 0.32rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  min-width: auto;
+  min-height: auto;
+}
+
+/* Override cascade selectors for compact mode */
+.compact-view .property-card .property-favorite-btn.compact {
+  width: 1rem;
+  height: 1rem;
+  top: 0.32rem;
+  right: 0.32rem;
+  min-width: auto;
+  min-height: auto;
 }
 
 .property-favorite-btn.compact:hover:not(:disabled) {
@@ -515,8 +545,14 @@
 }
 
 .property-favorite-btn.compact svg {
-  width: 9px;
-  height: 9px;
+  width: 6px;
+  height: 6px;
+}
+
+/* Override cascade SVG selectors for compact mode */
+.compact-view .property-card .property-favorite-btn.compact svg {
+  width: 6px;
+  height: 6px;
 }
 
 .property-badges.compact .badge,
@@ -535,23 +571,6 @@
 }
 
 @media (max-width: 480px) {
-  .property-favorite-btn.compact {
-    width: 1.1rem;
-    height: 1.1rem;
-    top: 0.28rem;
-    right: 0.28rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  }
-
-  .property-favorite-btn.compact.bookmarked {
-    box-shadow: 0 1px 4px rgba(231, 76, 60, 0.25);
-  }
-
-  .property-favorite-btn.compact svg {
-    width: 8px;
-    height: 8px;
-  }
-
   .property-badges.compact .badge,
   .property-badges.compact .badge.badge-vip,
   .property-badges.compact .badge.badge-premium,
