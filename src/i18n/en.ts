@@ -669,38 +669,58 @@ export const en: Translations = {
       sections: [
         {
           number: "1",
-          title: "Information We Collect",
-          content: "We collect information you provide directly to us, such as when you create an account, list a property, or make a booking. This includes your name, email address, phone number, payment information, and property details. We also automatically collect certain information about your device and how you interact with our website."
+          title: "Privacy Policy",
+          content: "1.1. This Privacy Policy is an integral part of the User Agreement of the Birklik.az platform (hereinafter \"Service\") and applies to all persons using the Service.\n1.2. This document establishes rules for the collection, registration, retention, processing, use, transfer, and protection of User personal information.\n1.3. The personal information database is stored in the Service's technical infrastructure and is managed by Birklik.az administration.\n1.4. The personal information processor and controller is the administration of the Birklik.az platform.\n1.5. Users provide information to the Service in the following cases: during registration, when placing listings, while using the Service, when subscribing to notifications or newsletters, and when participating in surveys or questionnaires. Participation in surveys is voluntary and requires User consent.\n1.6. By providing personal information to the Service, Users give their free and voluntary consent to: processing of this information by the Administration, its retention, and transfer to third parties within the scope of Service operations.\n1.7. Processing of personal information means: collection of information, entry into the system, retention, updating and modification, use, transfer (including to external servers), anonymization, or deletion. These processes can be carried out through both automated and non-automated methods."
+        },
+        {
+          number: "1.8",
+          title: "Purposes of Personal Information Processing",
+          content: "1.8.1. Collection of statistical and analytical information to improve the Service and its functions\n1.8.2. Expansion and development of services offered on the platform\n1.8.3. Sending information to Users about new features, campaigns, and updates\n1.8.4. Prevention of unlawful actions by Users and third parties\n1.8.5. Ensuring security and detection of fraud cases\n1.8.6. Compliance with applicable laws and regulations"
+        },
+        {
+          number: "1.9",
+          title: "Types of Information Collected",
+          content: "1.9.1. Information provided by Users: name and surname, phone number, email address, location and address information, listing content and images. If Users log in through social networks, certain information may be obtained from those platforms. Users are responsible for the accuracy of the information they provide.\n1.9.2. Automatically collected technical information: IP address, browser type, device information, login history and activity"
+        },
+        {
+          number: "1.10",
+          title: "Sensitive Information",
+          content: "Birklik.az does not collect or process the following information:\n• racial and ethnic origin\n• political and religious views\n• health information\n• biometric and genetic information"
+        },
+        {
+          number: "1.11",
+          title: "Transfer of Information to Third Parties",
+          content: "1.11.1. User personal information is not provided to third parties without User consent.\n1.11.2. Information may be transferred in the following cases: when required by law, based on court or law enforcement requests, or when necessary to provide the service.\n1.11.3. The Service may transfer certain information to: technical service providers and partner companies."
+        },
+        {
+          number: "1.12",
+          title: "Use of Information and Restrictions",
+          content: "1.12.1. The Service does not sell or lease User information.\n1.12.2. Users can use other Users' information only within the platform for communication purposes.\n1.12.3. Prohibited: unauthorized advertising, spam and mass messaging, transfer of information to third parties"
+        },
+        {
+          number: "1.13",
+          title: "User Rights",
+          content: "Users have the following rights:\n• modify their personal information\n• request deletion of information\n• deactivate their account"
+        },
+        {
+          number: "1.14",
+          title: "Data Protection",
+          content: "1.14.1. The Administration implements technical and organizational measures to protect personal information.\n1.14.2. Information is stored on secure servers and used only by authorized persons.\n1.14.3. Modern security mechanisms are implemented to prevent unauthorized access."
         },
         {
           number: "2",
-          title: "How We Use Your Information",
-          content: "We use your information to provide and improve our services, process transactions, send communications, prevent fraud, and comply with legal obligations. Your information helps us personalize your experience and send you relevant updates about properties and bookings."
+          title: "Cookies, Web Beacons and Similar Technologies",
+          content: "2.1. The Service uses cookies and similar technologies.\n2.2. These technologies are applied for the following purposes: remembering user sessions, improving site performance, collecting statistical information, and displaying personalized advertising.\n2.3. By continuing to use the Service, Users consent to the use of cookies.\n2.3.1. Cookies are data stored in the User's browser and sent back when re-entering the Service. These files do not contain personal information.\n2.3.2. Web beacons are small graphic elements used to track User activity.\n2.3.3. Similar technologies include: local storage, HTML5 technologies, and other memory mechanisms.\n2.4. Users can disable, delete, or block cookies in their browser settings.\n2.5. The Service may use third-party service providers who may also place cookies."
         },
         {
           number: "3",
-          title: "Information Sharing",
-          content: "We do not sell or share your personal information with third parties for marketing purposes. We may share your information with service providers who assist us in operating our website and conducting our business. We may also disclose information when required by law or to protect our rights."
+          title: "Changes to Privacy Policy",
+          content: "3.1. The Administration reserves the right to modify this policy at any time.\n3.2. Changes take effect from the moment they are posted on the Service.\n3.3. If Users disagree with changes, they must stop using the Service.\n3.4. Continued use of the Service means full acceptance of the new rules."
         },
         {
           number: "4",
-          title: "Data Security",
-          content: "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no security system is impenetrable, and we cannot guarantee absolute security of your data."
-        },
-        {
-          number: "5",
-          title: "Your Rights",
-          content: "You have the right to access, correct, or delete your personal information. You can manage your privacy preferences through your account settings. To exercise these rights or inquire about your data, please contact our support team."
-        },
-        {
-          number: "6",
-          title: "Cookies and Tracking",
-          content: "We use cookies and similar technologies to enhance your experience on our platform. These help us remember your preferences and understand how users interact with our website. You can control cookie settings through your browser preferences."
-        },
-        {
-          number: "7",
-          title: "Contact Us",
-          content: "If you have any questions about our privacy practices or wish to exercise your privacy rights, please contact us at support@birklik.az or through the contact form on our website. We are committed to addressing your privacy concerns promptly."
+          title: "Final Provisions",
+          content: "4.1. This policy aims to ensure a safe and transparent environment on the Service.\n4.2. Users are deemed to have fully accepted this Privacy Policy by using the Service."
         }
       ]
     }
