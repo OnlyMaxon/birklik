@@ -58,6 +58,8 @@
   gap: 0.8rem;
   align-items: stretch;
   min-height: 600px;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .section-header {
@@ -83,10 +85,15 @@
   min-height: 600px;
 }
 
-@media (min-width: 1620px) {
+@media (min-width: 1280px) {
   .ad-slot--left,
   .ad-slot--right {
     display: block;
+  }
+
+  .properties-content .container {
+    flex: 1;
+    min-width: 0;
   }
 }
 
