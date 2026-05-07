@@ -666,58 +666,58 @@ export const az: Translations = {
       sections: [
         {
           number: "1",
-          title: "Məxfilik siyasəti",
-          content: "1.1. Hazırkı Məxfilik Siyasəti Birklik.az platformasının (bundan sonra \"Servis\") İstifadəçi Razılaşmasının ayrılmaz hissəsidir və Servisdən istifadə edən bütün şəxslərə şamil olunur.\n1.2. Bu sənəd İstifadəçinin şəxsi məlumatlarının: toplanması, qeydiyyatı, saxlanması, işlənməsi, istifadəsi, ötürülməsi, qorunması qaydalarını müəyyən edir.\n1.3. Şəxsi məlumatların bazası Servisin texniki infrastrukturunda yerləşir və bu məlumatların idarə edilməsi Birklik.az administrasiyası tərəfindən həyata keçirilir.\n1.4. Şəxsi məlumatların operatoru və sərəncamçısı Birklik.az platformasının administrasiyasıdır.\n1.5. İstifadəçi aşağıdakı hallarda Servisə məlumat təqdim edir: qeydiyyat zamanı, elan yerləşdirərkən, Servisdən istifadə edərkən, bildirişlərə və ya xəbərlərə abunə olarkən, sorğular və ya anketlərdə iştirak edərkən. Sorğularda iştirak yalnız İstifadəçinin razılığı ilə həyata keçirilir.\n1.6. İstifadəçi Servisə şəxsi məlumatlarını təqdim etməklə: bu məlumatların Administrasiya tərəfindən işlənməsinə, saxlanmasına, Servisin fəaliyyəti çərçivəsində üçüncü şəxslərə ötürülməsinə öz sərbəst və könüllü razılığını verir.\n1.7. Şəxsi məlumatların işlənməsi dedikdə aşağıdakılar başa düşülür: məlumatların toplanması, sistemə daxil edilməsi, saxlanması, yenilənməsi və dəyişdirilməsi, istifadəsi, ötürülməsi (o cümlədən xarici serverlərə), anonimləşdirilməsi və ya silinməsi. Bu proseslər həm avtomatlaşdırılmış, həm də qeyri-avtomatlaşdırılmış üsullarla həyata keçirilə bilər."
-        },
-        {
-          number: "1.8",
-          title: "Şəxsi məlumatların işlənmə məqsədləri",
-          content: "1.8.1. Servisin və onun funksiyalarının təkmilləşdirilməsi üçün statistik və analitik məlumatların toplanması\n1.8.2. Platformada təqdim olunan xidmətlərin genişləndirilməsi və inkişafı\n1.8.3. İstifadəçilərə yeni funksiyalar, kampaniyalar, yeniliklər haqqında məlumatların göndərilməsi\n1.8.4. İstifadəçilərin və üçüncü şəxslərin qanunsuz hərəkətlərinin qarşısının alınması\n1.8.5. Təhlükəsizliyin təmin edilməsi və saxtakarlıq hallarının aşkarlanması\n1.8.6. Qüvvədə olan qanunvericiliyin tələblərinə riayət olunması"
-        },
-        {
-          number: "1.9",
-          title: "Toplanan məlumatların növləri",
-          content: "1.9.1. İstifadəçi tərəfindən təqdim olunan məlumatlar: ad və soyad, telefon nömrəsi, elektron poçt ünvanı, yerləşmə və ünvan məlumatları, elan məzmunu və şəkillər. Əgər istifadəçi sosial şəbəkə vasitəsilə daxil olursa, həmin platformadan müəyyən məlumatlar əldə edilə bilər. İstifadəçi təqdim etdiyi məlumatların düzgünlüyünə görə məsuliyyət daşıyır.\n1.9.2. Avtomatik toplanan texniki məlumatlar: IP ünvan, brauzer növü, cihaz məlumatları, giriş tarixçəsi və aktivlik"
-        },
-        {
-          number: "1.10",
-          title: "Həssas məlumatlar",
-          content: "Birklik.az aşağıdakı məlumatları toplamır və emal etmir:\n• irqi və etnik mənsubiyyət\n• siyasi və dini baxışlar\n• sağlamlıq məlumatları\n• biometrik və genetik məlumatlar"
-        },
-        {
-          number: "1.11",
-          title: "Məlumatların üçüncü şəxslərə ötürülməsi",
-          content: "1.11.1. İstifadəçinin şəxsi məlumatları onun razılığı olmadan üçüncü şəxslərə verilmir.\n1.11.2. Aşağıdakı hallarda məlumatlar ötürülə bilər: qanunvericilik tələb etdikdə, məhkəmə və hüquq-mühafizə orqanlarının sorğusu əsasında, xidmətin göstərilməsi üçün zəruri olduqda.\n1.11.3. Servis bəzi məlumatları: texniki xidmət təminatçılarına, tərəfdaş şirkətlərə ötürə bilər."
-        },
-        {
-          number: "1.12",
-          title: "Məlumatların istifadəsi və məhdudiyyətlər",
-          content: "1.12.1. Servis istifadəçi məlumatlarını satmır və icarəyə vermir.\n1.12.2. İstifadəçilər digər istifadəçilərin məlumatlarından yalnız platforma daxilində əlaqə məqsədilə istifadə edə bilər.\n1.12.3. Qadağandır: icazəsiz reklam göndərilməsi, spam və kütləvi mesajlar, üçüncü şəxslərə məlumat ötürülməsi"
-        },
-        {
-          number: "1.13",
-          title: "İstifadəçinin hüquqları",
-          content: "İstifadəçi aşağıdakı hüquqlara malikdir:\n• şəxsi məlumatlarını dəyişmək\n• məlumatların silinməsini tələb etmək\n• hesabını deaktiv etmək"
-        },
-        {
-          number: "1.14",
-          title: "Məlumatların qorunması",
-          content: "1.14.1. Administrasiya şəxsi məlumatların qorunması üçün texniki və təşkilati tədbirlər görür.\n1.14.2. Məlumatlar qorunan serverlərdə saxlanılır və yalnız səlahiyyətli şəxslər tərəfindən istifadə olunur.\n1.14.3. İcazəsiz girişin qarşısını almaq üçün müasir təhlükəsizlik mexanizmləri tətbiq olunur."
+          title: "Məxfilik siyasətinin əsasları",
+          content: "1.1. Hazırkı Məxfilik Siyasəti Birklik.az platformasının (bundan sonra \"Servis\") İstifadəçi Razılaşmasının ayrılmaz hissəsidir.\n1.2. Bu sənəd İstifadəçinin şəxsi məlumatlarının toplanması, qeydiyyatı, saxlanması, işlənməsi, istifadəsi, ötürülməsi, qorunması qaydalarını müəyyən edir.\n1.3. Şəxsi məlumatların bazası Servisin texniki infrastrukturunda yerləşir.\n1.4. Şəxsi məlumatların operatoru və sərəncamçısı Birklik.az administrasiyasıdır."
         },
         {
           number: "2",
-          title: "Cookies, veb-mayaklar və oxşar texnologiyalar",
-          content: "2.1. Servis cookies və oxşar texnologiyalardan istifadə edir.\n2.2. Bu texnologiyalar aşağıdakı məqsədlərlə tətbiq olunur: istifadəçi sessiyasını yadda saxlamaq, saytın performansını artırmaq, statistik məlumat toplamaq, fərdiləşdirilmiş reklam göstərmək.\n2.3. Servisdən istifadəni davam etdirməklə İstifadəçi cookies istifadəsinə razılıq verir.\n2.3.1. Cookies – istifadəçinin brauzerində saxlanılan və Servisə təkrar daxil olduqda geri göndərilən məlumatlardır. Bu fayllar şəxsi məlumatları ehtiva etmir.\n2.3.2. Veb-mayaklar istifadəçinin aktivliyini izləmək üçün istifadə olunan kiçik qrafik elementlərdir.\n2.3.3. Oxşar texnologiyalar: local storage, HTML5 texnologiyaları, digər yaddaş mexanizmləri.\n2.4. İstifadəçi brauzer parametrlərində: cookies-i deaktiv edə, silə, bloklaya bilər.\n2.5. Servis üçüncü tərəf xidmət təminatçılarından istifadə edə bilər və onlar da cookies yerləşdirə bilər."
+          title: "Məlumat toplanması",
+          content: "2.1. İstifadəçi Servisə məlumat təqdim edir:\n• qeydiyyat zamanı\n• elan yerləşdirərkən\n• Servisdən istifadə edərkən\n• bildirişlərə abunə olarkən\n• sorğular və ya anketlərdə iştirak edərkən\n2.2. Sorğularda iştirak yalnız İstifadəçinin razılığı ilə həyata keçirilir.\n2.3. İstifadəçi Servisə şəxsi məlumatlarını təqdim etməklə bu məlumatların işlənməsinə, saxlanmasına və ötürülməsinə razılıq verir."
         },
         {
           number: "3",
-          title: "Məxfilik siyasətində dəyişikliklər",
-          content: "3.1. Administrasiya bu siyasəti istənilən vaxt dəyişdirmək hüququnu özündə saxlayır.\n3.2. Dəyişikliklər Servisdə dərc edildiyi andan qüvvəyə minir.\n3.3. İstifadəçi dəyişikliklərlə razı deyilsə, Servisdən istifadəni dayandırmalıdır.\n3.4. Servisdən istifadəni davam etdirmək yeni qaydaların tam qəbul edilməsi deməkdir."
+          title: "Şəxsi məlumatların işlənmə məqsədləri",
+          content: "3.1. Servisin və onun funksiyalarının təkmilləşdirilməsi üçün statistik məlumatların toplanması\n3.2. Platformada təqdim olunan xidmətlərin genişləndirilməsi ve inkişafı\n3.3. İstifadəçilərə yeni funksiyalar, kampaniyalar, yeniliklər haqqında məlumatların göndərilməsi\n3.4. Qanunsuz hərəkətlərin qarşısının alınması\n3.5. Təhlükəsizliyin təmin edilməsi\n3.6. Qanunvericiliyin tələblərinə riayət olunması"
         },
         {
           number: "4",
-          title: "Yekun müddəalar",
-          content: "4.1. Bu siyasət Servisdə təhlükəsiz və şəffaf mühitin təmin edilməsi məqsədi daşıyır.\n4.2. İstifadəçi Servisdən istifadə etməklə bu Məxfilik Siyasətini tam şəkildə qəbul etmiş sayılır."
+          title: "Toplanan məlumatların növləri",
+          content: "4.1. İstifadəçi tərəfindən təqdim olunan məlumatlar:\n• ad və soyad\n• telefon nömrəsi\n• elektron poçt ünvanı\n• yerləşmə və ünvan məlumatları\n• elan məzmunu və şəkillər\n4.2. Avtomatik toplanan texniki məlumatlar:\n• IP ünvan\n• brauzer növü\n• cihaz məlumatları\n• giriş tarixçəsi və aktivlik"
+        },
+        {
+          number: "5",
+          title: "Həssas məlumatlar",
+          content: "Birklik.az aşağıdakı məlumatları toplamır:\n• irqi və etnik mənsubiyyət\n• siyasi və dini baxışlar\n• sağlamlıq məlumatları\n• biometrik və genetik məlumatlar"
+        },
+        {
+          number: "6",
+          title: "Məlumatların üçüncü şəxslərə ötürülməsi",
+          content: "6.1. İstifadəçinin şəxsi məlumatları onun razılığı olmadan üçüncü şəxslərə verilmir.\n6.2. Məlumatlar ötürülə bilər:\n• qanunvericilik tələb etdikdə\n• məhkəmə orqanlarının sorğusu əsasında\n• xidmətin göstərilməsi üçün zəruri olduqda\n6.3. Servis bəzi məlumatları texniki xidmət təminatçılarına və tərəfdaş şirkətlərə ötürə bilər."
+        },
+        {
+          number: "7",
+          title: "Məlumatların istifadəsi",
+          content: "7.1. Servis istifadəçi məlumatlarını satmır və icarəyə vermir.\n7.2. İstifadəçilər digər istifadəçilərin məlumatlarından yalnız əlaqə məqsədilə istifadə edə bilər.\n7.3. Qadağandır:\n• icazəsiz reklam göndərilməsi\n• spam və kütləvi mesajlar\n• üçüncü şəxslərə məlumat ötürülməsi"
+        },
+        {
+          number: "8",
+          title: "İstifadəçinin hüquqları",
+          content: "İstifadəçi aşağıdakı hüquqlara malikdir:\n• şəxsi məlumatlarını dəyişmək\n• məlumatların silinməsini tələb etmək\n• hesabını deaktiv etmək\n• məxfilik üstünlüklərini idarə etmək"
+        },
+        {
+          number: "9",
+          title: "Məlumatların qorunması",
+          content: "9.1. Administrasiya şəxsi məlumatların qorunması üçün texniki tədbirlər görür.\n9.2. Məlumatlar qorunan serverlərdə saxlanılır.\n9.3. Yalnız səlahiyyətli şəxslər məlumatlardan istifadə edə bilər.\n9.4. Müasir təhlükəsizlik mexanizmləri tətbiq olunur."
+        },
+        {
+          number: "10",
+          title: "Cookies və oxşar texnologiyalar",
+          content: "10.1. Servis cookies və oxşar texnologiyalardan istifadə edir.\n10.2. Bu texnologiyalar tətbiq olunur:\n• istifadəçi sessiyasını yadda saxlamaq üçün\n• saytın performansını artırmaq üçün\n• statistik məlumat toplamaq üçün\n• fərdiləşdirilmiş reklam göstərmək üçün\n10.3. Servisdən istifadəni davam etdirməklə İstifadəçi cookies istifadəsinə razılıq verir.\n10.4. İstifadəçi brauzer parametrlərində cookies-i deaktiv edə, silə, bloklaya bilər."
+        },
+        {
+          number: "11",
+          title: "Siyasətdə dəyişikliklər",
+          content: "11.1. Administrasiya bu siyasəti istənilən vaxt dəyişdirmək hüququna malikdir.\n11.2. Dəyişikliklər Servisdə dərc edildiyi andan qüvvəyə minir.\n11.3. İstifadəçi dəyişikliklərlə razı deyilsə, Servisdən istifadəni dayandırmalıdır.\n11.4. Servisdən istifadəni davam etdirmək yeni qaydaların qəbul edilməsi deməkdir."
         }
       ]
     }

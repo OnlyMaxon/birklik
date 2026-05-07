@@ -669,58 +669,58 @@ export const en: Translations = {
       sections: [
         {
           number: "1",
-          title: "Privacy Policy",
-          content: "1.1. This Privacy Policy is an integral part of the User Agreement of the Birklik.az platform (hereinafter \"Service\") and applies to all persons using the Service.\n1.2. This document establishes rules for the collection, registration, retention, processing, use, transfer, and protection of User personal information.\n1.3. The personal information database is stored in the Service's technical infrastructure and is managed by Birklik.az administration.\n1.4. The personal information processor and controller is the administration of the Birklik.az platform.\n1.5. Users provide information to the Service in the following cases: during registration, when placing listings, while using the Service, when subscribing to notifications or newsletters, and when participating in surveys or questionnaires. Participation in surveys is voluntary and requires User consent.\n1.6. By providing personal information to the Service, Users give their free and voluntary consent to: processing of this information by the Administration, its retention, and transfer to third parties within the scope of Service operations.\n1.7. Processing of personal information means: collection of information, entry into the system, retention, updating and modification, use, transfer (including to external servers), anonymization, or deletion. These processes can be carried out through both automated and non-automated methods."
-        },
-        {
-          number: "1.8",
-          title: "Purposes of Personal Information Processing",
-          content: "1.8.1. Collection of statistical and analytical information to improve the Service and its functions\n1.8.2. Expansion and development of services offered on the platform\n1.8.3. Sending information to Users about new features, campaigns, and updates\n1.8.4. Prevention of unlawful actions by Users and third parties\n1.8.5. Ensuring security and detection of fraud cases\n1.8.6. Compliance with applicable laws and regulations"
-        },
-        {
-          number: "1.9",
-          title: "Types of Information Collected",
-          content: "1.9.1. Information provided by Users: name and surname, phone number, email address, location and address information, listing content and images. If Users log in through social networks, certain information may be obtained from those platforms. Users are responsible for the accuracy of the information they provide.\n1.9.2. Automatically collected technical information: IP address, browser type, device information, login history and activity"
-        },
-        {
-          number: "1.10",
-          title: "Sensitive Information",
-          content: "Birklik.az does not collect or process the following information:\n• racial and ethnic origin\n• political and religious views\n• health information\n• biometric and genetic information"
-        },
-        {
-          number: "1.11",
-          title: "Transfer of Information to Third Parties",
-          content: "1.11.1. User personal information is not provided to third parties without User consent.\n1.11.2. Information may be transferred in the following cases: when required by law, based on court or law enforcement requests, or when necessary to provide the service.\n1.11.3. The Service may transfer certain information to: technical service providers and partner companies."
-        },
-        {
-          number: "1.12",
-          title: "Use of Information and Restrictions",
-          content: "1.12.1. The Service does not sell or lease User information.\n1.12.2. Users can use other Users' information only within the platform for communication purposes.\n1.12.3. Prohibited: unauthorized advertising, spam and mass messaging, transfer of information to third parties"
-        },
-        {
-          number: "1.13",
-          title: "User Rights",
-          content: "Users have the following rights:\n• modify their personal information\n• request deletion of information\n• deactivate their account"
-        },
-        {
-          number: "1.14",
-          title: "Data Protection",
-          content: "1.14.1. The Administration implements technical and organizational measures to protect personal information.\n1.14.2. Information is stored on secure servers and used only by authorized persons.\n1.14.3. Modern security mechanisms are implemented to prevent unauthorized access."
+          title: "Privacy Policy Basics",
+          content: "1.1. This Privacy Policy is an integral part of the User Agreement of the Birklik.az platform (hereinafter \"Service\").\n1.2. This document establishes rules for collection, registration, retention, processing, use, transfer, and protection of User personal information.\n1.3. The personal information database is stored in the Service's technical infrastructure.\n1.4. The personal information processor and controller is Birklik.az administration."
         },
         {
           number: "2",
-          title: "Cookies, Web Beacons and Similar Technologies",
-          content: "2.1. The Service uses cookies and similar technologies.\n2.2. These technologies are applied for the following purposes: remembering user sessions, improving site performance, collecting statistical information, and displaying personalized advertising.\n2.3. By continuing to use the Service, Users consent to the use of cookies.\n2.3.1. Cookies are data stored in the User's browser and sent back when re-entering the Service. These files do not contain personal information.\n2.3.2. Web beacons are small graphic elements used to track User activity.\n2.3.3. Similar technologies include: local storage, HTML5 technologies, and other memory mechanisms.\n2.4. Users can disable, delete, or block cookies in their browser settings.\n2.5. The Service may use third-party service providers who may also place cookies."
+          title: "Information Collection",
+          content: "2.1. Users provide information to the Service in the following cases:\n• during registration\n• when placing listings\n• while using the Service\n• when subscribing to notifications\n• when participating in surveys\n2.2. Participation in surveys is voluntary and requires User consent.\n2.3. By providing personal information, Users consent to its processing, retention, and transfer."
         },
         {
           number: "3",
-          title: "Changes to Privacy Policy",
-          content: "3.1. The Administration reserves the right to modify this policy at any time.\n3.2. Changes take effect from the moment they are posted on the Service.\n3.3. If Users disagree with changes, they must stop using the Service.\n3.4. Continued use of the Service means full acceptance of the new rules."
+          title: "Purposes of Processing",
+          content: "3.1. Collection of statistical information to improve the Service\n3.2. Expansion and development of platform services\n3.3. Sending information about new features, campaigns, and updates\n3.4. Prevention of unlawful actions\n3.5. Ensuring security\n3.6. Compliance with applicable laws"
         },
         {
           number: "4",
-          title: "Final Provisions",
-          content: "4.1. This policy aims to ensure a safe and transparent environment on the Service.\n4.2. Users are deemed to have fully accepted this Privacy Policy by using the Service."
+          title: "Types of Information Collected",
+          content: "4.1. Information provided by Users:\n• name and surname\n• phone number\n• email address\n• location and address information\n• listing content and images\n4.2. Automatically collected technical information:\n• IP address\n• browser type\n• device information\n• login history and activity"
+        },
+        {
+          number: "5",
+          title: "Sensitive Information",
+          content: "Birklik.az does not collect:\n• racial and ethnic origin\n• political and religious views\n• health information\n• biometric and genetic information"
+        },
+        {
+          number: "6",
+          title: "Transfer to Third Parties",
+          content: "6.1. User information is not shared without consent.\n6.2. Information may be transferred when:\n• required by law\n• based on court requests\n• necessary to provide the service\n6.3. The Service may transfer information to technical providers and partners."
+        },
+        {
+          number: "7",
+          title: "Information Usage",
+          content: "7.1. The Service does not sell or lease User information.\n7.2. Users can use other Users' information only for communication purposes within the platform.\n7.3. Prohibited:\n• unauthorized advertising\n• spam and mass messaging\n• transfer of information to third parties"
+        },
+        {
+          number: "8",
+          title: "User Rights",
+          content: "Users have the following rights:\n• modify their personal information\n• request deletion of information\n• deactivate their account\n• manage privacy preferences"
+        },
+        {
+          number: "9",
+          title: "Data Protection",
+          content: "9.1. The Administration implements technical measures to protect personal information.\n9.2. Information is stored on secure servers.\n9.3. Only authorized persons can access the information.\n9.4. Modern security mechanisms are implemented."
+        },
+        {
+          number: "10",
+          title: "Cookies and Similar Technologies",
+          content: "10.1. The Service uses cookies and similar technologies.\n10.2. These technologies are used to:\n• remember user sessions\n• improve site performance\n• collect statistical information\n• display personalized advertising\n10.3. Continuing to use the Service means consent to cookies.\n10.4. Users can disable, delete, or block cookies in their browser settings."
+        },
+        {
+          number: "11",
+          title: "Policy Changes",
+          content: "11.1. The Administration reserves the right to modify this policy at any time.\n11.2. Changes take effect from the moment they are posted on the Service.\n11.3. If Users disagree with changes, they must stop using the Service.\n11.4. Continued use of the Service means acceptance of new rules."
         }
       ]
     }
