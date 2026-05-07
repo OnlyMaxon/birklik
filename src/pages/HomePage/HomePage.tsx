@@ -205,13 +205,6 @@ export const HomePage: React.FC = () => {
 
           {!isLoading && filteredProperties.length > 0 ? (
             <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
-              <aside className="ad-slot ad-slot--left-results" aria-hidden="true">
-                <div className="ad-placeholder">
-                  <span className="ad-placeholder-label">Reklam</span>
-                  <span className="ad-placeholder-size">160 × 600</span>
-                </div>
-              </aside>
-
               <div className="premium-results-list">
                 <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
                   {filteredProperties.map((property) => (
@@ -233,13 +226,6 @@ export const HomePage: React.FC = () => {
                   </React.Suspense>
                 </aside>
               )}
-
-              <aside className="ad-slot ad-slot--right-results" aria-hidden="true">
-                <div className="ad-placeholder">
-                  <span className="ad-placeholder-label">Reklam</span>
-                  <span className="ad-placeholder-size">160 × 600</span>
-                </div>
-              </aside>
             </div>
           ) : !isLoading && !error ? (
             <div className="no-results">

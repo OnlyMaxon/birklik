@@ -66,14 +66,14 @@
 }
 
 .premium-results-shell {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1.2rem;
-  align-items: start;
+  display: block;
 }
 
 .premium-results-shell.with-map {
-  grid-template-columns: auto minmax(0, 1fr) clamp(300px, 30vw, 420px) auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 30vw, 420px);
+  gap: 1.2rem;
+  align-items: start;
 }
 
 .premium-results-list {
@@ -239,17 +239,6 @@
   .premium-properties-grid.compact-view {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.45rem;
-  }
-
-  /* Hide ads on tablet and below */
-  .ad-slot--left-results,
-  .ad-slot--right-results {
-    display: none !important;
-  }
-
-  .premium-results-shell,
-  .premium-results-shell.with-map {
-    grid-template-columns: 1fr;
   }
 }
 
