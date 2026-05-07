@@ -33,22 +33,25 @@
   flex-direction: column;
 }
 
-/* ===== SIDE AD SLOTS ===== */
-.ad-slot {
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 160px;
-  z-index: 40;
+/* ===== SIDE AD SLOTS (Results page) ===== */
+.ad-slot--left-results,
+.ad-slot--right-results {
   display: none;
-  pointer-events: none;
 }
 
-.ad-slot--left  { left:  max(6px, calc((100vw - 1280px) / 2 - 168px)); }
-.ad-slot--right { right: max(6px, calc((100vw - 1280px) / 2 - 168px)); }
-
 @media (min-width: 1620px) {
-  .ad-slot { display: block; }
+  .ad-slot--left-results,
+  .ad-slot--right-results {
+    display: block;
+  }
+}
+
+.ad-slot--left-results {
+  order: 1;
+}
+
+.ad-slot--right-results {
+  order: 4;
 }
 
 .ad-placeholder {
