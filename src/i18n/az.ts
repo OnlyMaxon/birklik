@@ -603,7 +603,7 @@ export const az: Translations = {
       phone: "Telefon",
       email: "E-poçt",
       address: "Ünvan",
-      phoneNumber: "+994 55 660 00 86",
+      phoneNumber: "+994 99 888 82 26",
       emailAddress: "info@birklik.az",
       addressValue: "Bakı şəhəri, Azərbaycan",
       socialNetworks: "Sosial şəbəkələr",

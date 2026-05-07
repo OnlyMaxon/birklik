@@ -606,7 +606,7 @@ export const en: Translations = {
       phone: "Phone",
       email: "Email",
       address: "Address",
-      phoneNumber: "+994 55 660 00 86",
+      phoneNumber: "+994 99 888 82 26",
       emailAddress: "info@birklik.az",
       addressValue: "Baku, Azerbaijan",
       socialNetworks: "Social Media",
