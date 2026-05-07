@@ -57,6 +57,7 @@
   justify-content: center;
   gap: 0.8rem;
   align-items: stretch;
+  min-height: 600px;
 }
 
 .section-header {
@@ -91,6 +92,7 @@
 
 .premium-results-shell {
   display: block;
+  min-height: 600px;
 }
 
 .premium-results-shell.with-map {
