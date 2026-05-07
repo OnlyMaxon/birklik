@@ -109,6 +109,8 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 Без этого Firebase будет показывать предупреждение про OAuth redirect domain и popup/redirect провайдеры не будут работать на вашем домене.
 
+TEST 
+
 ### Шаг 5. Включите Firestore
 
 1. Firebase Console -> Build -> Firestore Database.
