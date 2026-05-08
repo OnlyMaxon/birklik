@@ -69,19 +69,3 @@
   position: relative;
   z-index: 1;
 }
-
-.ad-placeholder::after {
-  content: '📢';
-  position: absolute;
-  font-size: 3rem;
-  opacity: 0.15;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.ad-placeholder-size {
-  font-size: 0.65rem;
-  color: var(--gray-300);
-}
