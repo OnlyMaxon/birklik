@@ -33,39 +33,85 @@
   flex-direction: column;
 }
 
-/* ===== SIDE AD SLOTS - no longer used here ===== */
+/* ===== AD PLACEHOLDER ===== */
 
 .ad-placeholder {
   width: 160px;
-  height: 100%;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 1.5px dashed var(--gray-200);
+  gap: 0.45rem;
+  background: linear-gradient(170deg, #f0faf5 0%, #eaf6ef 55%, #f4f8ff 100%);
+  border: 1.5px dashed #a8d5be;
   border-radius: 14px;
+  padding: 1.5rem 0.75rem;
   pointer-events: all;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.28s ease, box-shadow 0.28s ease;
+}
+
+.ad-placeholder:hover {
+  border-color: var(--primary-color);
+  border-style: solid;
+  box-shadow: 0 4px 20px rgba(46, 125, 91, 0.12);
 }
 
 .ad-placeholder::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background-image:
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(46, 125, 91, 0.03) 10px, rgba(46, 125, 91, 0.03) 20px);
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 2px 0 0 2px;
+  opacity: 0.5;
+}
+
+.ad-placeholder-icon {
+  color: var(--primary-color);
+  opacity: 0.75;
+  margin-bottom: 0.15rem;
+  position: relative;
+  z-index: 1;
 }
 
 .ad-placeholder-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--gray-500);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--gray-700);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
+  position: relative;
+  z-index: 1;
+}
+
+.ad-placeholder-sub {
+  font-size: 0.68rem;
+  color: var(--gray-500);
+  line-height: 1.45;
+  position: relative;
+  z-index: 1;
+}
+
+.ad-placeholder-divider {
+  width: 28px;
+  height: 1px;
+  background: var(--gray-300);
+  margin: 0.2rem 0;
+}
+
+.ad-placeholder-size {
+  font-size: 0.63rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
   position: relative;
   z-index: 1;
 }

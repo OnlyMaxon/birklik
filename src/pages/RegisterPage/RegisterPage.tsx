@@ -93,10 +93,10 @@ export const RegisterPage: React.FC = () => {
     if (!agreeToTerms) {
       setError(
         language === 'en'
-          ? 'You must agree to the Terms and Conditions'
+          ? 'You must agree to the user agreement'
           : language === 'ru'
-            ? 'Вы должны согласиться с Условиями использования'
-            : 'Siz Şərtlər və Şəraiti qəbul etməlisiniz'
+            ? 'Вы должны согласиться с условиями использования'
+            : 'Siz istifadə şərtlərini qəbul etməlisiniz'
       )
       return
     }
@@ -216,16 +216,16 @@ export const RegisterPage: React.FC = () => {
                   />
                   <span>
                     {language === 'en'
-                      ? 'I agree to the '
+                      ? 'By confirming the listing, I accept the '
                       : language === 'ru'
-                        ? 'Я согласен с '
-                        : 'Mən '}
+                        ? 'Объявляя объявление, я принимаю '
+                        : 'Elanı təsdiqləməklə mən '}
                     <Link to="/user-agreement">
                       {language === 'en'
-                        ? 'Terms and Conditions'
+                        ? 'user agreement'
                         : language === 'ru'
-                          ? 'Условиями использования'
-                          : 'Şərtlər və Şəraiti'}
+                          ? 'условия использования'
+                          : 'istifadə şərtlərini'}
                     </Link>
                   </span>
                 </label>

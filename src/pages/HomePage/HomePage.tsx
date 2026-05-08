@@ -174,7 +174,15 @@ export const HomePage: React.FC = () => {
         <div className="properties-content">
           <aside className="ad-slot ad-slot--left" aria-hidden="true">
             <div className="ad-placeholder">
-              <span className="ad-placeholder-label">Reklam</span>
+              <svg className="ad-placeholder-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <path d="M15.54 8.46a5 5 0 010 7.07"/>
+                <path d="M19.07 4.93a10 10 0 010 14.14"/>
+              </svg>
+              <span className="ad-placeholder-label">Reklam yeri</span>
+              <span className="ad-placeholder-sub">Reklamınızı burada yerləşdirin</span>
+              <div className="ad-placeholder-divider" />
+              <span className="ad-placeholder-size">160 × 600</span>
             </div>
           </aside>
 
@@ -251,7 +259,15 @@ export const HomePage: React.FC = () => {
 
           <aside className="ad-slot ad-slot--right" aria-hidden="true">
             <div className="ad-placeholder">
-              <span className="ad-placeholder-label">Reklam</span>
+              <svg className="ad-placeholder-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <path d="M15.54 8.46a5 5 0 010 7.07"/>
+                <path d="M19.07 4.93a10 10 0 010 14.14"/>
+              </svg>
+              <span className="ad-placeholder-label">Reklam yeri</span>
+              <span className="ad-placeholder-sub">Reklamınızı burada yerləşdirin</span>
+              <div className="ad-placeholder-divider" />
+              <span className="ad-placeholder-size">160 × 600</span>
             </div>
           </aside>
         </div>

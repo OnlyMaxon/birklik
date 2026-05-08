@@ -54,11 +54,12 @@
 
 .properties-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.8rem;
-  align-items: stretch;
+  align-items: flex-start;
   width: 100%;
   flex-wrap: nowrap;
+  padding: 0 0.75rem;
 }
 
 .section-header {
@@ -80,19 +81,29 @@
   display: none;
   flex-shrink: 0;
   width: 160px;
-  height: 100%;
 }
 
 @media (min-width: 1280px) {
   .ad-slot--left,
   .ad-slot--right {
     display: block;
+    position: sticky;
+    top: calc(72px + 1rem);
+    align-self: flex-start;
+    height: auto;
   }
 
   .properties-content .container {
     flex: 1;
     min-width: 0;
+    max-width: calc(1280px - 160px * 2 - 0.8rem * 2);
   }
+}
+
+/* Hide side ads when map is open — not enough horizontal space */
+.properties-content:has(.premium-results-shell.with-map) .ad-slot--left,
+.properties-content:has(.premium-results-shell.with-map) .ad-slot--right {
+  display: none;
 }
 
 .premium-results-shell {
