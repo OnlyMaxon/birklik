@@ -28,6 +28,29 @@ export const ModerationReviewPage: React.FC = () => {
   const [editedTitle, setEditedTitle] = React.useState<Record<Language, string>>({ en: '', ru: '', az: '' })
   const [editedDescription, setEditedDescription] = React.useState<Record<Language, string>>({ en: '', ru: '', az: '' })
   const [editedPrice, setEditedPrice] = React.useState(0)
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
+
+  // Image gallery navigation handlers
+  const handlePrevImage = () => {
+    if (property?.images && property.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev === 0 ? property.images.length - 1 : prev - 1))
+    }
+  }
+
+  const handleNextImage = () => {
+    if (property?.images && property.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev === property.images.length - 1 ? 0 : prev + 1))
+    }
+  }
+
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index)
+  }
+
+  // Reset image index when property changes
+  React.useEffect(() => {
+    setCurrentImageIndex(0)
+  }, [id, property?.id])
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -309,11 +332,61 @@ export const ModerationReviewPage: React.FC = () => {
             {/* Main Property Info */}
             <article className="review-card">
               <div className="review-image-section">
-                <img 
-                  src={property.images?.[0] || 'https://via.placeholder.com/600x400?text=No+Image'} 
-                  alt={getLocalizedText(property.title)} 
-                  className="review-image"
-                />
+                {property.images && property.images.length > 0 ? (
+                  <div className="gallery-wrapper">
+                    <div className="gallery-main">
+                      <img 
+                        src={property.images[currentImageIndex] || 'https://via.placeholder.com/600x400?text=No+Image'} 
+                        alt={`${getLocalizedText(property.title)} - ${currentImageIndex + 1}`} 
+                        className="review-image"
+                      />
+                      {property.images.length > 1 && (
+                        <>
+                          <button 
+                            className="gallery-nav-btn gallery-prev" 
+                            onClick={handlePrevImage}
+                            aria-label="Previous image"
+                            title="Previous"
+                          >
+                            ‹
+                          </button>
+                          <button 
+                            className="gallery-nav-btn gallery-next" 
+                            onClick={handleNextImage}
+                            aria-label="Next image"
+                            title="Next"
+                          >
+                            ›
+                          </button>
+                          <div className="gallery-counter">
+                            {currentImageIndex + 1} / {property.images.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {property.images.length > 1 && (
+                      <div className="gallery-thumbnails">
+                        {property.images.map((image, index) => (
+                          <button
+                            key={index}
+                            className={`gallery-thumbnail ${index === currentImageIndex ? 'active' : ''}`}
+                            onClick={() => goToImage(index)}
+                            title={`Image ${index + 1}`}
+                            aria-label={`Go to image ${index + 1}`}
+                          >
+                            <img src={image} alt={`Thumbnail ${index + 1}`} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <img 
+                    src="https://via.placeholder.com/600x400?text=No+Image" 
+                    alt="No images available" 
+                    className="review-image"
+                  />
+                )}
               </div>
 
               <div className="review-info">
