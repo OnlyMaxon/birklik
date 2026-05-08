@@ -15,7 +15,7 @@ function applyWatermark(ctx: CanvasRenderingContext2D, logo: HTMLImageElement, c
   const y = (canvasH - logoH) / 2
 
   ctx.save()
-  ctx.globalAlpha = 0.10
+  ctx.globalAlpha = 0.20
   ctx.drawImage(logo, x, y, logoW, logoH)
   ctx.restore()
 }
