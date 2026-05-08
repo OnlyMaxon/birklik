@@ -7,6 +7,30 @@ export const PrivacyPage: React.FC = () => {
   const { t } = useLanguage()
   const content = t.pages.privacy
 
+  const parseContent = (text: string) => {
+    const paragraphs = text.split('\n').filter((p: string) => p.trim());
+    const result = [];
+    let currentList: string[] = [];
+
+    paragraphs.forEach((para: string) => {
+      if (para.trim().startsWith('•')) {
+        currentList.push(para.replace('•', '').trim());
+      } else {
+        if (currentList.length > 0) {
+          result.push({ type: 'list', items: currentList });
+          currentList = [];
+        }
+        result.push({ type: 'paragraph', content: para });
+      }
+    });
+
+    if (currentList.length > 0) {
+      result.push({ type: 'list', items: currentList });
+    }
+
+    return result;
+  };
+
   return (
     <Layout>
       <div className="privacy-page">
@@ -15,20 +39,33 @@ export const PrivacyPage: React.FC = () => {
         </div>
 
         <div className="privacy-content">
-        {content.sections.map((section, index) => (
-          <section key={index} className="privacy-section">
-            {section.title && <h2>{section.title}</h2>}
-            {section.isList ? (
-              <ul className="privacy-list">
-                {section.content.split(',').map((item, i) => (
-                  <li key={i}>{item.trim()}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>{section.content}</p>
-            )}
-          </section>
-        ))}
+          {content.sections.map((section, index) => (
+            <section key={index} className="privacy-section">
+              <div className="section-header">
+                {section.number && <span className="section-number">{section.number}</span>}
+                {section.title && <h2>{section.title}</h2>}
+              </div>
+
+              <div className="section-content">
+                {parseContent(section.content).map((item, i) => {
+                  if (item.type === 'list') {
+                    return (
+                      <ul key={i} className="privacy-list">
+                        {item.items.map((listItem: string, j: number) => (
+                          <li key={j}>{listItem}</li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  return (
+                    <p key={i} className="privacy-paragraph">
+                      {item.content}
+                    </p>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
     </Layout>
