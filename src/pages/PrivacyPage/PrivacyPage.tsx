@@ -3,6 +3,36 @@ import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import './PrivacyPage.css'
 
+function renderContent(content: string) {
+  const lines = content.split('\n').map((l) => l.trim()).filter(Boolean)
+
+  const result: React.ReactNode[] = []
+  let bullets: string[] = []
+
+  const flushBullets = () => {
+    if (bullets.length > 0) {
+      result.push(
+        <ul key={`ul-${result.length}`} className="privacy-list">
+          {bullets.map((b, i) => <li key={i}>{b}</li>)}
+        </ul>
+      )
+      bullets = []
+    }
+  }
+
+  lines.forEach((line, i) => {
+    if (line.startsWith('•')) {
+      bullets.push(line.replace(/^•\s*/, ''))
+    } else {
+      flushBullets()
+      result.push(<p key={i} className="privacy-clause">{line}</p>)
+    }
+  })
+
+  flushBullets()
+  return result
+}
+
 export const PrivacyPage: React.FC = () => {
   const { t } = useLanguage()
   const content = t.pages.privacy
@@ -15,20 +45,19 @@ export const PrivacyPage: React.FC = () => {
         </div>
 
         <div className="privacy-content">
-        {content.sections.map((section, index) => (
-          <section key={index} className="privacy-section">
-            {section.title && <h2>{section.title}</h2>}
-            {section.isList ? (
-              <ul className="privacy-list">
-                {section.content.split(',').map((item, i) => (
-                  <li key={i}>{item.trim()}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>{section.content}</p>
-            )}
-          </section>
-        ))}
+          {content.sections.map((section, index) => (
+            <section key={index} className="privacy-section">
+              {section.title && (
+                <h2>
+                  {section.number && <span className="privacy-section-num">{section.number}.</span>}
+                  {section.title}
+                </h2>
+              )}
+              <div className="privacy-body">
+                {renderContent(section.content)}
+              </div>
+            </section>
+          ))}
         </div>
       </div>
     </Layout>

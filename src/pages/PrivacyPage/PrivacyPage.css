@@ -23,46 +23,105 @@
   background: var(--white);
   border-radius: 16px;
   box-shadow: var(--shadow-sm);
-  margin: 2rem;
+  margin: 2rem auto;
   padding: 3rem;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 860px;
+  width: calc(100% - 4rem);
 }
 
+/* Section block */
 .privacy-section {
-  margin-bottom: 2.5rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 2rem 0;
+}
+
+.privacy-section:first-child {
+  padding-top: 0;
 }
 
 .privacy-section:last-child {
-  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
+/* Section heading */
 .privacy-section h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--primary-color);
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.1rem 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  line-height: 1.4;
 }
 
-.privacy-section p {
-  font-size: 1.05rem;
-  line-height: 1.8;
+.privacy-section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+/* Body container */
+.privacy-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+/* Numbered clause lines like "1.1. ..." */
+.privacy-clause {
+  font-size: 0.97rem;
+  line-height: 1.75;
   color: var(--text-color);
   margin: 0;
+  padding-left: 0.5rem;
+  border-left: 2px solid transparent;
+  transition: border-color 0.15s;
 }
 
+.privacy-clause:hover {
+  border-left-color: var(--gray-300);
+}
+
+/* Bullet list */
 .privacy-list {
-  list-style-position: inside;
+  list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0.2rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .privacy-list li {
-  font-size: 1.05rem;
-  line-height: 1.8;
+  font-size: 0.97rem;
+  line-height: 1.7;
   color: var(--text-color);
-  margin-bottom: 0.75rem;
+  padding-left: 1.4rem;
+  position: relative;
+}
+
+.privacy-list li::before {
+  content: '';
+  position: absolute;
+  left: 0.2rem;
+  top: 0.65em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  opacity: 0.7;
 }
 
 @media (max-width: 768px) {
@@ -76,17 +135,22 @@
   }
 
   .privacy-content {
-    margin: 1.5rem;
-    padding: 2rem;
+    margin: 1.5rem auto;
+    padding: 2rem 1.5rem;
+    width: calc(100% - 3rem);
+  }
+
+  .privacy-section {
+    padding: 1.5rem 0;
   }
 
   .privacy-section h2 {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
-  .privacy-section p,
+  .privacy-clause,
   .privacy-list li {
-    font-size: 1rem;
+    font-size: 0.94rem;
   }
 }
 
@@ -101,22 +165,29 @@
   }
 
   .privacy-content {
-    margin: 1rem;
-    padding: 1.5rem;
+    margin: 1rem auto;
+    padding: 1.5rem 1rem;
+    width: calc(100% - 2rem);
     border-radius: 12px;
   }
 
   .privacy-section {
-    margin-bottom: 2rem;
+    padding: 1.25rem 0;
   }
 
   .privacy-section h2 {
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.85rem;
   }
 
-  .privacy-section p,
+  .privacy-clause,
   .privacy-list li {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .privacy-clause {
+    transition: none;
   }
 }
