@@ -104,6 +104,7 @@ export const Footer: React.FC = () => {
 
               <div className="footer-bottom">
                 <p>{t.footer.copyright}</p>
+                <p>{t.footer.taxNumber}</p>
               </div>
 
             </div>

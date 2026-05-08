@@ -292,7 +292,8 @@ export const ru: Translations = {
     whatWeDo: 'Что мы делаем',
     ourApps: 'Наши приложения',
     downloadOn: 'Скачать на',
-    getItOn: 'Получить на'
+    getItOn: 'Получить на',
+    taxNumber: 'Регистрационный № (ИНН): 2906348882'
   },
   messages: {
     contactSuccess: 'Заявка получена! Мы скоро свяжемся с вами.',

@@ -289,7 +289,8 @@ export const az: Translations = {
     whatWeDo: "Biz nə edirik",
     ourApps: "Bizim tətbiqlərimiz",
     downloadOn: "Yükləyin",
-    getItOn: "Yükləyin"
+    getItOn: "Yükləyin",
+    taxNumber: "QEYDİYYAT № (VÖEN): 2906348882"
   },
   messages: {
     contactSuccess: "Müraciətiniz qəbul edildi! Tezliklə sizinlə əlaqə saxlanılacaq",

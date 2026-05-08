@@ -292,7 +292,8 @@ export const en: Translations = {
     whatWeDo: "What we do",
     ourApps: "Our apps",
     downloadOn: "Download on the",
-    getItOn: "Get it on"
+    getItOn: "Get it on",
+    taxNumber: "Registration No. (TIN): 2906348882"
   },
   messages: {
     contactSuccess: "Your request has been received! We will contact you soon.",
