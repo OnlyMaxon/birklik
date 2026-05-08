@@ -43,18 +43,42 @@
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  background: var(--gray-50);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border: 1.5px dashed var(--gray-200);
   border-radius: 14px;
   pointer-events: all;
+  position: relative;
+  overflow: hidden;
+}
+
+.ad-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(46, 125, 91, 0.03) 10px, rgba(46, 125, 91, 0.03) 20px);
+  pointer-events: none;
 }
 
 .ad-placeholder-label {
   font-size: 0.72rem;
-  font-weight: 1500;
-  color: var(--gray-300);
+  font-weight: 700;
+  color: var(--gray-500);
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  position: relative;
+  z-index: 1;
+}
+
+.ad-placeholder::after {
+  content: '📢';
+  position: absolute;
+  font-size: 3rem;
+  opacity: 0.15;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .ad-placeholder-size {
