@@ -216,16 +216,16 @@ export const RegisterPage: React.FC = () => {
                   />
                   <span>
                     {language === 'en'
-                      ? 'By confirming the listing, I accept the '
+                      ? 'I agree to the '
                       : language === 'ru'
-                        ? 'Объявляя объявление, я принимаю '
-                        : 'Elanı təsdiqləməklə mən '}
+                        ? 'Я принимаю условия '
+                        : 'Mən '}
                     <Link to="/user-agreement">
                       {language === 'en'
                         ? 'user agreement'
                         : language === 'ru'
-                          ? 'условия использования'
-                          : 'istifadə şərtlərini'}
+                          ? 'пользовательского соглашения'
+                          : 'istifadəçi razılaşmasını qəbul edirəm'}
                     </Link>
                   </span>
                 </label>
