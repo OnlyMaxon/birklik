@@ -37,7 +37,7 @@
 
 .ad-placeholder {
   width: 160px;
-  min-height: 320px;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
