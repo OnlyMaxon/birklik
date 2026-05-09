@@ -59,7 +59,6 @@
   align-items: flex-start;
   width: 100%;
   flex-wrap: nowrap;
-  padding: 0 0.75rem;
 }
 
 .section-header {
@@ -96,7 +95,8 @@
   .properties-content .container {
     flex: 1;
     min-width: 0;
-    max-width: calc(1280px - 160px * 2 - 0.8rem * 2);
+    margin: 0;
+    max-width: none;
   }
 }
 

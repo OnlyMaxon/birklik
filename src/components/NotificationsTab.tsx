@@ -97,12 +97,65 @@ const getIconMeta = (type: NotificationType): { color: string; svg: React.ReactN
   }
 }
 
+const renderExtraDetails = (notification: Notification, language: string): React.ReactNode => {
+  const n = notification as unknown as Record<string, unknown>
+  const fmt = (d: string) => new Date(d).toLocaleDateString(
+    language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-AZ',
+    { day: 'numeric', month: 'long', year: 'numeric' }
+  )
+  const rows: { label: string; value: string }[] = []
+
+  if (n.checkInDate) rows.push({ label: language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş', value: fmt(n.checkInDate as string) })
+  if (n.checkOutDate) rows.push({ label: language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış', value: fmt(n.checkOutDate as string) })
+  if (n.bookerEmail) rows.push({ label: language === 'en' ? 'Email' : 'Email', value: n.bookerEmail as string })
+  if (n.bookerPhone) rows.push({ label: language === 'en' ? 'Phone' : language === 'ru' ? 'Телефон' : 'Telefon', value: n.bookerPhone as string })
+  if (n.rejectionReason) rows.push({ label: language === 'en' ? 'Reason' : language === 'ru' ? 'Причина' : 'Səbəb', value: n.rejectionReason as string })
+  if (n.ratingValue) rows.push({ label: language === 'en' ? 'Rating' : language === 'ru' ? 'Оценка' : 'Reytinq', value: `${n.ratingValue} / 5` })
+  if (n.amount && n.currency) rows.push({ label: language === 'en' ? 'Amount' : language === 'ru' ? 'Сумма' : 'Məbləğ', value: `${n.amount} ${n.currency}` })
+  if (n.packageTier) rows.push({ label: language === 'en' ? 'Package' : language === 'ru' ? 'Пакет' : 'Paket', value: String(n.packageTier).toUpperCase() })
+  if (n.propertyTitle) rows.push({ label: language === 'en' ? 'Property' : language === 'ru' ? 'Объявление' : 'Elan', value: n.propertyTitle as string })
+
+  if (!rows.length) return null
+  return (
+    <div className="ntf-modal-details">
+      {rows.map(r => (
+        <div key={r.label} className="ntf-modal-detail-row">
+          <span className="ntf-modal-detail-label">{r.label}</span>
+          <span className="ntf-modal-detail-value">{r.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const getActionLabel = (type: string, language: string): string | null => {
+  switch (type) {
+    case 'booking':
+    case 'cancellationRequest':
+    case 'cancellationApproved':
+    case 'cancellationRejected':
+    case 'bookingApproved':
+    case 'bookingRejected':
+      return language === 'en' ? 'View bookings' : language === 'ru' ? 'Посмотреть бронирования' : 'Bronlara bax'
+    case 'comment':
+    case 'reply':
+    case 'favorite':
+    case 'rating':
+      return language === 'en' ? 'View property' : language === 'ru' ? 'Посмотреть объявление' : 'Elanı gör'
+    case 'commentReport':
+      return language === 'en' ? 'View reports' : language === 'ru' ? 'Посмотреть жалобы' : 'Şikayətlərə bax'
+    default:
+      return null
+  }
+}
+
 export const NotificationsTab = React.memo(() => {
   const navigate = useNavigate()
   const { language } = useLanguage()
   const { user } = useAuth()
   const [notifications, setNotifications] = React.useState<Notification[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
+  const [selectedNotification, setSelectedNotification] = React.useState<Notification | null>(null)
 
   React.useEffect(() => {
     const loadNotifications = async () => {
@@ -141,22 +194,28 @@ export const NotificationsTab = React.memo(() => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId))
   }
 
-  const handleNotificationClick = async (notification: Notification) => {
-    if (user?.id) {
-      await deleteNotification(user.id, notification.id)
-      setNotifications(prev => prev.filter(n => n.id !== notification.id))
-    }
+  const handleNotificationClick = (notification: Notification) => {
+    setSelectedNotification(notification)
+  }
 
-    const booking = notification as unknown as Record<string, unknown>
-    const propertyId = (booking?.propertyId as string) || notification.relatedId
+  const handleModalClose = () => setSelectedNotification(null)
 
-    switch (notification.type) {
+  const handleModalAction = async () => {
+    if (!selectedNotification || !user?.id) return
+    await deleteNotification(user.id, selectedNotification.id)
+    setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id))
+    setSelectedNotification(null)
+
+    const n = selectedNotification as unknown as Record<string, unknown>
+    const propertyId = (n?.propertyId as string) || selectedNotification.relatedId
+
+    switch (selectedNotification.type) {
       case 'booking':
       case 'cancellationRequest':
-        navigate('/dashboard?tab=bookings&subtab=requests')
-        break
       case 'cancellationApproved':
       case 'cancellationRejected':
+      case 'bookingApproved':
+      case 'bookingRejected':
         navigate('/dashboard?tab=bookings&subtab=requests')
         break
       case 'comment':
@@ -183,6 +242,9 @@ export const NotificationsTab = React.memo(() => {
   const markReadTitle = language === 'en' ? 'Mark as read' : language === 'ru' ? 'Отметить прочитанным' : 'Oxundu kimi işarələ'
   const deleteTitle = language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil'
   const emptyText = language === 'en' ? 'No notifications yet' : language === 'ru' ? 'Уведомлений нет' : 'Bildiriş yoxdur'
+
+  const closeLabel = language === 'en' ? 'Close' : language === 'ru' ? 'Закрыть' : 'Bağla'
+  const actionLabel = selectedNotification ? getActionLabel(selectedNotification.type, language) : null
 
   return (
     <div className="tab-content">
@@ -247,6 +309,36 @@ export const NotificationsTab = React.memo(() => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {selectedNotification && (
+        <div className="ntf-modal-overlay" onClick={handleModalClose}>
+          <div className="ntf-modal" onClick={e => e.stopPropagation()}>
+            <div className={`ntf-modal-header type-${selectedNotification.type}`}>
+              <NtfIcon type={selectedNotification.type} />
+              <p className="ntf-modal-title">{selectedNotification.title}</p>
+              <button className="ntf-modal-close" onClick={handleModalClose} aria-label={closeLabel}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div className="ntf-modal-body">
+              <p className="ntf-modal-message">{selectedNotification.message}</p>
+              {renderExtraDetails(selectedNotification, language)}
+              <div className="ntf-modal-meta">
+                {selectedNotification.relatedUserName && (
+                  <span className="notification-user">{fromLabel}: {selectedNotification.relatedUserName}</span>
+                )}
+                <span className="notification-time">{formatRelativeTime(selectedNotification.createdAt, language)}</span>
+              </div>
+            </div>
+            <div className="ntf-modal-footer">
+              <button className="ntf-modal-btn-close" onClick={handleModalClose}>{closeLabel}</button>
+              {actionLabel && (
+                <button className="ntf-modal-btn-action" onClick={handleModalAction}>{actionLabel}</button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
