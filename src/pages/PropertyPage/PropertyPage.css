@@ -1,6 +1,5 @@
 .property-page {
   padding: 2rem 0;
-  overflow-x: clip;
   background:
     radial-gradient(circle at 86% -8%, rgba(255,122,0,0.08), transparent 30%),
     linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%);
@@ -299,8 +298,9 @@
 /* Sidebar */
 .property-sidebar {
   position: sticky;
-  top: 90px;
+  top: calc(72px + 1.25rem);
   min-width: 0;
+  align-self: start;
 }
 
 .booking-card {
