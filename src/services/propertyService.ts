@@ -119,25 +119,24 @@ export const getProperties = async (
     const q = query(collection(db, COLLECTION_NAME), ...constraints)
     const snapshot = await getDocs(q)
 
-    const properties = snapshot.docs
-      .map(mapDocToProperty)
-      .filter(property => {
+    const filteredDocs = snapshot.docs
+      .map(doc => ({ doc, property: mapDocToProperty(doc) }))
+      .filter(({ property }) => {
         if (!isPubliclyVisible(property)) return false
         if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
         return matchesSearch(property, filters?.search)
       })
       // Sort by featured first, then by date
       .sort((a, b) => {
-        if (a.isFeatured !== b.isFeatured) {
-          return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0)
+        if (a.property.isFeatured !== b.property.isFeatured) {
+          return (b.property.isFeatured ? 1 : 0) - (a.property.isFeatured ? 1 : 0)
         }
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        return new Date(b.property.createdAt || 0).getTime() - new Date(a.property.createdAt || 0).getTime()
       })
       .slice(0, PAGE_SIZE)
 
-    const newLastDoc = snapshot.docs.length > 0 
-      ? snapshot.docs[snapshot.docs.length - 1] 
-      : null
+    const properties = filteredDocs.map(({ property }) => property)
+    const newLastDoc = filteredDocs.length > 0 ? filteredDocs[filteredDocs.length - 1].doc : null
 
     return { properties, lastDoc: newLastDoc }
   } catch (error) {

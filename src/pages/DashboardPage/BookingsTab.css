@@ -69,7 +69,7 @@
 .bookings-sort-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.12);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.12);
 }
 
 /* ── Error ── */
@@ -136,11 +136,11 @@
 }
 
 .booking-card--request {
-  border-color: rgba(46, 125, 91, 0.18);
+  border-color: rgba(var(--primary-color-rgb), 0.18);
 }
 
 .booking-card--request:hover {
-  border-color: rgba(46, 125, 91, 0.45);
+  border-color: rgba(var(--primary-color-rgb), 0.45);
 }
 
 /* ── Image ── */
@@ -249,8 +249,8 @@
   flex-direction: column;
   gap: 0.3rem;
   padding: 0.65rem 0.75rem;
-  background: rgba(46, 125, 91, 0.05);
-  border: 1px solid rgba(46, 125, 91, 0.12);
+  background: rgba(var(--primary-color-rgb), 0.05);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.12);
   border-radius: 10px;
 }
 
@@ -326,7 +326,7 @@
 .booking-card__date-field input[type="date"]:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.12);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.12);
 }
 
 /* ── Cancellation sent ── */

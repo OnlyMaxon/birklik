@@ -6,11 +6,13 @@
 
   /* Primary — Green (меню, контейнеры, сайдбары — 20%) */
   --primary-color: #2E7D5B;
+  --primary-color-rgb: 46, 125, 91;
   --primary-light: #4a9971;
   --primary-dark: #1d5940;
 
   /* Secondary — Blue (10%) */
   --secondary-color: #4DA8DA;
+  --secondary-color-rgb: 77, 168, 218;
   --secondary-light: #72bce4;
   --secondary-dark: #2d88ba;
 
@@ -168,7 +170,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(46, 125, 91, 0.14);
+  box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.14);
 }
 
 /* Container */
@@ -211,7 +213,7 @@ input:focus, select:focus, textarea:focus {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
   color: var(--white);
-  box-shadow: 0 8px 20px rgba(46, 125, 91, 0.28);
+  box-shadow: 0 8px 20px rgba(var(--primary-color-rgb), 0.28);
 }
 
 .btn-primary:hover {

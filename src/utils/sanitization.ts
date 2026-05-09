@@ -42,10 +42,10 @@ export const sanitizeHtml = (html: string): string => {
  */
 export const allowSafeHtml = (html: string): string => {
   if (!html || typeof html !== 'string') return ''
-  
-  // Create a div to parse HTML
-  const temp = document.createElement('div')
-  temp.innerHTML = html
+
+  // DOMParser isolates script execution; innerHTML on a detached element does not
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  const temp = doc.body
   
   // Allowed safe tags
   const allowedTags = ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'ul', 'ol', 'li']
@@ -93,8 +93,5 @@ export const allowSafeHtml = (html: string): string => {
  */
 export const stripHtml = (html: string): string => {
   if (!html || typeof html !== 'string') return ''
-  
-  const temp = document.createElement('div')
-  temp.innerHTML = html
-  return temp.textContent || temp.innerText || ''
+  return html.replace(/<[^>]*>/g, '')
 }

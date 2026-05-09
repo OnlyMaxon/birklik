@@ -1,4 +1,4 @@
-import { DocumentSnapshot, QueryConstraint } from 'firebase/firestore'
+import { DocumentSnapshot, QueryConstraint, where, orderBy, limit, startAfter } from 'firebase/firestore'
 import { PropertyType, District } from '../types'
 
 /**
@@ -59,7 +59,6 @@ export const buildQueryConstraints = (
   pagination: PaginationOptions = {}
 ): QueryConstraint[] => {
   const constraints: QueryConstraint[] = []
-  const { where, orderBy, limit, startAfter } = require('firebase/firestore')
 
   // Filter constraints - order matters for composite indexes
   if (filters.status) {

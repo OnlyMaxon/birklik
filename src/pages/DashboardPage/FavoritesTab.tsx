@@ -39,7 +39,7 @@ export const FavoritesTab: React.FC = () => {
     }
 
     loadFavorites()
-  }, [user?.id, language])
+  }, [user?.id])
 
   const handleFavoriteToggle = (propertyId: string) => {
     setFavorites(prev => prev.filter(p => p.id !== propertyId))

@@ -90,7 +90,7 @@
   outline: none;
   border-color: var(--primary-color);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.14);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.14);
 }
 
 /* Suggestions dropdown */
@@ -125,7 +125,7 @@
 
 .search-suggestion-item:hover,
 .search-suggestion-item.active {
-  background: rgba(46, 125, 91, 0.08);
+  background: rgba(var(--primary-color-rgb), 0.08);
   color: var(--primary-dark);
 }
 
@@ -460,7 +460,7 @@
   outline: none;
   border-color: var(--primary-color);
   background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(46, 125, 91, 0.14);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.14);
 }
 
 /* Action row */

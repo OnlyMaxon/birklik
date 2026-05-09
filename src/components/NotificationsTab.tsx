@@ -182,9 +182,7 @@ export const NotificationsTab = React.memo(() => {
   const handleMarkAllAsRead = async () => {
     if (!user?.id) return
     const unread = notifications.filter(n => !n.read)
-    for (const n of unread) {
-      await deleteNotification(user.id, n.id)
-    }
+    await Promise.all(unread.map(n => deleteNotification(user.id, n.id)))
     setNotifications(prev => prev.filter(n => n.read))
   }
 

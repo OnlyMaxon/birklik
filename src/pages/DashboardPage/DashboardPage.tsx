@@ -118,7 +118,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ? 'Объявление успешно сохранено'
     : 'Elan uğurla yadda saxlanıldı'
 
-  const planFeatures = {
+  const planFeatures = React.useMemo(() => ({
   standard: isEnglish
     ? ['20 photos', 'Full description', 'Open location']
     : isRussian
@@ -169,9 +169,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         'Prioritetli Elan əsas səhifədə (rekomendasiyalarda) göstəriləcək', 
         'Sizin ərazi üzrə axtarış nəticələrində təsadüfi qaydada ön sıralarda göstəriləcək'
       ]
-};
+  }), [language]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const listingPlans = [
+  const listingPlans = React.useMemo(() => [
     {
       id: 'standard' as ListingTier,
       title: t.pricing.standard,
@@ -206,7 +206,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       showPricingDropdown: true,
       highlighted: true
     }
-  ]
+  ], [planFeatures, t])
 
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -463,13 +463,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    // Validate city selection (required)
-    if (!newListing.city) {
-      setError(t.listing.selectCity)
-      setIsSubmitting(false)
-      return
-    }
-
     // Validate price
     if (!newListing.price || Number(newListing.price) <= 0) {
       setError(t.listing.enterPrice)
@@ -596,7 +589,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       likes: [],
       favorites: [],
       comments: [],
-      premiumExpiresAt: newListing.listingTier === 'premium' ? new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
+      premiumExpiresAt: newListing.listingTier === 'premium'
+        ? new Date(Date.now() + (newListing.tierPlanDuration === '14days' ? 14 : 30) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        : undefined
     }
 
     if (editingListingId) {
@@ -1087,11 +1082,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     try {
       const existingTestListings = listings.filter((listing) => listing.ownerId === user.id && isTestListing(listing))
 
-      for (const listing of existingTestListings) {
-        await deleteProperty(listing.id)
-      }
+      await Promise.all(existingTestListings.map(listing => deleteProperty(listing.id)))
 
-      for (const testListing of testListings) {
+      await Promise.all(testListings.map(testListing => {
         const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
           ...testListing,
           owner: {
@@ -1104,11 +1097,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
           likes: [],
           favorites: [],
           comments: [],
-          premiumExpiresAt: testListing.listingTier === 'premium' ? new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
+          premiumExpiresAt: testListing.listingTier === 'premium' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
         }
-
-        await createProperty(propertyPayload, [])
-      }
+        return createProperty(propertyPayload, [])
+      }))
 
       setHasTestData(true)
       await loadListings()
@@ -1129,9 +1121,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     try {
       const listingsToDelete = listings.filter(l => l.ownerId === user.id && isTestListing(l))
 
-      for (const listing of listingsToDelete) {
-        await deleteProperty(listing.id)
-      }
+      await Promise.all(listingsToDelete.map(listing => deleteProperty(listing.id)))
 
       setHasTestData(false)
       await loadListings()

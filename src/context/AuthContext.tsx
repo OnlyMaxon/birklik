@@ -37,20 +37,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [cachedUserId, setCachedUserId] = useState<string | null>(null)
 
   // Listen to Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
-        // Skip if we already loaded this user
-        if (cachedUserId === fbUser.uid) {
-          setIsLoading(false)
-          return
-        }
-
         setFirebaseUser(fbUser)
-        setCachedUserId(fbUser.uid)
         
         // Try to get user data from Firestore
         try {
@@ -87,7 +79,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setFirebaseUser(null)
         setUser(null)
-        setCachedUserId(null)
       }
       setIsLoading(false)
     })

@@ -20,7 +20,7 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 18%, rgba(46, 125, 91, 0.12), transparent 46%),
+    radial-gradient(circle at 15% 18%, rgba(var(--primary-color-rgb), 0.12), transparent 46%),
     linear-gradient(120deg, rgba(15, 25, 20, 0.72), rgba(15, 25, 20, 0.55));
 }
 
@@ -133,7 +133,7 @@
   border: 1px solid var(--gray-200);
   border-radius: 22px;
   padding: 0.65rem;
-  box-shadow: 0 10px 18px rgba(46, 125, 91, 0.1);
+  box-shadow: 0 10px 18px rgba(var(--primary-color-rgb), 0.1);
 }
 
 .premium-results-map .map-container {
