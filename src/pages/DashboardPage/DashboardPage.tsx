@@ -510,7 +510,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    if (selectedFiles.length < 2) {
+    if (selectedFiles.length < 5) {
       setError(t.listing.minPhotos)
       setIsSubmitting(false)
       return
@@ -1913,7 +1913,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               type="file"
                               multiple
                               accept="image/*"
-                              onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
+                              onChange={(e) => setSelectedFiles(prev => [...prev, ...Array.from(e.target.files || [])])}
                             />
                             {selectedFiles.length > 0 && (
                               <p>{selectedFiles.length} {isEnglish ? 'file(s) selected' : isRussian ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>
