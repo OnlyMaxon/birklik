@@ -33,7 +33,7 @@ const initialFilters: FilterState = {
 export const HomePage: React.FC = () => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
-  const [showMap, setShowMap] = React.useState(true)
+  const [showMap, setShowMap] = React.useState(() => window.innerWidth < 1280)
   const [showFilters, setShowFilters] = React.useState(false)
   const [viewMode, setViewMode] = React.useState<'normal' | 'compact'>('normal')
   const [isDesktop, setIsDesktop] = React.useState(() => window.innerWidth >= 1024)
@@ -71,7 +71,7 @@ export const HomePage: React.FC = () => {
   }, [])
 
   React.useEffect(() => {
-    if (isDesktop) {
+    if (isDesktop && window.innerWidth < 1280) {
       setShowMap(true)
     }
   }, [isDesktop])
@@ -199,11 +199,11 @@ export const HomePage: React.FC = () => {
               hideFilterToggle={true}
               isOpen={showFilters}
               onOpenChange={setShowFilters}
-              mapToggle={!isDesktop ? {
+              mapToggle={{
                 active: showMap,
                 label: mapLabel,
                 onClick: () => setShowMap(!showMap)
-              } : undefined}
+              }}
               viewToggle={{
                 mode: viewMode,
                 onToggle: setViewMode
