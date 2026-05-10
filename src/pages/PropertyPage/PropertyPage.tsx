@@ -720,7 +720,7 @@ export const PropertyPage: React.FC = () => {
                   )}
                 </div>
                 <div className="pp-title-card__top">
-                  <h1 className="property-title">{getLocalizedText(property.title)}</h1>
+                  <h1 className="pp-page-title">{getLocalizedText(property.title)}</h1>
                   <div className="pp-header-actions">
                     <button
                       onClick={handleFavoriteClick}
