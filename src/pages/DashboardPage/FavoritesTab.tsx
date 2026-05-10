@@ -93,7 +93,7 @@ export const FavoritesTab: React.FC = () => {
       ) : (
 
         /* Grid */
-        <div className="properties-grid">
+        <div className="dashboard-favorites-grid">
           {favorites.map(property => (
             <PropertyCard
               key={property.id}
