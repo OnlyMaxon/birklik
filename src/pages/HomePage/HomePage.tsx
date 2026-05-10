@@ -36,45 +36,30 @@ export const HomePage: React.FC = () => {
   const [showMap, setShowMap] = React.useState(() => window.innerWidth < 1280)
   const [showFilters, setShowFilters] = React.useState(false)
   const [viewMode, setViewMode] = React.useState<'normal' | 'compact'>('normal')
-  const [isDesktop, setIsDesktop] = React.useState(() => window.innerWidth >= 1024)
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState('')
   const resultsRef = React.useRef<HTMLElement | null>(null)
 
   React.useEffect(() => {
+    let cancelled = false
+
     const loadProperties = async () => {
       setIsLoading(true)
       setError('')
 
-      // Pass city filter to server if selected to reduce initial data load
       const result = await getProperties(
         filters.city ? { city: filters.city } : undefined
       )
-      if (result.properties.length === 0) {
-        setError('')
-      }
+      if (cancelled) return
       setProperties(result.properties)
+      if (result.properties.length === 0) setError('')
       setIsLoading(false)
     }
 
     loadProperties()
+    return () => { cancelled = true }
   }, [filters.city])
-
-  React.useEffect(() => {
-    const onResize = () => {
-      setIsDesktop(window.innerWidth >= 1024)
-    }
-
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
-
-  React.useEffect(() => {
-    if (isDesktop && window.innerWidth < 1280) {
-      setShowMap(true)
-    }
-  }, [isDesktop])
 
   const filteredProperties = React.useMemo(() => {
     return filterProperties(properties, {

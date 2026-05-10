@@ -67,7 +67,6 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: clip;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   background: #0d1f17;
@@ -89,6 +88,7 @@ body {
   text-rendering: optimizeLegibility;
   width: 100%;
   max-width: 100vw;
+  overflow-x: clip;
 }
 
 #root {
