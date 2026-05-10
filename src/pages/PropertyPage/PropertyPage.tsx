@@ -80,6 +80,52 @@ export const PropertyPage: React.FC = () => {
   const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
   const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
   const [isOwner, setIsOwner] = React.useState(false)
+  const sidebarRef = React.useRef<HTMLDivElement>(null)
+
+  // JS sticky for sidebar — translateY approach, works regardless of ancestor CSS
+  React.useLayoutEffect(() => {
+    if (!property) return
+    const sidebar = sidebarRef.current
+    if (!sidebar) return
+
+    const OFFSET = 72 + 20 // header height + 1.25rem gap
+
+    let origTop = 0
+    let maxTranslate = 0
+
+    const measure = () => {
+      const saved = sidebar.style.transform
+      sidebar.style.transform = 'none'
+      origTop = sidebar.getBoundingClientRect().top + window.scrollY
+      const layout = sidebar.closest('.property-layout') as HTMLElement | null
+      if (layout) {
+        const lTop = layout.getBoundingClientRect().top + window.scrollY
+        maxTranslate = Math.max(0, lTop + layout.offsetHeight - origTop - sidebar.offsetHeight)
+      }
+      sidebar.style.transform = saved || ''
+    }
+
+    const onScroll = () => {
+      if (window.innerWidth <= 1024) {
+        sidebar.style.transform = ''
+        return
+      }
+      const dy = Math.min(Math.max(0, window.scrollY - (origTop - OFFSET)), maxTranslate)
+      sidebar.style.transform = dy > 0 ? `translateY(${dy}px)` : ''
+    }
+
+    const onResize = () => { measure(); onScroll() }
+
+    measure()
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      sidebar.style.transform = ''
+    }
+  }, [property])
 
   // Auto-hide notification after 3 seconds
   React.useEffect(() => {
@@ -899,7 +945,7 @@ export const PropertyPage: React.FC = () => {
             </div>
 
             {/* Right Column */}
-            <div className="property-sidebar">
+            <div className="property-sidebar" ref={sidebarRef}>
 
               {/* Price Card */}
               <div className="pp-price-card">

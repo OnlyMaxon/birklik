@@ -297,8 +297,6 @@
 
 /* Sidebar */
 .property-sidebar {
-  position: sticky;
-  top: calc(72px + 1.25rem);
   min-width: 0;
   align-self: start;
 }
@@ -849,10 +847,6 @@
 @media (max-width: 1024px) {
   .property-layout {
     grid-template-columns: 1fr;
-  }
-
-  .property-sidebar {
-    position: static;
   }
 }
 
