@@ -367,4 +367,4 @@ Birklik.az — это маркетплейс краткосрочной арен
 test
 Сборка До PWA до Capacitor
 Google Search Invented
-Google ReCaptcha 
+Google ReCaptcha ИнВент Надо Для всех Приложений
