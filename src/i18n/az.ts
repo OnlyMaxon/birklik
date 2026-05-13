@@ -357,7 +357,7 @@ export const az: Translations = {
   home: {
     showMap: "Xəritədə göstər",
     hideMap: "Xəritəni gizlət",
-    topListingsTitle: "Seçilmiş villalar və istirahət mərkəzləri",
+    topListingsTitle: "İstirahet mekanları",
     plansTitle: "3 növ elan paketi",
     plansSubtitle: "Büdcənizə uyğun paketi seçin və elanınızı daha effektiv yerləşdirin.",
     plansNote: "Paket şərtləri bazar tələbinə uyğun olaraq mütəmadi yenilənə bilər.",

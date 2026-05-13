@@ -360,7 +360,7 @@ export const ru: Translations = {
   home: {
     showMap: 'Показать карту',
     hideMap: 'Скрыть карту',
-    topListingsTitle: 'Лучшие виллы и дома для отдыха',
+    topListingsTitle: 'Лучшие места отдыха',
     plansTitle: '3 тарифных плана',
     plansSubtitle: 'Выберите план под ваш бюджет и размещайте объявления эффективнее.',
     plansNote: 'Условия планов могут обновляться в зависимости от рынка.',
