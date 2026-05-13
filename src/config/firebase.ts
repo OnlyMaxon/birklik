@@ -2,6 +2,8 @@ import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
+import { getMessaging, isSupported } from 'firebase/messaging'
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'
 
 // Validate required env variables
 const requiredEnvVars = [
@@ -32,9 +34,28 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
 
+// App Check — protects Firestore, Storage and Functions from unauthorized access
+// In dev mode a debug token is printed to the console — add it in Firebase Console -> App Check -> Apps -> Debug tokens
+if (import.meta.env.DEV) {
+  (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true
+}
+if (import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+    isTokenAutoRefreshEnabled: true
+  })
+}
+
 // Initialize services
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export const storage = getStorage(app)
+
+// Messaging — only in browser environments that support it
+export const getFirebaseMessaging = async () => {
+  const supported = await isSupported()
+  if (!supported) return null
+  return getMessaging(app)
+}
 
 export default app

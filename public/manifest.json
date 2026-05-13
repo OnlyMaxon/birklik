@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Birklik.az - Azərbaycanda ev kirayəsi",
   "short_name": "Birklik.az",
   "description": "Azərbaycanda ev kirayəsi və yaşayış məkanlarının icarəsi üçün ən böyük platform",
@@ -7,22 +8,10 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#2E7D5B",
-  "background_color": "#FFFFFF",
-  "categories": ["productivity", "lifestyle"],
-  "screenshots": [
-    {
-      "src": "/brand/generated/logo-512x512.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "form_factor": "wide"
-    },
-    {
-      "src": "/brand/generated/logo-192x192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "form_factor": "narrow"
-    }
-  ],
+  "background_color": "#2E7D5B",
+  "lang": "az",
+  "dir": "ltr",
+  "categories": ["lifestyle", "shopping"],
   "icons": [
     {
       "src": "/brand/generated/logo-16x16.png",
@@ -65,14 +54,26 @@
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
+    },
+    {
+      "src": "/brand/generated/logo-maskable-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/brand/generated/logo-maskable-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "prefer_related_applications": false,
   "shortcuts": [
     {
-      "name": "Объявления",
-      "short_name": "Объявления",
-      "description": "Посмотреть все объявления",
+      "name": "Elanlar",
+      "short_name": "Elanlar",
+      "description": "Bütün elanları göstər",
       "url": "/?tab=listings",
       "icons": [
         {
@@ -83,9 +84,9 @@
       ]
     },
     {
-      "name": "Мой кабинет",
-      "short_name": "Кабинет",
-      "description": "Перейти в личный кабинет",
+      "name": "Şəxsi kabinet",
+      "short_name": "Kabinet",
+      "description": "Şəxsi kabinetə keçid",
       "url": "/dashboard",
       "icons": [
         {

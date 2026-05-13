@@ -609,7 +609,7 @@ export const ru: Translations = {
       address: 'Адрес',
       phoneNumber: '+994 99 888 82 26',
       emailAddress: 'info@birklik.az',
-      addressValue: 'город Баку, Азербайджан',
+      addressValue: 'Бинагадинский район, квартал 3068, улица Джафара Хандана, 54B',
       socialNetworks: 'Социальные сети',
       facebook: 'facebook.com/birklikaz',
       instagram: 'instagram.com/birklikaz',

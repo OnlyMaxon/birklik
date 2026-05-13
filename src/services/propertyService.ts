@@ -22,7 +22,7 @@ import { Property, PropertyType, Language, Comment } from '../types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'properties'
-const PAGE_SIZE = 12
+const PAGE_SIZE = 20
 
 const isPubliclyVisible = (property: Property): boolean => {
   // Older records may not have status; treat them as active.
@@ -110,7 +110,7 @@ export const getProperties = async (
 
     // Only add ordering without filters to avoid index requirement
     constraints.push(orderBy('createdAt', 'desc'))
-    constraints.push(limit(PAGE_SIZE * 2))
+    constraints.push(limit(PAGE_SIZE))
 
     if (lastDoc) {
       constraints.push(startAfter(lastDoc))
@@ -133,10 +133,12 @@ export const getProperties = async (
         }
         return new Date(b.property.createdAt || 0).getTime() - new Date(a.property.createdAt || 0).getTime()
       })
-      .slice(0, PAGE_SIZE)
-
     const properties = filteredDocs.map(({ property }) => property)
-    const newLastDoc = filteredDocs.length > 0 ? filteredDocs[filteredDocs.length - 1].doc : null
+    // Cursor uses last Firestore doc (before client filtering) so pagination is correct.
+    // hasMore is true only when Firestore returned a full page.
+    const newLastDoc = snapshot.docs.length === PAGE_SIZE
+      ? snapshot.docs[snapshot.docs.length - 1]
+      : null
 
     return { properties, lastDoc: newLastDoc }
   } catch (error) {

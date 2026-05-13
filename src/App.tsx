@@ -4,6 +4,7 @@ import { Loading } from './components'
 import { useAuth } from './context'
 import { isModerator } from './config/constants'
 import * as logger from './services/logger'
+import { usePushNotifications } from './hooks'
 
 const HomePage = React.lazy(() => import('./pages/HomePage').then((mod) => ({ default: mod.HomePage })))
 const PropertyPage = React.lazy(() => import('./pages/PropertyPage').then((mod) => ({ default: mod.PropertyPage })))
@@ -125,6 +126,7 @@ const CatchAllRoute: React.FC = () => {
 
 function App() {
   const { isLoading } = useAuth()
+  usePushNotifications()
 
   // Show loading screen while checking auth state
   if (isLoading) {

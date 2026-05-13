@@ -606,7 +606,7 @@ export const az: Translations = {
       address: "Ünvan",
       phoneNumber: "+994 99 888 82 26",
       emailAddress: "info@birklik.az",
-      addressValue: "Bakı şəhəri, Azərbaycan",
+      addressValue: "Binəqədi rayonu, 3068-ci məhəllə, Cəfər Xəndan küçəsi, 54B",
       socialNetworks: "Sosial şəbəkələr",
       facebook: "facebook.com/birklikaz",
       instagram: "instagram.com/birklikaz",

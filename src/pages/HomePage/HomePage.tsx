@@ -1,4 +1,5 @@
 import React from 'react'
+import type { DocumentSnapshot } from 'firebase/firestore'
 import { useLanguage } from '../../context'
 import { Layout } from '../../layouts'
 import { SearchBar, Filters, PropertyCard, Loading } from '../../components'
@@ -38,28 +39,73 @@ export const HomePage: React.FC = () => {
   const [viewMode, setViewMode] = React.useState<'normal' | 'compact'>('normal')
   const [properties, setProperties] = React.useState<Property[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
+  const [isLoadingMore, setIsLoadingMore] = React.useState(false)
+  const [, setHasMore] = React.useState(false)
   const [error, setError] = React.useState('')
   const resultsRef = React.useRef<HTMLElement | null>(null)
+  const sentinelRef = React.useRef<HTMLDivElement | null>(null)
+  const lastDocRef = React.useRef<DocumentSnapshot | null>(null)
+  const hasMoreRef = React.useRef(false)
+  const isLoadingMoreRef = React.useRef(false)
 
   React.useEffect(() => {
     let cancelled = false
 
-    const loadProperties = async () => {
+    const load = async () => {
       setIsLoading(true)
       setError('')
+      setProperties([])
+      setHasMore(false)
+      lastDocRef.current = null
+      hasMoreRef.current = false
 
       const result = await getProperties(
         filters.city ? { city: filters.city } : undefined
       )
       if (cancelled) return
+
       setProperties(result.properties)
-      if (result.properties.length === 0) setError('')
+      lastDocRef.current = result.lastDoc
+      hasMoreRef.current = result.lastDoc !== null
+      setHasMore(result.lastDoc !== null)
       setIsLoading(false)
     }
 
-    loadProperties()
+    load()
     return () => { cancelled = true }
   }, [filters.city])
+
+  const loadMore = React.useCallback(async () => {
+    if (isLoadingMoreRef.current || !hasMoreRef.current || !lastDocRef.current) return
+
+    isLoadingMoreRef.current = true
+    setIsLoadingMore(true)
+
+    const result = await getProperties(
+      filters.city ? { city: filters.city } : undefined,
+      lastDocRef.current
+    )
+
+    setProperties(prev => [...prev, ...result.properties])
+    lastDocRef.current = result.lastDoc
+    hasMoreRef.current = result.lastDoc !== null
+    setHasMore(result.lastDoc !== null)
+    isLoadingMoreRef.current = false
+    setIsLoadingMore(false)
+  }, [filters.city])
+
+  React.useEffect(() => {
+    if (isLoading) return
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore() },
+      { rootMargin: '400px' }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [loadMore, isLoading])
 
   const filteredProperties = React.useMemo(() => {
     return filterProperties(properties, {
@@ -88,11 +134,9 @@ export const HomePage: React.FC = () => {
 
   const handleFiltersOpen = () => {
     if (!showFilters) {
-      // Если фильтры закрыты, открыть и прокрутить
       setShowFilters(true)
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else {
-      // Если фильтры открыты, закрыть без прокрутки
       setShowFilters(false)
     }
   }
@@ -107,9 +151,9 @@ export const HomePage: React.FC = () => {
     filters.minGuests,
     filters.maxGuests,
     filters.hasPool === null ? null : filters.hasPool
-  ].filter((item) => item !== null && item !== '').length + 
-  filters.extraFilters.length + 
-  filters.nearbyPlaces.length + 
+  ].filter((item) => item !== null && item !== '').length +
+  filters.extraFilters.length +
+  filters.nearbyPlaces.length +
   filters.locationTags.length
 
   const mapLabel = showMap ? t.home.hideMap : t.home.showMap
@@ -217,6 +261,8 @@ export const HomePage: React.FC = () => {
                       />
                     ))}
                   </div>
+                  <div ref={sentinelRef} />
+                  {isLoadingMore && <Loading message="" />}
                 </div>
 
                 {showMap && (

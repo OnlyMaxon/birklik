@@ -12,6 +12,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { runAllCleanups } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
+import { sendPushToUser } from './notifications/sendPush';
 
 // Инициализируем Firebase Admin
 admin.initializeApp();
@@ -154,6 +155,30 @@ export const manualCleanup = functions
         error: (error as any).message || 'Unknown error',
       });
     }
+  });
+
+/**
+ * Firestore trigger: отправляет FCM push когда создаётся новое уведомление в Firestore.
+ * Срабатывает на все типы: booking, comment, favorite, rating и т.д.
+ */
+export const onNotificationCreated = functions
+  .region('europe-west1')
+  .firestore.document('users/{userId}/notifications/{notifId}')
+  .onCreate(async (snap, context) => {
+    const { userId } = context.params;
+    const data = snap.data();
+
+    if (!data) return null;
+
+    await sendPushToUser(userId, {
+      type: data.type || 'general',
+      title: data.title || 'Birklik.az',
+      message: data.message || '',
+      propertyId: data.relatedId || '',
+      bookingId: data.bookingId || '',
+    });
+
+    return null;
   });
 
 console.log('✅ Cloud Functions initialized');

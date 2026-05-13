@@ -14,9 +14,16 @@
     "functions:deploy": "firebase deploy --only functions --project birklik-65289 --force",
     "functions:logs": "firebase functions:log --project birklik-65289",
     "cleanup:dry": "cd firebase-functions && npm run cleanup:dry",
-    "cleanup:execute": "cd firebase-functions && npm run cleanup:execute"
+    "cleanup:execute": "cd firebase-functions && npm run cleanup:execute",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:run": "npm run build && npx cap sync android && npx cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.3",
+    "@capacitor/cli": "^8.3.3",
+    "@capacitor/core": "^8.3.3",
+    "@capacitor/push-notifications": "^8.0.4",
     "firebase": "^12.10.0",
     "firebase-admin": "^13.8.0",
     "leaflet": "^1.9.4",

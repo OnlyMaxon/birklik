@@ -110,6 +110,41 @@ self.addEventListener('message', (event) => {
   }
 })
 
+// Push notification handler - получение FCM push когда приложение закрыто или в фоне
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+
+  let data = {}
+  try {
+    data = event.data.json()
+  } catch {
+    data = { title: event.data.text() }
+  }
+
+  const title = data.title || 'Birklik.az'
+  const options = {
+    body: data.body || '',
+    icon: '/brand/generated/logo-192x192.png',
+    badge: '/brand/generated/logo-96x96.png',
+    data: {
+      type: data.type || '',
+      propertyId: data.propertyId || '',
+      bookingId: data.bookingId || '',
+    },
+    tag: data.type || 'general',
+    renotify: true,
+  }
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Если приложение открыто и в фокусе — не показываем системное уведомление
+      const hasFocusedClient = clientList.some((c) => c.focused)
+      if (hasFocusedClient) return
+      return self.registration.showNotification(title, options)
+    })
+  )
+})
+
 // Notification click handler - обработка клика на push-уведомления
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
