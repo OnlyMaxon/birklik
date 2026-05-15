@@ -100,12 +100,6 @@
   }
 }
 
-/* Hide side ads when map is open — not enough horizontal space */
-.properties-content:has(.premium-results-shell.with-map) .ad-slot--left,
-.properties-content:has(.premium-results-shell.with-map) .ad-slot--right {
-  display: none;
-}
-
 .premium-results-shell {
   display: block;
 }
