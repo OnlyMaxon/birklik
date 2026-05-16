@@ -161,7 +161,10 @@ export const ru: Translations = {
     apartment: 'Квартира',
     house: 'Дача',
     cottage: 'Коттедж',
-    penthouse: 'Пентхаус'
+    penthouse: 'Пентхаус',
+    aframe: 'A-frame дом',
+    sanatorium: 'Санаторий',
+    recreation: 'Центр отдыха'
   },
   districts: {
     mardakan: 'Мардакан',

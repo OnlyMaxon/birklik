@@ -1,4 +1,4 @@
-export type PropertyType = 'villa' | 'apartment' | 'house' | 'cottage' | 'penthouse'
+export type PropertyType = 'villa' | 'apartment' | 'house' | 'cottage' | 'penthouse' | 'aframe' | 'sanatorium' | 'recreation'
 
 export type District = 'mardakan' | 'novkhani' | 'buzovna' | 'bilgah' | 'zagulba' | 'pirshagi' | 'shuvalan' | 'baku' | 'nabran' | 'gabala'
 

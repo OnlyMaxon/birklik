@@ -161,7 +161,10 @@ export const en: Translations = {
     apartment: "Apartment",
     house: "Country house",
     cottage: "Cottage",
-    penthouse: "Penthouse"
+    penthouse: "Penthouse",
+    aframe: "A-frame house",
+    sanatorium: "Sanatorium",
+    recreation: "Recreation center"
   },
   districts: {
     mardakan: "Mardakan",

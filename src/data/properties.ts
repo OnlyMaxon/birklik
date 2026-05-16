@@ -22,7 +22,10 @@ export const propertyTypes: PropertyType[] = [
   'apartment',
   'house',
   'cottage',
-  'penthouse'
+  'penthouse',
+  'aframe',
+  'sanatorium',
+  'recreation'
 ]
 
 export const cities: CityOption[] = [

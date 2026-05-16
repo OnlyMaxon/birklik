@@ -158,7 +158,10 @@ export const az: Translations = {
     apartment: "Mənzil",
     house: "Bağ evi",
     cottage: "Kotec",
-    penthouse: "Penthaus"
+    penthouse: "Penthaus",
+    aframe: "A-frame ev",
+    sanatorium: "Sanatoriya",
+    recreation: "İstirahət mərkəzi"
   },
   districts: {
     mardakan: "Mərdəkan",

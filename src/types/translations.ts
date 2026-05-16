@@ -162,6 +162,9 @@ export interface Translations {
     house: string
     cottage: string
     penthouse: string
+    aframe: string
+    sanatorium: string
+    recreation: string
   }
   districts: {
     mardakan: string
