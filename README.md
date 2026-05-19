@@ -365,6 +365,7 @@ Birklik.az — это маркетплейс краткосрочной арен
 - Файлы: Firebase Storage.
 - Карта: OpenStreetMap + React Leaflet.
 test
+Vite
 Сборка До PWA до Capacitor
 Google Search Invented
 Google ReCaptcha ИнВент Надо Для всех Приложений
