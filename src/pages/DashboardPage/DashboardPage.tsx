@@ -510,7 +510,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     const descriptionWordCount = newListing.description.trim().split(/\s+/).filter(Boolean).length
-    if (newListing.listingTier === 'standard' && descriptionWordCount > 35) {
+    if (newListing.listingTier === 'standard' && descriptionWordCount > 100) {
       setError(t.listing.maxWordsStandard)
       setIsSubmitting(false)
       return
