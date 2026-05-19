@@ -337,7 +337,7 @@ export const ru: Translations = {
     emailInvalid: 'Введите корректный email',
     phoneRequired: 'Требуется номер телефона',
     photoLimit: 'Максимум фото (Standard/VIP: 20, Premium: 30)',
-    descriptionTooLong: 'Описание не более 100 слов',
+    descriptionTooLong: 'Описание не более 300 слов',
     addressRequired: 'Для Standard и Premium требуется адрес',
     typeRequired: 'Выберите тип жилья',
     districtRequired: 'Выберите район',

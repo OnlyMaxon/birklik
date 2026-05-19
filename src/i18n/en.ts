@@ -337,7 +337,7 @@ export const en: Translations = {
     emailInvalid: "Enter a valid email address",
     phoneRequired: "Phone number is required",
     photoLimit: "Maximum photos (Standard/VIP: 20, Premium: 30)",
-    descriptionTooLong: "Keep description to maximum 100 words",
+    descriptionTooLong: "Keep description to maximum 300 words",
     addressRequired: "Address is required for Standard and Premium",
     typeRequired: "Select property type",
     districtRequired: "Select district",

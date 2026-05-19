@@ -334,7 +334,7 @@ export const az: Translations = {
     emailInvalid: "Etibarlı email ünvanı daxil edin",
     phoneRequired: "Telefon nömrəsi daxil edin",
     photoLimit: "Maksimum fotolar (Standart/VIP: 20, Premium: 30)",
-    descriptionTooLong: "Təsviri maksimum 100 sözə qısaldın",
+    descriptionTooLong: "Təsviri maksimum 300 sözə qısaldın",
     addressRequired: "Standart və Premium paketlər üçün ünvan daxil edin",
     typeRequired: "Mülk növü seçin",
     districtRequired: "Rayon seçin",
