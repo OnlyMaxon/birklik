@@ -40,7 +40,7 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         // Owner: can update anything except critical fields (ownerId, createdAt, status)
         (isOwner(resource.data.ownerId)
-          && !request.resource.data.keys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'isFeatured']))
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'isFeatured']))
         // Moderator: can update anything including status
         || isModerator()
         // Any user: can ONLY increment views/likes/favorites/comments with specific delta operations
