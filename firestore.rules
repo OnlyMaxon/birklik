@@ -43,14 +43,12 @@ service cloud.firestore {
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'isFeatured']))
         // Moderator: can update anything including status
         || isModerator()
-        // Any user: can ONLY increment views/likes/favorites/comments with specific delta operations
-        || (request.resource.data.diff(resource.data).affectedKeys().only(['views', 'likes', 'favorites', 'comments']).size() > 0
-          && request.resource.data.diff(resource.data).affectedKeys().only(['views', 'likes', 'favorites', 'comments']).size() 
-            == request.resource.data.diff(resource.data).affectedKeys().size())
+        // Any user: can ONLY increment views/likes/favorites/comments
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'favorites', 'comments'])
+          && request.resource.data.diff(resource.data).affectedKeys().size() > 0)
         // Any user: can add/update ratings (only the ratings map and average rating/reviews count)
-        || (request.resource.data.diff(resource.data).affectedKeys().only(['ratings', 'rating', 'reviews']).size() > 0
-          && request.resource.data.diff(resource.data).affectedKeys().only(['ratings', 'rating', 'reviews']).size() 
-            == request.resource.data.diff(resource.data).affectedKeys().size()
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratings', 'rating', 'reviews'])
+          && request.resource.data.diff(resource.data).affectedKeys().size() > 0
           && request.resource.data.rating > 0 && request.resource.data.rating <= 5
           && request.resource.data.reviews >= 0)
       );
@@ -81,12 +79,8 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Read: own booking, or owner of the property, or moderator. Date conflict check uses propertyId query only.
-      allow read: if request.auth != null && (
-        request.auth.uid == resource.data.userId
-        || request.auth.uid == resource.data.ownerId
-        || isModerator()
-      );
+      // Read: any authenticated user (needed for date-conflict checks when creating a booking)
+      allow read: if request.auth != null;
       
       // Create: user booking must be created by the authenticated user with 'pending' status
       allow create: if request.auth != null 
