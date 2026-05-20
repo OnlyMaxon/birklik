@@ -25,8 +25,8 @@ export const ModerationReviewPage: React.FC = () => {
   const [rejectionReason, setRejectionReason] = React.useState('')
   const [showRejectForm, setShowRejectForm] = React.useState(false)
   const [isEditMode, setIsEditMode] = React.useState(false)
-  const [editedTitle, setEditedTitle] = React.useState<Record<Language, string>>({ en: '', ru: '', az: '' })
-  const [editedDescription, setEditedDescription] = React.useState<Record<Language, string>>({ en: '', ru: '', az: '' })
+  const [editedTitle, setEditedTitle] = React.useState('')
+  const [editedDescription, setEditedDescription] = React.useState('')
   const [editedPrice, setEditedPrice] = React.useState(0)
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0)
 
@@ -182,16 +182,8 @@ export const ModerationReviewPage: React.FC = () => {
   }
 
   const initializeEditMode = () => {
-    setEditedTitle({
-      en: property.title.en || '',
-      ru: property.title.ru || '',
-      az: property.title.az || ''
-    })
-    setEditedDescription({
-      en: property.description.en || '',
-      ru: property.description.ru || '',
-      az: property.description.az || ''
-    })
+    setEditedTitle(property.title.az || property.title.en || '')
+    setEditedDescription(property.description.az || property.description.en || '')
     setEditedPrice(property.price?.daily || 0)
     setIsEditMode(true)
     setError('')
@@ -204,8 +196,8 @@ export const ModerationReviewPage: React.FC = () => {
     try {
       // Update property with edited data
       const updated = await updateProperty(property.id, {
-        title: editedTitle,
-        description: editedDescription,
+        title: { az: editedTitle, en: editedTitle, ru: editedTitle },
+        description: { az: editedDescription, en: editedDescription, ru: editedDescription },
         price: {
           ...property.price,
           daily: editedPrice
@@ -254,62 +246,20 @@ export const ModerationReviewPage: React.FC = () => {
                 <h3>{language === 'en' ? 'Edit Listing' : language === 'ru' ? 'Отредактировать объявление' : 'Elanı Redaktə Et'}</h3>
                 
                 <div className="form-section">
-                  <label><strong>Title (EN):</strong></label>
-                  <input 
+                  <label><strong>{language === 'en' ? 'Title:' : language === 'ru' ? 'Заголовок:' : 'Başlıq:'}</strong></label>
+                  <input
                     type="text"
-                    value={editedTitle.en}
-                    onChange={(e) => setEditedTitle({...editedTitle, en: e.target.value})}
-                    placeholder="English title"
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-section">
-                  <label><strong>Title (RU):</strong></label>
-                  <input 
-                    type="text"
-                    value={editedTitle.ru}
-                    onChange={(e) => setEditedTitle({...editedTitle, ru: e.target.value})}
-                    placeholder="Russian title"
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-section">
-                  <label><strong>Title (AZ):</strong></label>
-                  <input 
-                    type="text"
-                    value={editedTitle.az}
-                    onChange={(e) => setEditedTitle({...editedTitle, az: e.target.value})}
-                    placeholder="Azerbaijani title"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
                     className="form-input"
                   />
                 </div>
 
                 <div className="form-section">
-                  <label><strong>Description (EN):</strong></label>
-                  <textarea 
-                    value={editedDescription.en}
-                    onChange={(e) => setEditedDescription({...editedDescription, en: e.target.value})}
-                    placeholder="English description"
-                    className="form-textarea"
-                    rows={5}
-                  />
-                </div>
-                <div className="form-section">
-                  <label><strong>Description (RU):</strong></label>
-                  <textarea 
-                    value={editedDescription.ru}
-                    onChange={(e) => setEditedDescription({...editedDescription, ru: e.target.value})}
-                    placeholder="Russian description"
-                    className="form-textarea"
-                    rows={5}
-                  />
-                </div>
-                <div className="form-section">
-                  <label><strong>Description (AZ):</strong></label>
-                  <textarea 
-                    value={editedDescription.az}
-                    onChange={(e) => setEditedDescription({...editedDescription, az: e.target.value})}
-                    placeholder="Azerbaijani description"
+                  <label><strong>{language === 'en' ? 'Description:' : language === 'ru' ? 'Описание:' : 'Təsvir:'}</strong></label>
+                  <textarea
+                    value={editedDescription}
+                    onChange={(e) => setEditedDescription(e.target.value)}
                     className="form-textarea"
                     rows={5}
                   />
