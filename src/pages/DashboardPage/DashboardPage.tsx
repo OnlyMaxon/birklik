@@ -84,7 +84,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [isAddingTestData, setIsAddingTestData] = React.useState(false)
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
   const [listingCoordinates, setListingCoordinates] = React.useState(DEFAULT_COORDINATES)
-  const [locationSearch, setLocationSearch] = React.useState('')
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
   const [locationSearchError, setLocationSearchError] = React.useState('')
   const [busyListingId, setBusyListingId] = React.useState<string | null>(null)
@@ -336,7 +335,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setSelectedFiles([])
     setEditingListingId(null)
     setListingCoordinates(DEFAULT_COORDINATES)
-    setLocationSearch('')
     setLocationSearchError('')
   }, [user])
 
@@ -380,7 +378,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   }, [activeTab, editingListingId, user])
 
   const handleSearchLocation = async () => {
-    const query = locationSearch.trim() || newListing.address.trim()
+    const query = newListing.address.trim()
     if (!query) {
       setLocationSearchError(t.dashboard.enterAddressForSearch)
       return
@@ -1555,22 +1553,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           <div className="form-grid">
                             <div className="form-group full-width">
                               <label>{t.form.address} *</label>
-                              <input
-                                type="text"
-                                value={newListing.address}
-                                onChange={(e) => setNewListing({...newListing, address: e.target.value})}
-                                required
-                              />
-                            </div>
-                            <div className="form-group full-width">
-                              <label>Xəritədə nöqtə *</label>
-                              <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
                               <div className="location-search-row">
                                 <input
                                   type="text"
-                                  value={locationSearch}
-                                  onChange={(e) => setLocationSearch(e.target.value)}
+                                  value={newListing.address}
+                                  onChange={(e) => setNewListing({...newListing, address: e.target.value})}
                                   placeholder={t.dashboard.searchAddressPlaceholder}
+                                  required
                                 />
                                 <button
                                   type="button"
@@ -1582,6 +1571,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 </button>
                               </div>
                               {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
+                              <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
                               <div className="listing-location-picker">
                                 <MapContainer
                                   center={[listingCoordinates.lat, listingCoordinates.lng]}
