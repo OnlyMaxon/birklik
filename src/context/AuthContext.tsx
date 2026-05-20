@@ -171,7 +171,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let uploadedAvatarPath: string | null = null
 
     try {
-      let avatarUrl = payload.avatar || user.avatar || ''
+      let avatarUrl = payload.avatar !== undefined ? payload.avatar : (user.avatar || '')
 
       // Upload file FIRST, fail fast if upload fails
       if (payload.avatarFile) {

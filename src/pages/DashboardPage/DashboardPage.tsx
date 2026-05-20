@@ -740,7 +740,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     const result = await updateUserProfile({
       name: profileName.trim(),
       phone: profilePhone.trim(),
-      avatar: profileAvatar || undefined,
+      avatar: profileAvatar,
       avatarFile: profileAvatarFile
     })
 
