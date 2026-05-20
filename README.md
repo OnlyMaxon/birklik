@@ -366,6 +366,6 @@ Birklik.az — это маркетплейс краткосрочной арен
 - Карта: OpenStreetMap + React Leaflet.
 test
 Vite
-Сборка До PWA до Capacitor
+Сборка До PWA до Capacitor есть чат с Клаудом спец для этого
 Google Search Invented
 Google ReCaptcha ИнВент Надо Для всех Приложений
