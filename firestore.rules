@@ -43,11 +43,11 @@ service cloud.firestore {
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'isFeatured']))
         // Moderator: can update anything including status
         || isModerator()
-        // Any user: can ONLY increment views/likes/favorites/comments
-        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'favorites', 'comments'])
+        // Any user: can ONLY increment views/likes/favorites/comments (updatedAt allowed alongside)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'favorites', 'comments', 'updatedAt'])
           && request.resource.data.diff(resource.data).affectedKeys().size() > 0)
-        // Any user: can add/update ratings (only the ratings map and average rating/reviews count)
-        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratings', 'rating', 'reviews'])
+        // Any user: can add/update ratings (updatedAt allowed alongside)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratings', 'rating', 'reviews', 'updatedAt'])
           && request.resource.data.diff(resource.data).affectedKeys().size() > 0
           && request.resource.data.rating > 0 && request.resource.data.rating <= 5
           && request.resource.data.reviews >= 0)

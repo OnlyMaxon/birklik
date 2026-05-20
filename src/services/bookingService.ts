@@ -202,19 +202,26 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
  */
 export const cancelBooking = async (bookingId: string): Promise<{success: boolean; requestId?: string}> => {
   try {
+    const { updateDoc } = await import('firebase/firestore')
     const docRef = doc(db, COLLECTION_NAME, bookingId)
     const booking = await getDoc(docRef)
-    
+
     if (!booking.exists()) {
       return { success: false }
     }
 
     const bookingData = booking.data() as Booking
-    
-    // Create cancellation request instead of deleting directly
+
+    // Pending bookings: guest can cancel directly (allowed by Firestore rules)
+    if (bookingData.status === 'pending') {
+      await updateDoc(docRef, { status: 'cancelled' })
+      return { success: true }
+    }
+
+    // Approved bookings: create a cancellation request for the owner to review
     const { createCancellationRequest } = await import('./cancellationService')
     const { createCancellationRequestNotification } = await import('./notificationsService')
-    
+
     const requestId = await createCancellationRequest(
       bookingId,
       bookingData.propertyId,
@@ -230,7 +237,6 @@ export const cancelBooking = async (bookingId: string): Promise<{success: boolea
       return { success: false }
     }
 
-    // Notify property owner about cancellation request
     await createCancellationRequestNotification(bookingData.ownerId, {
       type: 'cancellationRequest',
       title: '❌ Cancellation Request',
