@@ -369,3 +369,5 @@ Vite
 Сборка До PWA до Capacitor есть чат с Клаудом спец для этого
 Google Search Invented
 Google ReCaptcha ИнВент Надо Для всех Приложений
+Yandex Карты Добавлены 
+Все Ключи либо в Claudflare либо в ENV 
