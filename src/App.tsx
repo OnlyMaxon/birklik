@@ -15,6 +15,7 @@ const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage').then(
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage').then((mod) => ({ default: mod.DashboardPage })))
 const ModerationPage = React.lazy(() => import('./pages/ModerationPage').then((mod) => ({ default: mod.ModerationPage })))
 const ModerationReviewPage = React.lazy(() => import('./pages/ModerationReviewPage').then((mod) => ({ default: mod.ModerationReviewPage })))
+const ModeratorPropertyEditPage = React.lazy(() => import('./pages/ModeratorPropertyEditPage').then((mod) => ({ default: mod.ModeratorPropertyEditPage })))
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then((mod) => ({ default: mod.TermsPage })))
 const UserAgreementPage = React.lazy(() => import('./pages/UserAgreementPage').then((mod) => ({ default: mod.UserAgreementPage })))
 const AboutPage = React.lazy(() => import('./pages/AboutPage').then((mod) => ({ default: mod.AboutPage })))
@@ -169,6 +170,11 @@ function App() {
           <Route path="/dashboard/review/:id" element={
             <ModeratorRoute>
               <ModerationReviewPage />
+            </ModeratorRoute>
+          } />
+          <Route path="/dashboard/moderator-edit/:id" element={
+            <ModeratorRoute>
+              <ModeratorPropertyEditPage />
             </ModeratorRoute>
           } />
           <Route path="/terms" element={<TermsPage />} />

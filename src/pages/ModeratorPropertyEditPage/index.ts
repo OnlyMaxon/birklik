@@ -1,0 +1,1 @@
+export { ModeratorPropertyEditPage } from './ModeratorPropertyEditPage'

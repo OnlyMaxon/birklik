@@ -1,0 +1,39 @@
+.mpe-page {
+  padding: 2rem 0;
+  min-height: calc(100dvh - 200px);
+  background:
+    radial-gradient(circle at 90% -15%, rgba(255, 122, 0, 0.07), transparent 34%),
+    linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%);
+}
+
+.mpe-header {
+  margin-bottom: 2rem;
+}
+
+.mpe-title {
+  font-size: 1.75rem;
+  color: var(--gray-800);
+  margin: 0.5rem 0 0.25rem;
+}
+
+.mpe-subtitle {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.mpe-form {
+  max-width: 860px;
+}
+
+.mpe-success {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--primary-color);
+}
+
+.mpe-success p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}

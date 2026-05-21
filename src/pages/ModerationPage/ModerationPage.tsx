@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate, useSearchParams, Link } from 'react-router-dom'
+import { Navigate, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
@@ -16,6 +16,7 @@ type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'people'
 export const ModerationPage: React.FC = () => {
   const { isAuthenticated, firebaseUser } = useAuth()
   const { language, t } = useLanguage()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const tabParam = searchParams.get('tab') as ModerationTab | null
   const [activeTab, setActiveTab] = React.useState<ModerationTab>(tabParam || 'posts')
@@ -474,6 +475,13 @@ export const ModerationPage: React.FC = () => {
                           <Link to={`/property/${listing.id}`} className="btn btn-ghost btn-sm">
                             {language === 'en' ? 'View' : language === 'ru' ? 'Просмотр' : 'Bax'}
                           </Link>
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => navigate(`/dashboard/moderator-edit/${listing.id}`)}
+                          >
+                            {language === 'en' ? 'Edit' : language === 'ru' ? 'Изменить' : 'Redaktə Et'}
+                          </button>
                           <button
                             type="button"
                             className="btn btn-danger btn-sm"
