@@ -10,6 +10,7 @@ import { NotificationsTab } from '../../components/NotificationsTab'
 import { CityLocationPicker } from '../../components'
 import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from './LocationPicker'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
+import { resolveCity } from '../../data/cityAliases'
 import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '../../services'
@@ -388,7 +389,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setLocationSearchError('')
 
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(`${query}, Azerbaijan`)}`
+      const resolvedQuery = resolveCity(query)
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
       const response = await fetch(url, {
         headers: {
           'Accept-Language': language === 'en' ? 'en' : language === 'ru' ? 'ru' : 'az'

@@ -7,6 +7,7 @@ import { Layout } from '../../layouts'
 import { Loading, CityLocationPicker } from '../../components'
 import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from '../DashboardPage/LocationPicker'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
+import { resolveCity } from '../../data/cityAliases'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '../../types'
 import { getPropertyById, updateProperty } from '../../services'
 import './ModeratorPropertyEditPage.css'
@@ -139,7 +140,8 @@ export const ModeratorPropertyEditPage: React.FC = () => {
     setIsSearchingLocation(true)
     setLocationSearchError('')
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(`${query}, Azerbaijan`)}`
+      const resolvedQuery = resolveCity(query)
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
       const response = await fetch(url, {
         headers: { 'Accept-Language': language === 'en' ? 'en' : language === 'ru' ? 'ru' : 'az' }
       })

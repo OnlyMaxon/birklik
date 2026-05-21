@@ -1,4 +1,5 @@
 import { Property, PropertyType, District, Amenity, LocationCategory } from '../types'
+import { expandSearchTerms } from './cityAliases'
 
 export interface FilterOption {
   key: string
@@ -452,11 +453,15 @@ export const filterProperties = (
 
     // Search filter
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      const matchesTitle = Object.values(property.title).some(t => t.toLowerCase().includes(searchLower))
-      const matchesAddress = Object.values(property.address).some(a => a.toLowerCase().includes(searchLower))
+      const searchTerms = expandSearchTerms(filters.search)
+      const matchesTitle = searchTerms.some(term =>
+        Object.values(property.title).some(t => t.toLowerCase().includes(term))
+      )
+      const matchesAddress = searchTerms.some(term =>
+        Object.values(property.address).some(a => a.toLowerCase().includes(term))
+      )
       const matchedAmenity = (Object.entries(amenityAliases) as Array<[Amenity, string[]]>).find(([, aliases]) =>
-        aliases.some(alias => alias.includes(searchLower) || searchLower.includes(alias))
+        searchTerms.some(term => aliases.some(alias => alias.includes(term) || term.includes(alias)))
       )
       const matchesAmenity = matchedAmenity ? property.amenities.includes(matchedAmenity[0]) : false
 
