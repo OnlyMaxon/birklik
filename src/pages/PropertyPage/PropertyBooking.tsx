@@ -62,7 +62,10 @@ export const PropertyBooking: React.FC<PropertyBookingProps> = ({ property, onBo
   const [lastBookingId, setLastBookingId] = React.useState<string | null>(null)
   const bookingTimeoutRef = React.useRef<number | null>(null)
 
-  const getTodayISO = () => new Date().toISOString().split('T')[0]
+  const getTodayISO = () => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
 
   // Cleanup timeout on unmount
   React.useEffect(() => {

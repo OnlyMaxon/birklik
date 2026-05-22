@@ -118,8 +118,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setIsSuggestOpen(false)
   }
 
-  const getTodayISO = (): string => new Date().toISOString().split('T')[0]
-  const dateToISO = (date: Date): string => date.toISOString().split('T')[0]
+  const getTodayISO = (): string => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  const dateToISO = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  }
   const isSameDay = (d1: string, d2: string) => d1 === d2
   const isBeforeDay = (d1: string, d2: string) => d1 < d2
   const isBetween = (date: string, start: string, end: string) => date > start && date < end

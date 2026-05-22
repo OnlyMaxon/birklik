@@ -590,7 +590,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       favorites: [],
       comments: [],
       premiumExpiresAt: newListing.listingTier === 'premium'
-        ? new Date(Date.now() + (newListing.tierPlanDuration === '14days' ? 14 : 30) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        ? (() => { const d = new Date(); d.setDate(d.getDate() + (newListing.tierPlanDuration === '14days' ? 14 : 30)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })()
         : undefined
     }
 
@@ -775,7 +775,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   }
 
   const handleExtendPremium = async (propertyId: string) => {
-    const newExpiryDate = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    const d = new Date(); d.setDate(d.getDate() + 21)
+    const newExpiryDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
     try {
       const property = listings.find((p: Property) => p.id === propertyId)
       if (!property) return
@@ -1097,7 +1098,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
           likes: [],
           favorites: [],
           comments: [],
-          premiumExpiresAt: testListing.listingTier === 'premium' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : undefined
+          premiumExpiresAt: testListing.listingTier === 'premium' ? (() => { const d = new Date(); d.setDate(d.getDate() + 30); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })() : undefined
         }
         return createProperty(propertyPayload, [])
       }))

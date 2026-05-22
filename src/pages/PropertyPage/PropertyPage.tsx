@@ -196,7 +196,10 @@ export const PropertyPage: React.FC = () => {
     return new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ').format(date)
   }
 
-  const getTodayISO = () => new Date().toISOString().split('T')[0]
+  const getTodayISO = () => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
 
   const isOccupationExpired = (item: Property) => {
     if (!item.unavailableTo) return false
