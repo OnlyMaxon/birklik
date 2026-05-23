@@ -4,7 +4,7 @@ import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
 import { ImageGallery, Loading, ReportCommentModal } from '../../components'
-import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel } from '../../data'
+import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities } from '../../data'
 import { getPropertyById, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, addReplyToComment, addRatingToProperty, getUserRatingForProperty, getPropertyBookings } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
@@ -689,6 +689,15 @@ export const PropertyPage: React.FC = () => {
     ? (property.locationTags || []).map((key) => getOptionLabel(selectedLocationOptions, key, t))
     : []
 
+  const cityLabel = (() => {
+    if (property.city) {
+      const cityObj = cities.find(c => c.value === property.city)
+      if (cityObj) return language === 'en' ? cityObj.en : language === 'ru' ? (cityObj.ru || cityObj.az) : cityObj.az
+      return property.city
+    }
+    return t.districts[property.district] || ''
+  })()
+
   return (
     <Layout>
       {showNotification && (
@@ -700,7 +709,7 @@ export const PropertyPage: React.FC = () => {
           <nav className="breadcrumb">
             <Link to="/">{t.nav.home}</Link>
             <span>/</span>
-            <span>{t.districts[property.district]}</span>
+            <span>{cityLabel}</span>
             <span>/</span>
             <span>{getLocalizedText(property.title)}</span>
           </nav>
@@ -749,7 +758,7 @@ export const PropertyPage: React.FC = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                     </svg>
-                    {t.districts[property.district]}
+                    {cityLabel}
                   </span>
                   {property.rating && (
                     <span className="rating">

@@ -131,6 +131,23 @@ export const ModeratorPropertyEditPage: React.FC = () => {
   const popularMoreOptions = sortedMoreOptions.filter(o => quickMorePopular.includes(o.key))
   const popularNearOptions = sortedNearOptions.filter(o => quickNearPopular.includes(o.key))
 
+  const geocodeCity = async (cityName: string) => {
+    if (!cityName) return
+    try {
+      const resolvedQuery = resolveCity(cityName)
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
+      const res = await fetch(url, { headers: { 'Accept-Language': 'az' } })
+      if (!res.ok) return
+      const results = await res.json() as { lat: string; lon: string }[]
+      if (!results.length) return
+      const lat = Number(results[0].lat)
+      const lng = Number(results[0].lon)
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        setCoords({ lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) })
+      }
+    } catch { /* ignore */ }
+  }
+
   const handleSearchLocation = async () => {
     const query = form.address.trim()
     if (!query) {
@@ -448,7 +465,7 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                       city={form.city}
                       locationTags={form.locationTags}
                       locationCategory={form.locationCategory}
-                      onCityChange={city => setForm(prev => ({ ...prev, city, locationTags: [] }))}
+                      onCityChange={city => { setForm(prev => ({ ...prev, city, locationTags: [] })); if (city) geocodeCity(city) }}
                       onLocationTagsChange={tags => setForm(prev => ({ ...prev, locationTags: tags }))}
                       onLocationCategoryChange={category => setForm(prev => ({ ...prev, locationCategory: category }))}
                     />

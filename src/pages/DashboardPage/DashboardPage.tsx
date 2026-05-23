@@ -9,7 +9,7 @@ import { BookingsTab } from './BookingsTab'
 import { NotificationsTab } from '../../components/NotificationsTab'
 import { CityLocationPicker } from '../../components'
 import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from './LocationPicker'
-import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
+import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cities } from '../../data'
 import { resolveCity } from '../../data/cityAliases'
 import { isModerator } from '../../config/constants'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
@@ -377,6 +377,23 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       }))
     }
   }, [activeTab, editingListingId, user])
+
+  const geocodeCity = async (cityName: string) => {
+    if (!cityName) return
+    try {
+      const resolvedQuery = resolveCity(cityName)
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
+      const res = await fetch(url, { headers: { 'Accept-Language': 'az' } })
+      if (!res.ok) return
+      const results = (await res.json()) as GeocodeResult[]
+      if (!results.length) return
+      const lat = Number(results[0].lat)
+      const lng = Number(results[0].lon)
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        setListingCoordinates({ lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) })
+      }
+    } catch { /* ignore */ }
+  }
 
   const handleSearchLocation = async () => {
     const query = newListing.address.trim()
@@ -1264,7 +1281,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 </span>
                               </div>
                               <p className="listing-location">
-                                {t.districts[property.district]}
+                                {(() => {
+                                  if (property.city) {
+                                    const c = cities.find(x => x.value === property.city)
+                                    if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
+                                    return property.city
+                                  }
+                                  return t.districts[property.district] || property.district
+                                })()}
                               </p>
                               <p className="listing-price">
                                 {property.price.daily} {property.price.currency} / {t.property.perNight}
@@ -1531,7 +1555,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               city={newListing.city}
                               locationTags={newListing.locationTags}
                               locationCategory={newListing.locationCategory}
-                              onCityChange={(city) => setNewListing(prev => ({...prev, city, locationTags: []}))}
+                              onCityChange={(city) => { setNewListing(prev => ({...prev, city, locationTags: []})); if (city) geocodeCity(city) }}
                               onLocationTagsChange={(tags) => setNewListing(prev => ({...prev, locationTags: tags}))}
                               onLocationCategoryChange={(category) => setNewListing(prev => ({...prev, locationCategory: category}))}
                             />

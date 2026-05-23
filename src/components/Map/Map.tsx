@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import L from 'leaflet'
 import { useLanguage } from '../../context'
 import { Property, Language } from '../../types'
+import { cities } from '../../data'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
@@ -45,9 +46,17 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
     apple: language === 'en' ? 'Apple Maps' : language === 'ru' ? 'Apple Maps' : 'Apple Maps'
   }
 
-  const mapCenter: [number, number] = singleProperty && properties.length === 1 
-    ? [properties[0].coordinates.lat, properties[0].coordinates.lng]
-    : center
+  const mapCenter: [number, number] = React.useMemo(() => {
+    if (singleProperty && properties.length === 1) {
+      return [properties[0].coordinates.lat, properties[0].coordinates.lng]
+    }
+    if (properties.length > 0) {
+      const avgLat = properties.reduce((s, p) => s + p.coordinates.lat, 0) / properties.length
+      const avgLng = properties.reduce((s, p) => s + p.coordinates.lng, 0) / properties.length
+      return [avgLat, avgLng]
+    }
+    return center
+  }, [properties, singleProperty, center])
 
   const mapZoom = singleProperty ? 14 : zoom
 
@@ -101,7 +110,14 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                 />
                 <div className="popup-content">
                   <h4 className="popup-title">{getLocalizedText(property.title)}</h4>
-                  <p className="popup-location">{t.districts[property.district]}</p>
+                  <p className="popup-location">{(() => {
+                    if (property.city) {
+                      const c = cities.find(x => x.value === property.city)
+                      if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
+                      return property.city
+                    }
+                    return t.districts[property.district] || ''
+                  })()}</p>
                   <p className="popup-price">
                     <strong>{property.price.daily} {property.price.currency}</strong> / {t.property.perNight}
                   </p>

@@ -9,6 +9,7 @@ import { getAllReports, closeReport } from '../../services/reportService'
 import { getAllUsers, UserRecord } from '../../services/userService'
 import { isModerator } from '../../config/constants'
 import { Language, Property, CommentReport } from '../../types'
+import { cities } from '../../data'
 import './ModerationPage.css'
 
 type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'people'
@@ -253,7 +254,7 @@ export const ModerationPage: React.FC = () => {
 
                     <div className="moderation-content">
                       <h3>{getLocalizedText(listing.title)}</h3>
-                      <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {t.districts[listing.district]}</p>
+                      <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return t.districts[listing.district] || listing.district })()}</p>
                       <p className="moderation-description">{getLocalizedText(listing.description)}</p>
                       <p className="moderation-owner">
                         <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
@@ -461,7 +462,7 @@ export const ModerationPage: React.FC = () => {
 
                         <div className="moderation-content">
                           <h3>{getLocalizedText(listing.title)}</h3>
-                          <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {t.districts[listing.district]}</p>
+                          <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return t.districts[listing.district] || listing.district })()}</p>
                           <p className="moderation-description">{getLocalizedText(listing.description)}</p>
                           <p className="moderation-owner">
                             <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}

@@ -5,6 +5,7 @@ import { useAuth } from '../../context'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { getCsrfToken } from '../../services/csrfService'
 import { Property, Language } from '../../types'
+import { cities } from '../../data'
 import './PropertyCard.css'
 import * as logger from '../../services/logger'
 
@@ -36,6 +37,15 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
   }, [user?.id, property.favorites])
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
+
+  const locationLabel = (() => {
+    if (property.city) {
+      const c = cities.find(x => x.value === property.city)
+      if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
+      return property.city
+    }
+    return t.districts[property.district] || property.district
+  })()
 
   const nights = React.useMemo(() => {
     if (!checkIn || !checkOut) return 0
@@ -131,7 +141,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
             <circle cx="12" cy="10" r="3"/>
           </svg>
-          {t.districts[property.district] || property.district}
+          {locationLabel}
         </p>
 
         <div className="property-features">
