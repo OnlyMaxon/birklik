@@ -28,6 +28,7 @@ const serviceAccountPath = path.join(
 try {
   admin.initializeApp({
     credential: admin.credential.cert(require(serviceAccountPath)),
+    storageBucket: 'birklik-65289.firebasestorage.app',
   });
 } catch (error) {
   console.error('Failed to initialize Firebase Admin:', error);

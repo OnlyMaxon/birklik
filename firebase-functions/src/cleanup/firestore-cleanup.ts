@@ -80,7 +80,7 @@ export async function cleanupStalePendingListings(): Promise<CleanupLog> {
   let count = 0;
 
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
     const query = await admin
       .firestore()
@@ -195,7 +195,7 @@ export async function cleanupTestData(): Promise<CleanupLog> {
   let count = 0;
 
   try {
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     const query = await admin
       .firestore()
