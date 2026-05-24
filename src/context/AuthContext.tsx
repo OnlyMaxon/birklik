@@ -169,6 +169,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     let uploadedAvatarUrl: string | null = null
     let uploadedAvatarPath: string | null = null
+    const oldAvatarUrl = user.avatar || null
 
     try {
       let avatarUrl = payload.avatar !== undefined ? payload.avatar : (user.avatar || '')
@@ -213,6 +214,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           phone: updates.phone,
           avatar: updates.avatar
         } : prev)
+
+        // Delete old avatar from Storage after successful save (best-effort)
+        if (uploadedAvatarUrl && oldAvatarUrl && oldAvatarUrl.includes('firebasestorage')) {
+          try {
+            const oldPath = decodeURIComponent(oldAvatarUrl.split('/o/')[1]?.split('?')[0] || '')
+            if (oldPath) await deleteObject(ref(storage, oldPath))
+          } catch {
+            // ignore — old file may already be gone
+          }
+        }
 
         return { success: true }
       } catch (firestoreError) {

@@ -45,7 +45,7 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
     }
 
     for (const [userId, userFiles] of filesByUser) {
-      if (count >= 100) break;
+      if (count >= 500) break;
 
       // Получаем все объявления этого пользователя
       const propertiesSnap = await db
@@ -61,7 +61,7 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
       }
 
       for (const file of userFiles) {
-        if (count >= 100) break;
+        if (count >= 500) break;
 
         try {
           const [metadata] = await file.getMetadata();
@@ -131,8 +131,9 @@ export async function cleanupTempFiles(): Promise<StorageCleanupLog> {
 }
 
 /**
- * Удаляет аватары пользователей старше 1 года, если у пользователя нет аватара.
- * Путь: avatars/{userId}/{timestamp}_{filename}
+ * Удаляет устаревшие аватары (старше 30 дней), которые больше не являются текущим
+ * аватаром пользователя. Путь: avatars/{userId}/{timestamp}_{filename}.
+ * Нынешний аватар пользователя хранится в users/{userId}.avatar как полный URL.
  */
 export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -142,26 +143,39 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
   try {
     const bucket = admin.storage().bucket();
     const db = admin.firestore();
-    const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     const [files] = await bucket.getFiles({ prefix: 'avatars/' });
 
+    // Кэш: userId → текущий Storage-путь аватара (чтобы не запрашивать Firestore повторно)
+    const currentAvatarPathByUser = new Map<string, string | null>();
+
     for (const file of files) {
-      if (count >= 50) break;
+      if (count >= 200) break;
       try {
         const [metadata] = await file.getMetadata();
         const updatedAt = new Date(metadata.updated as string);
-        if (updatedAt >= oneYearAgo) continue;
+        // Пропускаем свежие файлы — могут ещё не быть привязаны
+        if (updatedAt >= thirtyDaysAgo) continue;
 
         const parts = file.name.split('/');
-        if (parts.length < 2) continue;
+        if (parts.length < 3) continue;
         const userId = parts[1];
 
-        const userDoc = await db.collection('users').doc(userId).get();
-        const userData = userDoc.exists ? userDoc.data() : null;
+        if (!currentAvatarPathByUser.has(userId)) {
+          const userDoc = await db.collection('users').doc(userId).get();
+          const avatarUrl: string | undefined = userDoc.exists ? userDoc.data()?.['avatar'] : undefined;
+          if (avatarUrl && avatarUrl.includes('firebasestorage')) {
+            const match = avatarUrl.match(/\/o\/(.+?)\?/);
+            currentAvatarPathByUser.set(userId, match ? decodeURIComponent(match[1]) : null);
+          } else {
+            currentAvatarPathByUser.set(userId, null);
+          }
+        }
 
-        // Удаляем если пользователя нет или у него нет аватара
-        if (!userData || !userData['avatar']) {
+        const currentPath = currentAvatarPathByUser.get(userId);
+        // Удаляем если файл не является текущим аватаром
+        if (currentPath !== file.name) {
           await file.delete();
           deletedFiles.push(file.name);
           count++;

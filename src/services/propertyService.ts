@@ -488,9 +488,12 @@ export const rejectProperty = async (id: string): Promise<boolean> => {
       return false
     }
 
-    // Delete the rejected property from public listings
-    await deleteDoc(docRef)
+    const data = current.data() as Property
+    if (data.images?.length) {
+      await deletePropertyImages(data.images)
+    }
 
+    await deleteDoc(docRef)
     return true
   } catch (error) {
     logger.error('Error rejecting property:', error)
