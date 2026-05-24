@@ -15,6 +15,14 @@ import './ModeratorPropertyEditPage.css'
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
+function isoToLocalDate(iso: string): string {
+  const d = new Date(iso)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 export const ModeratorPropertyEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -44,10 +52,12 @@ export const ModeratorPropertyEditPage: React.FC = () => {
     city: '',
     contactEmail: '',
     contactPhone: '',
-    status: 'pending' as 'active' | 'pending',
+    status: 'pending' as 'active' | 'pending' | 'inactive',
     isActive: true,
     listingTier: 'standard' as ListingTier,
     tierPlanDuration: '30days' as '14days' | '30days',
+    premiumExpiresAt: '',
+    vipExpiresAt: '',
   })
 
   const [coords, setCoords] = React.useState(DEFAULT_COORDINATES)
@@ -86,10 +96,12 @@ export const ModeratorPropertyEditPage: React.FC = () => {
         city: prop.city || 'Baku',
         contactEmail: prop.owner.email || '',
         contactPhone: prop.owner.phone || '',
-        status: (prop.status as 'active' | 'pending') || 'pending',
+        status: (prop.status as 'active' | 'pending' | 'inactive') || 'pending',
         isActive: prop.isActive !== false,
         listingTier: prop.listingTier || 'standard',
         tierPlanDuration: prop.tierPlanDuration || '30days',
+        premiumExpiresAt: prop.premiumExpiresAt ? isoToLocalDate(prop.premiumExpiresAt) : '',
+        vipExpiresAt: prop.vipExpiresAt ? isoToLocalDate(prop.vipExpiresAt) : '',
       })
       setCoords(prop.coordinates || DEFAULT_COORDINATES)
       setExistingImages(prop.images || [])
@@ -146,6 +158,16 @@ export const ModeratorPropertyEditPage: React.FC = () => {
         setCoords({ lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) })
       }
     } catch { /* ignore */ }
+  }
+
+  const handleRenewTier = (days: number) => {
+    const field = form.listingTier === 'vip' ? 'vipExpiresAt' : 'premiumExpiresAt'
+    const today = new Date()
+    const newDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + days)
+    const y = newDate.getFullYear()
+    const m = String(newDate.getMonth() + 1).padStart(2, '0')
+    const d = String(newDate.getDate()).padStart(2, '0')
+    setForm(prev => ({ ...prev, [field]: `${y}-${m}-${d}`, status: 'active' }))
   }
 
   const handleSearchLocation = async () => {
@@ -270,6 +292,15 @@ export const ModeratorPropertyEditPage: React.FC = () => {
       images: existingImages,
     }
 
+    if (form.listingTier === 'premium' && form.premiumExpiresAt) {
+      const [ey, em, ed] = form.premiumExpiresAt.split('-').map(Number)
+      updates.premiumExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
+    }
+    if (form.listingTier === 'vip' && form.vipExpiresAt) {
+      const [ey, em, ed] = form.vipExpiresAt.split('-').map(Number)
+      updates.vipExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
+    }
+
     const ok = await updateProperty(id, updates, newFiles.length > 0 ? newFiles : undefined)
     if (!ok) {
       setError(t.listing.updateFailed)
@@ -343,10 +374,11 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                       <label>{isEnglish ? 'Status' : isRussian ? 'Статус' : 'Status'}</label>
                       <select
                         value={form.status}
-                        onChange={e => setForm(prev => ({ ...prev, status: e.target.value as 'active' | 'pending' }))}
+                        onChange={e => setForm(prev => ({ ...prev, status: e.target.value as 'active' | 'pending' | 'inactive' }))}
                       >
                         <option value="pending">{isEnglish ? 'Pending (moderation)' : isRussian ? 'На проверке' : 'Gözləmədə'}</option>
                         <option value="active">{isEnglish ? 'Active (approved)' : isRussian ? 'Активен (одобрен)' : 'Aktiv (təsdiqləndi)'}</option>
+                        <option value="inactive">{isEnglish ? 'Inactive (premium expired)' : isRussian ? 'Неактивен (истёк премиум)' : 'Deaktiv (premium bitdi)'}</option>
                       </select>
                     </div>
                     <div className="form-group">
@@ -383,6 +415,39 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  {(form.listingTier === 'premium' || form.listingTier === 'vip') && (
+                    <div className="tier-renewal-block">
+                      <label className="tier-renewal-label">
+                        {form.listingTier === 'premium'
+                          ? (isEnglish ? 'Premium Expires' : isRussian ? 'Истечение премиума' : 'Premium bitmə tarixi')
+                          : (isEnglish ? 'VIP Expires' : isRussian ? 'Истечение VIP' : 'VIP bitmə tarixi')}
+                      </label>
+                      <div className="tier-renewal-row">
+                        <input
+                          type="date"
+                          className="tier-date-input"
+                          value={form.listingTier === 'vip' ? form.vipExpiresAt : form.premiumExpiresAt}
+                          onChange={e => {
+                            const field = form.listingTier === 'vip' ? 'vipExpiresAt' : 'premiumExpiresAt'
+                            setForm(prev => ({ ...prev, [field]: e.target.value }))
+                          }}
+                        />
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => handleRenewTier(14)}>
+                          +14 {isEnglish ? 'days' : isRussian ? 'дней' : 'gün'}
+                        </button>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => handleRenewTier(30)}>
+                          +30 {isEnglish ? 'days' : isRussian ? 'дней' : 'gün'}
+                        </button>
+                      </div>
+                      <p className="tier-renewal-hint">
+                        {isEnglish
+                          ? '* Renew buttons count from today and auto-set status to Active'
+                          : isRussian
+                          ? '* Кнопки считают от сегодня и автоматически ставят статус «Активен»'
+                          : '* Düymələr bu gündən hesablanır və statusu «Aktiv» edir'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

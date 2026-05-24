@@ -37,3 +37,46 @@
   font-size: 1.1rem;
   font-weight: 500;
 }
+
+.tier-renewal-block {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.tier-renewal-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.tier-renewal-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tier-date-input {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  background: var(--white);
+  flex: 1;
+  min-width: 160px;
+}
+
+.tier-date-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.tier-renewal-hint {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--gray-500);
+}

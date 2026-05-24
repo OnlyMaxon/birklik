@@ -13,8 +13,9 @@ interface CleanupLog {
 }
 
 /**
- * Снимает premium/vip статус с истёкших объявлений.
- * Коллекция: properties. Поля: listingTier, premiumExpiresAt, vipExpiresAt (ISO-строки).
+ * Скрывает объявления с истёкшим premium/VIP: status → inactive, expiredAt = now.
+ * listingTier и premiumExpiresAt/vipExpiresAt НЕ трогаем — нужны для кнопки "Продлить".
+ * Через 30 дней cleanupInactiveListings удалит их насовсем.
  */
 export async function cleanupExpiredPremium(): Promise<CleanupLog> {
   const startTime = Date.now();
@@ -30,13 +31,14 @@ export async function cleanupExpiredPremium(): Promise<CleanupLog> {
       .collection('properties')
       .where('listingTier', '==', 'premium')
       .where('premiumExpiresAt', '<', now)
+      .where('status', '==', 'active')
       .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
 
     for (const doc of premiumQuery.docs) {
       batch.update(doc.ref, {
-        listingTier: 'standard',
-        premiumExpiresAt: admin.firestore.FieldValue.delete(),
+        status: 'inactive',
+        expiredAt: now,
       });
       deletedIds.push(doc.id);
       count++;
@@ -47,13 +49,14 @@ export async function cleanupExpiredPremium(): Promise<CleanupLog> {
       .collection('properties')
       .where('listingTier', '==', 'vip')
       .where('vipExpiresAt', '<', now)
+      .where('status', '==', 'active')
       .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
 
     for (const doc of vipQuery.docs) {
       batch.update(doc.ref, {
-        listingTier: 'standard',
-        vipExpiresAt: admin.firestore.FieldValue.delete(),
+        status: 'inactive',
+        expiredAt: now,
       });
       deletedIds.push(doc.id);
       count++;
@@ -252,6 +255,60 @@ async function deletePropertyImages(propertyId: string): Promise<void> {
   }
 }
 
+/**
+ * Удаляет объявления со статусом 'inactive', которые не были продлены 30+ дней.
+ * expiredAt — ISO-строка, проставляется cleanupExpiredPremium при деактивации.
+ */
+export async function cleanupInactiveListings(): Promise<CleanupLog> {
+  const startTime = Date.now();
+  const deletedIds: string[] = [];
+  let count = 0;
+
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const query = await admin
+      .firestore()
+      .collection('properties')
+      .where('status', '==', 'inactive')
+      .where('expiredAt', '<', thirtyDaysAgo)
+      .limit(CLEANUP_RULES.maxDeletesPerRun)
+      .get();
+
+    // Собираем URLs изображений ДО удаления документов
+    const imagesByProp = new Map<string, string[]>();
+    for (const doc of query.docs) {
+      imagesByProp.set(doc.id, doc.data().images || []);
+    }
+
+    const batch = admin.firestore().batch();
+    for (const doc of query.docs) {
+      batch.delete(doc.ref);
+      deletedIds.push(doc.id);
+      count++;
+    }
+
+    if (count > 0) {
+      await batch.commit();
+      const bucket = admin.storage().bucket();
+      for (const [, images] of imagesByProp) {
+        for (const url of images) {
+          try {
+            const match = url.match(/\/o\/(.+?)\?/);
+            if (!match) continue;
+            await bucket.file(decodeURIComponent(match[1])).delete();
+          } catch { /* файл уже удалён */ }
+        }
+      }
+    }
+
+    return { timestamp: new Date(), type: 'inactive_listings', status: 'success', count, deletedIds, duration: Date.now() - startTime };
+  } catch (error: any) {
+    console.error('[ERROR] cleanupInactiveListings:', error);
+    return { timestamp: new Date(), type: 'inactive_listings', status: 'failed', count, deletedIds, error: error.message, duration: Date.now() - startTime };
+  }
+}
+
 export async function logCleanupResult(log: CleanupLog): Promise<void> {
   try {
     await admin.firestore().collection('cleanup-logs').add(log);
@@ -265,6 +322,7 @@ export async function runAllCleanups(): Promise<CleanupLog[]> {
 
   const settled = await Promise.allSettled([
     cleanupExpiredPremium(),
+    cleanupInactiveListings(),
     cleanupStalePendingListings(),
     cleanupRejectedBookings(),
     cleanupCancelledBookings(),

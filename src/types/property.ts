@@ -55,7 +55,7 @@ export interface PropertyOwner {
 
 export type ListingTier = 'free' | 'standard' | 'premium' | 'vip'
 
-export type ListingStatus = 'active' | 'pending'
+export type ListingStatus = 'active' | 'pending' | 'inactive'
 
 export interface Property {
   id: string
@@ -98,6 +98,7 @@ export interface Property {
   premiumExpiresAt?: string // ISO date when premium status expires
   vipExpiresAt?: string // ISO date when VIP status expires
   tierPlanDuration?: '14days' | '30days' // Selected plan duration for current tier
+  expiredAt?: string // ISO date when listing was deactivated due to expired premium/VIP
 }
 
 export interface User {

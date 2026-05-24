@@ -798,7 +798,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       const property = listings.find((p: Property) => p.id === propertyId)
       if (!property) return
       
-      await updateProperty(propertyId, { premiumExpiresAt: newExpiryDate })
+      await updateProperty(propertyId, {
+        premiumExpiresAt: newExpiryDate,
+        status: 'active',
+      })
       
       // Send notification to user about premium extension
       const getLocalizedTitle = (titleObj: unknown): string => {
@@ -1260,8 +1263,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                         const status = property.status || 'active'
                         const isCurrentlyActive = property.isActive !== false || isOccupationExpired(property)
                         const isPendingModeration = status === 'pending'
+                        const isInactivePremium = status === 'inactive'
                         const statusLabel = isPendingModeration
                           ? (isEnglish ? 'Pending moderation' : isRussian ? 'На модерации' : 'Moderasiyada gözləyir')
+                          : isInactivePremium
+                          ? (isEnglish ? 'Hidden — premium expired' : isRussian ? 'Скрыто — истёк премиум' : 'Gizli — premium bitdi')
                           : (isCurrentlyActive ? (isEnglish ? 'Active' : isRussian ? 'Активно' : 'Aktiv') : (isEnglish ? 'Temporarily hidden' : isRussian ? 'Временно скрыто' : 'Müvəqqəti gizli'))
 
                         return (
@@ -1276,7 +1282,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 <Link to={`/property/${property.id}`} className="listing-title">
                                   {getLocalizedText(property.title)}
                                 </Link>
-                                <span className={`badge ${isPendingModeration ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`}>
+                                <span className={`badge ${isPendingModeration || isInactivePremium ? 'badge-warning' : isCurrentlyActive ? 'badge-success' : 'badge-warning'}`}>
                                   {statusLabel}
                                 </span>
                               </div>
@@ -1311,6 +1317,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                 {property.listingTier === 'premium' && isPremiumExpired(property) && (
                                   <span className="listing-premium-expired">
                                     ⏰ {isEnglish ? 'Premium expired — click Extend!' : isRussian ? 'Премиум истек — нажмите Продлить!' : 'Premium bitdi — Uzat düyməsinə klik!'}
+                                    {isInactivePremium && property.expiredAt && (() => {
+                                      const daysLeft = 30 - Math.floor((Date.now() - new Date(property.expiredAt).getTime()) / (1000 * 60 * 60 * 24))
+                                      return daysLeft > 0
+                                        ? ` (${isEnglish ? `${daysLeft}d until deletion` : isRussian ? `${daysLeft} дн. до удаления` : `silinməyə ${daysLeft} gün`})`
+                                        : null
+                                    })()}
                                   </span>
                                 )}
                                 {property.listingTier === 'premium' && isPremiumActive(property) && (
