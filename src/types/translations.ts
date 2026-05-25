@@ -120,6 +120,7 @@ export interface Translations {
     replyCount: string
     replyingTo: string
     writeReplyPlaceholder: string
+    similarListings: string
   }
   amenities: {
     pool: string
