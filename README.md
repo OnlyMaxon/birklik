@@ -367,7 +367,9 @@ Birklik.az — это маркетплейс краткосрочной арен
 test
 Vite
 Сборка До PWA до Capacitor есть чат с Клаудом спец для этого
-Google Search Invented
+Google Search Invented calilorucli42@gmail.com
 Google ReCaptcha ИнВент Надо Для всех Приложений
 Yandex Карты Добавлены 
 Все Ключи либо в Claudflare либо в ENV 
+Google Business profile invented calilorucli42@gmail.com
+business gmail info@birklik.az
