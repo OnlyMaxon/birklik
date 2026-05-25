@@ -119,7 +119,8 @@ export const ru: Translations = {
     report: 'Пожаловаться',
     replyCount: 'ответ|ответы',
     replyingTo: 'Ответ на: ',
-    writeReplyPlaceholder: 'Написать ответ...'
+    writeReplyPlaceholder: 'Написать ответ...',
+    similarListings: 'Похожие объявления'
   },
   amenities: {
     pool: 'Бассейн',

@@ -3,9 +3,9 @@ import { useParams, Link } from 'react-router-dom'
 import { useLanguage } from '../../context'
 import { useAuth } from '../../context'
 import { Layout } from '../../layouts'
-import { ImageGallery, Loading, ReportCommentModal } from '../../components'
+import { ImageGallery, Loading, ReportCommentModal, PropertyCard } from '../../components'
 import { moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities } from '../../data'
-import { getPropertyById, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, addReplyToComment, addRatingToProperty, getUserRatingForProperty, getPropertyBookings } from '../../services'
+import { getPropertyById, getProperties, addCommentToProperty, deleteCommentFromProperty, incrementPropertyViews, addReplyToComment, addRatingToProperty, getUserRatingForProperty, getPropertyBookings } from '../../services'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favoritesService'
 import { createBooking, hasUserBookedProperty } from '../../services'
 import { getCsrfToken } from '../../services/csrfService'
@@ -79,6 +79,7 @@ export const PropertyPage: React.FC = () => {
   const [isSubmittingRating, setIsSubmittingRating] = React.useState(false)
   const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
   const [isOwner, setIsOwner] = React.useState(false)
+  const [similarProperties, setSimilarProperties] = React.useState<Property[]>([])
   const sidebarRef = React.useRef<HTMLDivElement>(null)
 
   // JS sticky for sidebar — translateY approach, works regardless of ancestor CSS
@@ -183,6 +184,16 @@ export const PropertyPage: React.FC = () => {
 
     loadProperty()
   }, [id, isAuthenticated, user])
+
+  React.useEffect(() => {
+    if (!property) return
+    const loadSimilar = async () => {
+      const filters = property.city ? { city: property.city } : { type: property.type }
+      const { properties } = await getProperties(filters)
+      setSimilarProperties(properties.filter(p => p.id !== property.id).slice(0, 10))
+    }
+    loadSimilar()
+  }, [property?.id])
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
@@ -1202,6 +1213,20 @@ export const PropertyPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Similar Listings */}
+          {similarProperties.length > 0 && (
+            <div className="pp-similar-section">
+              <h3 className="pp-similar-title">{t.property.similarListings}</h3>
+              <div className="pp-similar-scroll">
+                {similarProperties.map(p => (
+                  <div key={p.id} className="pp-similar-card-wrap">
+                    <PropertyCard property={p} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

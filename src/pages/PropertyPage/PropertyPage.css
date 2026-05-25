@@ -1252,6 +1252,47 @@
   margin-bottom: 0.75rem;
 }
 
+/* ===== SIMILAR LISTINGS ===== */
+.pp-similar-section {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.pp-similar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 1.25rem;
+}
+
+.pp-similar-scroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.pp-similar-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.pp-similar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pp-similar-scroll::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.pp-similar-card-wrap {
+  flex: 0 0 270px;
+  min-width: 0;
+}
+
 .pp-cal-nav-btn {
   background: none;
   border: 1px solid var(--gray-200);
