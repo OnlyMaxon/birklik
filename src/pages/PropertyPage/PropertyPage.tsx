@@ -66,7 +66,6 @@ export const PropertyPage: React.FC = () => {
   const [selectedCheckOut, setSelectedCheckOut] = React.useState('')
   const [displayMonth, setDisplayMonth] = React.useState(() => new Date())
   const [hasBooked, setHasBooked] = React.useState(false)
-  const [showContactInfo, setShowContactInfo] = React.useState(false)
   const [isBooking, setIsBooking] = React.useState(false)
   const [newComment, setNewComment] = React.useState('')
   const [isPostingComment, setIsPostingComment] = React.useState(false)
@@ -309,8 +308,6 @@ export const PropertyPage: React.FC = () => {
       if (result) {
         
         setHasBooked(true)
-        setShowContactInfo(true)
-        
         // Clear selected dates to allow new booking
         setSelectedCheckIn('')
         setSelectedCheckOut('')
@@ -712,6 +709,7 @@ export const PropertyPage: React.FC = () => {
             <span>{cityLabel}</span>
             <span>/</span>
             <span>{getLocalizedText(property.title)}</span>
+            <span className="pp-property-id">#{property.id}</span>
           </nav>
 
           {/* Main Content */}
@@ -981,24 +979,18 @@ export const PropertyPage: React.FC = () => {
                 <div className="owner-info owner-info-priority">
                   <h4>{t.property.contact}</h4>
                   <p className="owner-name">{property.owner.name}</p>
-                  {showContactInfo || hasBooked ? (
-                    <>
-                      <a href={`tel:${property.owner.phone}`} className="owner-phone">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                        </svg>
-                        {property.owner.phone}
-                      </a>
-                      <a href={`mailto:${property.owner.email}`} className="owner-phone owner-email">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/>
-                        </svg>
-                        {property.owner.email}
-                      </a>
-                    </>
-                  ) : (
-                    <p className="pp-contact-hint">{t.property.contactAfterBooking}</p>
-                  )}
+                  <a href={`tel:${property.owner.phone}`} className="owner-phone">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    {property.owner.phone}
+                  </a>
+                  <a href={`mailto:${property.owner.email}`} className="owner-phone owner-email">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/>
+                    </svg>
+                    {property.owner.email}
+                  </a>
                 </div>
 
                 <div className="availability-card">
