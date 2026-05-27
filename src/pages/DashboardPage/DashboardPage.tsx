@@ -81,6 +81,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [isTestAccount, setIsTestAccount] = React.useState(false)
   const [error, setError] = React.useState('')
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([])
+  const [existingImages, setExistingImages] = React.useState<string[]>([])
   const [hasTestData, setHasTestData] = React.useState(false)
   const [isAddingTestData, setIsAddingTestData] = React.useState(false)
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
@@ -334,6 +335,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       contactPhone: user?.phone || ''
     })
     setSelectedFiles([])
+    setExistingImages([])
     setEditingListingId(null)
     setListingCoordinates(DEFAULT_COORDINATES)
     setLocationSearchError('')
@@ -508,19 +510,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       return
     }
 
-    if ((newListing.listingTier === 'standard' || newListing.listingTier === 'vip') && selectedFiles.length > 20) {
+    if ((newListing.listingTier === 'standard' || newListing.listingTier === 'vip') && selectedFiles.length + existingImages.length > 20) {
       setError(t.listing.maxImagesStandard)
       setIsSubmitting(false)
       return
     }
 
-    if (newListing.listingTier === 'premium' && selectedFiles.length > 30) {
+    if (newListing.listingTier === 'premium' && selectedFiles.length + existingImages.length > 30) {
       setError(t.listing.maxImagesPremium)
       setIsSubmitting(false)
       return
     }
 
-    if (selectedFiles.length < 5) {
+    if (selectedFiles.length + existingImages.length < 5) {
       setError(t.listing.minPhotos)
       setIsSubmitting(false)
       return
@@ -577,7 +579,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       nearbyPlaces: newListing.nearbyPlaces,
       locationCategory: newListing.locationCategory,
       locationTags: newListing.locationTags,
-      images: [],
+      images: existingImages,
       coordinates: listingCoordinates,
       title: {
         az: newListing.title,
@@ -903,6 +905,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setError('')
     setShowAddSuccess(false)
     setSelectedFiles([])
+    setExistingImages(property.images || [])
 
     setNewListing({
       title: property.title.az || property.title.en,
@@ -1927,6 +1930,33 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                           </div>
                         </div>
                         <div className="form-section-body">
+                          {existingImages.length > 0 && (
+                            <div className="upload-preview-grid" style={{ marginBottom: '1rem' }}>
+                              {existingImages.map((url, index) => (
+                                <div key={url} className="upload-preview-item">
+                                  <div className="preview-photo-wrapper">
+                                    <img src={url} alt={`Photo ${index + 1}`} />
+                                    <div className="preview-controls">
+                                      <button
+                                        type="button"
+                                        onClick={() => setExistingImages(prev => prev.filter((_, i) => i !== index))}
+                                        className="control-btn delete-btn"
+                                        title={t.buttons.delete}
+                                        aria-label={t.buttons.delete}
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <span className="filename">
+                                    {index === 0
+                                      ? (isEnglish ? 'Cover' : isRussian ? 'Обложка' : 'Örtük')
+                                      : `#${index + 1}`}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                           <div className="file-upload">
                             <input
                               type="file"
@@ -1935,7 +1965,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               onChange={(e) => setSelectedFiles(prev => [...prev, ...Array.from(e.target.files || [])])}
                             />
                             {selectedFiles.length > 0 && (
-                              <p>{selectedFiles.length} {isEnglish ? 'file(s) selected' : isRussian ? 'файл(ов) выбрано' : 'fayl seçildi'}</p>
+                              <p>{selectedFiles.length} {isEnglish ? 'new file(s) selected' : isRussian ? 'новых файл(ов) выбрано' : 'yeni fayl seçildi'}</p>
                             )}
                           </div>
                           {selectedFilePreviews.length > 0 && (
