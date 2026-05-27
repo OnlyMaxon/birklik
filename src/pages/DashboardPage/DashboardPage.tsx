@@ -370,6 +370,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
   }, [])
 
+  const handleMoveExistingUp = React.useCallback((index: number) => {
+    if (index > 0) {
+      setExistingImages(prev => {
+        const arr = [...prev]
+        ;[arr[index - 1], arr[index]] = [arr[index], arr[index - 1]]
+        return arr
+      })
+    }
+  }, [])
+
+  const handleMoveExistingDown = React.useCallback((index: number) => {
+    setExistingImages(prev => {
+      if (index < prev.length - 1) {
+        const arr = [...prev]
+        ;[arr[index], arr[index + 1]] = [arr[index + 1], arr[index]]
+        return arr
+      }
+      return prev
+    })
+  }, [])
+
   React.useEffect(() => {
     if (activeTab === 'add' && !editingListingId && user) {
       setNewListing(prev => ({
@@ -1937,6 +1958,28 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   <div className="preview-photo-wrapper">
                                     <img src={url} alt={`Photo ${index + 1}`} />
                                     <div className="preview-controls">
+                                      {index > 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleMoveExistingUp(index)}
+                                          className="control-btn move-up-btn"
+                                          title={t.buttons.moveUp}
+                                          aria-label={t.buttons.moveUp}
+                                        >
+                                          ↑
+                                        </button>
+                                      )}
+                                      {index < existingImages.length - 1 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleMoveExistingDown(index)}
+                                          className="control-btn move-down-btn"
+                                          title={t.buttons.moveDown}
+                                          aria-label={t.buttons.moveDown}
+                                        >
+                                          ↓
+                                        </button>
+                                      )}
                                       <button
                                         type="button"
                                         onClick={() => setExistingImages(prev => prev.filter((_, i) => i !== index))}
