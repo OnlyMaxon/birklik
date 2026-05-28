@@ -353,11 +353,6 @@ export const az: Translations = {
     listed: "Elanınız aktivdir",
     contactSupport: "Dəstəklə əlaqə saxlayın"
   },
-  testData: {
-    addTest: "Test məlumatı əlavə et",
-    removeTest: "Test məlumatını sil",
-    testListings: "Test elanları"
-  },
   home: {
     showMap: "Xəritədə göstər",
     hideMap: "Xəritəni gizlət",

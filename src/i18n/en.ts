@@ -356,11 +356,6 @@ export const en: Translations = {
     listed: "Your listing is active",
     contactSupport: "Contact support"
   },
-  testData: {
-    addTest: "Add Test Data",
-    removeTest: "Remove Test Data",
-    testListings: "Test Listings"
-  },
   home: {
     showMap: "Show map",
     hideMap: "Hide map",

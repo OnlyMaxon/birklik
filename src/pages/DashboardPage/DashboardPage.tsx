@@ -27,7 +27,6 @@ interface GeocodeResult {
   lat: string
   lon: string
 }
-const TEST_LISTING_MARKER = '[TEST_DATA]'
 const getTodayISO = (): string => {
   const today = new Date()
   const year = today.getFullYear()
@@ -39,17 +38,6 @@ const getTodayISO = (): string => {
 const isOccupationExpired = (property: Property): boolean => {
   if (!property.unavailableTo) return false
   return property.unavailableTo < getTodayISO()
-}
-
-const isTestListing = (listing: Property): boolean => {
-  const titleAz = listing.title?.az || ''
-  const titleEn = listing.title?.en || ''
-  const descriptionAz = listing.description?.az || ''
-  const descriptionEn = listing.description?.en || ''
-
-  return [titleAz, titleEn, descriptionAz, descriptionEn].some((value) =>
-    value.includes(TEST_LISTING_MARKER)
-  )
 }
 
 const isPremiumExpired = (property: Property): boolean => {
@@ -82,8 +70,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [error, setError] = React.useState('')
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([])
   const [existingImages, setExistingImages] = React.useState<string[]>([])
-  const [hasTestData, setHasTestData] = React.useState(false)
-  const [isAddingTestData, setIsAddingTestData] = React.useState(false)
   const [editingListingId, setEditingListingId] = React.useState<string | null>(null)
   const [listingCoordinates, setListingCoordinates] = React.useState(DEFAULT_COORDINATES)
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
@@ -261,7 +247,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     })
 
     setListings(normalizedListings)
-    setHasTestData(normalizedListings.some(isTestListing))
     setIsLoadingListings(false)
   }, [user])
 
@@ -954,227 +939,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     setListingCoordinates(property.coordinates || DEFAULT_COORDINATES)
 
     setActiveTab('add')
-  }
-
-  const testListings = React.useMemo(() => {
-    const templates = [
-      {
-        type: 'villa' as PropertyType,
-        district: 'mardakan' as District,
-        city: 'Baku',
-        locationCategory: 'metro' as LocationCategory,
-        locationTags: ['koroglu', 'sahil'],
-        amenities: ['pool', 'parking', 'wifi', 'ac', 'kitchen', 'bbq'] as Amenity[],
-        extraFeatures: ['pool', 'ac', 'sauna', 'gazebo', 'bbq', 'wifi'],
-        nearbyPlaces: ['sea', 'park', 'restaurant'],
-        image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200',
-        basePrice: 320,
-        baseRooms: 5,
-        baseMinGuests: 2,
-        baseMaxGuests: 10,
-        baseArea: 320,
-        titleAz: 'Lüks villa',
-        titleEn: 'Luxury villa',
-        areaAz: 'Mərdəkan',
-        areaEn: 'Mardakan',
-        tier: 'premium' as ListingTier
-      },
-      {
-        type: 'apartment' as PropertyType,
-        district: 'bilgah' as District,
-        city: 'Baku',
-        locationCategory: 'rayon' as LocationCategory,
-        locationTags: ['denizkenari', 'whiteCity'],
-        amenities: ['wifi', 'ac', 'kitchen', 'tv', 'parking', 'beach'] as Amenity[],
-        extraFeatures: ['ac', 'wifi', 'garage', 'boardGames'],
-        nearbyPlaces: ['sea', 'restaurant', 'park'],
-        image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200',
-        basePrice: 130,
-        baseRooms: 3,
-        baseMinGuests: 1,
-        baseMaxGuests: 4,
-        baseArea: 95,
-        titleAz: 'Dəniz mənzərəli mənzil',
-        titleEn: 'Sea view apartment',
-        areaAz: 'Bilgəh',
-        areaEn: 'Bilgah',
-        tier: 'standard' as ListingTier
-      },
-      {
-        type: 'cottage' as PropertyType,
-        district: 'gabala' as District,
-        city: 'Gabala',
-        locationCategory: 'rayon' as LocationCategory,
-        locationTags: ['xirdalan'],
-        amenities: ['wifi', 'ac', 'kitchen', 'garden', 'bbq'] as Amenity[],
-        extraFeatures: ['wifi', 'bbq', 'samovar', 'kidsZone'],
-        nearbyPlaces: ['mountains', 'forest', 'riverLake'],
-        image: 'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1200',
-        basePrice: 180,
-        baseRooms: 4,
-        baseMinGuests: 2,
-        baseMaxGuests: 6,
-        baseArea: 160,
-        titleAz: 'Qəbələ bağ evi',
-        titleEn: 'Gabala cottage',
-        areaAz: 'Qəbələ',
-        areaEn: 'Gabala',
-        tier: 'standard' as ListingTier
-      },
-      {
-        type: 'house' as PropertyType,
-        district: 'novkhani' as District,
-        city: 'Baku',
-        locationCategory: 'rayon' as LocationCategory,
-        locationTags: ['memarEcemi'],
-        amenities: ['parking', 'wifi', 'kitchen', 'garden', 'bbq'] as Amenity[],
-        extraFeatures: ['garage', 'gazebo', 'bbq', 'wifi'],
-        nearbyPlaces: ['sea', 'park'],
-        image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200',
-        basePrice: 210,
-        baseRooms: 4,
-        baseMinGuests: 1,
-        baseMaxGuests: 6,
-        baseArea: 210,
-        titleAz: 'Novxanı istirahət evi',
-        titleEn: 'Novkhani holiday house',
-        areaAz: 'Novxanı',
-        areaEn: 'Novkhani',
-        tier: 'free' as ListingTier
-      },
-      {
-        type: 'penthouse' as PropertyType,
-        district: 'baku' as District,
-        city: 'Baku',
-        locationCategory: 'rayon' as LocationCategory,
-        locationTags: ['portBaku'],
-        amenities: ['parking', 'wifi', 'ac', 'kitchen', 'tv', 'security'] as Amenity[],
-        extraFeatures: ['ac', 'wifi', 'cityView', 'security'],
-        nearbyPlaces: ['restaurant', 'mall', 'park'],
-        image: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=1200',
-        basePrice: 260,
-        baseRooms: 3,
-        baseMinGuests: 1,
-        baseMaxGuests: 4,
-        baseArea: 140,
-        titleAz: 'Şəhər mərkəzində penthaus',
-        titleEn: 'City center penthouse',
-        areaAz: 'Bakı',
-        areaEn: 'Baku',
-        tier: 'premium' as ListingTier
-      }
-    ]
-
-    return Array.from({ length: 30 }, (_, index) => {
-      const template = templates[index % templates.length]
-      const serial = index + 1
-      const daily = template.basePrice + (index % 5) * 15
-      const rooms = template.baseRooms + (index % 2)
-      const minGuests = template.baseMinGuests
-      const maxGuests = Math.min(10, template.baseMaxGuests + (index % 3))
-      const area = template.baseArea + (index % 4) * 12
-
-      return {
-        title: {
-          az: `${TEST_LISTING_MARKER} ${template.titleAz} #${serial}`,
-          en: `${TEST_LISTING_MARKER} ${template.titleEn} #${serial}`
-        },
-        description: {
-          az: `${TEST_LISTING_MARKER} Bu test elanıdır. Platform funksiyalarını yoxlamaq üçün yaradılıb.`,
-          en: `${TEST_LISTING_MARKER} Test listing created for platform verification workflows.`
-        },
-        type: template.type,
-        district: template.district,
-        address: {
-          az: `${template.areaAz}, Test küç. ${serial}`,
-          en: `${template.areaEn}, Test street ${serial}`
-        },
-        price: {
-          daily,
-          weekly: daily * 6,
-          monthly: daily * 24,
-          currency: 'AZN'
-        },
-        rooms,
-        minGuests,
-        maxGuests,
-        area,
-        amenities: template.amenities,
-        extraFeatures: template.extraFeatures,
-        nearbyPlaces: template.nearbyPlaces,
-        locationCategory: template.locationCategory,
-        locationTags: template.locationTags,
-        images: [template.image],
-        coordinates: {
-          lat: Number((40.36 + (index % 10) * 0.02).toFixed(6)),
-          lng: Number((49.78 + (index % 10) * 0.03).toFixed(6))
-        },
-        listingTier: template.tier,
-        status: 'active' as const,
-        isFeatured: template.tier === 'premium',
-        isActive: true,
-        city: template.city
-      }
-    })
-  }, [])
-
-  const handleAddTestData = async () => {
-    if (!user) return
-
-    setIsAddingTestData(true)
-    setError('')
-
-    try {
-      const existingTestListings = listings.filter((listing) => listing.ownerId === user.id && isTestListing(listing))
-
-      await Promise.all(existingTestListings.map(listing => deleteProperty(listing.id)))
-
-      await Promise.all(testListings.map(testListing => {
-        const propertyPayload: Omit<Property, 'id' | 'createdAt' | 'updatedAt'> = {
-          ...testListing,
-          owner: {
-            name: user.name,
-            phone: user.phone,
-            email: user.email
-          },
-          ownerId: user.id,
-          views: 0,
-          likes: [],
-          favorites: [],
-          comments: [],
-          premiumExpiresAt: testListing.listingTier === 'premium' ? (() => { const d = new Date(); d.setDate(d.getDate() + 30); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })() : undefined
-        }
-        return createProperty(propertyPayload, [])
-      }))
-
-      setHasTestData(true)
-      await loadListings()
-    } catch (err) {
-      setError(t.messages.error)
-    } finally {
-      setIsAddingTestData(false)
-    }
-  }
-
-  const handleRemoveTestData = async () => {
-    const ok = window.confirm('Bütün test məlumatlarını silmək istəyirsiniz?')
-    if (!ok) return
-
-    setIsAddingTestData(true)
-    setError('')
-
-    try {
-      const listingsToDelete = listings.filter(l => l.ownerId === user.id && isTestListing(l))
-
-      await Promise.all(listingsToDelete.map(listing => deleteProperty(listing.id)))
-
-      setHasTestData(false)
-      await loadListings()
-    } catch (err) {
-      setError(t.messages.error)
-    } finally {
-      setIsAddingTestData(false)
-    }
   }
 
   return (
@@ -2165,33 +1929,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                       </button>
                     </form>
 
-                    {isTestAccount && (
-                      <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #e0e7ff' }}>
-                        <h3 style={{ marginBottom: '1rem', color: '#1a4ca0' }}>🧪 Test Məlumatları</h3>
-                        <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1rem' }}>
-                          Platformu sınaqdan keçirmək üçün test elanları əlavə edin və ya silin.
-                        </p>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                          <button
-                            type="button"
-                            className={`btn ${hasTestData ? 'btn-ghost' : 'btn-accent'}`}
-                            onClick={handleAddTestData}
-                            disabled={isAddingTestData}
-                          >
-                            {isAddingTestData ? t.messages.loading : t.testData.addTest}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={handleRemoveTestData}
-                            disabled={isAddingTestData || !hasTestData}
-                            style={{ color: hasTestData ? '#d32f2f' : '#999' }}
-                          >
-                            {isAddingTestData ? t.messages.loading : t.testData.removeTest}
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

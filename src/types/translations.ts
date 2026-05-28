@@ -356,11 +356,6 @@ export interface Translations {
     listed: string
     contactSupport: string
   }
-  testData: {
-    addTest: string
-    removeTest: string
-    testListings: string
-  }
   home: {
     showMap: string
     hideMap: string

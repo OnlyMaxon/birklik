@@ -356,11 +356,6 @@ export const ru: Translations = {
     listed: 'Ваше объявление активно',
     contactSupport: 'Связаться с поддержкой'
   },
-  testData: {
-    addTest: 'Добавить тестовые данные',
-    removeTest: 'Удалить тестовые данные',
-    testListings: 'Тестовые объявления'
-  },
   home: {
     showMap: 'Показать карту',
     hideMap: 'Скрыть карту',
