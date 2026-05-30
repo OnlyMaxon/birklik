@@ -373,3 +373,4 @@ Yandex Карты Добавлены
 Все Ключи либо в Claudflare либо в ENV 
 Google Business profile invented calilorucli42@gmail.com
 business gmail info@birklik.az
+Google Cloud + Firebase
