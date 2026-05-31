@@ -121,6 +121,7 @@ export interface Translations {
     replyingTo: string
     writeReplyPlaceholder: string
     similarListings: string
+    publishedOn: string
   }
   amenities: {
     pool: string

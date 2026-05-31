@@ -120,7 +120,8 @@ export const az: Translations = {
     replyCount: "cavab|cavablar",
     replyingTo: "Cavab: ",
     writeReplyPlaceholder: "Cavab yazın...",
-    similarListings: "Oxşar elanlar"
+    similarListings: "Oxşar elanlar",
+    publishedOn: "Dərc edildi"
   },
   amenities: {
     pool: "Hovuz",

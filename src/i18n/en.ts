@@ -120,7 +120,8 @@ export const en: Translations = {
     replyCount: "reply|replies",
     replyingTo: "Replying to: ",
     writeReplyPlaceholder: "Write a reply...",
-    similarListings: "Similar Listings"
+    similarListings: "Similar Listings",
+    publishedOn: "Published"
   },
   amenities: {
     pool: "Pool",

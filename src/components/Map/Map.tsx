@@ -1,5 +1,5 @@
 import React from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import L from 'leaflet'
 import { useLanguage } from '../../context'
@@ -18,6 +18,31 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow
 })
 
+const BAKU_CENTER: [number, number] = [40.4093, 49.8671]
+const BAKU_ZOOM = 11
+
+// Fits map view to all visible properties; falls back to Baku city area when empty
+const FitBoundsOnChange: React.FC<{ properties: Property[] }> = ({ properties }) => {
+  const map = useMap()
+
+  React.useEffect(() => {
+    if (properties.length === 0) {
+      map.setView(BAKU_CENTER, BAKU_ZOOM)
+      return
+    }
+    if (properties.length === 1) {
+      map.setView([properties[0].coordinates.lat, properties[0].coordinates.lng], 14)
+      return
+    }
+    const bounds = L.latLngBounds(
+      properties.map(p => [p.coordinates.lat, p.coordinates.lng] as [number, number])
+    )
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 })
+  }, [properties, map])
+
+  return null
+}
+
 interface PropertyMapProps {
   properties: Property[]
   center?: [number, number]
@@ -25,10 +50,10 @@ interface PropertyMapProps {
   singleProperty?: boolean
 }
 
-export const PropertyMap: React.FC<PropertyMapProps> = ({ 
-  properties, 
-  center = [40.4093, 49.8671], // Baku center
-  zoom = 10,
+export const PropertyMap: React.FC<PropertyMapProps> = ({
+  properties,
+  center = BAKU_CENTER,
+  zoom = BAKU_ZOOM,
   singleProperty = false
 }) => {
   const { language, t } = useLanguage()
@@ -41,24 +66,21 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const mapActionLabels = {
-    google: language === 'en' ? 'Google Maps' : language === 'ru' ? 'Google Maps' : 'Google Maps',
-    waze: language === 'en' ? 'Waze' : language === 'ru' ? 'Waze' : 'Waze',
-    apple: language === 'en' ? 'Apple Maps' : language === 'ru' ? 'Apple Maps' : 'Apple Maps'
+    google: 'Google Maps',
+    waze: 'Waze',
+    apple: 'Apple Maps'
   }
 
-  const mapCenter: [number, number] = React.useMemo(() => {
-    if (singleProperty && properties.length === 1) {
+  // For single property, center on the property itself; otherwise use Baku center
+  // (FitBoundsOnChange handles dynamic re-centering for multi-property view)
+  const initialCenter: [number, number] = React.useMemo(() => {
+    if (singleProperty && properties.length > 0) {
       return [properties[0].coordinates.lat, properties[0].coordinates.lng]
-    }
-    if (properties.length > 0) {
-      const avgLat = properties.reduce((s, p) => s + p.coordinates.lat, 0) / properties.length
-      const avgLng = properties.reduce((s, p) => s + p.coordinates.lng, 0) / properties.length
-      return [avgLat, avgLng]
     }
     return center
   }, [properties, singleProperty, center])
 
-  const mapZoom = singleProperty ? 14 : zoom
+  const initialZoom = singleProperty ? 14 : zoom
 
   const markerIcons = React.useMemo(() => {
     return new Map(
@@ -85,27 +107,28 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
 
   return (
     <div className="map-container">
-      <MapContainer 
-        center={mapCenter} 
-        zoom={mapZoom} 
+      <MapContainer
+        center={initialCenter}
+        zoom={initialZoom}
         scrollWheelZoom={true}
         className="leaflet-map"
       >
+        {!singleProperty && <FitBoundsOnChange properties={properties} />}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         {properties.map((property) => (
-          <Marker 
-            key={property.id} 
+          <Marker
+            key={property.id}
             position={[property.coordinates.lat, property.coordinates.lng]}
             icon={markerIcons.get(property.id)}
           >
             <Popup>
               <div className="map-popup">
-                <img 
-                  src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} 
-                  alt={getLocalizedText(property.title)} 
+                <img
+                  src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+                  alt={getLocalizedText(property.title)}
                   className="popup-image"
                 />
                 <div className="popup-content">
@@ -121,7 +144,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                   <p className="popup-price">
                     <strong>{property.price.daily} {property.price.currency}</strong> / {t.property.perNight}
                   </p>
-                  <button 
+                  <button
                     onClick={() => navigate(`/property/${property.id}`)}
                     className="popup-view-button"
                   >

@@ -894,6 +894,20 @@
   border-top: 1px solid var(--gray-100);
 }
 
+.pp-published-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--neutral);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.pp-published-badge svg {
+  flex-shrink: 0;
+  color: var(--neutral);
+}
+
 /* ===== DETAILS BAR ===== */
 .pp-details-bar {
   display: flex;

@@ -48,7 +48,7 @@
 }
 
 .logo-image {
-  width: clamp(150px, 22vw, 220px);
+  width: clamp(130px, 19vw, 185px);
   height: auto;
   display: block;
   image-rendering: -webkit-optimize-contrast;
@@ -482,7 +482,7 @@
 
 @media (max-width: 1024px) {
   .logo-image {
-    width: clamp(146px, 25vw, 198px);
+    width: clamp(126px, 21vw, 168px);
   }
 }
 
@@ -506,7 +506,7 @@
   }
 
   .logo-image {
-    width: clamp(132px, 34vw, 162px);
+    width: clamp(116px, 29vw, 138px);
   }
 
   .header-actions {
@@ -692,7 +692,7 @@
   }
 
   .logo-image {
-    width: clamp(120px, 35vw, 146px);
+    width: clamp(108px, 30vw, 124px);
   }
 
   .nav {
@@ -735,7 +735,7 @@
 
 @media (max-width: 390px) {
   .logo-image {
-    width: 116px;
+    width: 100px;
   }
 
   .header-actions {

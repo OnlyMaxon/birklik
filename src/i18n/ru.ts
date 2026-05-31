@@ -120,7 +120,8 @@ export const ru: Translations = {
     replyCount: 'ответ|ответы',
     replyingTo: 'Ответ на: ',
     writeReplyPlaceholder: 'Написать ответ...',
-    similarListings: 'Похожие объявления'
+    similarListings: 'Похожие объявления',
+    publishedOn: 'Опубликовано'
   },
   amenities: {
     pool: 'Бассейн',
