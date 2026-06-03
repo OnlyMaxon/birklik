@@ -39,3 +39,6 @@ coverage/
 # Firebase Admin SDK & Scripts
 serviceAccountKey.json
 set-moderator.js
+
+# RSA Keys
+*.pem

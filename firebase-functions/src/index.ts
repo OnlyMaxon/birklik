@@ -13,6 +13,9 @@ import * as admin from 'firebase-admin';
 import { runAllCleanups } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
 import { sendPushToUser } from './notifications/sendPush';
+import { initiatePayment, azericardCallback } from './payment/azericard';
+
+export { initiatePayment, azericardCallback };
 
 // Инициализируем Firebase Admin
 admin.initializeApp();
