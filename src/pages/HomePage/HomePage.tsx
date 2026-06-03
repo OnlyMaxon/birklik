@@ -216,18 +216,14 @@ export const HomePage: React.FC = () => {
 
       <section id="premium-results" className="section properties-section" ref={resultsRef}>
         <div className="properties-content">
-          <aside className="ad-slot ad-slot--left" aria-hidden="true">
-            <div className="ad-placeholder">
-              <svg className="ad-placeholder-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-                <path d="M15.54 8.46a5 5 0 010 7.07"/>
-                <path d="M19.07 4.93a10 10 0 010 14.14"/>
-              </svg>
-              <span className="ad-placeholder-label">Reklam yeri</span>
-              <span className="ad-placeholder-sub">Reklamınızı burada yerləşdirin</span>
-              <div className="ad-placeholder-divider" />
-              <span className="ad-placeholder-size">160 × 600</span>
-            </div>
+          <aside className="ad-slot ad-slot--left" aria-label="Reklam">
+            <img
+              src="/ads/banner.jpg"
+              width={160}
+              height={600}
+              alt="Reklam"
+              style={{ display: 'block', borderRadius: '14px' }}
+            />
           </aside>
 
           <div className="container">
@@ -302,18 +298,14 @@ export const HomePage: React.FC = () => {
             ) : null}
           </div>
 
-          <aside className="ad-slot ad-slot--right" aria-hidden="true">
-            <div className="ad-placeholder">
-              <svg className="ad-placeholder-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-                <path d="M15.54 8.46a5 5 0 010 7.07"/>
-                <path d="M19.07 4.93a10 10 0 010 14.14"/>
-              </svg>
-              <span className="ad-placeholder-label">Reklam yeri</span>
-              <span className="ad-placeholder-sub">Reklamınızı burada yerləşdirin</span>
-              <div className="ad-placeholder-divider" />
-              <span className="ad-placeholder-size">160 × 600</span>
-            </div>
+          <aside className="ad-slot ad-slot--right" aria-label="Reklam">
+            <img
+              src="/ads/banner.jpg"
+              width={160}
+              height={600}
+              alt="Reklam"
+              style={{ display: 'block', borderRadius: '14px' }}
+            />
           </aside>
         </div>
       </section>

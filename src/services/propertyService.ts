@@ -126,11 +126,15 @@ export const getProperties = async (
         if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
         return matchesSearch(property, filters?.search)
       })
-      // Sort by featured first, then by date
+      // Sort by tier priority: premium → vip → standard, then by date within each tier
       .sort((a, b) => {
-        if (a.property.isFeatured !== b.property.isFeatured) {
-          return (b.property.isFeatured ? 1 : 0) - (a.property.isFeatured ? 1 : 0)
+        const tierRank = (p: Property) => {
+          if (p.isFeatured || p.listingTier === 'premium') return 3
+          if (p.listingTier === 'vip') return 2
+          return 1
         }
+        const rankDiff = tierRank(b.property) - tierRank(a.property)
+        if (rankDiff !== 0) return rankDiff
         return new Date(b.property.createdAt || 0).getTime() - new Date(a.property.createdAt || 0).getTime()
       })
     const properties = filteredDocs.map(({ property }) => property)

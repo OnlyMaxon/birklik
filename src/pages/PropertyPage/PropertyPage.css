@@ -523,10 +523,6 @@
   border-bottom: 1px solid var(--gray-200);
 }
 
-.owner-email {
-  margin-top: 0.4rem;
-}
-
 .owner-info {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
@@ -550,10 +546,17 @@
 .owner-phone {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  color: var(--primary-color);
-  font-weight: 500;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+  padding: 0.7rem 1.1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(var(--primary-color-rgb), 0.28);
+  transition: all 0.22s ease;
+  letter-spacing: 0.01em;
   min-width: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -564,7 +567,9 @@
 }
 
 .owner-phone:hover {
-  color: var(--accent-color);
+  color: #fff;
+  box-shadow: 0 5px 18px rgba(var(--primary-color-rgb), 0.42);
+  transform: translateY(-1px);
 }
 
 .not-found {
