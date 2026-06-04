@@ -1051,6 +1051,17 @@
   font-size: 0.875rem;
 }
 
+.success-banner {
+  background-color: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 .success-inline-message {
   background-color: #eefaf3;
   border: 1px solid #b9e5cb;

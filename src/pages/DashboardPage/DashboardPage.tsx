@@ -12,8 +12,10 @@ import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from './Locatio
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cities } from '../../data'
 import { resolveCity } from '../../data/cityAliases'
 import { isModerator } from '../../config/constants'
-import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory } from '../../types'
+import { Language, PropertyType, District, Amenity, Property, ListingTier, ListingStatus, LocationCategory } from '../../types'
 import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '../../services'
+import { getFunctions, httpsCallable } from 'firebase/functions'
+import firebaseApp from '../../config/firebase'
 import './DashboardPage.css'
 import * as logger from '../../services/logger'
 
@@ -63,6 +65,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const tabParam = searchParams.get('tab') as TabType | null
   const [activeTab, setActiveTab] = React.useState<TabType>(tabParam || initialTab)
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
+  const [paymentNotification, setPaymentNotification] = React.useState<'success' | 'failed' | 'error' | null>(null)
   const [listings, setListings] = React.useState<Property[]>([])
   const [isLoadingListings, setIsLoadingListings] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -207,6 +210,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       setActiveTab(tabParam)
     }
   }, [tabParam])
+
+  // Handle payment result from Azericard redirect
+  React.useEffect(() => {
+    const paymentParam = searchParams.get('payment')
+    if (paymentParam === 'success' || paymentParam === 'failed' || paymentParam === 'error') {
+      setPaymentNotification(paymentParam)
+      setActiveTab('listings')
+      setTimeout(() => setPaymentNotification(null), 6000)
+    }
+  }, [])
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
@@ -626,6 +639,51 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
         setIsSubmitting(false)
         return
       }
+    } else if (newListing.listingTier === 'vip' || newListing.listingTier === 'premium') {
+      // Платный тариф: сохраняем как draft, затем редиректим на оплату
+      const draftPayload = { ...propertyPayload, status: 'draft' as ListingStatus }
+      const created = await createProperty(draftPayload, selectedFiles)
+      if (!created) {
+        setError(t.listing.createdFailed)
+        setIsSubmitting(false)
+        return
+      }
+
+      try {
+        const fns = getFunctions(firebaseApp, 'europe-west1')
+        const initiatePaymentFn = httpsCallable<
+          { propertyId: string; tier: string; duration: string },
+          { paymentUrl: string; params: Record<string, string> }
+        >(fns, 'initiatePayment')
+
+        const result = await initiatePaymentFn({
+          propertyId: created.id,
+          tier: newListing.listingTier,
+          duration: newListing.tierPlanDuration || '30days',
+        })
+
+        const { paymentUrl, params } = result.data
+        const form = document.createElement('form')
+        form.method = 'POST'
+        form.action = paymentUrl
+        form.style.display = 'none'
+        Object.entries(params).forEach(([key, value]) => {
+          const input = document.createElement('input')
+          input.type = 'hidden'
+          input.name = key
+          input.value = value
+          form.appendChild(input)
+        })
+        document.body.appendChild(form)
+        form.submit()
+        return // Страница перейдёт на Azericard
+      } catch (err) {
+        logger.error('Payment initiation failed:', err)
+        await deleteProperty(created.id)
+        setError(isEnglish ? 'Payment initiation failed. Please try again.' : isRussian ? 'Ошибка при запуске оплаты. Попробуйте снова.' : 'Ödəniş başladılmadı. Yenidən cəhd edin.')
+        setIsSubmitting(false)
+        return
+      }
     } else {
       const created = await createProperty(propertyPayload, selectedFiles)
       if (!created) {
@@ -1039,6 +1097,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
               {activeTab === 'listings' && (
                 <div className="tab-content fade-in">
                   <h2>{t.dashboard.myListings}</h2>
+                  {paymentNotification === 'success' && (
+                    <div className="success-banner">
+                      {isEnglish ? '✅ Payment successful! Your listing has been sent for moderation.' : isRussian ? '✅ Оплата прошла! Объявление отправлено на модерацию.' : '✅ Ödəniş uğurlu oldu! Elan moderasiyaya göndərildi.'}
+                    </div>
+                  )}
+                  {(paymentNotification === 'failed' || paymentNotification === 'error') && (
+                    <div className="error-message">
+                      {isEnglish ? '❌ Payment failed. Your listing was not saved. Please try again.' : isRussian ? '❌ Оплата не прошла. Объявление не сохранено. Попробуйте снова.' : '❌ Ödəniş uğursuz oldu. Elan saxlanmadı. Yenidən cəhd edin.'}
+                    </div>
+                  )}
                   {error && <div className="error-message">{error}</div>}
                   
                   {isLoadingListings ? (

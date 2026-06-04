@@ -55,7 +55,7 @@ export interface PropertyOwner {
 
 export type ListingTier = 'free' | 'standard' | 'premium' | 'vip'
 
-export type ListingStatus = 'active' | 'pending' | 'inactive'
+export type ListingStatus = 'active' | 'pending' | 'inactive' | 'draft'
 
 export interface Property {
   id: string

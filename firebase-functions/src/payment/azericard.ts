@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
 
-const AZERICARD_URL_TEST = 'https://213.172.75.248/cgi-bin/cgi_link';
+const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
 const AZERICARD_URL_PROD = 'https://mpi.azericard.com/cgi-bin/cgi_link'; // Уточнить у Azericard
 
 const MERCH_NAME = 'Birklik.az';
@@ -10,7 +10,7 @@ const MERCH_URL = 'https://birklik.az';
 const MERCH_EMAIL = 'info@birklik.az';
 const COUNTRY = 'AZ';
 const MERCH_GMT = '+4';
-const CURRENCY = '944'; // AZN
+const CURRENCY = 'AZN';
 
 const TIER_PRICES: Record<string, Record<string, number>> = {
   vip: { '14days': 20, '30days': 30 },
@@ -29,7 +29,7 @@ function buildMacSource(fields: string[], params: Record<string, string>): strin
 function signWithPrivateKey(macSource: string, privateKeyPem: string): string {
   const sign = crypto.createSign('RSA-SHA256');
   sign.update(macSource, 'utf8');
-  return sign.sign(privateKeyPem, 'hex').toUpperCase();
+  return sign.sign(privateKeyPem, 'hex');
 }
 
 function verifyWithPublicKey(
@@ -78,6 +78,7 @@ function getExpiryDate(duration: string): string {
 // =========================================================
 export const initiatePayment = functions
   .region('europe-west1')
+  .runWith({ secrets: ['AZERICARD_PRIVATE_KEY', 'AZERICARD_TERMINAL', 'AZERICARD_CALLBACK_URL', 'AZERICARD_ENV'] })
   .https.onCall(async (data, context) => {
     if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
@@ -136,12 +137,12 @@ export const initiatePayment = functions
       TIMESTAMP: timestamp,
       NONCE: nonce,
       BACKREF: callbackUrl,
+      LANG: 'AZ',
     };
 
-    const macFields = [
-      'AMOUNT', 'ORDER', 'CURRENCY', 'TERMINAL', 'MERCH_NAME',
-      'MERCH_URL', 'COUNTRY', 'MERCH_GMT', 'TIMESTAMP', 'NONCE', 'BACKREF',
-    ];
+    // Порядок полей MAC строго по официальному PHP примеру Azericard:
+    // AMOUNT, CURRENCY, TERMINAL, TRTYPE, TIMESTAMP, NONCE, MERCH_URL
+    const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
     params.P_SIGN = signWithPrivateKey(buildMacSource(macFields, params), privateKey);
 
     // Сохраняем запись о платеже
@@ -170,6 +171,7 @@ export const initiatePayment = functions
 // =========================================================
 export const azericardCallback = functions
   .region('europe-west1')
+  .runWith({ secrets: ['AZERICARD_PUBLIC_KEY'] })
   .https.onRequest(async (req, res) => {
     const frontendBase = 'https://birklik.az';
 
@@ -181,21 +183,17 @@ export const azericardCallback = functions
     const body = req.body as Record<string, string>;
     const { ORDER, ACTION, RC, APPROVAL, RRN, INT_REF, AMOUNT, TERMINAL, P_SIGN } = body;
 
-    // Верификация подписи Azericard
-    // TODO: раскомментировать когда получим публичный ключ от Azericard
-    // const azericardPublicKey = process.env.AZERICARD_PUBLIC_KEY;
-    // if (azericardPublicKey) {
-    //   const cbFields = ['AMOUNT', 'TERMINAL', 'APPROVAL', 'RRN', 'INT_REF'];
-    //   const isValid = verifyWithPublicKey(cbFields, { AMOUNT, TERMINAL, APPROVAL, RRN, INT_REF }, P_SIGN, azericardPublicKey);
-    //   if (!isValid) {
-    //     console.error('[Azericard] Invalid P_SIGN for ORDER:', ORDER);
-    //     res.redirect(`${frontendBase}/dashboard?payment=error`);
-    //     return;
-    //   }
-    // }
-
-    // Подавляем предупреждение о неиспользуемых переменных до раскомментирования
-    void P_SIGN; void TERMINAL;
+    // Верификация подписи Azericard (MPI public key)
+    const azericardPublicKey = process.env.AZERICARD_PUBLIC_KEY;
+    if (azericardPublicKey) {
+      const cbFields = ['AMOUNT', 'TERMINAL', 'APPROVAL', 'RRN', 'INT_REF'];
+      const isValid = verifyWithPublicKey(cbFields, { AMOUNT, TERMINAL, APPROVAL: APPROVAL ?? '', RRN: RRN ?? '', INT_REF: INT_REF ?? '' }, P_SIGN, azericardPublicKey);
+      if (!isValid) {
+        console.error('[Azericard] Invalid P_SIGN for ORDER:', ORDER);
+        res.redirect(`${frontendBase}/dashboard?payment=error`);
+        return;
+      }
+    }
 
     if (!ORDER) {
       res.redirect(`${frontendBase}/dashboard?payment=error`);
