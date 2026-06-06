@@ -26,10 +26,15 @@ function buildMacSource(fields: string[], params: Record<string, string>): strin
   }).join('');
 }
 
+function normalizePem(pem: string): string {
+  // Firebase secrets may store newlines as literal \n — convert to real newlines
+  return pem.replace(/\\n/g, '\n');
+}
+
 function signWithPrivateKey(macSource: string, privateKeyPem: string): string {
   const sign = crypto.createSign('RSA-SHA256');
   sign.update(macSource, 'utf8');
-  return sign.sign(privateKeyPem, 'hex');
+  return sign.sign(normalizePem(privateKeyPem), 'hex');
 }
 
 function verifyWithPublicKey(
@@ -42,7 +47,7 @@ function verifyWithPublicKey(
     const macSource = buildMacSource(fields, params);
     const verify = crypto.createVerify('RSA-SHA256');
     verify.update(macSource, 'utf8');
-    return verify.verify(publicKeyPem, psign, 'hex');
+    return verify.verify(normalizePem(publicKeyPem), psign, 'hex');
   } catch {
     return false;
   }
@@ -108,9 +113,9 @@ export const initiatePayment = functions
       throw new functions.https.HttpsError('invalid-argument', 'Invalid tier or duration');
     }
 
-    const privateKey = process.env.AZERICARD_PRIVATE_KEY;
-    const terminal = process.env.AZERICARD_TERMINAL;
-    const callbackUrl = process.env.AZERICARD_CALLBACK_URL;
+    const privateKey = process.env.AZERICARD_PRIVATE_KEY?.trim();
+    const terminal = process.env.AZERICARD_TERMINAL?.trim();
+    const callbackUrl = process.env.AZERICARD_CALLBACK_URL?.trim();
 
     if (!privateKey || !terminal || !callbackUrl) {
       throw new functions.https.HttpsError('internal', 'Payment not configured');
@@ -140,10 +145,26 @@ export const initiatePayment = functions
       LANG: 'AZ',
     };
 
-    // Порядок полей MAC строго по официальному PHP примеру Azericard:
+    // MAC fields per official Azericard PHP example (auth-fin-RSA.php):
     // AMOUNT, CURRENCY, TERMINAL, TRTYPE, TIMESTAMP, NONCE, MERCH_URL
     const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
-    params.P_SIGN = signWithPrivateKey(buildMacSource(macFields, params), privateKey);
+    const macSource = buildMacSource(macFields, params);
+    console.log('[Azericard] MAC source:', macSource);
+    console.log('[Azericard] Params (non-secret):', {
+      AMOUNT: params.AMOUNT,
+      CURRENCY: params.CURRENCY,
+      ORDER: params.ORDER,
+      TRTYPE: params.TRTYPE,
+      TIMESTAMP: params.TIMESTAMP,
+      NONCE: params.NONCE,
+      MERCH_URL: params.MERCH_URL,
+      MERCH_NAME: params.MERCH_NAME,
+      COUNTRY: params.COUNTRY,
+      MERCH_GMT: params.MERCH_GMT,
+      LANG: params.LANG,
+    });
+    params.P_SIGN = signWithPrivateKey(macSource, privateKey);
+    console.log('[Azericard] P_SIGN:', params.P_SIGN);
 
     // Сохраняем запись о платеже
     await admin.firestore().collection('payments').add({
