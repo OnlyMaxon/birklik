@@ -133,10 +133,6 @@
 
 .premium-results-list {
   min-width: 0;
-  max-height: calc(100dvh - 108px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-right: 0.25rem;
 }
 
 .premium-results-map {
@@ -206,23 +202,6 @@
   }
 }
 
-.premium-results-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.premium-results-list::-webkit-scrollbar-track {
-  background: var(--gray-200);
-  border-radius: 999px;
-}
-
-.premium-results-list::-webkit-scrollbar-thumb {
-  background: var(--gray-400);
-  border-radius: 999px;
-}
-
-.premium-results-list::-webkit-scrollbar-thumb:hover {
-  background: var(--neutral);
-}
 
 .premium-properties-grid .property-card {
   opacity: 0;

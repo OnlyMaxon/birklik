@@ -43,7 +43,6 @@ export const HomePage: React.FC = () => {
   const [, setHasMore] = React.useState(false)
   const [error, setError] = React.useState('')
   const resultsRef = React.useRef<HTMLElement | null>(null)
-  const listRef = React.useRef<HTMLDivElement | null>(null)
   const lastDocRef = React.useRef<DocumentSnapshot | null>(null)
   const hasMoreRef = React.useRef(false)
   const isLoadingMoreRef = React.useRef(false)
@@ -101,25 +100,13 @@ export const HomePage: React.FC = () => {
 
     const check = () => {
       if (isLoadingMoreRef.current || !hasMoreRef.current) return
-      const list = listRef.current
-      // Desktop: list container is the scrollable element
-      if (list && list.scrollHeight > list.clientHeight + 1) {
-        if (list.scrollHeight - list.scrollTop - list.clientHeight < THRESHOLD) loadMore()
-        return
-      }
-      // Mobile / no overflow: window scrolls
       if (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < THRESHOLD) {
         loadMore()
       }
     }
 
-    const list = listRef.current
     window.addEventListener('scroll', check, { passive: true })
-    list?.addEventListener('scroll', check, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', check)
-      list?.removeEventListener('scroll', check)
-    }
+    return () => { window.removeEventListener('scroll', check) }
   }, [loadMore, isLoading])
 
   const filteredProperties = React.useMemo(() => {
@@ -261,7 +248,7 @@ export const HomePage: React.FC = () => {
 
             {!isLoading && filteredProperties.length > 0 ? (
               <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
-                <div className="premium-results-list" ref={listRef}>
+                <div className="premium-results-list">
                   <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
                     {filteredProperties.map((property) => (
                       <PropertyCard
