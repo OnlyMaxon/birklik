@@ -311,7 +311,8 @@ export const az: Translations = {
   },
   hero: {
     title: "Azərbaycanda ideal istirahət mərkəzini tapın",
-    subtitle: "Villalar, koteclər və mənzillər — ən ideal qiymətlərlə"
+    subtitle: "Villalar, koteclər və mənzillər — ən ideal qiymətlərlə",
+    tagline: "İstirahətinizi bizimlə planlaşdırın"
   },
   pricing: {
     free: "Pulsuz",

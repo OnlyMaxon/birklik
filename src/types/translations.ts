@@ -315,6 +315,7 @@ export interface Translations {
   hero: {
     title: string
     subtitle: string
+    tagline: string
   }
   pricing: {
     free: string

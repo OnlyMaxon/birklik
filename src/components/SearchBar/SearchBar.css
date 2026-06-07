@@ -540,6 +540,125 @@
   transform: translateY(0);
 }
 
+/* ===== HORIZONTAL LAYOUT (tablet / desktop) ===== */
+@media (min-width: 768px) {
+  .search-bar-card {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+    border-radius: 18px;
+    overflow: visible;
+  }
+
+  .search-card-field {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 18px;
+    border-right: 1.5px solid var(--gray-200);
+    gap: 3px;
+    transition: background 0.15s;
+    border-radius: 0;
+  }
+
+  .search-card-field:hover {
+    background: var(--gray-50);
+  }
+
+  .search-location-field {
+    border-radius: 18px 0 0 18px;
+  }
+
+  .search-guests-field {
+    border-right: none;
+  }
+
+  .search-field-label {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .search-field-input {
+    border: none;
+    background: transparent;
+    padding: 2px 0;
+    min-height: auto;
+    font-size: 14px;
+    box-shadow: none;
+  }
+
+  .search-field-input:focus {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .date-picker-trigger {
+    border: none;
+    background: transparent;
+    padding: 2px 0;
+    min-height: auto;
+    gap: 6px;
+  }
+
+  .date-picker-trigger:hover {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .search-guests-select {
+    border: none;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    background-size: 14px;
+    padding: 2px 20px 2px 0;
+    min-height: auto;
+    font-size: 14px;
+    box-shadow: none;
+  }
+
+  .search-guests-select:focus {
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .guests-wrapper {
+    align-items: center;
+  }
+
+  .guests-col {
+    flex: none;
+  }
+
+  .search-actions-row {
+    flex: 0 0 auto;
+    flex-direction: column;
+    padding: 8px 10px;
+    gap: 5px;
+    align-items: stretch;
+    justify-content: center;
+    border-radius: 0 18px 18px 0;
+  }
+
+  .search-btn-filters {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .search-btn-main {
+    flex: none;
+    min-height: 36px;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+}
+
 /* Mobile */
 @media (max-width: 640px) {
   .search-bar-card {

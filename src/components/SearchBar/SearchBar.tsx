@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import './SearchBar.css'
 import { useLanguage } from '../../context'
 import { cities } from '../../data'
@@ -280,7 +281,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             }
           </button>
 
-          {isDatePickerOpen && (
+          {isDatePickerOpen && ReactDOM.createPortal(
             <div
               className="date-picker-overlay"
               onClick={(e) => { if (e.target === e.currentTarget) handleDatePickerCancel() }}
@@ -323,7 +324,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   </button>
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       </div>

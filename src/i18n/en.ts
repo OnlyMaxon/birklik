@@ -314,7 +314,8 @@ export const en: Translations = {
   },
   hero: {
     title: "Your Perfect Azerbaijan Getaway Starts Here",
-    subtitle: "Villas, cottages and apartments — at the best prices"
+    subtitle: "Villas, cottages and apartments — at the best prices",
+    tagline: "Plan your getaway with us"
   },
   pricing: {
     free: "Free",

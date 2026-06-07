@@ -45,6 +45,26 @@
 .hero-search-shell {
   width: 100%;
   max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-tagline {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 768px) {
+  .hero-tagline {
+    font-size: clamp(1.15rem, 5vw, 1.5rem);
+  }
 }
 
 .properties-section {

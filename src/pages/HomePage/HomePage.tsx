@@ -195,6 +195,7 @@ export const HomePage: React.FC = () => {
         <div className="hero-pattern"></div>
         <div className="container hero-content">
           <div className="hero-search-shell">
+            <p className="hero-tagline">{t.hero.tagline}</p>
             <SearchBar
               onChange={(value: string) => setFilters({ ...filters, search: value })}
               cityValue={filters.city}
