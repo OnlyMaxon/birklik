@@ -178,7 +178,6 @@ export const HomePage: React.FC = () => {
           width="1920"
           height="1080"
         />
-        <div className="hero-overlay"></div>
         <div className="container hero-content">
           <div className="hero-search-shell">
             <p className="hero-tagline">{t.hero.tagline}</p>
