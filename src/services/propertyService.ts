@@ -235,7 +235,6 @@ export const createProperty = async (
       images: imageUrls.length > 0 ? imageUrls : property.images,
       createdAt: now,
       updatedAt: now,
-      status: 'pending'
     }
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), propertyData)

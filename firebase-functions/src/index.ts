@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { runAllCleanups } from './cleanup/firestore-cleanup';
+import { runAllCleanups, cleanupOrphanedDrafts } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
 import { sendPushToUser } from './notifications/sendPush';
 import { initiatePayment, azericardCallback } from './payment/azericard';
@@ -181,6 +181,19 @@ export const onNotificationCreated = functions
       bookingId: data.bookingId || '',
     });
 
+    return null;
+  });
+
+/**
+ * Каждые 2 часа удаляет draft-объявления старше 2 часов (брошенные платежи)
+ */
+export const cleanupDrafts = functions
+  .region('europe-west1')
+  .pubsub.schedule('every 2 hours')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const result = await cleanupOrphanedDrafts();
+    console.log(`[Cleanup] drafts: ${result.count} deleted`);
     return null;
   });
 

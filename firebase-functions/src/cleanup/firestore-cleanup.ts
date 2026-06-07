@@ -309,6 +309,47 @@ export async function cleanupInactiveListings(): Promise<CleanupLog> {
   }
 }
 
+// Удаляет draft-объявления старше 2 часов — брошенные после инициации оплаты
+export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
+  const startTime = Date.now();
+  const deletedIds: string[] = [];
+
+  try {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+
+    const snap = await admin.firestore()
+      .collection('properties')
+      .where('status', '==', 'draft')
+      .where('createdAt', '<', twoHoursAgo)
+      .get();
+
+    const batch = admin.firestore().batch();
+    snap.docs.forEach(doc => {
+      batch.delete(doc.ref);
+      deletedIds.push(doc.id);
+    });
+    if (!snap.empty) await batch.commit();
+
+    // Помечаем соответствующие payments как expired
+    for (const id of deletedIds) {
+      const payments = await admin.firestore()
+        .collection('payments')
+        .where('propertyId', '==', id)
+        .where('status', '==', 'awaiting_payment')
+        .get();
+      const pb = admin.firestore().batch();
+      payments.docs.forEach(doc => pb.update(doc.ref, { status: 'expired', expiredAt: new Date().toISOString() }));
+      if (!payments.empty) await pb.commit();
+    }
+
+    console.log(`[Cleanup] Orphaned drafts deleted: ${deletedIds.length}`);
+    return { timestamp: new Date(), type: 'orphaned_drafts', status: 'success', count: deletedIds.length, deletedIds, duration: Date.now() - startTime };
+  } catch (error) {
+    console.error('[Cleanup] orphaned_drafts failed:', error);
+    return { timestamp: new Date(), type: 'orphaned_drafts', status: 'failed', count: 0, deletedIds, error: (error as any).message, duration: Date.now() - startTime };
+  }
+}
+
 export async function logCleanupResult(log: CleanupLog): Promise<void> {
   try {
     await admin.firestore().collection('cleanup-logs').add(log);

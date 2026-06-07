@@ -1115,7 +1115,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                     </div>
                   ) : listings.length > 0 ? (
                     <div className="listings-list">
-                      {listings.map((property) => {
+                      {listings.filter(p => p.status !== 'draft').map((property) => {
                         const status = property.status || 'active'
                         const isCurrentlyActive = property.isActive !== false || isOccupationExpired(property)
                         const isPendingModeration = status === 'pending'

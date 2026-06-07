@@ -149,22 +149,7 @@ export const initiatePayment = functions
     // AMOUNT, CURRENCY, TERMINAL, TRTYPE, TIMESTAMP, NONCE, MERCH_URL
     const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
     const macSource = buildMacSource(macFields, params);
-    console.log('[Azericard] MAC source:', macSource);
-    console.log('[Azericard] Params (non-secret):', {
-      AMOUNT: params.AMOUNT,
-      CURRENCY: params.CURRENCY,
-      ORDER: params.ORDER,
-      TRTYPE: params.TRTYPE,
-      TIMESTAMP: params.TIMESTAMP,
-      NONCE: params.NONCE,
-      MERCH_URL: params.MERCH_URL,
-      MERCH_NAME: params.MERCH_NAME,
-      COUNTRY: params.COUNTRY,
-      MERCH_GMT: params.MERCH_GMT,
-      LANG: params.LANG,
-    });
     params.P_SIGN = signWithPrivateKey(macSource, privateKey);
-    console.log('[Azericard] P_SIGN:', params.P_SIGN);
 
     // Сохраняем запись о платеже
     await admin.firestore().collection('payments').add({
@@ -196,29 +181,47 @@ export const azericardCallback = functions
   .https.onRequest(async (req, res) => {
     const frontendBase = 'https://birklik.az';
 
+    // Azericard redirects via GET on user cancel — clean up draft and bail
     if (req.method !== 'POST') {
-      res.redirect(`${frontendBase}/dashboard`);
+      const cancelOrder = (req.query.ORDER ?? req.query.order) as string | undefined;
+      if (cancelOrder) {
+        const snap = await admin.firestore()
+          .collection('payments')
+          .where('orderId', '==', cancelOrder)
+          .where('status', '==', 'awaiting_payment')
+          .limit(1)
+          .get();
+        if (!snap.empty) {
+          const doc = snap.docs[0];
+          const payment = doc.data();
+          await admin.firestore().collection('properties').doc(payment.propertyId).delete();
+          await doc.ref.update({ status: 'cancelled', cancelledAt: admin.firestore.FieldValue.serverTimestamp() });
+        }
+        res.redirect(`${frontendBase}/dashboard?payment=failed`);
+      } else {
+        res.redirect(`${frontendBase}/dashboard`);
+      }
       return;
     }
 
     const body = req.body as Record<string, string>;
     const { ORDER, ACTION, RC, APPROVAL, RRN, INT_REF, AMOUNT, TERMINAL, P_SIGN } = body;
 
-    // Верификация подписи Azericard (MPI public key)
-    const azericardPublicKey = process.env.AZERICARD_PUBLIC_KEY;
-    if (azericardPublicKey) {
-      const cbFields = ['AMOUNT', 'TERMINAL', 'APPROVAL', 'RRN', 'INT_REF'];
-      const isValid = verifyWithPublicKey(cbFields, { AMOUNT, TERMINAL, APPROVAL: APPROVAL ?? '', RRN: RRN ?? '', INT_REF: INT_REF ?? '' }, P_SIGN, azericardPublicKey);
-      if (!isValid) {
-        console.error('[Azericard] Invalid P_SIGN for ORDER:', ORDER);
-        res.redirect(`${frontendBase}/dashboard?payment=error`);
-        return;
-      }
-    }
-
     if (!ORDER) {
       res.redirect(`${frontendBase}/dashboard?payment=error`);
       return;
+    }
+
+    // Верификация подписи Azericard (MPI public key) — только для успешных транзакций
+    const azericardPublicKey = process.env.AZERICARD_PUBLIC_KEY;
+    if (azericardPublicKey && ACTION === '0' && RC === '00') {
+      const cbFields = ['AMOUNT', 'TERMINAL', 'APPROVAL', 'RRN', 'INT_REF'];
+      const isValid = verifyWithPublicKey(cbFields, { AMOUNT, TERMINAL, APPROVAL: APPROVAL ?? '', RRN: RRN ?? '', INT_REF: INT_REF ?? '' }, P_SIGN, azericardPublicKey);
+      if (!isValid) {
+        console.error('[Azericard] Invalid P_SIGN on success for ORDER:', ORDER);
+        res.redirect(`${frontendBase}/dashboard?payment=error`);
+        return;
+      }
     }
 
     // Ищем запись о платеже
