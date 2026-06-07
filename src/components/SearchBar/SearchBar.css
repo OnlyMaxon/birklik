@@ -635,6 +635,7 @@
 
   .search-actions-row {
     flex: 0 0 auto;
+    width: auto;
     flex-direction: column;
     padding: 8px 10px;
     gap: 5px;
@@ -644,10 +645,12 @@
   }
 
   .search-btn-filters {
+    flex: none;
     min-height: 36px;
-    padding: 0 14px;
+    padding: 0 16px;
     font-size: 13px;
     border-radius: 10px;
+    white-space: nowrap;
   }
 
   .search-btn-main {
@@ -656,6 +659,8 @@
     padding: 8px 20px;
     font-size: 14px;
     border-radius: 10px;
+    box-shadow: none;
+    white-space: nowrap;
   }
 }
 
