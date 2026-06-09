@@ -31,12 +31,17 @@ export const Footer: React.FC = () => {
               </nav>
 
               <div className="footer-social">
-                <a href="https://www.facebook.com/Birklik.az/" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Facebook">
+                <a href="https://www.tiktok.com/@birklik.az?_r=1&_t=ZS-970avv7dVDR" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="TikTok">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z"/>
+                  </svg>
+                </a>
+                <a href="https://www.facebook.com/share/1NcZ4msP4f/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Facebook">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
                   </svg>
                 </a>
-                <a href="https://www.instagram.com/birklic.az/" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
+                <a href="https://www.instagram.com/birklik.az?igsh=MXhycGs0Z2s1ZzkxcA%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
