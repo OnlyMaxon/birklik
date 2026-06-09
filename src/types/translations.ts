@@ -361,7 +361,6 @@ export interface Translations {
   home: {
     showMap: string
     hideMap: string
-    topListingsTitle: string
     plansTitle: string
     plansSubtitle: string
     plansNote: string

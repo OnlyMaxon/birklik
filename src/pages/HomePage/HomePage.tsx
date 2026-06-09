@@ -213,10 +213,6 @@ export const HomePage: React.FC = () => {
           </aside>
 
           <div className="container">
-            <div className="section-header">
-              <h2 className="section-title">{t.home.topListingsTitle}</h2>
-            </div>
-
             <Filters
               filters={filters}
               onFilterChange={setFilters}

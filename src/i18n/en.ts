@@ -361,7 +361,6 @@ export const en: Translations = {
   home: {
     showMap: "Show map",
     hideMap: "Hide map",
-    topListingsTitle: "Featured vacation spots",
     plansTitle: "3 listing plans",
     plansSubtitle: "Choose a plan for your budget and publish listings more effectively.",
     plansNote: "Plan conditions can be updated over time based on market demand.",
