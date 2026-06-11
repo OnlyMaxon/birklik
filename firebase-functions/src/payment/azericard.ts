@@ -147,8 +147,8 @@ export const initiatePayment = functions
       LANG: 'AZ',
     };
 
-    // MAC fields for TRTYPE=1 — ORDER is required in the signature
-    const macFields = ['AMOUNT', 'CURRENCY', 'ORDER', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
+    // MAC fields per official Azericard auth-fin-RSA.php example
+    const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
     const macSource = buildMacSource(macFields, params);
     params.P_SIGN = signWithPrivateKey(macSource, privateKey);
 
@@ -356,6 +356,9 @@ export const performReversal = functions
     if (!payment.intRef) {
       throw new functions.https.HttpsError('failed-precondition', 'Payment has no INT_REF — cannot reverse');
     }
+    if (!payment.rrn) {
+      throw new functions.https.HttpsError('failed-precondition', 'Payment has no RRN — cannot reverse');
+    }
 
     const terminal = process.env.AZERICARD_TERMINAL?.trim();
     const privateKey = process.env.AZERICARD_PRIVATE_KEY?.trim();
@@ -367,18 +370,19 @@ export const performReversal = functions
     const nonce = generateNonce();
 
     const params: Record<string, string> = {
-      ORDER:    orderId,
-      AMOUNT:   Number(payment.amount).toFixed(2),
+      ORDER:     orderId,
+      AMOUNT:    Number(payment.amount).toFixed(2),
       CURRENCY,
-      TERMINAL: terminal,
-      TRTYPE:   '22',
-      INT_REF:  payment.intRef,
+      TERMINAL:  terminal,
+      TRTYPE:    '22',
+      RRN:       payment.rrn,
+      INT_REF:   payment.intRef,
       TIMESTAMP: timestamp,
-      NONCE:    nonce,
+      NONCE:     nonce,
     };
 
-    // MAC fields for TRTYPE=22 reversal
-    const macFields = ['ORDER', 'AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'INT_REF', 'TIMESTAMP', 'NONCE'];
+    // MAC fields per official Azericard reversal_rsa.php example
+    const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'ORDER', 'RRN', 'INT_REF'];
     const macSource = buildMacSource(macFields, params);
     params.P_SIGN = signWithPrivateKey(macSource, privateKey);
 
