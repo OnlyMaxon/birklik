@@ -2,9 +2,9 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { cleanupOrphanedDrafts } from './cleanup/firestore-cleanup';
 import { sendPushToUser } from './notifications/sendPush';
-import { initiatePayment, azericardCallback } from './payment/azericard';
+import { initiatePayment, azericardCallback, performReversal } from './payment/azericard';
 
-export { initiatePayment, azericardCallback };
+export { initiatePayment, azericardCallback, performReversal };
 
 admin.initializeApp();
 

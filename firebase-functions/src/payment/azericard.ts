@@ -1,6 +1,8 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
+import * as https from 'https';
+import * as querystring from 'querystring';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
 const AZERICARD_URL_PROD = 'https://mpi.azericard.com/cgi-bin/cgi_link'; // Уточнить у Azericard
@@ -145,11 +147,15 @@ export const initiatePayment = functions
       LANG: 'AZ',
     };
 
-    // MAC fields per official Azericard PHP example (auth-fin-RSA.php):
-    // AMOUNT, CURRENCY, TERMINAL, TRTYPE, TIMESTAMP, NONCE, MERCH_URL
-    const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
+    // MAC fields for TRTYPE=1 — ORDER is required in the signature
+    const macFields = ['AMOUNT', 'CURRENCY', 'ORDER', 'TERMINAL', 'TRTYPE', 'TIMESTAMP', 'NONCE', 'MERCH_URL'];
     const macSource = buildMacSource(macFields, params);
     params.P_SIGN = signWithPrivateKey(macSource, privateKey);
+
+    console.log('[initiatePayment] params:', JSON.stringify({ ...params, P_SIGN: params.P_SIGN?.slice(0, 16) + '...' }));
+    console.log('[initiatePayment] macSource:', macSource);
+    console.log('[initiatePayment] terminal:', terminal);
+    console.log('[initiatePayment] isTest:', process.env.AZERICARD_ENV !== 'production');
 
     // Сохраняем запись о платеже
     await admin.firestore().collection('payments').add({
@@ -169,6 +175,35 @@ export const initiatePayment = functions
       params,
     };
   });
+
+// =========================================================
+// HELPER: direct server-to-server POST to Azericard MPI URL
+// Returns raw response body
+// =========================================================
+function postToAzericard(url: string, params: Record<string, string>): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const body = querystring.stringify(params);
+    const parsed = new URL(url);
+    const options = {
+      hostname: parsed.hostname,
+      port: parsed.port || 443,
+      path: parsed.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => resolve(data));
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
 
 // =========================================================
 // FUNCTION 2: azericardCallback
@@ -281,4 +316,93 @@ export const azericardCallback = functions
 
       res.redirect(`${frontendBase}/dashboard?payment=failed`);
     }
+  });
+
+// =========================================================
+// FUNCTION 3: performReversal (TRTYPE=22)
+// One-time admin operation for bank verification.
+// Sends a reversal for a completed payment to Azericard.
+// Call via Firebase CLI:
+//   firebase functions:call performReversal --data '{"orderId":"XXXXXXXX"}'
+// =========================================================
+export const performReversal = functions
+  .region('europe-west1')
+  .runWith({ secrets: ['AZERICARD_PRIVATE_KEY', 'AZERICARD_TERMINAL', 'AZERICARD_ENV'] })
+  .https.onCall(async (data, context) => {
+    if (!context.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+    }
+
+    const { orderId } = data as { orderId: string };
+    if (!orderId) {
+      throw new functions.https.HttpsError('invalid-argument', 'orderId is required');
+    }
+
+    // Find the completed payment record
+    const snap = await admin.firestore()
+      .collection('payments')
+      .where('orderId', '==', orderId)
+      .where('status', '==', 'completed')
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      throw new functions.https.HttpsError('not-found', `No completed payment found for orderId: ${orderId}`);
+    }
+
+    const paymentDoc = snap.docs[0];
+    const payment = paymentDoc.data();
+
+    if (!payment.intRef) {
+      throw new functions.https.HttpsError('failed-precondition', 'Payment has no INT_REF — cannot reverse');
+    }
+
+    const terminal = process.env.AZERICARD_TERMINAL?.trim();
+    const privateKey = process.env.AZERICARD_PRIVATE_KEY?.trim();
+    if (!terminal || !privateKey) {
+      throw new functions.https.HttpsError('internal', 'Azericard not configured');
+    }
+
+    const timestamp = generateTimestamp();
+    const nonce = generateNonce();
+
+    const params: Record<string, string> = {
+      ORDER:    orderId,
+      AMOUNT:   Number(payment.amount).toFixed(2),
+      CURRENCY,
+      TERMINAL: terminal,
+      TRTYPE:   '22',
+      INT_REF:  payment.intRef,
+      TIMESTAMP: timestamp,
+      NONCE:    nonce,
+    };
+
+    // MAC fields for TRTYPE=22 reversal
+    const macFields = ['ORDER', 'AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'INT_REF', 'TIMESTAMP', 'NONCE'];
+    const macSource = buildMacSource(macFields, params);
+    params.P_SIGN = signWithPrivateKey(macSource, privateKey);
+
+    const isTest = process.env.AZERICARD_ENV !== 'production';
+    const url = isTest ? AZERICARD_URL_TEST : AZERICARD_URL_PROD;
+
+    console.log('[performReversal] Sending TRTYPE=22 for ORDER:', orderId, 'INT_REF:', payment.intRef, 'to:', url);
+
+    const responseText = await postToAzericard(url, params);
+
+    console.log('[performReversal] Response:', responseText);
+
+    // Mark payment as reversed in Firestore
+    await paymentDoc.ref.update({
+      status: 'reversed',
+      reversedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return {
+      orderId,
+      intRef: payment.intRef,
+      amount: params.AMOUNT,
+      trtype: '22',
+      timestamp,
+      rawResponse: responseText,
+    };
   });
