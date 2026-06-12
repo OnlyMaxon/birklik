@@ -150,11 +150,6 @@ export const initiatePayment = functions
     const macSource = buildMacSource(macFields, params);
     params.P_SIGN = signWithPrivateKey(macSource, privateKey);
 
-    console.log('[initiatePayment] params:', JSON.stringify({ ...params, P_SIGN: params.P_SIGN?.slice(0, 16) + '...' }));
-    console.log('[initiatePayment] macSource:', macSource);
-    console.log('[initiatePayment] terminal:', terminal);
-    console.log('[initiatePayment] isTest:', process.env.AZERICARD_ENV !== 'production');
-
     // Сохраняем запись о платеже
     await admin.firestore().collection('payments').add({
       propertyId,
