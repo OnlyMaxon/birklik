@@ -88,6 +88,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   const [profileMessage, setProfileMessage] = React.useState('')
   const [profileError, setProfileError] = React.useState('')
   const [isSavingProfile, setIsSavingProfile] = React.useState(false)
+  const [reversalOrderId, setReversalOrderId] = React.useState('49438340')
+  const [isReversing, setIsReversing] = React.useState(false)
+  const [reversalMessage, setReversalMessage] = React.useState('')
 
 
   // Check if user is moderator
@@ -855,6 +858,38 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     await loadListings()
+  }
+
+  const handleReversal = async () => {
+    if (!reversalOrderId.trim()) return
+    setIsReversing(true)
+    setReversalMessage('')
+    try {
+      const fns = getFunctions(firebaseApp, 'europe-west1')
+      const performReversalFn = httpsCallable<
+        { orderId: string },
+        { paymentUrl: string; params: Record<string, string> }
+      >(fns, 'performReversal')
+      const result = await performReversalFn({ orderId: reversalOrderId.trim() })
+      const { paymentUrl, params } = result.data
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = paymentUrl
+      form.style.display = 'none'
+      Object.entries(params).forEach(([key, value]) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = key
+        input.value = value
+        form.appendChild(input)
+      })
+      document.body.appendChild(form)
+      form.submit()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setReversalMessage('Error: ' + msg)
+      setIsReversing(false)
+    }
   }
 
   const handleExtendPremium = async (propertyId: string) => {
@@ -1998,6 +2033,34 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                     </form>
 
                   </div>
+                </div>
+              )}
+
+              {/* Admin: Reversal Panel — only visible to moderator/admin */}
+              {isTestAccount && (
+                <div className="tab-content fade-in" style={{ marginTop: '2rem', padding: '1.5rem', background: 'var(--color-surface, #f9f9f9)', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+                  <h3 style={{ marginBottom: '1rem', color: '#b00020' }}>Admin: TRTYPE=22 Reversal</h3>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600 }}>Order ID</label>
+                    <input
+                      type="text"
+                      value={reversalOrderId}
+                      onChange={(e) => setReversalOrderId(e.target.value)}
+                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', width: '200px' }}
+                    />
+                  </div>
+                  <button
+                    className="btn btn-accent"
+                    onClick={handleReversal}
+                    disabled={isReversing || !reversalOrderId.trim()}
+                  >
+                    {isReversing ? 'Redirecting to Azericard...' : 'Perform Reversal'}
+                  </button>
+                  {reversalMessage && (
+                    <p style={{ marginTop: '0.75rem', color: reversalMessage.startsWith('Error') ? '#b00020' : '#1a7a1a' }}>
+                      {reversalMessage}
+                    </p>
+                  )}
                 </div>
               )}
             </main>
