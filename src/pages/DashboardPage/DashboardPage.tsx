@@ -573,7 +573,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     const maxGuests = Number(newListing.maxGuests)
     const area = Number(newListing.area || 0)
     const normalizedAddress = newListing.address
-    const listingStatus = 'pending'
+    const existingListing = editingListingId ? listings.find(p => p.id === editingListingId) : null
+    const listingStatus = existingListing ? existingListing.status : 'pending'
 
     // Use first location tag as district
     const selectedDistrict = (newListing.locationTags && newListing.locationTags.length > 0) 
@@ -633,7 +634,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     }
 
     if (editingListingId) {
-      const updated = await updateProperty(editingListingId, propertyPayload, selectedFiles)
+      // When editing, never overwrite metadata — only update content fields
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { views, likes, favorites, comments, premiumExpiresAt, isFeatured, isActive, listingTier, status: _status, ...contentFields } = propertyPayload
+      const editPayload: Partial<Property> = {
+        ...contentFields,
+        status: existingListing?.status ?? 'active',
+        listingTier: existingListing?.listingTier ?? listingTier,
+        isFeatured: existingListing?.isFeatured ?? isFeatured,
+        isActive: existingListing?.isActive ?? true,
+        ...(existingListing?.premiumExpiresAt !== undefined && { premiumExpiresAt: existingListing.premiumExpiresAt }),
+        ...(existingListing?.vipExpiresAt !== undefined && { vipExpiresAt: existingListing.vipExpiresAt }),
+      }
+      const updated = await updateProperty(editingListingId, editPayload, selectedFiles)
       if (!updated) {
         setError(t.listing.updateFailed)
         setIsSubmitting(false)
