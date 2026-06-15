@@ -378,3 +378,4 @@ trello+
 BirCard Azerbaijan Bank give approve for integration the Bank payment in gmail calilorucli42@gmail.com approve +
 Важно Azericard :
 RSA Keys внутри Проекта и подключен Cloud Funtions в Папке Firebase Functions
+Token?
