@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { cleanupOrphanedDrafts } from './cleanup/firestore-cleanup';
+import { cleanupOrphanedDrafts, logCleanupResult } from './cleanup/firestore-cleanup';
 import { sendPushToUser } from './notifications/sendPush';
 import { initiatePayment, azericardCallback, performReversal } from './payment/azericard';
 
@@ -35,5 +35,6 @@ export const cleanupDrafts = functions
   .onRun(async () => {
     const result = await cleanupOrphanedDrafts();
     console.log(`[Cleanup] drafts: ${result.count} deleted`);
+    await logCleanupResult(result);
     return null;
   });

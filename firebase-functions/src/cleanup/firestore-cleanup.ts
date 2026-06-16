@@ -321,7 +321,14 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
       .collection('properties')
       .where('status', '==', 'draft')
       .where('createdAt', '<', twoHoursAgo)
+      .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
+
+    // Собираем URLs изображений ДО удаления документов
+    const imagesByProp = new Map<string, string[]>();
+    for (const doc of snap.docs) {
+      imagesByProp.set(doc.id, doc.data().images || []);
+    }
 
     const batch = admin.firestore().batch();
     snap.docs.forEach(doc => {
@@ -329,6 +336,20 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
       deletedIds.push(doc.id);
     });
     if (!snap.empty) await batch.commit();
+
+    // Удаляем изображения из Storage
+    if (deletedIds.length > 0) {
+      const bucket = admin.storage().bucket();
+      for (const [, images] of imagesByProp) {
+        for (const url of images) {
+          try {
+            const match = url.match(/\/o\/(.+?)\?/);
+            if (!match) continue;
+            await bucket.file(decodeURIComponent(match[1])).delete();
+          } catch { /* файл уже удалён */ }
+        }
+      }
+    }
 
     // Помечаем соответствующие payments как expired
     for (const id of deletedIds) {
