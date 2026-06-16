@@ -73,7 +73,7 @@ export async function compressImage(
 }
 
 export async function compressPropertyImage(file: File): Promise<File> {
-  return compressImage(file, 1200, 900, 0.82, true)
+  return compressImage(file, 900, 675, 0.75, true)
 }
 
 export async function compressAvatarImage(file: File): Promise<File> {
