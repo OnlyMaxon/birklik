@@ -94,6 +94,14 @@
   Cache-Control: no-cache, no-store
   Content-Type: text/plain
 
+/sitemap.xml
+  Cache-Control: public, max-age=86400
+  Content-Type: application/xml
+
+/hero.jpeg
+  Cache-Control: public, max-age=2592000
+  Content-Type: image/jpeg
+
 # ============================================
 # BRAND/STATIC - MODERATE CACHE
 # ============================================
