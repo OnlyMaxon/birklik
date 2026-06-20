@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
-const AZERICARD_URL_PROD = 'https://mpi.azericard.com/cgi-bin/cgi_link';
+const AZERICARD_URL_PROD = 'https://mpi.3dsecure.az/cgi-bin/cgi_link';
 
 const MERCH_NAME = 'Birklik.az';
 const MERCH_URL = 'https://birklik.az';
