@@ -68,6 +68,25 @@ function generateOrderId(): string {
   return (crypto.randomBytes(4).readUInt32BE(0) % 100000000).toString().padStart(8, '0');
 }
 
+async function deleteDraftWithImages(propertyId: string): Promise<void> {
+  try {
+    const propDoc = await admin.firestore().collection('properties').doc(propertyId).get();
+    if (!propDoc.exists) return;
+    const images: string[] = propDoc.data()?.images || [];
+    await propDoc.ref.delete();
+    const bucket = admin.storage().bucket();
+    for (const url of images) {
+      try {
+        const match = url.match(/\/o\/(.+?)\?/);
+        if (!match) continue;
+        await bucket.file(decodeURIComponent(match[1])).delete();
+      } catch { /* файл уже удалён */ }
+    }
+  } catch (error) {
+    console.error('[Azericard] Failed to delete draft property:', propertyId, error);
+  }
+}
+
 function getExpiryDate(duration: string): string {
   const d = new Date();
   d.setDate(d.getDate() + (duration === '14days' ? 14 : 30));
@@ -193,7 +212,7 @@ export const azericardCallback = functions
         if (!snap.empty) {
           const doc = snap.docs[0];
           const payment = doc.data();
-          await admin.firestore().collection('properties').doc(payment.propertyId).delete();
+          await deleteDraftWithImages(payment.propertyId);
           await doc.ref.update({ status: 'cancelled', cancelledAt: admin.firestore.FieldValue.serverTimestamp() });
         }
         res.redirect(`${frontendBase}/dashboard?payment=failed`);
@@ -299,8 +318,8 @@ export const azericardCallback = functions
         failedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Удаляем черновик объявления
-      await admin.firestore().collection('properties').doc(payment.propertyId).delete();
+      // Удаляем черновик объявления вместе с изображениями
+      await deleteDraftWithImages(payment.propertyId);
 
       res.redirect(`${frontendBase}/dashboard?payment=failed`);
     }
