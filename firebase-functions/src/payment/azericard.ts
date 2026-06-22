@@ -258,8 +258,30 @@ export const azericardCallback = functions
     const azericardPublicKey = process.env.AZERICARD_PUBLIC_KEY;
     if (azericardPublicKey && ACTION === '0' && RC === '00') {
       const cbFields = ['AMOUNT', 'TERMINAL', 'APPROVAL', 'RRN', 'INT_REF'];
-      const isValid = verifyWithPublicKey(cbFields, { AMOUNT, TERMINAL, APPROVAL: APPROVAL ?? '', RRN: RRN ?? '', INT_REF: INT_REF ?? '' }, P_SIGN, azericardPublicKey);
-      if (!isValid) {
+      const cbParams = { AMOUNT, TERMINAL, APPROVAL: APPROVAL ?? '', RRN: RRN ?? '', INT_REF: INT_REF ?? '' };
+      const macSource = buildMacSource(cbFields, cbParams);
+      const normalizedKey = normalizePem(azericardPublicKey);
+
+      console.log('[Azericard][DEBUG] ORDER:', ORDER);
+      console.log('[Azericard][DEBUG] MAC source:', macSource);
+      console.log('[Azericard][DEBUG] P_SIGN received (first 40):', P_SIGN?.substring(0, 40));
+      console.log('[Azericard][DEBUG] P_SIGN length:', P_SIGN?.length);
+      console.log('[Azericard][DEBUG] Key first line:', normalizedKey.split('\n')[0]);
+      console.log('[Azericard][DEBUG] Key last line:', normalizedKey.split('\n').filter(Boolean).slice(-1)[0]);
+      console.log('[Azericard][DEBUG] Key total lines:', normalizedKey.split('\n').filter(Boolean).length);
+
+      const isValidHex = verifyWithPublicKey(cbFields, cbParams, P_SIGN, azericardPublicKey);
+      console.log('[Azericard][DEBUG] Verify hex:', isValidHex);
+
+      // Попробуем base64 на случай если банк шлёт в base64
+      let isValidBase64 = false;
+      try {
+        const psignHex = Buffer.from(P_SIGN, 'base64').toString('hex');
+        isValidBase64 = verifyWithPublicKey(cbFields, cbParams, psignHex, azericardPublicKey);
+      } catch { /* не base64 */ }
+      console.log('[Azericard][DEBUG] Verify base64→hex:', isValidBase64);
+
+      if (!isValidHex && !isValidBase64) {
         console.error('[Azericard] Invalid P_SIGN on success for ORDER:', ORDER);
         res.redirect(`${frontendBase}/dashboard?payment=error`);
         return;
