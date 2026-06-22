@@ -42,3 +42,4 @@ set-moderator.js
 
 # RSA Keys
 *.pem
+*.key
