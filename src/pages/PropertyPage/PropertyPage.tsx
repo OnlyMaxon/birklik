@@ -16,6 +16,8 @@ import { Booking } from '../../types'
 import { Language, Property } from '../../types'
 import './PropertyPage.css'
 import * as logger from '../../services/logger'
+import { getFunctions, httpsCallable } from 'firebase/functions'
+import firebaseApp from '../../config/firebase'
 
 const PropertyMap = React.lazy(() =>
   import('../../components/Map').then((mod) => ({ default: mod.PropertyMap }))
@@ -80,6 +82,8 @@ export const PropertyPage: React.FC = () => {
   const [propertyBookings, setPropertyBookings] = React.useState<Booking[]>([])
   const [isOwner, setIsOwner] = React.useState(false)
   const [similarProperties, setSimilarProperties] = React.useState<Property[]>([])
+  const [upgradeModal, setUpgradeModal] = React.useState<'vip' | 'premium' | null>(null)
+  const [isUpgrading, setIsUpgrading] = React.useState(false)
   const sidebarRef = React.useRef<HTMLDivElement>(null)
 
   // JS sticky for sidebar — translateY approach, works regardless of ancestor CSS
@@ -566,14 +570,38 @@ export const PropertyPage: React.FC = () => {
     alert(language === 'en' ? 'Move up feature coming soon' : language === 'ru' ? 'Функция перемещения вперед скоро' : 'Öndə getmə xüsusiyyəti tezliklə')
   }
 
-  const handleUpgradeToVIP = () => {
-    // Navigate to payment page for VIP upgrade
-    alert(language === 'en' ? 'Upgrade to VIP - Payment processing...' : language === 'ru' ? 'Обновить до VIP - Обработка оплаты...' : 'VIP-ə yüksəltmə - Ödəniş işləməsi...')
-  }
+  const handleUpgradeToVIP = () => setUpgradeModal('vip')
 
-  const handleUpgradeToPremium = () => {
-    // Navigate to payment page for Premium upgrade
-    alert(language === 'en' ? 'Upgrade to Premium - Payment processing...' : language === 'ru' ? 'Обновить до Premium - Обработка оплаты...' : 'Premium-a yüksəltmə - Ödəniş işləməsi...')
+  const handleUpgradeToPremium = () => setUpgradeModal('premium')
+
+  const handleUpgradeConfirm = async (duration: '14days' | '30days') => {
+    if (!property || !upgradeModal) return
+    setIsUpgrading(true)
+    try {
+      const fns = getFunctions(firebaseApp, 'europe-west1')
+      const initiatePaymentFn = httpsCallable<
+        { propertyId: string; tier: string; duration: string },
+        { paymentUrl: string; params: Record<string, string> }
+      >(fns, 'initiatePayment')
+      const result = await initiatePaymentFn({ propertyId: property.id, tier: upgradeModal, duration })
+      const { paymentUrl, params } = result.data
+      const form = document.createElement('form')
+      form.method = 'POST'
+      form.action = paymentUrl
+      form.style.display = 'none'
+      Object.entries(params).forEach(([key, value]) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = key
+        input.value = value
+        form.appendChild(input)
+      })
+      document.body.appendChild(form)
+      form.submit()
+    } catch (err) {
+      logger.error('Upgrade payment failed:', err)
+      setIsUpgrading(false)
+    }
   }
 
   const handleDeleteComment = async (commentId: string) => {
@@ -1243,6 +1271,51 @@ export const PropertyPage: React.FC = () => {
           reportedBy={user?.id || ''}
           reportedByName={user?.name || 'Anonymous'}
         />
+      )}
+
+      {/* Upgrade Modal */}
+      {upgradeModal && (
+        <div className="pp-upgrade-overlay" onClick={() => { if (!isUpgrading) setUpgradeModal(null) }}>
+          <div className="pp-upgrade-modal" onClick={e => e.stopPropagation()}>
+            <h3 className="pp-upgrade-modal__title">
+              {upgradeModal === 'vip'
+                ? (language === 'en' ? '★ Upgrade to VIP' : language === 'ru' ? '★ Обновление до VIP' : '★ VIP-ə yüksəlt')
+                : (language === 'en' ? '◆ Upgrade to Premium' : language === 'ru' ? '◆ Обновление до Premium' : '◆ Premium-a yüksəlt')
+              }
+            </h3>
+            <p className="pp-upgrade-modal__subtitle">
+              {language === 'en' ? 'Choose a plan duration' : language === 'ru' ? 'Выберите срок' : 'Müddət seçin'}
+            </p>
+            <div className="pp-upgrade-modal__options">
+              {(['14days', '30days'] as const).map(dur => {
+                const prices = { vip: { '14days': 20, '30days': 30 }, premium: { '14days': 30, '30days': 55 } }
+                const price = prices[upgradeModal][dur]
+                const days = dur === '14days' ? 14 : 30
+                return (
+                  <button
+                    key={dur}
+                    className={`pp-upgrade-modal__option pp-upgrade-modal__option--${upgradeModal}`}
+                    onClick={() => handleUpgradeConfirm(dur)}
+                    disabled={isUpgrading}
+                  >
+                    <span className="pp-upgrade-modal__days">
+                      {days} {language === 'en' ? 'days' : language === 'ru' ? 'дней' : 'gün'}
+                    </span>
+                    <span className="pp-upgrade-modal__price">{price} ₼</span>
+                  </button>
+                )
+              })}
+            </div>
+            {isUpgrading
+              ? <p className="pp-upgrade-modal__loading">
+                  {language === 'en' ? 'Redirecting to payment...' : language === 'ru' ? 'Переход к оплате...' : 'Ödənişə yönləndirilir...'}
+                </p>
+              : <button className="pp-upgrade-modal__cancel" onClick={() => setUpgradeModal(null)}>
+                  {language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv et'}
+                </button>
+            }
+          </div>
+        </div>
       )}
     </Layout>
   )

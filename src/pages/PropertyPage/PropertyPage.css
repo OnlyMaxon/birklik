@@ -1514,3 +1514,109 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ===== UPGRADE MODAL ===== */
+.pp-upgrade-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.pp-upgrade-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.pp-upgrade-modal__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  color: var(--gray-900);
+}
+
+.pp-upgrade-modal__subtitle {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin: 0 0 1.5rem;
+}
+
+.pp-upgrade-modal__options {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.pp-upgrade-modal__option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.pp-upgrade-modal__option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.pp-upgrade-modal__option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pp-upgrade-modal__option--vip {
+  background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+  color: #fff;
+}
+
+.pp-upgrade-modal__option--premium {
+  background: linear-gradient(135deg, #b7925d, #d4a574);
+  color: #fff;
+}
+
+.pp-upgrade-modal__days {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.pp-upgrade-modal__price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pp-upgrade-modal__cancel {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  font-family: inherit;
+}
+
+.pp-upgrade-modal__cancel:hover {
+  color: var(--gray-700);
+}
+
+.pp-upgrade-modal__loading {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin: 0;
+}

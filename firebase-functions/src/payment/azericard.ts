@@ -169,6 +169,8 @@ export const initiatePayment = functions
     const macSource = buildMacSource(macFields, params);
     params.P_SIGN = signWithPrivateKey(macSource, privateKey);
 
+    const isUpgrade = propertySnap.data()?.status === 'active';
+
     // Сохраняем запись о платеже
     await admin.firestore().collection('payments').add({
       propertyId,
@@ -177,6 +179,7 @@ export const initiatePayment = functions
       duration,
       amount,
       orderId,
+      isUpgrade,
       status: 'awaiting_payment',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -212,7 +215,9 @@ export const azericardCallback = functions
         if (!snap.empty) {
           const doc = snap.docs[0];
           const payment = doc.data();
-          await deleteDraftWithImages(payment.propertyId);
+          if (!payment.isUpgrade) {
+            await deleteDraftWithImages(payment.propertyId);
+          }
           await doc.ref.update({ status: 'cancelled', cancelledAt: admin.firestore.FieldValue.serverTimestamp() });
         }
         res.redirect(`${frontendBase}/dashboard?payment=failed`);
@@ -310,7 +315,8 @@ export const azericardCallback = functions
       const expiryDate = getExpiryDate(payment.duration);
 
       await admin.firestore().collection('properties').doc(payment.propertyId).update({
-        status: 'pending', // Отправляем на модерацию
+        // Upgrade: property stays active (already passed moderation). New listing: send to moderation.
+        ...(!payment.isUpgrade ? { status: 'pending' } : {}),
         listingTier: payment.tier,
         ...(payment.tier === 'premium' ? {
           isFeatured: true,
@@ -340,8 +346,9 @@ export const azericardCallback = functions
         failedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Удаляем черновик объявления вместе с изображениями
-      await deleteDraftWithImages(payment.propertyId);
+      if (!payment.isUpgrade) {
+        await deleteDraftWithImages(payment.propertyId);
+      }
 
       res.redirect(`${frontendBase}/dashboard?payment=failed`);
     }
