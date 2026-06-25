@@ -80,3 +80,121 @@
   font-size: 0.78rem;
   color: var(--gray-500);
 }
+
+/* Property info bar */
+.mpe-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.75rem;
+}
+
+.mpe-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mpe-info-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mpe-info-value {
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
+.mpe-info-mono {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+/* Info bar status/tier/expiry badges */
+.mpe-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mpe-badge--active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.mpe-badge--pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.mpe-badge--inactive {
+  background: rgba(107, 114, 128, 0.12);
+  color: #6b7280;
+}
+
+.mpe-badge--draft {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.mpe-badge--tier-vip {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+}
+
+.mpe-badge--tier-premium {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+}
+
+.mpe-badge--tier-standard {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.mpe-badge--expiry-ok {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.mpe-badge--expired {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* Removed photos section */
+.mpe-removed-photos {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px dashed rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius-md);
+}
+
+.mpe-removed-label {
+  font-size: 0.82rem;
+  color: #dc2626;
+  margin: 0 0 0.75rem;
+  font-weight: 500;
+}
+
+.mpe-removed-item .preview-photo-wrapper {
+  opacity: 0.5;
+  filter: grayscale(50%);
+}
+
+.mpe-removed-filename {
+  color: #dc2626 !important;
+  font-size: 0.75rem !important;
+}

@@ -41,6 +41,7 @@ export const ModerationPage: React.FC = () => {
   const [rejectReason, setRejectReason] = React.useState('')
   const [isRejectingProperty, setIsRejectingProperty] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'pending' | 'inactive' | 'draft'>('all')
+  const [dateSortOrder, setDateSortOrder] = React.useState<'newest' | 'oldest'>('newest')
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -446,18 +447,33 @@ export const ModerationPage: React.FC = () => {
                       )}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    className="ml-filter-btn ml-sort-btn"
+                    onClick={() => setDateSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+                  >
+                    {dateSortOrder === 'newest'
+                      ? (language === 'en' ? '↓ Newest' : language === 'ru' ? '↓ Новые' : '↓ Yeni')
+                      : (language === 'en' ? '↑ Oldest' : language === 'ru' ? '↑ Старые' : '↑ Köhnə')}
+                  </button>
                 </div>
               </div>
 
               {(() => {
-                const filtered = allListings.filter(listing => {
-                  const query = searchQuery.toLowerCase()
-                  const title = getLocalizedText(listing.title).toLowerCase()
-                  const owner = listing.owner?.name.toLowerCase() || ''
-                  const matchSearch = !query || title.includes(query) || owner.includes(query)
-                  const matchStatus = statusFilter === 'all' || listing.status === statusFilter
-                  return matchSearch && matchStatus
-                })
+                const filtered = allListings
+                  .filter(listing => {
+                    const query = searchQuery.toLowerCase()
+                    const title = getLocalizedText(listing.title).toLowerCase()
+                    const owner = listing.owner?.name.toLowerCase() || ''
+                    const matchSearch = !query || title.includes(query) || owner.includes(query)
+                    const matchStatus = statusFilter === 'all' || listing.status === statusFilter
+                    return matchSearch && matchStatus
+                  })
+                  .sort((a, b) => {
+                    const aMs = a.createdAt ? new Date(a.createdAt).getTime() : 0
+                    const bMs = b.createdAt ? new Date(b.createdAt).getTime() : 0
+                    return dateSortOrder === 'newest' ? bMs - aMs : aMs - bMs
+                  })
 
                 const getStatusBadge = (s?: string) => {
                   if (s === 'active') return <span className="ml-status ml-status--active">{language === 'en' ? 'Active' : language === 'ru' ? 'Активно' : 'Aktiv'}</span>
@@ -514,6 +530,11 @@ export const ModerationPage: React.FC = () => {
                             <p className="moderation-owner">
                               <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '—'} · {listing.owner?.phone || '—'}
                             </p>
+                            {listing.createdAt && (
+                              <p className="ml-created-at">
+                                {language === 'en' ? 'Created:' : language === 'ru' ? 'Создано:' : 'Yaradıldı:'} {formatDate(listing.createdAt)}
+                              </p>
+                            )}
                             {listing.listingTier === 'vip' && listing.vipExpiresAt && (
                               <p className={`ml-expiry ${vipExpired ? 'ml-expiry--expired' : 'ml-expiry--active'}`}>
                                 👑 VIP {vipExpired

@@ -9,7 +9,7 @@ import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from '../Dashbo
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { resolveCity } from '../../data/cityAliases'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '../../types'
-import { getPropertyById, updateProperty } from '../../services'
+import { getPropertyById, updateProperty, deletePropertyImages } from '../../services'
 import './ModeratorPropertyEditPage.css'
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
@@ -52,7 +52,7 @@ export const ModeratorPropertyEditPage: React.FC = () => {
     city: '',
     contactEmail: '',
     contactPhone: '',
-    status: 'pending' as 'active' | 'pending' | 'inactive',
+    status: 'pending' as ListingStatus,
     isActive: true,
     listingTier: 'standard' as ListingTier,
     tierPlanDuration: '30days' as '14days' | '30days',
@@ -64,6 +64,7 @@ export const ModeratorPropertyEditPage: React.FC = () => {
   const [existingImages, setExistingImages] = React.useState<string[]>([])
   const [newFiles, setNewFiles] = React.useState<File[]>([])
   const [newFilePreviews, setNewFilePreviews] = React.useState<{ name: string; url: string }[]>([])
+  const [removedImages, setRemovedImages] = React.useState<string[]>([])
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
   const [locationSearchError, setLocationSearchError] = React.useState('')
 
@@ -96,7 +97,7 @@ export const ModeratorPropertyEditPage: React.FC = () => {
         city: prop.city || 'Baku',
         contactEmail: prop.owner.email || '',
         contactPhone: prop.owner.phone || '',
-        status: (prop.status as 'active' | 'pending' | 'inactive') || 'pending',
+        status: prop.status || 'pending',
         isActive: prop.isActive !== false,
         listingTier: prop.listingTier || 'standard',
         tierPlanDuration: prop.tierPlanDuration || '30days',
@@ -219,7 +220,15 @@ export const ModeratorPropertyEditPage: React.FC = () => {
   }
 
   const handleRemoveExisting = (index: number) => {
+    const url = existingImages[index]
+    setRemovedImages(prev => [...prev, url])
     setExistingImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleRestoreImage = (index: number) => {
+    const url = removedImages[index]
+    setExistingImages(prev => [...prev, url])
+    setRemovedImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const toggleAmenity = (amenity: Amenity) => {
@@ -284,7 +293,7 @@ export const ModeratorPropertyEditPage: React.FC = () => {
       city: form.city,
       coordinates: coords,
       owner: { name: property.owner.name, phone: form.contactPhone, email: form.contactEmail },
-      status: form.status as ListingStatus,
+      status: form.status,
       isActive: form.isActive,
       listingTier: form.listingTier,
       tierPlanDuration: form.tierPlanDuration,
@@ -301,6 +310,9 @@ export const ModeratorPropertyEditPage: React.FC = () => {
       updates.vipExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
     }
 
+    if (removedImages.length > 0) {
+      await deletePropertyImages(removedImages)
+    }
     const ok = await updateProperty(id, updates, newFiles.length > 0 ? newFiles : undefined)
     if (!ok) {
       setError(t.listing.updateFailed)
@@ -356,6 +368,54 @@ export const ModeratorPropertyEditPage: React.FC = () => {
           ) : (
             <form onSubmit={handleSubmit} className="add-listing-form mpe-form">
 
+              {/* Property Info Bar */}
+              <div className="mpe-info-bar">
+                <div className="mpe-info-item">
+                  <span className="mpe-info-label">ID</span>
+                  <span className="mpe-info-value mpe-info-mono">{property.id.slice(0, 12)}…</span>
+                </div>
+                <div className="mpe-info-item">
+                  <span className="mpe-info-label">{isEnglish ? 'Owner' : isRussian ? 'Владелец' : 'Sahib'}</span>
+                  <span className="mpe-info-value">{property.owner.name || '—'}</span>
+                </div>
+                <div className="mpe-info-item">
+                  <span className="mpe-info-label">{isEnglish ? 'Status' : isRussian ? 'Статус' : 'Status'}</span>
+                  <span className={`mpe-badge mpe-badge--${property.status || 'draft'}`}>
+                    {property.status === 'active' ? (isEnglish ? 'Active' : isRussian ? 'Активно' : 'Aktiv')
+                      : property.status === 'pending' ? (isEnglish ? 'Pending' : isRussian ? 'Модерация' : 'Gözləyir')
+                      : property.status === 'inactive' ? (isEnglish ? 'Hidden' : isRussian ? 'Скрыто' : 'Gizli')
+                      : (isEnglish ? 'Draft' : isRussian ? 'Черновик' : 'Qaralama')}
+                  </span>
+                </div>
+                <div className="mpe-info-item">
+                  <span className="mpe-info-label">{isEnglish ? 'Tier' : isRussian ? 'Тариф' : 'Paket'}</span>
+                  <span className={`mpe-badge mpe-badge--tier-${property.listingTier || 'standard'}`}>
+                    {property.listingTier === 'vip' ? '👑 VIP'
+                      : property.listingTier === 'premium' ? '⭐ Premium'
+                      : (isEnglish ? 'Standard' : isRussian ? 'Стандарт' : 'Standart')}
+                  </span>
+                </div>
+                {(property.vipExpiresAt || property.premiumExpiresAt) && (() => {
+                  const exp = property.listingTier === 'vip' ? property.vipExpiresAt : property.premiumExpiresAt
+                  const expired = exp ? new Date(exp) < new Date() : false
+                  return (
+                    <div className="mpe-info-item">
+                      <span className="mpe-info-label">{isEnglish ? 'Expires' : isRussian ? 'Истекает' : 'Bitir'}</span>
+                      <span className={`mpe-badge ${expired ? 'mpe-badge--expired' : 'mpe-badge--expiry-ok'}`}>
+                        {exp ? new Date(exp).toLocaleDateString(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ') : '—'}
+                        {expired ? (isEnglish ? ' ✗' : ' ✗') : ' ✓'}
+                      </span>
+                    </div>
+                  )
+                })()}
+                <div className="mpe-info-item">
+                  <span className="mpe-info-label">{isEnglish ? 'Created' : isRussian ? 'Создано' : 'Yaradıldı'}</span>
+                  <span className="mpe-info-value">
+                    {property.createdAt ? new Date(property.createdAt).toLocaleDateString(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ') : '—'}
+                  </span>
+                </div>
+              </div>
+
               {/* Moderation Controls */}
               <div className="form-section">
                 <div className="form-section-header">
@@ -378,7 +438,8 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                       >
                         <option value="pending">{isEnglish ? 'Pending (moderation)' : isRussian ? 'На проверке' : 'Gözləmədə'}</option>
                         <option value="active">{isEnglish ? 'Active (approved)' : isRussian ? 'Активен (одобрен)' : 'Aktiv (təsdiqləndi)'}</option>
-                        <option value="inactive">{isEnglish ? 'Inactive (premium expired)' : isRussian ? 'Неактивен (истёк премиум)' : 'Deaktiv (premium bitdi)'}</option>
+                        <option value="inactive">{isEnglish ? 'Inactive (hidden)' : isRussian ? 'Неактивен (скрыт)' : 'Deaktiv (gizli)'}</option>
+                        <option value="draft">{isEnglish ? 'Draft' : isRussian ? 'Черновик' : 'Qaralama'}</option>
                       </select>
                     </div>
                     <div className="form-group">
@@ -402,18 +463,6 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                         <option value="premium">{t.pricing.premium}</option>
                       </select>
                     </div>
-                    {(form.listingTier === 'vip' || form.listingTier === 'premium') && (
-                      <div className="form-group">
-                        <label>{isEnglish ? 'Plan Duration' : isRussian ? 'Срок тарифа' : 'Paket müddəti'}</label>
-                        <select
-                          value={form.tierPlanDuration}
-                          onChange={e => setForm(prev => ({ ...prev, tierPlanDuration: e.target.value as '14days' | '30days' }))}
-                        >
-                          <option value="14days">{t.pricing.days14}</option>
-                          <option value="30days">{t.pricing.days30}</option>
-                        </select>
-                      </div>
-                    )}
                   </div>
                   {(form.listingTier === 'premium' || form.listingTier === 'vip') && (
                     <div className="tier-renewal-block">
@@ -875,6 +924,35 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="form-section-body">
+                  {removedImages.length > 0 && (
+                    <div className="mpe-removed-photos">
+                      <p className="mpe-removed-label">
+                        {removedImages.length} {isEnglish ? 'photo(s) will be deleted on save' : isRussian ? `фото будет удалено при сохранении` : `şəkil saxlananda silinəcək`}
+                      </p>
+                      <div className="upload-preview-grid">
+                        {removedImages.map((url, index) => (
+                          <div key={url} className="upload-preview-item mpe-removed-item">
+                            <div className="preview-photo-wrapper">
+                              <img src={url} alt="" />
+                              <div className="preview-controls">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRestoreImage(index)}
+                                  className="control-btn"
+                                  title={isEnglish ? 'Restore' : isRussian ? 'Восстановить' : 'Bərpa et'}
+                                >
+                                  ↩
+                                </button>
+                              </div>
+                            </div>
+                            <span className="filename mpe-removed-filename">
+                              {isEnglish ? 'Will delete' : isRussian ? 'Будет удалено' : 'Silinəcək'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {existingImages.length > 0 && (
                     <div className="upload-preview-grid" style={{ marginBottom: '1rem' }}>
                       {existingImages.map((url, index) => (
