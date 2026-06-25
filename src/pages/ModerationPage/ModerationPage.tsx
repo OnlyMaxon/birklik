@@ -261,44 +261,41 @@ export const ModerationPage: React.FC = () => {
                     <img src={listing.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(listing.title)} className="moderation-image" />
 
                     <div className="moderation-content">
-                      <h3>{getLocalizedText(listing.title)}</h3>
-                      <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return t.districts[listing.district] || listing.district })()}</p>
+                      <div className="ml-title-row">
+                        <h3>{getLocalizedText(listing.title)}</h3>
+                        <div className="ml-badges">
+                          <span className="ml-status ml-status--pending">
+                            {language === 'en' ? 'Pending' : language === 'ru' ? 'Модерация' : 'Gözləyir'}
+                          </span>
+                          {listing.listingTier === 'vip'
+                            ? <span className="ml-tier ml-tier--vip">👑 VIP</span>
+                            : listing.listingTier === 'premium'
+                            ? <span className="ml-tier ml-tier--premium">⭐ Premium</span>
+                            : <span className="ml-tier ml-tier--standard">{language === 'en' ? 'Standard' : language === 'ru' ? 'Стандарт' : 'Standart'}</span>
+                          }
+                        </div>
+                      </div>
+                      <p className="moderation-meta">
+                        {listing.price.daily} {listing.price.currency} / {t.property.perNight}
+                        {' · '}
+                        {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return t.districts[listing.district] || listing.district })()}
+                      </p>
                       <p className="moderation-description">{getLocalizedText(listing.description)}</p>
                       <p className="moderation-owner">
-                        <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
-                      </p>
-                      <p className="moderation-owner">
-                        <strong>{language === 'en' ? 'Plan:' : language === 'ru' ? 'Тариф:' : 'Paket:'}</strong> 
-                        {listing.listingTier === 'vip' ? (
-                          <span style={{ color: '#9c27b0', fontWeight: 'bold', marginLeft: '0.5rem' }}>
-                            👑 VIP
-                          </span>
-                        ) : listing.listingTier === 'premium' ? (
-                          <span style={{ color: '#d4a574', fontWeight: 'bold', marginLeft: '0.5rem' }}>
-                            ⭐ Premium
-                          </span>
-                        ) : (
-                          <span style={{ color: '#666', marginLeft: '0.5rem' }}>{(listing.listingTier || 'standard').toUpperCase()}</span>
-                        )}
+                        <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '—'} · {listing.owner?.phone || '—'}
                       </p>
                     </div>
 
                     <div className="moderation-actions">
-                      <Link to={`/dashboard/review/${listing.id}`} className="btn btn-ghost btn-sm">
+                      <Link to={`/dashboard/review/${listing.id}`} className="btn btn-primary btn-sm">
                         {language === 'en' ? 'Review' : language === 'ru' ? 'Проверить' : 'Bax'}
                       </Link>
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-sm ml-delete-btn"
                         onClick={() => handleRejectPropertyClick(listing)}
                       >
                         {language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et'}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-sm"
-                      >
-                        {language === 'en' ? 'Send Invoice' : language === 'ru' ? 'Счёт' : 'Faktura'}
                       </button>
                     </div>
                   </article>
@@ -336,13 +333,11 @@ export const ModerationPage: React.FC = () => {
                     <div className="moderation-actions">
                       <button
                         type="button"
-                        className="btn btn-ghost btn-sm"
+                        className="btn btn-sm ml-delete-btn"
                         onClick={() => deleteComment(item.propertyId, item.comment.id)}
                         disabled={isDeletingComment === item.comment.id}
                       >
-                        {isDeletingComment === item.comment.id
-                          ? t.messages.loading
-                          : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
+                        {isDeletingComment === item.comment.id ? t.messages.loading : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
                       </button>
                     </div>
                   </article>
@@ -359,51 +354,42 @@ export const ModerationPage: React.FC = () => {
               <div className="moderation-list">
                 {allReports.map((report) => (
                   <article key={report.id} className="moderation-comment card">
-                    <div style={{ padding: '1rem', borderRadius: '8px', background: report.status === 'open' ? '#fff3e0' : '#f5f5f5', marginBottom: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <strong>
+                    <div className={`report-meta ${report.status === 'open' ? 'report-meta--open' : 'report-meta--closed'}`}>
+                      <div className="report-header">
+                        <strong className="report-id">
                           {language === 'en' ? 'Report' : language === 'ru' ? 'Жалоба' : 'Şikayyət'} #{report.id.slice(0, 8)}
                         </strong>
-                        <span style={{
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '4px',
-                          fontSize: '0.85rem',
-                          fontWeight: 500,
-                          background: report.status === 'open' ? '#ff9800' : '#4caf50',
-                          color: 'white'
-                        }}>
-                          {report.status === 'open' 
+                        <span className={`report-status ${report.status === 'open' ? 'report-status--open' : 'report-status--closed'}`}>
+                          {report.status === 'open'
                             ? (language === 'en' ? 'Open' : language === 'ru' ? 'Открыто' : 'Açıq')
-                            : (language === 'en' ? 'Closed' : language === 'ru' ? 'Закрыто' : 'Tertibli')}
+                            : (language === 'en' ? 'Closed' : language === 'ru' ? 'Закрыто' : 'Bağlı')}
                         </span>
                       </div>
-                      <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#666' }}>
+                      <p className="report-field">
                         <strong>{language === 'en' ? 'Reason:' : language === 'ru' ? 'Причина:' : 'Səbəb:'}</strong> {report.reason}
                       </p>
-                      <p style={{ margin: '0.25rem 0', fontSize: '0.9rem', color: '#666' }}>
+                      <p className="report-field">
                         <strong>{language === 'en' ? 'Reported by:' : language === 'ru' ? 'Пожаловался:' : 'Bildirən:'}</strong> {report.reportedByName}
                       </p>
                       {report.details && (
-                        <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#555', fontStyle: 'italic' }}>
+                        <p className="report-field report-field--italic">
                           <strong>{language === 'en' ? 'Details:' : language === 'ru' ? 'Детали:' : 'Detallar:'}</strong> {report.details}
                         </p>
                       )}
                     </div>
 
-                    <div style={{ padding: '1rem', background: '#f9f9f9', borderRadius: '8px', borderLeft: '3px solid #e74c3c', marginBottom: '1rem' }}>
-                      <p style={{ margin: 0, fontSize: '0.95rem', color: '#333', fontStyle: 'italic' }}>
-                        "{report.commentText.substring(0, 150)}{report.commentText.length > 150 ? '...' : ''}"
-                      </p>
+                    <div className="report-quote">
+                      <p>"{report.commentText.substring(0, 150)}{report.commentText.length > 150 ? '...' : ''}"</p>
                     </div>
 
                     {report.status === 'open' && (
                       <div className="moderation-actions">
                         <Link to={`/property/${report.propertyId}#comment-${report.commentId}`} className="btn btn-ghost btn-sm">
-                          {language === 'en' ? 'View Comment' : language === 'ru' ? 'Просмотр' : 'Şərhi görüş'}
+                          {language === 'en' ? 'View' : language === 'ru' ? 'Просмотр' : 'Bax'}
                         </Link>
                         <button
                           type="button"
-                          className="btn btn-ghost btn-sm"
+                          className="btn btn-sm ml-delete-btn"
                           onClick={async () => {
                             await deleteComment(report.propertyId, report.commentId)
                             await handleCloseReport(report.id, true)
@@ -412,18 +398,17 @@ export const ModerationPage: React.FC = () => {
                         >
                           {isDeletingComment === report.commentId || isClosingReport === report.id
                             ? t.messages.loading
-                            : (language === 'en' ? 'Delete & Close' : language === 'ru' ? 'Удалить' : 'Sil')}
+                            : (language === 'en' ? 'Delete & Close' : language === 'ru' ? 'Удалить & Закрыть' : 'Sil & Bağla')}
                         </button>
                         <button
                           type="button"
-                          className="btn btn-accent btn-sm"
-                          style={{ background: '#4caf50' }}
+                          className="btn btn-sm report-dismiss-btn"
                           onClick={() => handleCloseReport(report.id, false)}
                           disabled={isClosingReport === report.id}
                         >
                           {isClosingReport === report.id
                             ? t.messages.loading
-                            : (language === 'en' ? 'Dismiss' : language === 'ru' ? 'Отклонить' : 'Rədd et')}
+                            : (language === 'en' ? 'Dismiss' : language === 'ru' ? 'Пропустить' : 'Rədd et')}
                         </button>
                       </div>
                     )}
