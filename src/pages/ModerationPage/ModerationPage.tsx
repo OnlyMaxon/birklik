@@ -40,6 +40,7 @@ export const ModerationPage: React.FC = () => {
   const [selectedPropertyForReject, setSelectedPropertyForReject] = React.useState<Property | null>(null)
   const [rejectReason, setRejectReason] = React.useState('')
   const [isRejectingProperty, setIsRejectingProperty] = React.useState(false)
+  const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'pending' | 'inactive' | 'draft'>('all')
 
   // Check if user is moderator
   React.useEffect(() => {
@@ -191,6 +192,13 @@ export const ModerationPage: React.FC = () => {
   }
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
+
+  const isTierExpired = (expiresAt?: string) => !!expiresAt && new Date(expiresAt) < new Date()
+
+  const formatDate = (iso?: string) => {
+    if (!iso) return ''
+    return new Date(iso).toLocaleDateString(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ')
+  }
 
   return (
     <Layout>
@@ -426,83 +434,146 @@ export const ModerationPage: React.FC = () => {
           ) : activeTab === 'allListings' ? (
             // ALL LISTINGS TAB
             <div>
-              <div style={{ marginBottom: '1.5rem' }}>
+              <div className="ml-toolbar">
                 <input
                   type="text"
-                  placeholder={language === 'en' ? 'Search listings...' : language === 'ru' ? 'Поиск объявлений...' : 'Elanları axtarın...'}
+                  className="people-search-input"
+                  style={{ margin: 0, flex: 1, minWidth: 0 }}
+                  placeholder={language === 'en' ? 'Search by title or owner...' : language === 'ru' ? 'Поиск по названию или владельцу...' : 'Ad və ya sahibə görə axtarın...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    borderRadius: '6px',
-                    border: '1px solid #ddd',
-                    fontSize: '0.95rem'
-                  }}
                 />
+                <div className="ml-status-filters">
+                  {(['all', 'active', 'pending', 'inactive', 'draft'] as const).map(sf => (
+                    <button
+                      key={sf}
+                      type="button"
+                      className={`ml-filter-btn ${statusFilter === sf ? 'active' : ''}`}
+                      onClick={() => setStatusFilter(sf)}
+                    >
+                      {sf === 'all' ? (language === 'en' ? 'All' : language === 'ru' ? 'Все' : 'Hamısı')
+                        : sf === 'active' ? (language === 'en' ? 'Active' : language === 'ru' ? 'Активные' : 'Aktiv')
+                        : sf === 'pending' ? (language === 'en' ? 'Pending' : language === 'ru' ? 'Модерация' : 'Gözləyir')
+                        : sf === 'inactive' ? (language === 'en' ? 'Hidden' : language === 'ru' ? 'Скрытые' : 'Gizli')
+                        : (language === 'en' ? 'Drafts' : language === 'ru' ? 'Черновики' : 'Qaralamalar')}
+                      {sf !== 'all' && (
+                        <span className="ml-filter-count">{allListings.filter(l => l.status === sf).length}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {allListings.length === 0 ? (
-                <div className="moderation-empty card">
-                  <p>{language === 'en' ? 'No listings found.' : language === 'ru' ? 'Объявлений не найдено.' : 'Elan tapılmadı.'}</p>
-                </div>
-              ) : (
-                <div className="moderation-list">
-                  {allListings
-                    .filter(listing => {
-                      const query = searchQuery.toLowerCase()
-                      const title = getLocalizedText(listing.title).toLowerCase()
-                      const description = getLocalizedText(listing.description).toLowerCase()
-                      const owner = listing.owner?.name.toLowerCase() || ''
-                      return title.includes(query) || description.includes(query) || owner.includes(query)
-                    })
-                    .map((listing) => (
-                      <article key={listing.id} className="moderation-item card">
-                        <img src={listing.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(listing.title)} className="moderation-image" />
+              {(() => {
+                const filtered = allListings.filter(listing => {
+                  const query = searchQuery.toLowerCase()
+                  const title = getLocalizedText(listing.title).toLowerCase()
+                  const owner = listing.owner?.name.toLowerCase() || ''
+                  const matchSearch = !query || title.includes(query) || owner.includes(query)
+                  const matchStatus = statusFilter === 'all' || listing.status === statusFilter
+                  return matchSearch && matchStatus
+                })
 
-                        <div className="moderation-content">
-                          <h3>{getLocalizedText(listing.title)}</h3>
-                          <p className="moderation-meta">{listing.price.daily} {listing.price.currency} / {t.property.perNight} · {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return t.districts[listing.district] || listing.district })()}</p>
-                          <p className="moderation-description">{getLocalizedText(listing.description)}</p>
-                          <p className="moderation-owner">
-                            <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '-'} · {listing.owner?.phone || '-'}
-                          </p>
-                          <p className="moderation-owner">
-                            <strong>{language === 'en' ? 'Status:' : language === 'ru' ? 'Статус:' : 'Status:'}</strong> {listing.isActive ? (language === 'en' ? 'Published' : language === 'ru' ? 'Опубликовано' : 'Dərc olunub') : (language === 'en' ? 'Archived' : language === 'ru' ? 'Архивировано' : 'Arxivləşdirildi')}
-                          </p>
-                        </div>
+                const getStatusBadge = (s?: string) => {
+                  if (s === 'active') return <span className="ml-status ml-status--active">{language === 'en' ? 'Active' : language === 'ru' ? 'Активно' : 'Aktiv'}</span>
+                  if (s === 'pending') return <span className="ml-status ml-status--pending">{language === 'en' ? 'Moderation' : language === 'ru' ? 'Модерация' : 'Moderasiya'}</span>
+                  if (s === 'inactive') return <span className="ml-status ml-status--inactive">{language === 'en' ? 'Hidden' : language === 'ru' ? 'Скрыто' : 'Gizli'}</span>
+                  if (s === 'draft') return <span className="ml-status ml-status--draft">{language === 'en' ? 'Draft' : language === 'ru' ? 'Черновик' : 'Qaralama'}</span>
+                  return <span className="ml-status ml-status--inactive">{s || '—'}</span>
+                }
 
-                        <div className="moderation-actions">
-                          <Link to={`/property/${listing.id}`} className="btn btn-ghost btn-sm">
-                            {language === 'en' ? 'View' : language === 'ru' ? 'Просмотр' : 'Bax'}
-                          </Link>
-                          <button
-                            type="button"
-                            className="btn btn-outline btn-sm"
-                            onClick={() => navigate(`/dashboard/moderator-edit/${listing.id}`)}
-                          >
-                            {language === 'en' ? 'Edit' : language === 'ru' ? 'Изменить' : 'Redaktə Et'}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-sm"
-                            style={{ background: '#e74c3c' }}
-                            onClick={() => {
-                              if (confirm(language === 'en' ? 'Delete this listing?' : language === 'ru' ? 'Удалить объявление?' : 'Bu elanı silmək istəyirsiniz?')) {
-                                deleteListing(listing.id)
-                              }
-                            }}
-                            disabled={isDeletingListing === listing.id}
-                          >
-                            {isDeletingListing === listing.id
-                              ? t.messages.loading
-                              : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
-                          </button>
-                        </div>
-                      </article>
-                    ))}
-                </div>
-              )}
+                const getTierBadge = (tier?: string) => {
+                  if (tier === 'vip') return <span className="ml-tier ml-tier--vip">👑 VIP</span>
+                  if (tier === 'premium') return <span className="ml-tier ml-tier--premium">⭐ Premium</span>
+                  return <span className="ml-tier ml-tier--standard">{language === 'en' ? 'Standard' : language === 'ru' ? 'Стандарт' : 'Standart'}</span>
+                }
+
+                if (filtered.length === 0) return (
+                  <div className="moderation-empty card">
+                    <p>{language === 'en' ? 'No listings found.' : language === 'ru' ? 'Объявлений не найдено.' : 'Elan tapılmadı.'}</p>
+                  </div>
+                )
+
+                return (
+                  <div className="moderation-list">
+                    {filtered.map((listing) => {
+                      const vipExpired = isTierExpired(listing.vipExpiresAt)
+                      const premiumExpired = isTierExpired(listing.premiumExpiresAt)
+                      return (
+                        <article key={listing.id} className="moderation-item card">
+                          <img
+                            src={listing.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+                            alt={getLocalizedText(listing.title)}
+                            className="moderation-image"
+                          />
+                          <div className="moderation-content">
+                            <div className="ml-title-row">
+                              <h3>{getLocalizedText(listing.title)}</h3>
+                              <div className="ml-badges">
+                                {getStatusBadge(listing.status)}
+                                {getTierBadge(listing.listingTier)}
+                              </div>
+                            </div>
+                            <p className="moderation-meta">
+                              {listing.price.daily} {listing.price.currency} / {t.property.perNight}
+                              {' · '}
+                              {(() => {
+                                if (listing.city) {
+                                  const c = cities.find(x => x.value === listing.city)
+                                  if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
+                                  return listing.city
+                                }
+                                return t.districts[listing.district] || listing.district
+                              })()}
+                            </p>
+                            <p className="moderation-owner">
+                              <strong>{language === 'en' ? 'Owner:' : language === 'ru' ? 'Владелец:' : 'Sahib:'}</strong> {listing.owner?.name || '—'} · {listing.owner?.phone || '—'}
+                            </p>
+                            {listing.listingTier === 'vip' && listing.vipExpiresAt && (
+                              <p className={`ml-expiry ${vipExpired ? 'ml-expiry--expired' : 'ml-expiry--active'}`}>
+                                👑 VIP {vipExpired
+                                  ? (language === 'en' ? `expired ${formatDate(listing.vipExpiresAt)}` : language === 'ru' ? `истёк ${formatDate(listing.vipExpiresAt)}` : `bitdi ${formatDate(listing.vipExpiresAt)}`)
+                                  : (language === 'en' ? `until ${formatDate(listing.vipExpiresAt)}` : language === 'ru' ? `до ${formatDate(listing.vipExpiresAt)}` : `${formatDate(listing.vipExpiresAt)} qədər`)}
+                              </p>
+                            )}
+                            {listing.listingTier === 'premium' && listing.premiumExpiresAt && (
+                              <p className={`ml-expiry ${premiumExpired ? 'ml-expiry--expired' : 'ml-expiry--active'}`}>
+                                ⭐ Premium {premiumExpired
+                                  ? (language === 'en' ? `expired ${formatDate(listing.premiumExpiresAt)}` : language === 'ru' ? `истёк ${formatDate(listing.premiumExpiresAt)}` : `bitdi ${formatDate(listing.premiumExpiresAt)}`)
+                                  : (language === 'en' ? `until ${formatDate(listing.premiumExpiresAt)}` : language === 'ru' ? `до ${formatDate(listing.premiumExpiresAt)}` : `${formatDate(listing.premiumExpiresAt)} qədər`)}
+                              </p>
+                            )}
+                          </div>
+                          <div className="moderation-actions">
+                            <Link to={`/property/${listing.id}`} className="btn btn-ghost btn-sm">
+                              {language === 'en' ? 'View' : language === 'ru' ? 'Просмотр' : 'Bax'}
+                            </Link>
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              onClick={() => navigate(`/dashboard/moderator-edit/${listing.id}`)}
+                            >
+                              {language === 'en' ? 'Edit' : language === 'ru' ? 'Изменить' : 'Redaktə Et'}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm ml-delete-btn"
+                              onClick={() => {
+                                if (confirm(language === 'en' ? 'Delete this listing?' : language === 'ru' ? 'Удалить объявление?' : 'Bu elanı silmək istəyirsiniz?')) {
+                                  deleteListing(listing.id)
+                                }
+                              }}
+                              disabled={isDeletingListing === listing.id}
+                            >
+                              {isDeletingListing === listing.id ? t.messages.loading : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
+                            </button>
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
           ) : activeTab === 'people' ? (
             // PEOPLE TAB
