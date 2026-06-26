@@ -309,7 +309,10 @@ export async function cleanupInactiveListings(): Promise<CleanupLog> {
   }
 }
 
-// Удаляет draft-объявления старше 2 часов — брошенные после инициации оплаты
+// Удаляет draft-объявления старше 2 часов — брошенные без инициации оплаты.
+// Drafts с активным awaiting_payment пропускаются: callback может ещё не дойти.
+// MPI-сессия банка = 1 час; cleanup = 2 часа — достаточный запас,
+// но callback задержан или не отправлен банком → пропертя должна выжить.
 export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
   const startTime = Date.now();
   const deletedIds: string[] = [];
@@ -324,21 +327,33 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
       .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
 
-    // Собираем URLs изображений ДО удаления документов
     const imagesByProp = new Map<string, string[]>();
+
     for (const doc of snap.docs) {
+      // Проверяем наличие активного платежа ДО любого удаления
+      const activePayment = await admin.firestore()
+        .collection('payments')
+        .where('propertyId', '==', doc.id)
+        .where('status', '==', 'awaiting_payment')
+        .limit(1)
+        .get();
+
+      if (!activePayment.empty) {
+        console.warn(`[Cleanup] Skip draft ${doc.id}: has active awaiting_payment (MPI callback may be pending)`);
+        continue;
+      }
+
       imagesByProp.set(doc.id, doc.data().images || []);
+      deletedIds.push(doc.id);
     }
 
-    const batch = admin.firestore().batch();
-    snap.docs.forEach(doc => {
-      batch.delete(doc.ref);
-      deletedIds.push(doc.id);
-    });
-    if (!snap.empty) await batch.commit();
-
-    // Удаляем изображения из Storage
     if (deletedIds.length > 0) {
+      const batch = admin.firestore().batch();
+      deletedIds.forEach(id => {
+        batch.delete(admin.firestore().collection('properties').doc(id));
+      });
+      await batch.commit();
+
       const bucket = admin.storage().bucket();
       for (const [, images] of imagesByProp) {
         for (const url of images) {
@@ -349,18 +364,6 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
           } catch { /* файл уже удалён */ }
         }
       }
-    }
-
-    // Помечаем соответствующие payments как expired
-    for (const id of deletedIds) {
-      const payments = await admin.firestore()
-        .collection('payments')
-        .where('propertyId', '==', id)
-        .where('status', '==', 'awaiting_payment')
-        .get();
-      const pb = admin.firestore().batch();
-      payments.docs.forEach(doc => pb.update(doc.ref, { status: 'expired', expiredAt: new Date().toISOString() }));
-      if (!payments.empty) await pb.commit();
     }
 
     console.log(`[Cleanup] Orphaned drafts deleted: ${deletedIds.length}`);
