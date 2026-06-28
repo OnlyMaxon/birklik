@@ -199,6 +199,65 @@ export const PropertyPage: React.FC = () => {
     loadSimilar()
   }, [property?.id])
 
+  React.useEffect(() => {
+    if (!property) return
+
+    const DEFAULT_TITLE = 'Birklik.az - Azərbaycanda ev kirayəsi'
+    const DEFAULT_DESC = 'Azərbaycanda ev, villa və mənzil kirayəsi. Bakı və bütün Azərbaycanda ən yaxşı istirahət yerləri — Birklik.az.'
+
+    const title = getLocalizedText(property.title)
+    const desc = getLocalizedText(property.description)
+    const cityObj = cities.find(c => c.value === property.city)
+    const city = cityObj
+      ? (language === 'en' ? cityObj.en : language === 'ru' ? (cityObj.ru || cityObj.az) : cityObj.az)
+      : (property.city || '')
+    const cur = property.price.currency === 'AZN' ? '₼' : property.price.currency
+    const url = `https://birklik.az/property/${property.id}`
+    const image = property.images?.[0] || ''
+
+    const pageTitle = city ? `${title} — ${city} — Birklik.az` : `${title} — Birklik.az`
+    const metaDesc = desc
+      ? `${desc.substring(0, 150)}${desc.length > 150 ? '...' : ''}`
+      : `${title}. ${city ? city + ', ' : ''}Azərbaycan. ${property.price.daily} ${cur}/gecə.`
+
+    document.title = pageTitle
+
+    const setMeta = (name: string, content: string) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null
+      if (!el) {
+        el = document.createElement('meta')
+        el.setAttribute('name', name)
+        document.head.appendChild(el)
+      }
+      el.setAttribute('content', content)
+    }
+
+    const setOG = (prop: string, content: string) => {
+      let el = document.querySelector(`meta[property="${prop}"]`) as HTMLMetaElement | null
+      if (!el) {
+        el = document.createElement('meta')
+        el.setAttribute('property', prop)
+        document.head.appendChild(el)
+      }
+      el.setAttribute('content', content)
+    }
+
+    setMeta('description', metaDesc)
+    setOG('og:title', pageTitle)
+    setOG('og:description', metaDesc)
+    setOG('og:url', url)
+    setOG('og:type', 'website')
+    if (image) setOG('og:image', image)
+
+    return () => {
+      document.title = DEFAULT_TITLE
+      setMeta('description', DEFAULT_DESC)
+      ;['og:title', 'og:description', 'og:url', 'og:type', 'og:image'].forEach(p => {
+        document.querySelector(`meta[property="${p}"]`)?.remove()
+      })
+    }
+  }, [property, language])
+
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 
   const currencySymbol = (code: string) => code === 'AZN' ? '₼' : code
