@@ -5,7 +5,7 @@ import { Layout } from '../../layouts'
 import { SearchBar, Filters, PropertyCard, Loading } from '../../components'
 import { filterProperties } from '../../data'
 import { FilterState, Property } from '../../types'
-import { getProperties } from '../../services'
+import { getProperties, getAllPremiumProperties } from '../../services'
 import './HomePage.css'
 
 const PropertyMap = React.lazy(() =>
@@ -46,6 +46,8 @@ export const HomePage: React.FC = () => {
   const lastDocRef = React.useRef<DocumentSnapshot | null>(null)
   const hasMoreRef = React.useRef(false)
   const isLoadingMoreRef = React.useRef(false)
+  // IDs of VIP/Premium already loaded — used to deduplicate paginated standard results
+  const premiumIdsRef = React.useRef<Set<string>>(new Set())
 
   React.useEffect(() => {
     let cancelled = false
@@ -57,16 +59,24 @@ export const HomePage: React.FC = () => {
       setHasMore(false)
       lastDocRef.current = null
       hasMoreRef.current = false
+      premiumIdsRef.current = new Set()
 
-      const result = await getProperties(
-        filters.city ? { city: filters.city } : undefined
-      )
+      const cityFilter = filters.city ? { city: filters.city } : undefined
+
+      const [premiums, standardResult] = await Promise.all([
+        getAllPremiumProperties(cityFilter),
+        getProperties(cityFilter),
+      ])
       if (cancelled) return
 
-      setProperties(result.properties)
-      lastDocRef.current = result.lastDoc
-      hasMoreRef.current = result.lastDoc !== null
-      setHasMore(result.lastDoc !== null)
+      const premiumIds = new Set(premiums.map(p => p.id))
+      premiumIdsRef.current = premiumIds
+      const dedupedStandard = standardResult.properties.filter(p => !premiumIds.has(p.id))
+
+      setProperties([...premiums, ...dedupedStandard])
+      lastDocRef.current = standardResult.lastDoc
+      hasMoreRef.current = standardResult.lastDoc !== null
+      setHasMore(standardResult.lastDoc !== null)
       setIsLoading(false)
     }
 
@@ -85,7 +95,8 @@ export const HomePage: React.FC = () => {
       lastDocRef.current
     )
 
-    setProperties(prev => [...prev, ...result.properties])
+    const dedupedNew = result.properties.filter(p => !premiumIdsRef.current.has(p.id))
+    setProperties(prev => [...prev, ...dedupedNew])
     lastDocRef.current = result.lastDoc
     hasMoreRef.current = result.lastDoc !== null
     setHasMore(result.lastDoc !== null)

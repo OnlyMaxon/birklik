@@ -152,6 +152,32 @@ export const getProperties = async (
 }
 
 /**
+ * Fetch all active VIP and Premium properties without pagination.
+ * Used to guarantee tier listings always appear at the top regardless of age.
+ */
+export const getAllPremiumProperties = async (
+  filters?: { city?: string }
+): Promise<Property[]> => {
+  try {
+    const constraints: QueryConstraint[] = [
+      where('status', '==', 'active'),
+      where('listingTier', 'in', ['vip', 'premium']),
+    ]
+    if (filters?.city) {
+      constraints.push(where('city', '==', filters.city))
+    }
+    const q = query(collection(db, COLLECTION_NAME), ...constraints)
+    const snapshot = await getDocs(q)
+    return snapshot.docs
+      .map(doc => mapDocToProperty(doc))
+      .filter(isPubliclyVisible)
+  } catch (error) {
+    logger.error('Error getting premium properties:', error)
+    return []
+  }
+}
+
+/**
  * Fetch a single property by its Firestore document ID
  * @param {string} id - The unique property document identifier
  * @returns {Promise<Property | null>} Property object or null if not found
