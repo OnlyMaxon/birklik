@@ -101,6 +101,7 @@ export const en: Translations = {
     signInBookmark: "Sign in to bookmark",
     bookmarkAdded: "Added to Favorites",
     signInComment: "Sign in to comment",
+    signInBook: "Please sign in to make a booking",
     cannotSelectPastDates: "Cannot select past dates",
     dateNotAvailable: "This date is not available",
     bookingAddedToCabinet: "Your booking has been added to your cabinet",

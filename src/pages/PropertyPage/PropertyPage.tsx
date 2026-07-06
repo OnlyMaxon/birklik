@@ -356,8 +356,14 @@ export const PropertyPage: React.FC = () => {
   }
 
   const handleMakeBooking = async () => {
-    if (!isAuthenticated || !user || !property || !selectedCheckIn || !selectedCheckOut) {
-      alert(t.property.errorSelectDates)
+    if (!isAuthenticated || !user) {
+      setNotificationMessage(t.property.signInBook)
+      setShowNotification(true)
+      return
+    }
+    if (!property || !selectedCheckIn || !selectedCheckOut) {
+      setNotificationMessage(t.property.errorSelectDates)
+      setShowNotification(true)
       return
     }
 
@@ -1168,7 +1174,7 @@ export const PropertyPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleMakeBooking}
-                      disabled={isBooking || !isAuthenticated}
+                      disabled={isBooking}
                       className={`btn pp-book-btn ${isAuthenticated ? 'btn-accent' : 'btn-ghost'}`}
                     >
                       {isBooking ? t.property.bookingButton : t.property.sendRequest}

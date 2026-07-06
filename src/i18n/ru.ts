@@ -101,6 +101,7 @@ export const ru: Translations = {
     signInBookmark: 'Войти для закладки',
     bookmarkAdded: 'Добавлено в избранное',
     signInComment: 'Войти для комментария',
+    signInBook: 'Войдите чтобы оформить бронирование',
     cannotSelectPastDates: 'Нельзя выбирать прошлые даты',
     dateNotAvailable: 'Эта дата недоступна',
     bookingAddedToCabinet: 'Ваше бронирование добавлено в ваш кабинет',

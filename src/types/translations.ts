@@ -101,6 +101,7 @@ export interface Translations {
     signInBookmark: string
     bookmarkAdded: string
     signInComment: string
+    signInBook: string
     cannotSelectPastDates: string
     dateNotAvailable: string
     bookingAddedToCabinet: string

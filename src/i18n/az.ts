@@ -101,6 +101,7 @@ export const az: Translations = {
     signInBookmark: "Sevimlilərə əlavə etmək üçün daxil olun",
     bookmarkAdded: "Sevimlilərə əlavə edildi",
     signInComment: "Şərh yazmaq üçün daxil olun",
+    signInBook: "Sifariş etmək üçün daxil olun",
     cannotSelectPastDates: "Keçmiş tarixləri seçə bilməzsiniz",
     dateNotAvailable: "Bu tarix mövcud deyil",
     bookingAddedToCabinet: "Sifarişiniz şəxsi kabinetinizə əlavə edildi",
