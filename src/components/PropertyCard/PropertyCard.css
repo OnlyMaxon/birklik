@@ -52,14 +52,13 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.28rem 0.6rem;
-  background: rgba(3, 105, 161, 0.88);
-  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(3, 95, 148, 0.92);
+  border: 1px solid rgba(125, 211, 252, 0.25);
   border-radius: 9999px;
   color: #ffffff;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  backdrop-filter: blur(8px);
   white-space: nowrap;
   cursor: default;
   box-shadow: 0 2px 8px rgba(3, 105, 161, 0.3);
@@ -69,7 +68,7 @@
   position: absolute;
   top: 0.55rem;
   right: 0.55rem;
-  background: rgba(var(--primary-color-rgb), 0.88);
+  background: rgba(var(--primary-color-rgb), 0.92);
   border: none;
   border-radius: 50%;
   width: 1.8rem;
@@ -80,7 +79,6 @@
   color: #ffffff;
   cursor: pointer;
   transition: all 0.25s ease;
-  backdrop-filter: blur(8px);
   z-index: 10;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
   padding: 0;

@@ -14,6 +14,7 @@ interface PropertyCardProps {
   checkIn?: string
   checkOut?: string
   isCompact?: boolean
+  priority?: boolean
   onFavoriteToggle?: (propertyId: string, isFavorited: boolean) => void
 }
 
@@ -22,6 +23,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
   checkIn,
   checkOut,
   isCompact = false,
+  priority = false,
   onFavoriteToggle
 }) => {
   const { language, t } = useLanguage()
@@ -89,7 +91,14 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
   return (
     <div className="property-card">
       <Link to={`/property/${property.id}`} className="property-image">
-        <img src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'} alt={getLocalizedText(property.title)} loading="lazy" />
+        <img
+          src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+          alt={getLocalizedText(property.title)}
+          width={900}
+          height={563}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
+        />
         <div className={`property-badges${isCompact ? ' compact' : ''}`}>
           {isVIP && (
             <div className="badge badge-vip" title={t.dashboard.vipListing}>

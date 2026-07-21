@@ -255,13 +255,14 @@ export const HomePage: React.FC = () => {
               <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
                 <div className="premium-results-list">
                   <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
-                    {filteredProperties.map((property) => (
+                    {filteredProperties.map((property, index) => (
                       <PropertyCard
                         key={property.id}
                         property={property}
                         checkIn={filters.checkIn}
                         checkOut={filters.checkOut}
                         isCompact={viewMode === 'compact'}
+                        priority={index < 4}
                       />
                     ))}
                   </div>
