@@ -173,6 +173,13 @@ export const VerifyEmailPage: React.FC = () => {
                       ? 'После подтверждения вы сможете получить доступ к вашему кабинету.'
                       : 'Doğrulama sonra panelə daxil ola biləcəksiniz.'}
                 </p>
+                <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.85rem', opacity: 0.8 }}>
+                  {language === 'en'
+                    ? "Don't see the email? Check your spam or junk folder."
+                    : language === 'ru'
+                      ? 'Не видите письмо? Проверьте папку «Спам» или «Нежелательная почта».'
+                      : 'Məktubu görmürsünüz? «Spam» qovluğunu yoxlayın.'}
+                </p>
               </div>
 
               {message && (
