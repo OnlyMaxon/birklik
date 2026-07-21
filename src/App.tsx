@@ -35,13 +35,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
         return
       }
 
+      // If already verified (cached), skip the network reload
+      if (firebaseUser.emailVerified) {
+        setEmailVerified(true)
+        setCheckingEmail(false)
+        return
+      }
+
       try {
-        // Reload user to get latest emailVerified status
         await firebaseUser.reload()
-        
-        // Add small delay to ensure state is current
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
         setEmailVerified(firebaseUser.emailVerified)
       } catch (error) {
         logger.error('Error checking email verification:', error)

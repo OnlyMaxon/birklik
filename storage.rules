@@ -8,12 +8,12 @@ service firebase.storage {
       allow create: if request.auth != null
         && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024
-        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
       // Update: only the owner can update
       allow update: if request.auth != null
         && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024
-        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
       // Delete: only the owner can delete
       allow delete: if request.auth != null
         && request.auth.uid == userId;
@@ -24,11 +24,11 @@ service firebase.storage {
       allow create: if request.auth != null
         && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
       allow update: if request.auth != null
         && request.auth.uid == userId
         && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
       allow delete: if request.auth != null
         && request.auth.uid == userId;
     }

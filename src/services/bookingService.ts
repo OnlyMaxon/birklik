@@ -1,5 +1,5 @@
 import { db } from '../config/firebase'
-import { collection, doc, query, where, getDocs, getDoc, runTransaction } from 'firebase/firestore'
+import { collection, doc, query, where, getDocs, getDoc, runTransaction, updateDoc, deleteDoc } from 'firebase/firestore'
 import { Booking } from '../types'
 import { validateCsrfToken } from './csrfService'
 import * as logger from './logger'
@@ -128,32 +128,21 @@ export const getPropertyBookings = async (propertyId: string): Promise<Booking[]
  */
 export const checkBookingConflict = async (propertyId: string, checkInDate: string, checkOutDate: string): Promise<boolean> => {
   try {
-    // Check both approved and pending bookings for conflicts
-    const qApproved = query(
+    const q = query(
       collection(db, COLLECTION_NAME),
       where('propertyId', '==', propertyId),
-      where('status', '==', 'approved')
+      where('status', 'in', ['approved', 'pending'])
     )
-    const qPending = query(
-      collection(db, COLLECTION_NAME),
-      where('propertyId', '==', propertyId),
-      where('status', '==', 'pending')
-    )
-    
-    const snapshotApproved = await getDocs(qApproved)
-    const snapshotPending = await getDocs(qPending)
-    
-    const allSnapshots = [...snapshotApproved.docs, ...snapshotPending.docs]
+    const snapshot = await getDocs(q)
 
     const proposedCheckIn = new Date(checkInDate).getTime()
     const proposedCheckOut = new Date(checkOutDate).getTime()
 
-    for (const doc of allSnapshots) {
-      const booking = doc.data() as Omit<Booking, 'id'>
+    for (const bookingDoc of snapshot.docs) {
+      const booking = bookingDoc.data() as Omit<Booking, 'id'>
       const existingCheckIn = new Date(booking.checkInDate).getTime()
       const existingCheckOut = new Date(booking.checkOutDate).getTime()
 
-      // Check for overlap: proposed range overlaps if it starts before existing ends AND ends after existing starts
       if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
         return true
       }
@@ -162,7 +151,7 @@ export const checkBookingConflict = async (propertyId: string, checkInDate: stri
     return false
   } catch (error) {
     logger.error('Error checking booking conflict:', error)
-    return false
+    throw error
   }
 }
 
@@ -202,7 +191,6 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
  */
 export const cancelBooking = async (bookingId: string): Promise<{success: boolean; requestId?: string}> => {
   try {
-    const { updateDoc } = await import('firebase/firestore')
     const docRef = doc(db, COLLECTION_NAME, bookingId)
     const booking = await getDoc(docRef)
 
@@ -212,7 +200,6 @@ export const cancelBooking = async (bookingId: string): Promise<{success: boolea
 
     const bookingData = booking.data() as Booking
 
-    // Pending bookings: guest can cancel directly (allowed by Firestore rules)
     if (bookingData.status === 'pending') {
       await updateDoc(docRef, { status: 'cancelled' })
       return { success: true }
@@ -292,24 +279,20 @@ export const hasUserBookedProperty = async (userId: string, propertyId: string):
  */
 export const acceptBooking = async (bookingId: string): Promise<Booking | null> => {
   try {
-    const { updateDoc } = await import('firebase/firestore')
     const docRef = doc(db, COLLECTION_NAME, bookingId)
     const bookingSnap = await getDoc(docRef)
-    
+
     if (!bookingSnap.exists()) {
       logger.error('Booking not found')
       return null
     }
 
     const now = new Date().toISOString()
-    
-    await updateDoc(docRef, {
-      status: 'approved',
-      approvedAt: now
-    })
+    const existing = bookingSnap.data() as Omit<Booking, 'id'>
 
-    const updated = await getDoc(docRef)
-    return { id: updated.id, ...(updated.data() as Omit<Booking, 'id'>) }
+    await updateDoc(docRef, { status: 'approved', approvedAt: now })
+
+    return { id: bookingSnap.id, ...existing, status: 'approved', approvedAt: now }
   } catch (error) {
     logger.error('Error accepting booking:', error)
     return null
@@ -324,25 +307,21 @@ export const acceptBooking = async (bookingId: string): Promise<Booking | null> 
  */
 export const rejectBooking = async (bookingId: string, reason?: string): Promise<Booking | null> => {
   try {
-    const { updateDoc } = await import('firebase/firestore')
     const docRef = doc(db, COLLECTION_NAME, bookingId)
     const bookingSnap = await getDoc(docRef)
-    
+
     if (!bookingSnap.exists()) {
       logger.error('Booking not found')
       return null
     }
 
     const now = new Date().toISOString()
-    
-    await updateDoc(docRef, {
-      status: 'rejected',
-      rejectedAt: now,
-      rejectionReason: reason || 'No reason provided'
-    })
+    const existing = bookingSnap.data() as Omit<Booking, 'id'>
+    const rejectionReason = reason || 'No reason provided'
 
-    const updated = await getDoc(docRef)
-    return { id: updated.id, ...(updated.data() as Omit<Booking, 'id'>) }
+    await updateDoc(docRef, { status: 'rejected', rejectedAt: now, rejectionReason })
+
+    return { id: bookingSnap.id, ...existing, status: 'rejected', rejectedAt: now, rejectionReason }
   } catch (error) {
     logger.error('Error rejecting booking:', error)
     return null
@@ -360,16 +339,14 @@ export const editBooking = async (
   updates: Partial<Booking>
 ): Promise<Booking | null> => {
   try {
-    const { updateDoc } = await import('firebase/firestore')
     const docRef = doc(db, COLLECTION_NAME, bookingId)
     const bookingSnap = await getDoc(docRef)
-    
+
     if (!bookingSnap.exists()) {
       logger.error('Booking not found')
       return null
     }
 
-    // Allowed fields for editing (only dates and related fields)
     const allowedFields = ['checkInDate', 'checkOutDate', 'nights', 'totalPrice']
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([key]) => allowedFields.includes(key))
@@ -380,10 +357,10 @@ export const editBooking = async (
       return null
     }
 
+    const existing = bookingSnap.data() as Omit<Booking, 'id'>
     await updateDoc(docRef, filteredUpdates)
 
-    const updated = await getDoc(docRef)
-    return { id: updated.id, ...(updated.data() as Omit<Booking, 'id'>) }
+    return { id: bookingSnap.id, ...existing, ...filteredUpdates }
   } catch (error) {
     logger.error('Error editing booking:', error)
     return null
@@ -397,10 +374,7 @@ export const editBooking = async (
  */
 export const deleteBooking = async (bookingId: string): Promise<boolean> => {
   try {
-    const { deleteDoc } = await import('firebase/firestore')
-    const docRef = doc(db, COLLECTION_NAME, bookingId)
-    
-    await deleteDoc(docRef)
+    await deleteDoc(doc(db, COLLECTION_NAME, bookingId))
     return true
   } catch (error) {
     logger.error('Error deleting booking:', error)

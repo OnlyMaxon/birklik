@@ -44,6 +44,8 @@ if (import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
     provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
     isTokenAutoRefreshEnabled: true
   })
+} else if (!import.meta.env.DEV) {
+  console.warn('[Security] App Check not initialized: VITE_RECAPTCHA_SITE_KEY is missing')
 }
 
 // Initialize services

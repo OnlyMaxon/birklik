@@ -338,7 +338,7 @@ Scroll to bottom → loadMore():
 |---|---|---|
 | `propertyService` | `properties` | `getProperties` (paginated), `getAllPremiumProperties`, `getPropertyById` |
 | `listingService` | `properties`, Storage | `createListing`, `updateListing`, `deleteListing`, `uploadPropertyImage`, `deletePropertyImages` |
-| `bookingService` | `bookings` | `createBooking` (transaction), `getPropertyBookings`, `checkBookingConflict` |
+| `bookingService` | `bookings` | `createBooking` (transaction), `getPropertyBookings`, `checkBookingConflict` (single query with `status in [...]`, throws on Firestore error) |
 | `commentsService` | `properties/{id}/comments` | `addComment`, `getComments`, `deleteComment`, `toggleLike` |
 | `favoritesService` | `properties` (favorites[]) | `toggleFavorite` (CSRF), `isPropertyFavorited` |
 | `notificationsService` | `users/{uid}/notifications` | `createBookingNotification`, `getUserNotifications`, `markNotificationAsRead` |
@@ -367,15 +367,20 @@ Scroll to bottom → loadMore():
 |---|---|
 | CSRF tokens (sessionStorage, 1h TTL) | booking creation, favorites toggle |
 | Firestore Security Rules | row-level: owner vs moderator vs public |
-| Storage Security Rules | owner-scoped paths, type+size limits |
-| Firebase App Check + reCAPTCHA Enterprise | all Firestore/Storage/Auth calls |
+| Storage Security Rules | owner-scoped paths, type+size limits (JPEG/PNG/WebP only — GIF excluded) |
+| Firebase App Check + reCAPTCHA Enterprise | all Firestore/Storage/Auth calls; warns in prod if VITE_RECAPTCHA_SITE_KEY missing |
 | Firebase Auth (email+password) | all protected routes |
 | Email verification required | Dashboard access |
 | Custom claim `moderator: true` | ModerationPage, ModeratorPropertyEditPage |
 | RSA-SHA256 P_SIGN | Azericard payment signing + callback verification |
-| Input sanitization (`sanitizeInput`) | comments, user-entered text |
-| File validation | type allowlist, size limits, filename safety check |
+| Input sanitization (`sanitizeInput` from `sanitization.ts`) | comments, user-entered text |
+| File validation | type allowlist (JPEG/PNG/WebP), size limits, filename safety check |
 | Logger sanitization | prod strips Firebase IDs, emails, tokens, URLs from logs |
+| Notification field validation | `read==false`, `type is string`, `message is string` required on create |
+| Comment length limit | subcollection comments: `text.size() <= 2000` enforced in rules |
+| Password minimum | 8 characters (enforced at registration) |
+
+**Known rule limitation:** `bookings` collection is readable by any authenticated user — required for client-side date-conflict checking (`checkBookingConflict` queries by `propertyId` for any user). Full restriction requires moving conflict checks to a Cloud Function.
 
 **Critical secrets (never commit):**
 - `.env` — Firebase API key + VAPID key + reCAPTCHA key
@@ -495,3 +500,4 @@ All page components are lazy-loaded via `React.lazy()` + `Suspense`.
 - OG meta tags for social previews require SSR (Cloudflare Pages Functions) — not implemented; dynamic meta works for Google crawl only
 - Old photos uploaded before 2026-06-16 remain full-size JPEG in Firebase Storage
 - Tier sort is client-side — correct while total listings < 20 per page; needs Firestore index `tierPriority` field for larger datasets
+- **Booking race condition (architectural):** `createBooking` uses `getDocs(query)` inside `runTransaction` — Firestore transactions only guarantee atomicity for `transaction.get(docRef)` (single document reads), not query reads. Theoretically two simultaneous bookings for the same dates could both pass the conflict check. Fix requires Cloud Function with Admin SDK or date-slot documents. Deferred.

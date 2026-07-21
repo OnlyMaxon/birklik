@@ -162,6 +162,7 @@ export const getAllPremiumProperties = async (
     const constraints: QueryConstraint[] = [
       where('status', '==', 'active'),
       where('listingTier', 'in', ['vip', 'premium']),
+      limit(100),
     ]
     if (filters?.city) {
       constraints.push(where('city', '==', filters.city))

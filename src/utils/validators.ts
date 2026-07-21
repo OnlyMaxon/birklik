@@ -43,7 +43,7 @@ export const validateEmail = (email: string): boolean => {
  */
 export const validatePassword = (password: string): boolean => {
   if (!password || typeof password !== 'string') return false
-  return password.length >= 6
+  return password.length >= 8
 }
 
 /**
@@ -58,24 +58,6 @@ export const validateName = (name: string): boolean => {
   // Allow letters (any language), spaces, hyphens, apostrophes
   const nameRegex = /^[\p{L}\s\-']{2,100}$/u
   return nameRegex.test(cleaned)
-}
-
-/**
- * Sanitize user input to prevent XSS
- * @param input Raw user input
- * @returns Sanitized string safe for DOM
- */
-export const sanitizeInput = (input: string): string => {
-  if (!input || typeof input !== 'string') return ''
-
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .trim()
-    .slice(0, 1000) // Max 1000 chars
 }
 
 /**

@@ -24,7 +24,10 @@ service cloud.firestore {
 
     match /users/{userId}/notifications/{notificationId} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.read == false
+        && request.resource.data.type is string
+        && request.resource.data.message is string;
       allow update: if request.auth != null && request.auth.uid == userId;
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
@@ -62,9 +65,11 @@ service cloud.firestore {
     match /properties/{propertyId}/comments/{commentId} {
       allow read: if true;
       
-      // Create: user must match auth user
+      // Create: user must match auth user, text length capped at 2000 chars
       allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 2000;
       
       // Update: only comment author or moderator
       allow update: if request.auth != null && (

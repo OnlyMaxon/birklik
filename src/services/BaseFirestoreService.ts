@@ -8,7 +8,10 @@ import {
   deleteDoc,
   query,
   where,
-  QueryConstraint
+  writeBatch,
+  getCountFromServer,
+  QueryConstraint,
+  DocumentReference
 } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import * as logger from './logger'
@@ -222,12 +225,15 @@ export class BaseFirestoreService<T extends Record<string, any>> {
    */
   async batchCreate(items: Omit<T, 'id'>[]): Promise<T[]> {
     try {
-      const created: T[] = []
-      for (const item of items) {
-        const result = await this.create(item)
-        created.push(result)
-      }
-      return created
+      const batch = writeBatch(db)
+      const refs: DocumentReference[] = []
+      items.forEach(item => {
+        const ref = doc(collection(db, this.collectionName))
+        batch.set(ref, item)
+        refs.push(ref)
+      })
+      await batch.commit()
+      return refs.map((ref, i) => ({ id: ref.id, ...items[i] }) as unknown as T)
     } catch (error) {
       logger.error(`Error batch creating ${this.collectionName}:`, error)
       throw error
@@ -247,8 +253,8 @@ export class BaseFirestoreService<T extends Record<string, any>> {
   async count(...constraints: QueryConstraint[]): Promise<number> {
     try {
       const q = query(collection(db, this.collectionName), ...constraints)
-      const snapshot = await getDocs(q)
-      return snapshot.docs.length
+      const snapshot = await getCountFromServer(q)
+      return snapshot.data().count
     } catch (error) {
       logger.error(`Error counting ${this.collectionName}:`, error)
       throw error
@@ -265,9 +271,9 @@ export class BaseFirestoreService<T extends Record<string, any>> {
    */
   async batchDelete(ids: string[]): Promise<boolean> {
     try {
-      for (const id of ids) {
-        await this.delete(id)
-      }
+      const batch = writeBatch(db)
+      ids.forEach(id => batch.delete(doc(db, this.collectionName, id)))
+      await batch.commit()
       return true
     } catch (error) {
       logger.error(`Error batch deleting ${this.collectionName}:`, error)
