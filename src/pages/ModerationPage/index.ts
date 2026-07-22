@@ -1,1 +1,0 @@
-export { ModerationPage } from './ModerationPage'

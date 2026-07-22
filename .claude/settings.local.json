@@ -7,7 +7,8 @@
       "Bash(grep -r \"rgba\\(46, 125, 91\" src/ --include=\"*.css\" -l)",
       "Bash(grep -r \"#2E7D5B\\\\|#4a9971\\\\|#1d5940\\\\|#FF7A00\\\\|ff7a00\\\\|#4DA8DA\" src/ --include=\"*.css\" -l)",
       "Bash(sed -n '354,362p' src/pages/ModerationPage/ModerationPage.css)",
-      "Bash(sed -n '85,92p' src/pages/PropertyPage/PropertyPage.css)"
+      "Bash(sed -n '85,92p' src/pages/PropertyPage/PropertyPage.css)",
+      "Bash(pnpm add *)"
     ]
   }
 }

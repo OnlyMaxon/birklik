@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { buildQueryConstraints, calculateHasMore, trimToPageSize, formatPaginationResult } from './paginationHelper'
-import { validatePropertyImage, validateAvatar, validateMultipleFiles } from './fileValidation'
+import { buildQueryConstraints, calculateHasMore, trimToPageSize, formatPaginationResult } from './pagination-helper'
+import { validatePropertyImage, validateAvatar, validateMultipleFiles } from './file-validation'
 
 describe('Pagination Helper', () => {
   describe('buildQueryConstraints', () => {

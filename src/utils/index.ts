@@ -1,4 +1,3 @@
-export * from './i18n'
-export * from './errorHandler'
-export * from './premiumHelper'
+export * from './error-handler'
+export * from './premium-helper'
 export * from './sanitization'

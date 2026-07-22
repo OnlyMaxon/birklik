@@ -1,5 +1,5 @@
 import { Property, PropertyType, District, Amenity, LocationCategory } from '../types'
-import { expandSearchTerms } from './cityAliases'
+import { expandSearchTerms } from './city-aliases'
 
 export interface FilterOption {
   key: string

@@ -5,3 +5,7 @@ dist/
 .env
 .DS_Store
 serviceAccountKey.json
+service-account*.json
+firebase-adminsdk*.json
+google-application-credentials*.json
+.secrets/

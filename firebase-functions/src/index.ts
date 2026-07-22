@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { cleanupOrphanedDrafts, logCleanupResult } from './cleanup/firestore-cleanup';
-import { sendPushToUser } from './notifications/sendPush';
+import { sendPushToUser } from './notifications/send-push';
 import { initiatePayment, azericardCallback, performReversal } from './payment/azericard';
 
 export { initiatePayment, azericardCallback, performReversal };

@@ -1,13 +1,11 @@
 {
   "name": "birklik-az",
   "compatibility_date": "2026-04-05",
-  "pages_build_output_dir": "dist",
   "vars": {
-    "VITE_FIREBASE_AUTH_DOMAIN": "birklik-65289.firebaseapp.com",
-    "VITE_FIREBASE_PROJECT_ID": "birklik-65289",
-    "VITE_FIREBASE_STORAGE_BUCKET": "birklik-65289.firebasestorage.app",
-    "VITE_FIREBASE_MESSAGING_SENDER_ID": "695765296567",
-    "VITE_FIREBASE_APP_ID": "1:695765296567:web:e4864e9226fb279686f432"
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "birklik-65289.firebaseapp.com",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "birklik-65289",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "birklik-65289.firebasestorage.app",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "695765296567",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:695765296567:web:e4864e9226fb279686f432"
   }
 }
-

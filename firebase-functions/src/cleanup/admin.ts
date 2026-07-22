@@ -4,8 +4,8 @@
  * Admin script для запуска cleanup вручную
  * 
  * Использование:
- * npm run cleanup:dry      -- Показывает что удалится (сухой прогон)
- * npm run cleanup:execute  -- Реально удаляет
+ * pnpm cleanup:dry      -- Показывает что удалится (сухой прогон)
+ * pnpm cleanup:execute  -- Реально удаляет
  */
 
 import * as admin from 'firebase-admin';
@@ -121,7 +121,7 @@ async function main(): Promise<void> {
   console.log('');
 
   if (options.dryRun) {
-    console.log('📋 Dry-run: реальное удаление пропускается. Запустите npm run cleanup:execute для выполнения.\n');
+    console.log('📋 Dry-run: реальное удаление пропускается. Запустите pnpm cleanup:execute для выполнения.\n');
     process.exit(0);
   }
 

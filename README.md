@@ -6,7 +6,7 @@
 
 ## 📚 Documentation
 
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Project structure, services, setup requirements
+- **[Architecture.md](./Architecture.md)** - Project structure, services, setup requirements
 - **[SERVICES.md](./SERVICES.md)** - Available services and how to use them
 - **[SETUP_CUSTOM_CLAIMS.md](./SETUP_CUSTOM_CLAIMS.md)** - Firebase moderator role setup
 
@@ -23,10 +23,10 @@
 
 ## 2. Технологии
 
-- React 18
+- React 19
 - TypeScript 5
-- Vite
-- React Router DOM 6
+- Next.js 16 App Router
+- next-intl
 - Firebase (Auth, Firestore, Storage)
 - React Leaflet + OpenStreetMap
 - Cloudflare Pages
@@ -34,7 +34,7 @@
 ## 3. Быстрый старт
 
 ```bash
-npm install
+pnpm install
 ```
 
 Создайте файл .env:
@@ -54,20 +54,31 @@ Copy-Item .env.example .env
 Запуск:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Сборка:
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Предпросмотр сборки:
 
 ```bash
-npm run preview
+pnpm start
 ```
+
+### Firebase deployment credentials
+
+Never commit or paste a service-account JSON key into source files, `.env`, issues, or chat. Keep the downloaded replacement key outside this repository and provide only its filesystem path to Google tooling:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/new-service-account.json
+pnpm firestore:deploy-rules
+```
+
+Revoke exposed keys immediately in Google Cloud Console under **IAM & Admin → Service Accounts → Keys**.
 
 ## 4. Полный туториал по Firebase Console
 
@@ -89,12 +100,12 @@ npm run preview
 Скопируйте значения из firebaseConfig в .env:
 
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
 ### Шаг 4. Включите Authentication
@@ -260,7 +271,7 @@ service firebase.storage {
 
 ## 9. Как проверить, что все подключено
 
-1. Запустите проект: npm run dev.
+1. Запустите проект: pnpm dev.
 2. Зарегистрируйте пользователя.
 3. Войдите в Dashboard.
 4. Создайте объявление и прикрепите фото.
@@ -278,17 +289,17 @@ service firebase.storage {
 1. Push в репозиторий.
 2. Cloudflare Dashboard -> Workers & Pages -> Create application.
 3. Connect to Git.
-4. Build command: npm run build.
+4. Build command: pnpm build.
 5. Build output: dist.
-6. Добавьте все переменные VITE_FIREBASE_* в Environment Variables.
+6. Добавьте все переменные NEXT_PUBLIC_FIREBASE_* в Environment Variables.
 7. Deploy.
 
 ### Через Wrangler CLI
 
 ```bash
-npm install -g wrangler
+pnpm add --global wrangler
 wrangler login
-npm run build
+pnpm build
 wrangler deploy
 ```
 
@@ -359,23 +370,8 @@ Birklik.az — это маркетплейс краткосрочной арен
 
 ### Технически (очень кратко)
 
-- Frontend: React + TypeScript + Vite.
+- Frontend: Next.js + React + TypeScript.
 - Auth: Firebase Authentication.
 - Данные: Firestore.
 - Файлы: Firebase Storage.
 - Карта: OpenStreetMap + React Leaflet.
-test
-Vite
-Сборка До PWA до Capacitor есть чат с Клаудом спец для этого
-Google Search Invented calilorucli42@gmail.com
-Google ReCaptcha ИнВент Надо Для всех Приложений
-Yandex Карты Добавлены 
-Все Ключи либо в Claudflare либо в ENV 
-Google Business profile invented calilorucli42@gmail.com
-business gmail info@birklik.az
-Google Cloud + Firebase
-trello+
-BirCard Azerbaijan Bank give approve for integration the Bank payment in gmail calilorucli42@gmail.com approve +
-Важно Azericard :
-RSA Keys внутри Проекта и подключен Cloud Funtions в Папке Firebase Functions
-Token problem ctrl f5 solve with Cache (purge everything Cloudflare) 

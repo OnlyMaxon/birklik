@@ -25,26 +25,20 @@
   Expires: 0
   X-Content-Type-Options: nosniff
 
-# 404 page for SPA routing
-/404.html
-  Cache-Control: no-cache, no-store, must-revalidate
-  Content-Type: text/html; charset=utf-8
-  X-Content-Type-Options: nosniff
-
 # ============================================
 # ASSETS - AGGRESSIVE CACHING (1 year)
-# Vite adds content hash to filenames
+# Next.js adds content hashes to static filenames
 # Safe to cache because filenames change when content changes
 # ============================================
 
 # JavaScript assets
-/assets/*.js
+/_next/static/*.js
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: application/javascript; charset=utf-8
   X-Content-Type-Options: nosniff
 
 # CSS assets  
-/assets/*.css
+/_next/static/*.css
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: text/css; charset=utf-8
   X-Content-Type-Options: nosniff
@@ -114,4 +108,3 @@
 # ============================================
   Cache-Control: public, max-age=3600
   X-Content-Type-Options: nosniff
-

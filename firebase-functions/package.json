@@ -3,7 +3,7 @@
   "description": "Cloud Functions for Birklik.az",
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && firebase emulators:start --only functions",
+    "start": "pnpm build && firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "cleanup:dry": "ts-node src/cleanup/admin.ts --dry-run",

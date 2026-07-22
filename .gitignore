@@ -6,6 +6,7 @@ node_modules/
 # Build
 dist/
 build/
+.next/
 
 # Environment
 .env
@@ -16,6 +17,7 @@ build/
 
 # Logs
 npm-debug.log*
+package-lock.json
 yarn-debug.log*
 yarn-error.log*
 
@@ -38,6 +40,10 @@ coverage/
 
 # Firebase Admin SDK & Scripts
 serviceAccountKey.json
+service-account*.json
+firebase-adminsdk*.json
+google-application-credentials*.json
+.secrets/
 set-moderator.js
 
 # RSA Keys
