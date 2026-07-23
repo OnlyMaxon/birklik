@@ -43,3 +43,9 @@ set-moderator.js
 # RSA Keys
 *.pem
 *.key
+
+# Next.js
+.next/
+
+# Claude
+.claude/scheduled_tasks.lock
