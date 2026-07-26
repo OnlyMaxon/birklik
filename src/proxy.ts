@@ -7,7 +7,7 @@ import {SESSION_COOKIE_NAME} from '@/lib/auth/session-cookie'
 // server-side in the dashboard layout). Signed-out and expired/tampered cookies are
 // still caught there; this is just a cheap first line of defense against the
 // flash-of-redirect the client-side ProtectedRoute currently shows.
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has(SESSION_COOKIE_NAME)
   if (!hasSession) {
     const loginUrl = new URL('/login', request.url)

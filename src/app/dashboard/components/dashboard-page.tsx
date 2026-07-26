@@ -14,7 +14,7 @@ import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cit
 import { resolveCity } from '@/data/city-aliases'
 import { isModerator } from '@/lib/auth/permissions'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, ListingStatus, LocationCategory } from '@/types'
-import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty, createPremiumNotification } from '@/services'
+import { createProperty, deleteProperty, getPropertiesByOwner, updateProperty } from '@/services'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import firebaseApp from '@/lib/firebase/client'
 import * as logger from '@/services/logger'
@@ -621,16 +621,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ownerId: user.id,
       listingTier: newListing.listingTier,
       status: listingStatus,
-      isFeatured: newListing.listingTier === 'premium',
+      // Paid metadata is applied only by the verified Azericard callback.
+      isFeatured: false,
       isActive: true,
       city: newListing.city || 'Baku',
       views: 0,
       likes: [],
       favorites: [],
       comments: [],
-      premiumExpiresAt: newListing.listingTier === 'premium'
-        ? (() => { const d = new Date(); d.setDate(d.getDate() + (newListing.tierPlanDuration === '14days' ? 14 : 30)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })()
-        : undefined
+      premiumExpiresAt: undefined
     }
 
     if (editingListingId) {
@@ -870,52 +869,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
     await loadListings()
   }
 
-  const handleExtendPremium = async (propertyId: string) => {
-    const d = new Date(); d.setDate(d.getDate() + 21)
-    const newExpiryDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    try {
-      const property = listings.find((p: Property) => p.id === propertyId)
-      if (!property) return
-      
-      await updateProperty(propertyId, {
-        premiumExpiresAt: newExpiryDate,
-        status: 'active',
-      })
-      
-      // Send notification to user about premium extension
-      const getLocalizedTitle = (titleObj: unknown): string => {
-        const title = titleObj as Record<string, unknown> || {}
-        if (!title) return 'Your property'
-        if (language === 'en') return (title.en as string) || (title.az as string) || (title.ru as string) || 'Your property'
-        if (language === 'ru') return (title.ru as string) || (title.az as string) || (title.en as string) || 'Your property'
-        return (title.az as string) || (title.en as string) || (title.ru as string) || 'Your property'
-      }
-      
-      if (user?.id) {
-        await createPremiumNotification(user.id, {
-          userId: user.id,
-          type: 'premium',
-          title: language === 'en' ? 'Premium Extended' : language === 'ru' ? 'Премиум продлен' : 'Premium Uzadılmışdır',
-          message: language === 'en' 
-            ? `Your premium listing "${getLocalizedTitle(property.title)}" is now active until ${newExpiryDate}`
-            : language === 'ru'
-            ? `Ваше премиум объявление "${getLocalizedTitle(property.title)}" теперь активно до ${newExpiryDate}`
-            : `Sizin premium elanı "${getLocalizedTitle(property.title)}" ${newExpiryDate} tarixinə qədər aktiv`,
-          read: false,
-          propertyId: propertyId,
-          propertyTitle: getLocalizedTitle(property.title),
-          action: 'expired'
-        })
-      }
-      
-      await loadListings()
-      alert(t.errors.premiumExtendedSuccess)
-    } catch (error) {
-      logger.error('Error extending premium:', error)
-      alert(t.dashboard.failedToExtendPremium)
-    }
-  }
-
   const handleOpenBusyModal = (property: Property) => {
     setBusyListingId(property.id)
     setBusyFrom(property.unavailableFrom || '')
@@ -1079,6 +1032,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                   </svg>
                   {t.dashboard.notifications}
                 </button>
+                <Link className="nav-item" to="/dashboard/payment">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                    <path d="M2 10h20"/>
+                  </svg>
+                  {isEnglish ? 'Plans & payment' : isRussian ? 'Тарифы и оплата' : 'Paketlər və ödəniş'}
+                </Link>
                 <button
                   className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                   onClick={() => setActiveTab('profile')}
@@ -1218,9 +1178,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                                   </button>
                                 )}
                                 {property.listingTier === 'premium' && isPremiumExpired(property) && (
-                                  <button className="btn btn-primary btn-sm" onClick={() => handleExtendPremium(property.id)}>
+                                  <Link className="btn btn-primary btn-sm" to={`/dashboard/payment?propertyId=${encodeURIComponent(property.id)}`}>
                                     ⭐ {isEnglish ? 'Extend' : isRussian ? 'Продлить' : 'Uzat'}
-                                  </button>
+                                  </Link>
                                 )}
                                 <button className="btn btn-ghost btn-sm" onClick={() => handleEditListing(property)}>{t.dashboard.edit}</button>
                                 <button className="btn btn-ghost btn-sm text-error" onClick={() => handleDeleteListing(property.id)}>{t.dashboard.delete}</button>
