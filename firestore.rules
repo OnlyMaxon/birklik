@@ -35,15 +35,24 @@ service cloud.firestore {
     match /properties/{propertyId} {
       allow read: if true;
 
-      // Create: owner must match auth user
+      // Create: paid-tier metadata is never client-controlled. Paid listings begin
+      // as drafts and are activated by the verified Azericard callback.
       allow create: if request.auth != null
-        && request.resource.data.ownerId == request.auth.uid;
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.isFeatured == false
+        && !request.resource.data.keys().hasAny(['premiumExpiresAt', 'vipExpiresAt'])
+        && (
+          (request.resource.data.listingTier == 'standard'
+            && request.resource.data.status == 'pending')
+          || (request.resource.data.listingTier in ['vip', 'premium']
+            && request.resource.data.status == 'draft')
+        );
 
       // Update: Owner can update allowed fields, Moderator can do anything, Users can ONLY increment counters atomically or add ratings
       allow update: if request.auth != null && (
-        // Owner: can update anything except critical fields (ownerId, createdAt, status)
+        // Owner: paid-tier and moderation fields can only be changed server-side.
         (isOwner(resource.data.ownerId)
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'isFeatured']))
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'vipExpiresAt', 'isFeatured']))
         // Moderator: can update anything including status
         || isModerator()
         // Any user: can ONLY increment views/likes/favorites/comments (updatedAt allowed alongside)
