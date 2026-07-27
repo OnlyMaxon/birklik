@@ -621,16 +621,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
       ownerId: user.id,
       listingTier: newListing.listingTier,
       status: listingStatus,
-      isFeatured: newListing.listingTier === 'premium',
+      // Платные поля проставляет только верифицированный колбэк Azericard —
+      // клиент не должен уметь выдать себе premium без оплаты.
+      isFeatured: false,
       isActive: true,
       city: newListing.city || 'Baku',
       views: 0,
       likes: [],
       favorites: [],
-      comments: [],
-      premiumExpiresAt: newListing.listingTier === 'premium'
-        ? (() => { const d = new Date(); d.setDate(d.getDate() + (newListing.tierPlanDuration === '14days' ? 14 : 30)); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` })()
-        : undefined
+      comments: []
     }
 
     if (editingListingId) {
