@@ -13,6 +13,22 @@ interface CleanupLog {
 }
 
 /**
+ * Сколько часов платёж в статусе awaiting_payment считается живым.
+ * MPI-сессия банка живёт 1 час, сутки — запас на задержанный колбэк.
+ * Дальше платёж мёртв: колбэк уже не придёт, и держать драфт незачем.
+ */
+export const PAYMENT_GRACE_HOURS = 24;
+
+/** Возраст документа в часах по полю createdAt (Timestamp либо ISO-строка). */
+function ageInHours(createdAt: any): number {
+  if (!createdAt) return Infinity; // без даты считаем протухшим
+  const date = createdAt?.toDate?.() ?? new Date(createdAt);
+  const ms = date.getTime();
+  if (Number.isNaN(ms)) return Infinity;
+  return (Date.now() - ms) / 3600000;
+}
+
+/**
  * Скрывает объявления с истёкшим premium/VIP: status → inactive, expiredAt = now.
  * listingTier и premiumExpiresAt/vipExpiresAt НЕ трогаем — нужны для кнопки "Продлить".
  * Через 30 дней cleanupInactiveListings удалит их насовсем.
@@ -309,10 +325,59 @@ export async function cleanupInactiveListings(): Promise<CleanupLog> {
   }
 }
 
+/**
+ * Переводит зависшие awaiting_payment в 'expired'.
+ *
+ * Из awaiting_payment платёж выходит только по колбэку банка. Если колбэк не
+ * пришёл (пользователь закрыл вкладку, банк не ответил), запись висит вечно —
+ * а вместе с ней бессмертен и драфт, который на неё завязан.
+ *
+ * Фильтр по возрасту сделан в коде, а не третьим where: иначе Firestore
+ * потребует новый составной индекс.
+ */
+export async function expireStalePayments(): Promise<CleanupLog> {
+  const startTime = Date.now();
+  const deletedIds: string[] = [];
+
+  try {
+    const snap = await admin
+      .firestore()
+      .collection('payments')
+      .where('status', '==', 'awaiting_payment')
+      .limit(CLEANUP_RULES.maxDeletesPerRun)
+      .get();
+
+    const stale = snap.docs.filter((d) => ageInHours(d.data().createdAt) > PAYMENT_GRACE_HOURS);
+
+    if (stale.length > 0) {
+      const batch = admin.firestore().batch();
+      for (const doc of stale) {
+        batch.update(doc.ref, {
+          status: 'expired',
+          expiredAt: new Date().toISOString(),
+        });
+        deletedIds.push(doc.id);
+      }
+      await batch.commit();
+    }
+
+    console.log(`[Cleanup] stale payments expired: ${deletedIds.length}`);
+    return { timestamp: new Date(), type: 'stale_payments', status: 'success', count: deletedIds.length, deletedIds, duration: Date.now() - startTime };
+  } catch (error: any) {
+    console.error('[ERROR] expireStalePayments:', error);
+    return { timestamp: new Date(), type: 'stale_payments', status: 'failed', count: deletedIds.length, deletedIds, error: error.message, duration: Date.now() - startTime };
+  }
+}
+
 // Удаляет draft-объявления старше 2 часов — брошенные без инициации оплаты.
 // Drafts с активным awaiting_payment пропускаются: callback может ещё не дойти.
 // MPI-сессия банка = 1 час; cleanup = 2 часа — достаточный запас,
 // но callback задержан или не отправлен банком → пропертя должна выжить.
+//
+// Защита действует не бесконечно, а PAYMENT_GRACE_HOURS: платёж выходит из
+// awaiting_payment только по колбэку банка, и если тот не пришёл, драфт вместе
+// с фотографиями оставался бы в базе навсегда. Проверка возраста продублирована
+// здесь намеренно — expireStalePayments может не успеть отработать.
 export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
   const startTime = Date.now();
   const deletedIds: string[] = [];
@@ -335,12 +400,21 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
         .collection('payments')
         .where('propertyId', '==', doc.id)
         .where('status', '==', 'awaiting_payment')
-        .limit(1)
         .get();
 
-      if (!activePayment.empty) {
+      const pending = activePayment.docs.filter(
+        (p) => ageInHours(p.data().createdAt) <= PAYMENT_GRACE_HOURS
+      );
+
+      if (pending.length > 0) {
         console.warn(`[Cleanup] Skip draft ${doc.id}: has active awaiting_payment (MPI callback may be pending)`);
         continue;
+      }
+
+      // Платежи есть, но все протухли — помечаем, чтобы не висели вечно
+      for (const p of activePayment.docs) {
+        await p.ref.update({ status: 'expired', expiredAt: new Date().toISOString() });
+        console.warn(`[Cleanup] Payment ${p.id} expired: no callback within ${PAYMENT_GRACE_HOURS}h`);
       }
 
       imagesByProp.set(doc.id, doc.data().images || []);

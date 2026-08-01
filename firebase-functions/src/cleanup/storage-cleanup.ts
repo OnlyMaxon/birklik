@@ -12,6 +12,20 @@ interface StorageCleanupLog {
 }
 
 /**
+ * Достаёт Storage-путь из download-URL.
+ * https://.../o/properties%2Fuid%2F123_a.jpg?alt=media  →  properties/uid/123_a.jpg
+ */
+function storagePathFromUrl(url: string): string | null {
+  const match = url?.match?.(/\/o\/([^?]+)/);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null; // повреждённый URL — файл лучше оставить в покое
+  }
+}
+
+/**
  * Удаляет orphaned изображения объявлений.
  *
  * Реальный путь в Storage: properties/{userId}/{timestamp}_{filename}
@@ -20,6 +34,10 @@ interface StorageCleanupLog {
  * 2. Для каждого userId получаем все его объявления из Firestore
  * 3. Собираем все URL изображений из этих объявлений
  * 4. Файлы старше 7 дней, URL которых нет ни в одном объявлении — orphaned
+ *
+ * Сверка идёт по декодированному пути и точному равенству. Прежний вариант
+ * искал подстроку в URL через encodeURIComponent — при нестандартном символе
+ * в имени кодировки расходились, и живое фото считалось сиротой.
  */
 export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -53,11 +71,21 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
         .where('ownerId', '==', userId)
         .get();
 
-      // Собираем все URL изображений из всех объявлений пользователя
-      const referencedUrls = new Set<string>();
+      // Собираем Storage-пути всех изображений из всех объявлений пользователя
+      const referencedPaths = new Set<string>();
       for (const doc of propertiesSnap.docs) {
         const images: string[] = doc.data().images || [];
-        for (const url of images) referencedUrls.add(url);
+        for (const url of images) {
+          const p = storagePathFromUrl(url);
+          if (p) referencedPaths.add(p);
+        }
+      }
+
+      // Предохранитель: у пользователя есть объявления, но ни одной разобранной
+      // ссылки — значит сломался разбор URL, а не все фото разом осиротели.
+      if (propertiesSnap.size > 0 && referencedPaths.size === 0) {
+        console.warn(`[WARN] ${userId}: ${propertiesSnap.size} объявлений, 0 распознанных ссылок — пропускаю`);
+        continue;
       }
 
       for (const file of userFiles) {
@@ -70,13 +98,8 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
           // Пропускаем свежие файлы (могут ещё не быть привязаны)
           if (updatedAt > sevenDaysAgo) continue;
 
-          // Проверяем: есть ли URL этого файла в каком-либо объявлении
-          const encodedPath = file.name.split('/').map(encodeURIComponent).join('/');
-          const isReferenced = [...referencedUrls].some(
-            (url) => url.includes(encodedPath) || url.includes(encodeURIComponent(file.name))
-          );
-
-          if (!isReferenced) {
+          // Проверяем: ссылается ли на этот файл хоть одно объявление
+          if (!referencedPaths.has(file.name)) {
             await file.delete();
             deletedFiles.push(file.name);
             count++;
