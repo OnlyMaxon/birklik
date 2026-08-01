@@ -9,7 +9,7 @@ import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from '../Dashbo
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '../../data'
 import { resolveCity } from '../../data/cityAliases'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '../../types'
-import { getPropertyById, updateProperty, deletePropertyImages } from '../../services'
+import { getPropertyById, updateProperty } from '../../services'
 import './ModeratorPropertyEditPage.css'
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
@@ -310,9 +310,9 @@ export const ModeratorPropertyEditPage: React.FC = () => {
       updates.vipExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
     }
 
-    if (removedImages.length > 0) {
-      await deletePropertyImages(removedImages)
-    }
+    // Убранные фото удаляет сам updateProperty, уже после успешной записи.
+    // Здесь этого делать нельзя: при упавшем updateProperty файлы были бы
+    // уничтожены, а объявление продолжило бы на них ссылаться.
     const ok = await updateProperty(id, updates, newFiles.length > 0 ? newFiles : undefined)
     if (!ok) {
       setError(t.listing.updateFailed)
