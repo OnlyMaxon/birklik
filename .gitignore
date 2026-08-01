@@ -49,3 +49,8 @@ set-moderator.js
 
 # Claude
 .claude/scheduled_tasks.lock
+
+# Локальные выгрузки Storage-очистки (фото пользователей)
+storage-backup/
+firebase-functions/storage-backup/
+firebase-functions/storage-orphans-report.json
