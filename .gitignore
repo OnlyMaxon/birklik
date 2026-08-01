@@ -20,6 +20,8 @@ npm-debug.log*
 package-lock.json
 yarn-debug.log*
 yarn-error.log*
+# Отладочные логи Firebase CLI и эмуляторов
+*-debug.log
 
 # Editor
 .vscode/*
