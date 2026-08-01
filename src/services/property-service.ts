@@ -304,15 +304,26 @@ export const updateProperty = async (
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     ) as Partial<Property>
 
+    const finalImages = [...(updates.images || currentData?.images || []), ...newImageUrls]
+
     const updateData = {
       ...cleanedUpdates,
-      ...(newImageUrls.length > 0 && { 
-        images: [...(updates.images || currentData?.images || []), ...newImageUrls]
-      }),
+      ...(newImageUrls.length > 0 && { images: finalImages }),
       updatedAt: new Date().toISOString()
     }
 
     await updateDoc(docRef, updateData)
+
+    // Фото, убранные из массива при редактировании, удаляем из Storage — иначе
+    // файлы остаются висеть навсегда. Только после успешной записи: если
+    // updateDoc упадёт, объявление продолжит ссылаться на эти же URL.
+    const removedImages = (currentData?.images || []).filter(
+      (url) => !finalImages.includes(url)
+    )
+    if (removedImages.length > 0) {
+      await deletePropertyImages(removedImages)
+    }
+
     return true
   } catch (error) {
     logger.error('Error updating property:', error)
