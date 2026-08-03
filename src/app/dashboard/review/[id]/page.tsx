@@ -1,2 +1,5 @@
-import {ModerationReviewPage} from './components/moderation-review-page'
-export default function Page() { return <ModerationReviewPage /> }
+import {ModerationReview} from './components/moderation-review'
+
+export default function Page() {
+  return <ModerationReview />
+}

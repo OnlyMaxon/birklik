@@ -9,7 +9,7 @@ import { createListingRejectedNotification } from '@/services/notifications-serv
 import { isModerator } from '@/lib/auth/permissions'
 import { Property, Language } from '@/types'
 
-export const ModerationReviewPage: React.FC = () => {
+export const ModerationReview: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { isAuthenticated, firebaseUser } = useAuth()

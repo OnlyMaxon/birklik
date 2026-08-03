@@ -1,2 +1,5 @@
-import {DashboardPageClient} from './components/dashboard-page-client'
-export default function Page() { return <DashboardPageClient /> }
+import {DashboardClient} from './components/dashboard-client'
+
+export default function Page() {
+  return <DashboardClient />
+}

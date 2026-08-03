@@ -1,2 +1,5 @@
-import {ModerationPage} from './components/moderation-page'
-export default function Page() { return <ModerationPage /> }
+import {ModerationQueue} from './components/moderation-queue'
+
+export default function Page() {
+  return <ModerationQueue />
+}

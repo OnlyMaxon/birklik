@@ -13,7 +13,7 @@ import {moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabe
 import {isPremiumActive} from '@/utils/premium-helper'
 import type {Booking, Language, Property} from '@/types'
 
-interface PropertyPageProps {
+interface PropertyDetailsProps {
   property: Property
   bookings: Booking[]
   similarProperties: Property[]
@@ -25,7 +25,7 @@ interface PropertyPageProps {
   currentUserId: string | null
 }
 
-export async function PropertyPage({
+export async function PropertyDetails({
   property,
   bookings,
   similarProperties,
@@ -35,7 +35,7 @@ export async function PropertyPage({
   hasBooked,
   userRating,
   currentUserId
-}: PropertyPageProps) {
+}: PropertyDetailsProps) {
   const {language, t} = await getAppTranslations()
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''

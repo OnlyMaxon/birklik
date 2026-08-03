@@ -1,15 +1,20 @@
 'use client'
 
 import React from 'react'
+import dynamic from 'next/dynamic'
 import { useParams, useNavigate } from '@/lib/navigation'
-import { MapContainer, TileLayer } from 'react-leaflet'
 import { useLanguage } from '@/components/providers'
 import { Loading, CityLocationPicker } from '@/components'
-import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from '@/app/dashboard/components/location-picker'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@/data'
 import { resolveCity } from '@/data/city-aliases'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '@/types'
 import { getPropertyById, updateProperty, deletePropertyImages } from '@/services'
+
+const DEFAULT_COORDINATES = {lat: 40.4093, lng: 49.8671}
+const LocationMap = dynamic(
+  () => import('@/app/dashboard/components/location-map').then(module => module.LocationMap),
+  {ssr: false, loading: () => <div className="listing-location-map" aria-busy="true" />}
+)
 
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
@@ -22,7 +27,7 @@ function isoToLocalDate(iso: string): string {
   return `${y}-${m}-${day}`
 }
 
-export const ModeratorPropertyEditPage: React.FC = () => {
+export const ModeratorPropertyEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { language, t } = useLanguage()
@@ -623,23 +628,11 @@ export const ModeratorPropertyEditPage: React.FC = () => {
                       {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
                       <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
                       <div className="listing-location-picker">
-                        <MapContainer
-                          center={[coords.lat, coords.lng]}
-                          zoom={13}
-                          scrollWheelZoom={true}
-                          className="listing-location-map"
-                        >
-                          <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                          />
-                          <MapCenterUpdater coordinates={coords} />
-                          <LocationPicker
-                            coordinates={coords}
-                            onChange={setCoords}
-                            onAddressReverse={address => setForm(prev => ({ ...prev, address }))}
-                          />
-                        </MapContainer>
+                        <LocationMap
+                          coordinates={coords}
+                          onChange={setCoords}
+                          onAddressReverse={address => setForm(prev => ({ ...prev, address }))}
+                        />
                       </div>
                       <button
                         type="button"

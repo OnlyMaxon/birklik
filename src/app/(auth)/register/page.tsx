@@ -1,5 +1,5 @@
 import type {Metadata} from 'next'
-import {RegisterPage} from './components/register-page'
+import {RegistrationForm} from './components/registration-form'
 import {getAppTranslations} from '@/lib/i18n/get-app-translations'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -7,4 +7,4 @@ export async function generateMetadata(): Promise<Metadata> {
   return {title: t.auth.register, robots: {index: false}}
 }
 
-export default function Page() { return <RegisterPage /> }
+export default function Page() { return <RegistrationForm /> }

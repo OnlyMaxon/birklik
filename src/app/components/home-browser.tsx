@@ -36,13 +36,13 @@ const initialFilters: FilterState = {
   locationTags: []
 }
 
-interface HomePageProps {
+interface HomeBrowserProps {
   initialPremium: Property[]
   initialStandard: Property[]
   initialCursor: PropertyCursor | null
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ initialPremium, initialStandard, initialCursor }) => {
+export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initialStandard, initialCursor }) => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(() => typeof window !== 'undefined' && window.innerWidth < 1280)

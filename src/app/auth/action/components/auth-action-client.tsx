@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import { verifyPasswordResetCodeAction, confirmPasswordResetAction, verifyEmailAction } from '../actions'
 
-export const ResetPasswordPage: React.FC = () => {
+export const AuthActionClient: React.FC = () => {
   const { language } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

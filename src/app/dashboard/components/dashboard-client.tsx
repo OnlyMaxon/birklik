@@ -1,14 +1,13 @@
 'use client'
 
 import React from 'react'
+import dynamic from 'next/dynamic'
 import { useNavigate, Link, useSearchParams } from '@/lib/navigation'
-import { MapContainer, TileLayer } from 'react-leaflet'
 import { useLanguage, useAuth } from '@/components/providers'
 import { FavoritesTab } from './favorites-tab'
 import { BookingsTab } from './bookings-tab'
 import {NotificationsTab} from './notifications-tab'
 import { CityLocationPicker } from '@/components'
-import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from './location-picker'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions, cities } from '@/data'
 import { resolveCity } from '@/data/city-aliases'
 import { isModerator } from '@/lib/auth/permissions'
@@ -18,9 +17,15 @@ import { getFunctions, httpsCallable } from 'firebase/functions'
 import firebaseApp from '@/lib/firebase/client'
 import * as logger from '@/services/logger'
 
+const DEFAULT_COORDINATES = {lat: 40.4093, lng: 49.8671}
+const LocationMap = dynamic(
+  () => import('./location-map').then(module => module.LocationMap),
+  {ssr: false, loading: () => <div className="listing-location-map" aria-busy="true" />}
+)
+
 type TabType = 'listings' | 'add' | 'favorites' | 'bookings' | 'notifications' | 'profile'
 
-interface DashboardPageProps {
+interface DashboardClientProps {
   initialTab?: TabType
 }
 
@@ -56,7 +61,7 @@ const isPremiumActive = (property: Property): boolean => {
 const quickMorePopular = ['sauna', 'gazebo', 'kidsZone', 'garage']
 const quickNearPopular = ['beach', 'sea', 'forest', 'park']
 
-export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'listings' }) => {
+export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = 'listings' }) => {
   const { language, t } = useLanguage()
   const { user, isAuthenticated, firebaseUser, updateUserProfile } = useAuth()
   const navigate = useNavigate()
@@ -1440,23 +1445,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
                               {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
                               <p className="location-hint">Xəritədə klik edin və ya ünvanla axtarın.</p>
                               <div className="listing-location-picker">
-                                <MapContainer
-                                  center={[listingCoordinates.lat, listingCoordinates.lng]}
-                                  zoom={13}
-                                  scrollWheelZoom={true}
-                                  className="listing-location-map"
-                                >
-                                  <TileLayer
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                  />
-                                  <MapCenterUpdater coordinates={listingCoordinates} />
-                                  <LocationPicker
-                                    coordinates={listingCoordinates}
-                                    onChange={setListingCoordinates}
-                                    onAddressReverse={(address) => setNewListing({...newListing, address})}
-                                  />
-                                </MapContainer>
+                                <LocationMap
+                                  coordinates={listingCoordinates}
+                                  onChange={setListingCoordinates}
+                                  onAddressReverse={(address) => setNewListing({...newListing, address})}
+                                />
                               </div>
                               <button
                                 type="button"

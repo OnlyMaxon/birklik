@@ -1,2 +1,5 @@
-import {VerifyEmailPage} from './components/verify-email-page'
-export default function Page() { return <VerifyEmailPage /> }
+import {EmailVerificationClient} from './components/email-verification-client'
+
+export default function Page() {
+  return <EmailVerificationClient />
+}

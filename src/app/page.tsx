@@ -1,5 +1,5 @@
 import type {Metadata} from 'next'
-import {HomePage} from './components/home-page'
+import {HomeBrowser} from './components/home-browser'
 import {getTranslations} from 'next-intl/server'
 import {getHomeProperties} from './queries'
 
@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const {premium, standard} = await getHomeProperties()
   return (
-    <HomePage
+    <HomeBrowser
       initialPremium={premium}
       initialStandard={standard.properties}
       initialCursor={standard.cursor}

@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import {auth, db, storage} from '@/lib/firebase/client'
+import {auth, db, storage, initializeFirebaseAppCheck} from '@/lib/firebase/client'
 import type {User} from '@/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Listen to Firebase auth state changes
   useEffect(() => {
+    initializeFirebaseAppCheck()
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
         setFirebaseUser(fbUser)

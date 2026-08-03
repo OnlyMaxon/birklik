@@ -5,7 +5,7 @@ import { useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
 import { sendEmailVerification } from 'firebase/auth'
 
-export const VerifyEmailPage: React.FC = () => {
+export const EmailVerificationClient: React.FC = () => {
   const { language } = useLanguage()
   const navigate = useNavigate()
   const { firebaseUser, logout } = useAuth()

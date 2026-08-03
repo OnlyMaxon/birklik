@@ -7,7 +7,7 @@ import { signInWithCustomToken } from 'firebase/auth'
 import { auth } from '@/lib/firebase/client'
 import { loginAction, requestPasswordResetAction } from '../actions'
 
-export const LoginPage: React.FC = () => {
+export const LoginForm: React.FC = () => {
   const { t, language } = useLanguage()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()

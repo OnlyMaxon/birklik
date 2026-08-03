@@ -1,2 +1,5 @@
-import {ResetPasswordPage} from './components/reset-password-page'
-export default function Page() { return <ResetPasswordPage /> }
+import {AuthActionClient} from './components/auth-action-client'
+
+export default function Page() {
+  return <AuthActionClient />
+}

@@ -1,6 +1,6 @@
 import type {Metadata} from 'next'
 import {notFound} from 'next/navigation'
-import {PropertyPage} from './components/property-page'
+import {PropertyDetails} from './components/property-details'
 import {getSession} from '@/lib/auth/session'
 import {
   getPropertyMetadata,
@@ -45,7 +45,7 @@ export default async function Page({params}: PropertyRouteProps) {
   recordPropertyView(parsedId.data)
 
   return (
-    <PropertyPage
+    <PropertyDetails
       property={property}
       bookings={bookings}
       similarProperties={similarProperties}

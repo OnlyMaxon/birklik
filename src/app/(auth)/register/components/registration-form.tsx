@@ -7,7 +7,7 @@ import { signInWithCustomToken } from 'firebase/auth'
 import { auth } from '@/lib/firebase/client'
 import { registerAction } from '../actions'
 
-export const RegisterPage: React.FC = () => {
+export const RegistrationForm: React.FC = () => {
   const { t, language } = useLanguage()
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()

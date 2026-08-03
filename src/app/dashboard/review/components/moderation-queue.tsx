@@ -14,7 +14,7 @@ import { cities } from '@/data'
 
 type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'people'
 
-export const ModerationPage: React.FC = () => {
+export const ModerationQueue: React.FC = () => {
   const { isAuthenticated, firebaseUser } = useAuth()
   const { language, t } = useLanguage()
   const navigate = useNavigate()
