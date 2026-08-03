@@ -6,7 +6,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
 import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooking, deleteBooking } from '@/services'
 import { createBookingApprovedNotification, createBookingRejectedNotification } from '@/services/notifications-service'
-import { Loading } from '@/components'
+import {InlineSpinner, ListingRowsSkeleton} from '@/components'
 import * as logger from '@/services/logger'
 
 interface BookingWithProperty extends Booking {
@@ -431,7 +431,17 @@ export const BookingsTab: React.FC = () => {
   }
 
   if (isLoading) {
-    return <Loading message={t.loading} />
+    return (
+      <div className="bookings-tab">
+        <div className="bookings-header">
+          <div className="bookings-subtabs">
+            <button className={`bookings-subtab${activeSubTab === 'my-bookings' ? ' active' : ''}`} disabled>{t.myBookings}</button>
+            <button className={`bookings-subtab${activeSubTab === 'requests' ? ' active' : ''}`} disabled>{t.requests}</button>
+          </div>
+        </div>
+        <ListingRowsSkeleton />
+      </div>
+    )
   }
 
   const emptyState = (
@@ -548,7 +558,9 @@ export const BookingsTab: React.FC = () => {
                         className="bk-btn bk-btn--cancel"
                         onClick={() => handleCancelBooking(booking.id)}
                         disabled={actionInProgress?.bookingId === booking.id}
+                        aria-busy={actionInProgress?.bookingId === booking.id}
                       >
+                        {actionInProgress?.bookingId === booking.id && <InlineSpinner label={t.canceling} />}
                         {actionInProgress?.bookingId === booking.id ? t.canceling : t.cancel}
                       </button>
                     </div>
@@ -648,15 +660,17 @@ export const BookingsTab: React.FC = () => {
                           className="bk-btn bk-btn--accept"
                           onClick={() => handleAcceptBooking(booking)}
                           disabled={actionInProgress?.bookingId === booking.id}
+                          aria-busy={actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept'}
                         >
-                          {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' ? '...' : t.accept}
+                          {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' && <InlineSpinner label={t.accept} />}{t.accept}
                         </button>
                         <button
                           className="bk-btn bk-btn--reject"
                           onClick={() => handleRejectBooking(booking)}
                           disabled={actionInProgress?.bookingId === booking.id}
+                          aria-busy={actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject'}
                         >
-                          {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' ? '...' : t.reject}
+                          {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' && <InlineSpinner label={t.reject} />}{t.reject}
                         </button>
                       </>
                     )}
@@ -667,8 +681,9 @@ export const BookingsTab: React.FC = () => {
                           className="bk-btn bk-btn--accept"
                           onClick={handleSaveEditedBooking}
                           disabled={actionInProgress?.bookingId === booking.id}
+                          aria-busy={actionInProgress?.bookingId === booking.id}
                         >
-                          {actionInProgress?.bookingId === booking.id ? '...' : t.save}
+                          {actionInProgress?.bookingId === booking.id && <InlineSpinner label={t.save} />}{t.save}
                         </button>
                         <button
                           className="bk-btn bk-btn--ghost"
@@ -691,10 +706,9 @@ export const BookingsTab: React.FC = () => {
                           className="bk-btn bk-btn--reject"
                           onClick={() => handleDeleteApprovedBooking(booking)}
                           disabled={actionInProgress?.bookingId === booking.id}
+                          aria-busy={actionInProgress?.bookingId === booking.id}
                         >
-                          {actionInProgress?.bookingId === booking.id ? '...' : (
-                            <><IconTrash />{t.delete}</>
-                          )}
+                          {actionInProgress?.bookingId === booking.id && <InlineSpinner label={t.delete} />}<IconTrash />{t.delete}
                         </button>
                       </>
                     ) : null}

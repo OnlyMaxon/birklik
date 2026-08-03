@@ -2,6 +2,7 @@
 
 import {useEffect, useState, type FormEvent} from 'react'
 import {useAuth, useLanguage} from '@/components/providers'
+import {InlineSpinner} from '@/components'
 
 export function ProfileTab() {
   const {language, t} = useLanguage()
@@ -80,7 +81,7 @@ export function ProfileTab() {
           <div className="form-group"><label>{t.auth.fullName}</label><input type="text" value={name} onChange={(event) => setName(event.target.value)} /></div>
           <div className="form-group"><label>{t.auth.email}</label><input type="email" defaultValue={user.email} disabled /></div>
           <div className="form-group"><label>{t.auth.phone}</label><input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} /></div>
-          <button type="submit" className="btn btn-accent" disabled={isSaving}>{isSaving ? t.messages.loading : t.form.submit}</button>
+          <button type="submit" className="btn btn-accent" disabled={isSaving} aria-busy={isSaving}>{isSaving && <InlineSpinner label={t.messages.loading} />}{isSaving ? t.messages.loading : t.form.submit}</button>
         </form>
       </div>
     </div>

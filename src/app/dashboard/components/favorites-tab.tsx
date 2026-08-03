@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useLanguage, useAuth } from '@/components/providers'
-import { PropertyCard, Loading } from '@/components'
+import {CardsSkeleton, PropertyCard} from '@/components'
 import { Property } from '@/types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
@@ -70,7 +70,7 @@ export const FavoritesTab: React.FC = () => {
 
       {/* Loading */}
       {isLoading ? (
-        <Loading />
+        <CardsSkeleton count={3} />
       ) : favorites.length === 0 ? (
 
         /* Empty state */

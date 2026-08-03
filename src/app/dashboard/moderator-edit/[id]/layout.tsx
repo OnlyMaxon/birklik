@@ -1,2 +1,8 @@
-import {ModeratorRoute} from '@/components/route-guards'
-export default function EditLayout({children}: {children: React.ReactNode}) { return <ModeratorRoute>{children}</ModeratorRoute> }
+import {redirect} from 'next/navigation'
+import {getSession} from '@/lib/auth/session'
+
+export default async function EditLayout({children}: {children: React.ReactNode}) {
+  const session = await getSession()
+  if (!session?.moderator) redirect('/dashboard')
+  return children
+}

@@ -2,7 +2,7 @@
 
 import React, {type Dispatch, type FormEvent, type SetStateAction} from 'react'
 import dynamic from 'next/dynamic'
-import {CityLocationPicker} from '@/components'
+import {CityLocationPicker, InlineSpinner} from '@/components'
 import {useLanguage} from '@/components/providers'
 import {amenitiesList, moreFilterOptions, nearFilterOptions, propertyTypes} from '@/data'
 import type {Amenity, ListingTier, PropertyType} from '@/types'
@@ -328,10 +328,12 @@ export function ListingEditor({
                   <button
                     type="button"
                     className="btn btn-outline btn-sm"
-                    onClick={handleSearchLocation}
-                    disabled={isSearchingLocation}
-                  >
-                    {isSearchingLocation ? t.messages.loading : t.buttons.findOnMap}
+                  onClick={handleSearchLocation}
+                  disabled={isSearchingLocation}
+                  aria-busy={isSearchingLocation}
+                >
+                  {isSearchingLocation && <InlineSpinner label={t.messages.loading} />}
+                  {isSearchingLocation ? t.messages.loading : t.buttons.findOnMap}
                   </button>
                 </div>
                 {locationSearchError && <p className="location-search-error">{locationSearchError}</p>}
@@ -761,7 +763,8 @@ export function ListingEditor({
           <button type="button" className="btn btn-ghost" onClick={onCancel}>
             {t.form.cancel}
           </button>
-          <button type="submit" className="btn btn-accent" disabled={isSubmitting}>
+          <button type="submit" className="btn btn-accent" disabled={isSubmitting} aria-busy={isSubmitting}>
+            {isSubmitting && <InlineSpinner label={t.messages.loading} />}
             {isSubmitting ? t.messages.loading : editingListingId ? t.dashboard.edit : t.form.submit}
           </button>
         </div>

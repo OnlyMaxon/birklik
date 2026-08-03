@@ -1,12 +1,12 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import {Loading} from '@/components'
+import {MapSkeleton} from '@/components'
 import type {Property} from '@/types'
 
 const PropertyMap = dynamic(
   () => import('@/components/map').then(module => module.PropertyMap),
-  {ssr: false, loading: () => <Loading message="Birklik.az" brand />}
+  {ssr: false, loading: () => <MapSkeleton />}
 )
 
 export function PropertyMapSection({property}: {property: Property}) {

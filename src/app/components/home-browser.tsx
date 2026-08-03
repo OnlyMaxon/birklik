@@ -4,7 +4,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import {OptimizedImage} from '@/components/optimized-image'
 import { useLanguage } from '@/components/providers'
-import {PropertyCard, Loading} from '@/components'
+import {CardsSkeleton, InlineSpinner, MapSkeleton, PropertyCard} from '@/components'
 import {SearchBar} from './search-bar'
 import {Filters} from './filters'
 import { filterProperties } from '@/data'
@@ -14,7 +14,7 @@ import type { PropertyCursor } from '../queries'
 
 const PropertyMap = dynamic(
   () => import('@/components/map').then(module => module.PropertyMap),
-  {ssr: false, loading: () => <Loading message="Birklik.az" brand />}
+  {ssr: false, loading: () => <MapSkeleton />}
 )
 
 const initialFilters: FilterState = {
@@ -45,7 +45,7 @@ interface HomeBrowserProps {
 export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initialStandard, initialCursor }) => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
-  const [showMap, setShowMap] = React.useState(() => typeof window !== 'undefined' && window.innerWidth < 1280)
+  const [showMap, setShowMap] = React.useState(false)
   const [showFilters, setShowFilters] = React.useState(false)
   const [viewMode, setViewMode] = React.useState<'normal' | 'compact'>('normal')
   const [properties, setProperties] = React.useState<Property[]>([...initialPremium, ...initialStandard])
@@ -64,6 +64,10 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
   const isFirstRenderRef = React.useRef(true)
 
   React.useEffect(() => {
+    setShowMap(window.innerWidth < 1280)
+  }, [])
+
+  React.useEffect(() => {
     if (isFirstRenderRef.current) {
       isFirstRenderRef.current = false
       return
@@ -74,7 +78,6 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
     const load = async () => {
       setIsLoading(true)
       setError('')
-      setProperties([])
       setHasMore(false)
       lastDocRef.current = null
       hasMoreRef.current = false
@@ -254,16 +257,16 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
               }}
             />
 
-            {isLoading && <Loading message={t.messages.loading} />}
+            {isLoading && <div className="data-refresh-indicator"><InlineSpinner label={t.messages.loading} />{t.messages.loading}</div>}
 
-            {!isLoading && error && (
+            {error && (
               <div className="no-results">
                 <p>{error}</p>
               </div>
             )}
 
-            {!isLoading && filteredProperties.length > 0 ? (
-              <div className={`premium-results-shell ${showMap ? 'with-map' : ''}`}>
+            {filteredProperties.length > 0 ? (
+              <div className={`premium-results-shell data-region ${showMap ? 'with-map' : ''}`} aria-busy={isLoading}>
                 <div className="premium-results-list">
                   <div className={`properties-grid premium-properties-grid${viewMode === 'compact' ? ' compact-view' : ''}`}>
                     {filteredProperties.map((property, index) => (
@@ -277,7 +280,7 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
                       />
                     ))}
                   </div>
-                  {isLoadingMore && <Loading message="" />}
+                  {isLoadingMore && <CardsSkeleton count={2} />}
                 </div>
 
                 {showMap && (
@@ -288,7 +291,9 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
                   </aside>
                 )}
               </div>
-            ) : !isLoading && !error ? (
+            ) : isLoading ? (
+              <CardsSkeleton count={6} />
+            ) : !error ? (
               <div className="no-results">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/>

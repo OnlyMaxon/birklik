@@ -3,12 +3,13 @@
 import React from 'react'
 import { useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
+import {AuthSkeleton, InlineSpinner} from '@/components'
 import { sendEmailVerification } from 'firebase/auth'
 
 export const EmailVerificationClient: React.FC = () => {
   const { language } = useLanguage()
   const navigate = useNavigate()
-  const { firebaseUser, logout } = useAuth()
+  const {firebaseUser, isLoading: isAuthLoading, logout} = useAuth()
 
   const [loading, setLoading] = React.useState(false)
   const [message, setMessage] = React.useState('')
@@ -125,6 +126,8 @@ export const EmailVerificationClient: React.FC = () => {
     navigate('/login')
   }
 
+  if (isAuthLoading) return <AuthSkeleton />
+
   return (
     <>
       <div className="auth-page">
@@ -223,6 +226,7 @@ export const EmailVerificationClient: React.FC = () => {
                 <button
                   onClick={handleResendEmail}
                   disabled={loading || resendCooldown > 0}
+                  aria-busy={loading}
                   style={{
                     backgroundColor: '#b7925d',
                     color: 'white',
@@ -236,6 +240,7 @@ export const EmailVerificationClient: React.FC = () => {
                     transition: 'all 0.3s'
                   }}
                 >
+                  {loading && <InlineSpinner label={language === 'en' ? 'Sending' : language === 'ru' ? 'Отправка' : 'Göndərilir'} />}
                   {loading
                     ? (language === 'en' ? 'Sending...' : language === 'ru' ? 'Отправка...' : 'Göndərilir...')
                     : resendCooldown > 0

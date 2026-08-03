@@ -1,2 +1,7 @@
-import {AuthRoute} from '@/components/route-guards'
-export default function AuthLayout({children}: {children: React.ReactNode}) { return <AuthRoute>{children}</AuthRoute> }
+import {redirect} from 'next/navigation'
+import {getSession} from '@/lib/auth/session'
+
+export default async function AuthLayout({children}: {children: React.ReactNode}) {
+  if (await getSession()) redirect('/dashboard')
+  return children
+}

@@ -4,7 +4,7 @@ import { useLanguage } from '@/components/providers'
 import { useAuth } from '@/components/providers'
 import type {Notification, NotificationType} from '@/types'
 import {getUserNotifications, deleteNotification} from '@/services/notifications-service'
-import {Loading} from '@/components/loading'
+import {ListingRowsSkeleton} from '@/components'
 import * as logger from '@/services/logger'
 
 const formatRelativeTime = (dateStr: string, language: string): string => {
@@ -229,7 +229,10 @@ export const NotificationsTab = React.memo(() => {
     }
   }
 
-  if (isLoading) return <Loading />
+  if (isLoading) {
+    const loadingTitle = language === 'en' ? 'Notifications' : language === 'ru' ? 'Уведомления' : 'Bildirişlər'
+    return <div className="tab-content"><div className="ntf-header"><h3 className="ntf-header-title">{loadingTitle}</h3></div><ListingRowsSkeleton /></div>
+  }
 
   const unreadCount = notifications.filter(n => !n.read).length
 

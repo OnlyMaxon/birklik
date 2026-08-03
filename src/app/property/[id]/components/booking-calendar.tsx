@@ -2,6 +2,7 @@
 
 import React from 'react'
 import {useLanguage} from '@/components/providers'
+import {InlineSpinner} from '@/components'
 import {useNavigate} from '@/lib/navigation'
 import type {Booking} from '@/types'
 import {createBookingAction} from '../actions'
@@ -281,8 +282,10 @@ export function BookingCalendar({
           type="button"
           onClick={handleMakeBooking}
           disabled={isBooking}
+          aria-busy={isBooking}
           className={`btn pp-book-btn ${isAuthenticated ? 'btn-accent' : 'btn-ghost'}`}
         >
+          {isBooking && <InlineSpinner label={t.property.bookingButton} />}
           {isBooking ? t.property.bookingButton : t.property.sendRequest}
         </button>
       )}

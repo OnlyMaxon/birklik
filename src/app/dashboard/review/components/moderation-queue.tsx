@@ -1,21 +1,19 @@
 'use client'
 
 import React from 'react'
-import { Navigate, useSearchParams, Link, useNavigate } from '@/lib/navigation'
-import { Loading } from '@/components'
-import { useAuth, useLanguage } from '@/components/providers'
+import {useSearchParams, Link, useNavigate} from '@/lib/navigation'
+import {InlineSpinner, ListingRowsSkeleton} from '@/components'
+import {useLanguage} from '@/components/providers'
 import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty } from '@/services'
 import { createListingRejectedNotification } from '@/services/notifications-service'
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
-import { isModerator } from '@/lib/auth/permissions'
 import { Language, Property, CommentReport } from '@/types'
 import { cities } from '@/data'
 
 type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'people'
 
 export const ModerationQueue: React.FC = () => {
-  const { isAuthenticated, firebaseUser } = useAuth()
   const { language, t } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -33,8 +31,6 @@ export const ModerationQueue: React.FC = () => {
   const [allUsers, setAllUsers] = React.useState<UserRecord[]>([])
   const [userSearch, setUserSearch] = React.useState('')
   const [selectedUser, setSelectedUser] = React.useState<UserRecord | null>(null)
-  const [isModeratorUser, setIsModeratorUser] = React.useState(false)
-  const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [error, setError] = React.useState('')
   const [showRejectModal, setShowRejectModal] = React.useState(false)
   const [selectedPropertyForReject, setSelectedPropertyForReject] = React.useState<Property | null>(null)
@@ -42,18 +38,6 @@ export const ModerationQueue: React.FC = () => {
   const [isRejectingProperty, setIsRejectingProperty] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'pending' | 'inactive' | 'draft'>('all')
   const [dateSortOrder, setDateSortOrder] = React.useState<'newest' | 'oldest'>('newest')
-
-  // Check if user is moderator
-  React.useEffect(() => {
-    const checkModerator = async () => {
-      if (firebaseUser) {
-        const token = await firebaseUser.getIdTokenResult()
-        setIsModeratorUser(isModerator(token))
-      }
-      setTokenLoaded(true)
-    }
-    checkModerator()
-  }, [firebaseUser])
 
   // Sync activeTab with URL search params
   React.useEffect(() => {
@@ -81,18 +65,8 @@ export const ModerationQueue: React.FC = () => {
   }, [])
 
   React.useEffect(() => {
-    if (tokenLoaded && isModeratorUser) {
-      loadPendingListings()
-    }
-  }, [tokenLoaded, isModeratorUser, loadPendingListings])
-
-  if (!tokenLoaded) {
-    return <Loading fullScreen message="Loading..." brand />
-  }
-
-  if (!isAuthenticated || !isModeratorUser) {
-    return <Navigate to="/dashboard" replace />
-  }
+    loadPendingListings()
+  }, [loadPendingListings])
 
   const deleteComment = async (propertyId: string, commentId: string) => {
     setIsDeletingComment(commentId)
@@ -248,7 +222,7 @@ export const ModerationQueue: React.FC = () => {
           {error && <div className="error-message">{error}</div>}
 
           {isLoading ? (
-            <Loading message={t.messages.loading} />
+            <ListingRowsSkeleton />
           ) : activeTab === 'posts' ? (
             // POSTS TAB
             pendingListings.length === 0 ? (
@@ -337,7 +311,9 @@ export const ModerationQueue: React.FC = () => {
                         className="btn btn-sm ml-delete-btn"
                         onClick={() => deleteComment(item.propertyId, item.comment.id)}
                         disabled={isDeletingComment === item.comment.id}
+                        aria-busy={isDeletingComment === item.comment.id}
                       >
+                        {isDeletingComment === item.comment.id && <InlineSpinner label={t.messages.loading} />}
                         {isDeletingComment === item.comment.id ? t.messages.loading : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
                       </button>
                     </div>
@@ -396,7 +372,9 @@ export const ModerationQueue: React.FC = () => {
                             await handleCloseReport(report.id, true)
                           }}
                           disabled={isDeletingComment === report.commentId || isClosingReport === report.id}
+                          aria-busy={isDeletingComment === report.commentId || isClosingReport === report.id}
                         >
+                          {(isDeletingComment === report.commentId || isClosingReport === report.id) && <InlineSpinner label={t.messages.loading} />}
                           {isDeletingComment === report.commentId || isClosingReport === report.id
                             ? t.messages.loading
                             : (language === 'en' ? 'Delete & Close' : language === 'ru' ? 'Удалить & Закрыть' : 'Sil & Bağla')}
@@ -406,7 +384,9 @@ export const ModerationQueue: React.FC = () => {
                           className="btn btn-sm report-dismiss-btn"
                           onClick={() => handleCloseReport(report.id, false)}
                           disabled={isClosingReport === report.id}
+                          aria-busy={isClosingReport === report.id}
                         >
+                          {isClosingReport === report.id && <InlineSpinner label={t.messages.loading} />}
                           {isClosingReport === report.id
                             ? t.messages.loading
                             : (language === 'en' ? 'Dismiss' : language === 'ru' ? 'Пропустить' : 'Rədd et')}
@@ -570,7 +550,9 @@ export const ModerationQueue: React.FC = () => {
                                 }
                               }}
                               disabled={isDeletingListing === listing.id}
+                              aria-busy={isDeletingListing === listing.id}
                             >
+                              {isDeletingListing === listing.id && <InlineSpinner label={t.messages.loading} />}
                               {isDeletingListing === listing.id ? t.messages.loading : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
                             </button>
                           </div>
@@ -717,7 +699,9 @@ export const ModerationQueue: React.FC = () => {
                   className="btn btn-danger"
                   onClick={handleConfirmRejectProperty}
                   disabled={isRejectingProperty || !rejectReason.trim()}
+                  aria-busy={isRejectingProperty}
                 >
+                  {isRejectingProperty && <InlineSpinner label={t.messages.loading} />}
                   {isRejectingProperty ? t.messages.loading : (language === 'en' ? 'Reject' : language === 'ru' ? 'Отклонить' : 'Rədd Et')}
                 </button>
               </div>

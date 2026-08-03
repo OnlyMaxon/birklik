@@ -3,6 +3,7 @@
 import {useState} from 'react'
 import {Link} from '@/lib/navigation'
 import {useLanguage} from '@/components/providers'
+import {InlineSpinner, ListingRowsSkeleton} from '@/components'
 import {cities} from '@/data'
 import {deleteProperty, updateProperty} from '@/services'
 import type {Language, Property} from '@/types'
@@ -100,7 +101,7 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
         {actionError && <div className="error-message">{actionError}</div>}
 
         {isLoading ? (
-          <div className="dashboard-empty-state"><p>{t.messages.loading}</p></div>
+          <ListingRowsSkeleton />
         ) : listings.filter(property => property.status !== 'draft').length > 0 ? (
           <div className="listings-list">
             {listings.filter(property => property.status !== 'draft').map(property => {
@@ -185,7 +186,7 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
             </div>
             <div className="availability-actions">
               <button type="button" className="btn btn-ghost" onClick={closeBusyModal}>{t.form.cancel}</button>
-              <button type="button" className="btn btn-accent" onClick={handleSetInactive} disabled={isSavingAvailability}>{isSavingAvailability ? t.messages.loading : isEnglish ? 'Set non active' : isRussian ? 'Сделать неактивным' : 'Qeyri-aktiv et'}</button>
+              <button type="button" className="btn btn-accent" onClick={handleSetInactive} disabled={isSavingAvailability} aria-busy={isSavingAvailability}>{isSavingAvailability && <InlineSpinner label={t.messages.loading} />}{isSavingAvailability ? t.messages.loading : isEnglish ? 'Set non active' : isRussian ? 'Сделать неактивным' : 'Qeyri-aktiv et'}</button>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLanguage } from '@/components/providers'
+import {InlineSpinner} from '@/components'
 import type {ReportReason} from '@/types'
 import {reportCommentAction} from '../actions'
 import * as logger from '@/services/logger'
@@ -242,6 +243,7 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
+              aria-busy={isSubmitting}
               style={{
                 padding: '0.75rem 1.5rem',
                 background: '#e74c3c',
@@ -254,6 +256,7 @@ export const ReportCommentModal: React.FC<ReportCommentModalProps> = ({
                 opacity: isSubmitting ? 0.7 : 1
               }}
             >
+              {isSubmitting && <InlineSpinner label={language === 'en' ? 'Submitting' : language === 'ru' ? 'Отправка' : 'Göndərilir'} />}
               {isSubmitting 
                 ? (language === 'en' ? 'Submitting...' : language === 'ru' ? 'Отправка...' : 'Göndərilir...')
                 : (language === 'en' ? 'Submit Report' : language === 'ru' ? 'Отправить' : 'Şikayyəti göndər')}

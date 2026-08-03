@@ -2,6 +2,7 @@
 
 import React from 'react'
 import {useLanguage} from '@/components/providers'
+import {InlineSpinner} from '@/components'
 import {addRatingAction} from '../actions'
 
 interface RatingWidgetProps {
@@ -44,7 +45,7 @@ export function RatingWidget({propertyId, averageRating, reviewCount, initialUse
 
   return (
     <div className="interactions-rating">
-      <h4>{t.property.rateProperty}</h4>
+      <h4>{t.property.rateProperty} {isSubmitting && <InlineSpinner label={t.messages.loading} />}</h4>
       <div className="average-rating">
         <span className="rating-value">{averageRating && averageRating > 0 ? averageRating.toFixed(1) : '-'}</span>
         <span className="rating-text">

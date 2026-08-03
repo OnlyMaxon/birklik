@@ -10,6 +10,7 @@ import {DashboardNavigation} from './dashboard-navigation'
 import {ListingsTab} from './listings-tab'
 import {ListingEditor} from './listing-editor'
 import {ProfileTab} from './profile-tab'
+import {DashboardSkeleton} from '@/components'
 import type {DashboardTab, PaymentNotification} from './dashboard-types'
 import { isModerator } from '@/lib/auth/permissions'
 import type {Property} from '@/types'
@@ -36,7 +37,7 @@ const isOccupationExpired = (property: Property): boolean => {
 
 export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = 'listings' }) => {
   const {t} = useLanguage()
-  const {user, isAuthenticated, firebaseUser} = useAuth()
+  const {user, firebaseUser} = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const tabParam = searchParams.get('tab') as DashboardTab | null
@@ -57,12 +58,6 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = '
     }
     checkModerator()
   }, [firebaseUser])
-  React.useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login')
-    }
-  }, [isAuthenticated, navigate])
-
   // Sync activeTab with URL search params
   React.useEffect(() => {
     if (tabParam) {
@@ -135,9 +130,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = '
     }
   })
 
-  if (!isAuthenticated || !user) {
-    return null
-  }
+  if (!user) return <DashboardSkeleton />
 
 
   return (

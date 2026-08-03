@@ -2,6 +2,7 @@
 
 import React from 'react'
 import {useLanguage} from '@/components/providers'
+import {InlineSpinner} from '@/components'
 import {sanitizeInput} from '@/utils/sanitization'
 import type {Comment} from '@/types'
 import {addCommentAction, deleteCommentAction, addReplyAction} from '../actions'
@@ -81,8 +82,8 @@ export function CommentsSection({propertyId, initialComments, currentUserId, isA
             placeholder={t.property.addComment}
             onKeyPress={e => e.key === 'Enter' && handleAddComment()}
           />
-          <button onClick={handleAddComment} disabled={isPostingComment || !newComment.trim()} className="btn btn-sm btn-primary">
-            {isPostingComment ? '...' : t.property.post}
+          <button onClick={handleAddComment} disabled={isPostingComment || !newComment.trim()} className="btn btn-sm btn-primary" aria-busy={isPostingComment}>
+            {isPostingComment && <InlineSpinner label={t.messages.loading} />}{t.property.post}
           </button>
         </div>
       ) : (
@@ -142,8 +143,8 @@ export function CommentsSection({propertyId, initialComments, currentUserId, isA
                       onKeyPress={e => e.key === 'Enter' && handleAddReply(comment.id)}
                       placeholder={language === 'en' ? 'Write a reply...' : language === 'ru' ? 'Написать ответ...' : 'Cavab yazın...'}
                     />
-                    <button onClick={() => handleAddReply(comment.id)} disabled={isPostingReply || !replyText.trim()} className="pp-reply-submit-btn">
-                      {isPostingReply ? '...' : (language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver')}
+                    <button onClick={() => handleAddReply(comment.id)} disabled={isPostingReply || !replyText.trim()} className="pp-reply-submit-btn" aria-busy={isPostingReply}>
+                      {isPostingReply && <InlineSpinner label={t.messages.loading} />}{language === 'en' ? 'Reply' : language === 'ru' ? 'Ответить' : 'Cavab Ver'}
                     </button>
                   </div>
                 </div>

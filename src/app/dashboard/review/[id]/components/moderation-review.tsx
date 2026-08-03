@@ -1,26 +1,22 @@
 'use client'
 
 import React from 'react'
-import { useParams, Navigate, useNavigate } from '@/lib/navigation'
-import { Loading } from '@/components'
-import { useAuth, useLanguage } from '@/components/providers'
+import {useParams, useNavigate} from '@/lib/navigation'
+import {InlineSpinner, PropertyPageSkeleton} from '@/components'
+import {useLanguage} from '@/components/providers'
 import { getPropertyById, approveProperty, rejectProperty, updateProperty } from '@/services'
 import { createListingRejectedNotification } from '@/services/notifications-service'
-import { isModerator } from '@/lib/auth/permissions'
 import { Property, Language } from '@/types'
 
 export const ModerationReview: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { isAuthenticated, firebaseUser } = useAuth()
   const { language, t } = useLanguage()
   
   const [property, setProperty] = React.useState<Property | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [isProcessing, setIsProcessing] = React.useState(false)
   const [error, setError] = React.useState('')
-  const [isModeratorUser, setIsModeratorUser] = React.useState(false)
-  const [tokenLoaded, setTokenLoaded] = React.useState(false)
   const [rejectionReason, setRejectionReason] = React.useState('')
   const [showRejectForm, setShowRejectForm] = React.useState(false)
   const [isEditMode, setIsEditMode] = React.useState(false)
@@ -51,22 +47,10 @@ export const ModerationReview: React.FC = () => {
     setCurrentImageIndex(0)
   }, [id, property?.id])
 
-  // Check if user is moderator
-  React.useEffect(() => {
-    const checkModerator = async () => {
-      if (firebaseUser) {
-        const token = await firebaseUser.getIdTokenResult()
-        setIsModeratorUser(isModerator(token))
-      }
-      setTokenLoaded(true)
-    }
-    checkModerator()
-  }, [firebaseUser])
-
   // Load property
   React.useEffect(() => {
     const loadProperty = async () => {
-      if (!id || !tokenLoaded || !isModeratorUser) return
+      if (!id) return
 
       setIsLoading(true)
       setError('')
@@ -86,18 +70,10 @@ export const ModerationReview: React.FC = () => {
     }
 
     loadProperty()
-  }, [id, tokenLoaded, isModeratorUser, language])
-
-  if (!tokenLoaded) {
-    return <Loading fullScreen message="Loading..." brand />
-  }
-
-  if (!isAuthenticated || !isModeratorUser) {
-    return <Navigate to="/dashboard" replace />
-  }
+  }, [id, language])
 
   if (isLoading) {
-    return <Loading fullScreen message={t.messages.loading} brand />
+    return <PropertyPageSkeleton />
   }
 
   if (!property || error) {
@@ -432,7 +408,9 @@ export const ModerationReview: React.FC = () => {
                   className="btn btn-accent"
                   onClick={handleSaveAndApprove}
                   disabled={isProcessing}
+                  aria-busy={isProcessing}
                 >
+                  {isProcessing && <InlineSpinner label={t.messages.loading} />}
                   {isProcessing
                     ? t.messages.loading
                     : (language === 'en' ? 'Save & Approve' : language === 'ru' ? 'Сохранить и одобрить' : 'Saxla və Təsdiq Et')}
@@ -456,7 +434,9 @@ export const ModerationReview: React.FC = () => {
                   className="btn btn-danger"
                   onClick={handleReject}
                   disabled={isProcessing}
+                  aria-busy={isProcessing}
                 >
+                  {isProcessing && <InlineSpinner label={t.messages.loading} />}
                   {isProcessing
                     ? t.messages.loading
                     : (language === 'en' ? 'Confirm Rejection' : language === 'ru' ? 'Подтвердить отклонение' : 'Rədd Etməyi Təsdiq Et')}
@@ -494,7 +474,9 @@ export const ModerationReview: React.FC = () => {
                   className="btn btn-accent"
                   onClick={handleApprove}
                   disabled={isProcessing}
+                  aria-busy={isProcessing}
                 >
+                  {isProcessing && <InlineSpinner label={t.messages.loading} />}
                   {isProcessing
                     ? t.messages.loading
                     : (language === 'en' ? 'Approve' : language === 'ru' ? 'Одобрить' : 'Təsdiq Et')}

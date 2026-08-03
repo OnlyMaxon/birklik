@@ -9,11 +9,15 @@ export interface OnlineStatus {
 }
 
 export function useOnlineStatus(): OnlineStatus {
-  const [isOnline, setIsOnline] = React.useState(() => typeof navigator === 'undefined' || navigator.onLine)
+  // Keep the server and first client render identical. The browser's actual
+  // connection state is applied after hydration.
+  const [isOnline, setIsOnline] = React.useState(true)
   const [toastType, setToastType] = React.useState<ToastType>(null)
   const restoreTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   React.useEffect(() => {
+    setIsOnline(navigator.onLine)
+
     const handleOffline = () => {
       setIsOnline(false)
       clearTimeout(restoreTimer.current)

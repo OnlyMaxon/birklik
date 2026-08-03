@@ -3,6 +3,7 @@
 import React from 'react'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
+import {AuthSkeleton, InlineSpinner} from '@/components'
 import { verifyPasswordResetCodeAction, confirmPasswordResetAction, verifyEmailAction } from '../actions'
 
 export const AuthActionClient: React.FC = () => {
@@ -170,19 +171,7 @@ export const AuthActionClient: React.FC = () => {
   }
 
   if (validating) {
-    return (
-      <>
-        <div className="auth-page">
-          <div className="auth-container">
-            <div className="auth-card card">
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>{isEmailVerification ? (language === 'en' ? 'Verifying email...' : language === 'ru' ? 'Проверка почты...' : 'Email yoxlanılır...') : (language === 'en' ? 'Validating reset link...' : language === 'ru' ? 'Проверка ссылки восстановления...' : 'Sıfırlama bağlantısı yoxlanılır...')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    )
+    return <AuthSkeleton />
   }
 
   // Email verification success page
@@ -425,7 +414,9 @@ export const AuthActionClient: React.FC = () => {
                 type="submit" 
                 className="btn btn-accent btn-lg w-full"
                 disabled={loading}
+                aria-busy={loading}
               >
+                {loading && <InlineSpinner label={language === 'en' ? 'Resetting' : language === 'ru' ? 'Восстановление' : 'Sıfırlanır'} />}
                 {loading 
                   ? (language === 'en' ? 'Resetting...' : language === 'ru' ? 'Восстановление...' : 'Sıfırlanıyor...')
                   : (language === 'en' ? 'Reset Password' : language === 'ru' ? 'Восстановить пароль' : 'Şifrəni sıfırla')}

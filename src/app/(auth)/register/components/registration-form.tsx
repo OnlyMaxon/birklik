@@ -3,6 +3,7 @@
 import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
+import {InlineSpinner} from '@/components'
 import { signInWithCustomToken } from 'firebase/auth'
 import { auth } from '@/lib/firebase/client'
 import { registerAction } from '../actions'
@@ -112,7 +113,7 @@ export const RegistrationForm: React.FC = () => {
 
     if (result.success && result.customToken) {
       // Keep the client Firebase SDK's auth state in sync with the new server session
-      // (AuthProvider/route-guards still read this until they're migrated off it).
+      // Keep the client Firebase SDK in sync with the server session.
       await signInWithCustomToken(auth, result.customToken)
       navigate('/verify-email')
     } else {
@@ -225,7 +226,9 @@ export const RegistrationForm: React.FC = () => {
                 type="submit" 
                 className="btn btn-accent btn-lg w-full"
                 disabled={loading || !agreeToTerms}
+                aria-busy={loading}
               >
+                {loading && <InlineSpinner label={t.messages.loading} />}
                 {loading ? t.messages.loading : t.auth.register}
               </button>
             </form>

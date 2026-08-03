@@ -4,7 +4,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { useParams, useNavigate } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
-import { Loading, CityLocationPicker } from '@/components'
+import {CityLocationPicker, FormPageSkeleton, InlineSpinner} from '@/components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@/data'
 import { resolveCity } from '@/data/city-aliases'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '@/types'
@@ -328,7 +328,7 @@ export const ModeratorPropertyEditor: React.FC = () => {
     setTimeout(() => navigate('/dashboard/review?tab=allListings'), 1200)
   }
 
-  if (isLoading) return <Loading fullScreen message={t.messages.loading} brand />
+  if (isLoading) return <FormPageSkeleton />
 
   if (!property) {
     return (
@@ -621,7 +621,9 @@ export const ModeratorPropertyEditor: React.FC = () => {
                           className="btn btn-outline btn-sm"
                           onClick={handleSearchLocation}
                           disabled={isSearchingLocation}
+                          aria-busy={isSearchingLocation}
                         >
+                          {isSearchingLocation && <InlineSpinner label={t.messages.loading} />}
                           {isSearchingLocation ? t.messages.loading : t.buttons.findOnMap}
                         </button>
                       </div>
@@ -1023,7 +1025,8 @@ export const ModeratorPropertyEditor: React.FC = () => {
                 >
                   {t.form.cancel}
                 </button>
-                <button type="submit" className="btn btn-accent" disabled={isSubmitting}>
+                <button type="submit" className="btn btn-accent" disabled={isSubmitting} aria-busy={isSubmitting}>
+                  {isSubmitting && <InlineSpinner label={t.messages.loading} />}
                   {isSubmitting
                     ? t.messages.loading
                     : (isEnglish ? 'Save Changes' : isRussian ? 'Сохранить изменения' : 'Dəyişiklikləri Saxla')}

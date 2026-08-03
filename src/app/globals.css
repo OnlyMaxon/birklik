@@ -3,7 +3,7 @@
 @import './layout.css';
 @import '../components/header/header.css';
 @import '../components/footer/footer.css';
-@import '../components/loading/loading.css';
+@import '../components/loading/skeletons.css';
 @import '../components/offline-notifier/offline-notifier.css';
 @import '../components/property-card/property-card.css';
 @import '../components/property-card/property-card-skeleton.css';

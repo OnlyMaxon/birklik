@@ -2,6 +2,7 @@
 
 import React from 'react'
 import {useLanguage} from '@/components/providers'
+import {InlineSpinner} from '@/components'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import firebaseApp from '@/lib/firebase/client'
 import * as logger from '@/services/logger'
@@ -106,6 +107,7 @@ export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
             </div>
             {isUpgrading
               ? <p className="pp-upgrade-modal__loading">
+                  <InlineSpinner label={language === 'en' ? 'Redirecting' : language === 'ru' ? 'Переход' : 'Yönləndirilir'} />{' '}
                   {language === 'en' ? 'Redirecting to payment...' : language === 'ru' ? 'Переход к оплате...' : 'Ödənişə yönləndirilir...'}
                 </p>
               : <button className="pp-upgrade-modal__cancel" onClick={() => setUpgradeModal(null)}>
