@@ -3,7 +3,6 @@
 import React from 'react'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
-import { Layout } from '@/components/app-layout'
 import { verifyPasswordResetCodeAction, confirmPasswordResetAction, verifyEmailAction } from '../actions'
 
 export const ResetPasswordPage: React.FC = () => {
@@ -172,7 +171,7 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (validating) {
     return (
-      <Layout>
+      <>
         <div className="auth-page">
           <div className="auth-container">
             <div className="auth-card card">
@@ -182,14 +181,14 @@ export const ResetPasswordPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     )
   }
 
   // Email verification success page
   if (isEmailVerification && success) {
     return (
-      <Layout>
+      <>
         <div className="auth-page">
           <div className="auth-container">
             <div className="auth-card card">
@@ -227,14 +226,14 @@ export const ResetPasswordPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     )
   }
 
   // Email verification error page
   if (isEmailVerification && !success) {
     return (
-      <Layout>
+      <>
         <div className="auth-page">
           <div className="auth-container">
             <div className="auth-card card">
@@ -275,13 +274,13 @@ export const ResetPasswordPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     )
   }
 
   if (!isCodeValid) {
     return (
-      <Layout>
+      <>
         <div className="auth-page">
           <div className="auth-container">
             <div className="auth-card card">
@@ -329,13 +328,13 @@ export const ResetPasswordPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     )
   }
 
   if (success) {
     return (
-      <Layout>
+      <>
         <div className="auth-page">
           <div className="auth-container">
             <div className="auth-card card">
@@ -373,12 +372,12 @@ export const ResetPasswordPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     )
   }
 
   return (
-    <Layout>
+    <>
       <div className="auth-page">
         <div className="auth-container">
           <div className="auth-card card">
@@ -454,6 +453,6 @@ export const ResetPasswordPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

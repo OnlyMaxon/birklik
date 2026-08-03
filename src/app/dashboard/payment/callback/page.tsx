@@ -1,4 +1,3 @@
-import {Layout} from '@/components/app-layout'
 import {Link} from '@/lib/navigation'
 import '../payment.css'
 
@@ -47,7 +46,7 @@ export default async function PaymentCallbackPage({searchParams}: CallbackPagePr
   const result = RESULT_CONTENT[key]
 
   return (
-    <Layout>
+    <>
       <main className="payment-page">
         <div className="container payment-status card">
           <div className={`payment-status__mark payment-status__mark--${result.tone}`}>{result.icon}</div>
@@ -59,6 +58,6 @@ export default async function PaymentCallbackPage({searchParams}: CallbackPagePr
           </div>
         </div>
       </main>
-    </Layout>
+    </>
   )
 }

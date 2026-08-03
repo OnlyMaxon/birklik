@@ -3,7 +3,6 @@
 import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
-import { Layout } from '@/components/app-layout'
 import { signInWithCustomToken } from 'firebase/auth'
 import { auth } from '@/lib/firebase/client'
 import { registerAction } from '../actions'
@@ -124,7 +123,7 @@ export const RegisterPage: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <>
       <div className="auth-page">
         <div className="auth-container">
           <div className="auth-card card">
@@ -240,6 +239,6 @@ export const RegisterPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

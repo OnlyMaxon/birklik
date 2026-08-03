@@ -3,7 +3,6 @@
 import React from 'react'
 import { useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
-import { Layout } from '@/components/app-layout'
 import { sendEmailVerification } from 'firebase/auth'
 
 export const VerifyEmailPage: React.FC = () => {
@@ -127,7 +126,7 @@ export const VerifyEmailPage: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <>
       <div className="auth-page">
         <div className="auth-container">
           <div className="auth-card card">
@@ -266,6 +265,6 @@ export const VerifyEmailPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

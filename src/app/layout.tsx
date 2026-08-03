@@ -1,5 +1,6 @@
 import type {Metadata, Viewport} from 'next'
 import {getLocale, getMessages} from 'next-intl/server'
+import {Footer, Header, OfflineNotifier} from '@/components'
 import {Providers} from './providers'
 import './globals.css'
 
@@ -17,7 +18,16 @@ export default async function RootLayout({children}: Readonly<{children: React.R
   const [locale, messages] = await Promise.all([getLocale(), getMessages()])
   return (
     <html lang={locale}>
-      <body><Providers locale={locale} messages={messages}>{children}</Providers></body>
+      <body>
+        <Providers locale={locale} messages={messages}>
+          <div className="layout">
+            <Header />
+            <OfflineNotifier />
+            <main className="main-content">{children}</main>
+            <Footer />
+          </div>
+        </Providers>
+      </body>
     </html>
   )
 }

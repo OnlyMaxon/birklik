@@ -1,8 +1,7 @@
-import {Layout} from '@/components/app-layout'
 
 export default function LoadingProperty() {
   return (
-    <Layout>
+    <>
       <div className="property-page">
         <div className="container">
           <div className="property-layout">
@@ -38,6 +37,6 @@ export default function LoadingProperty() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

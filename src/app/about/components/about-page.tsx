@@ -1,4 +1,3 @@
-import { Layout } from '@/components/app-layout'
 import { getAppTranslations } from '@/lib/i18n/get-app-translations'
 
 export async function AboutPage() {
@@ -6,7 +5,7 @@ export async function AboutPage() {
   const content = t.pages.about
 
   return (
-    <Layout>
+    <>
       <div className="about-page">
         <div className="about-hero">
           <h1>{content.title}</h1>
@@ -29,6 +28,6 @@ export async function AboutPage() {
         ))}
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

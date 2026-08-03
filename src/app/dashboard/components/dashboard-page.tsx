@@ -4,7 +4,6 @@ import React from 'react'
 import { useNavigate, Link, useSearchParams } from '@/lib/navigation'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { useLanguage, useAuth } from '@/components/providers'
-import { Layout } from '@/components/app-layout'
 import { FavoritesTab } from './favorites-tab'
 import { BookingsTab } from './bookings-tab'
 import {NotificationsTab} from './notifications-tab'
@@ -966,7 +965,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
   }
 
   return (
-    <Layout>
+    <>
       <div className="dashboard-page">
         <div className="container">
           <div className="dashboard-header">
@@ -2013,6 +2012,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ initialTab = 'list
           </div>
         </div>
       )}
-    </Layout>
+    </>
   )
 }

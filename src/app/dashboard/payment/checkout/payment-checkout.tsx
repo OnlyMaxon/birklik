@@ -2,7 +2,6 @@
 
 import React from 'react'
 import {getFunctions, httpsCallable} from 'firebase/functions'
-import {Layout} from '@/components/app-layout'
 import {useLanguage} from '@/components/providers'
 import firebaseApp from '@/lib/firebase/client'
 import {Link} from '@/lib/navigation'
@@ -69,7 +68,7 @@ export function PaymentCheckout({propertyId, tier, duration}: PaymentCheckoutPro
       : {title: 'Azericard-a qoşulur', body: 'Təhlükəsiz ödəniş səhifəsi açılarkən gözləyin.', error: 'Ödənişi başlatmaq mümkün olmadı.', retry: 'Yenidən cəhd et', back: 'Başqa paket seç'}
 
   return (
-    <Layout>
+    <>
       <main className="payment-page">
         <div className="container payment-status card">
           <div className={error ? 'payment-status__mark payment-status__mark--error' : 'payment-spinner'} aria-hidden="true">
@@ -93,6 +92,6 @@ export function PaymentCheckout({propertyId, tier, duration}: PaymentCheckoutPro
           )}
         </div>
       </main>
-    </Layout>
+    </>
   )
 }

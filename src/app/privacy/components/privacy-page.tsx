@@ -1,5 +1,4 @@
 import React from 'react'
-import { Layout } from '@/components/app-layout'
 import { getAppTranslations } from '@/lib/i18n/get-app-translations'
 
 function renderContent(content: string) {
@@ -37,7 +36,7 @@ export async function PrivacyPage() {
   const content = t.pages.privacy
 
   return (
-    <Layout>
+    <>
       <div className="privacy-page">
         <div className="privacy-hero">
           <h1>{content.title}</h1>
@@ -59,6 +58,6 @@ export async function PrivacyPage() {
           ))}
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

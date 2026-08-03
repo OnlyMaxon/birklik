@@ -1,4 +1,3 @@
-import { Layout } from '@/components/app-layout'
 import { getAppTranslations } from '@/lib/i18n/get-app-translations'
 
 export async function ContactPage() {
@@ -6,7 +5,7 @@ export async function ContactPage() {
   const content = t.pages.contact
 
   return (
-    <Layout>
+    <>
       <div className="contact-page">
         <div className="contact-hero">
           <h1>{content.title}</h1>
@@ -65,6 +64,6 @@ export async function ContactPage() {
           <p className="contact-closing">{content.closing}</p>
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

@@ -4,7 +4,6 @@ import React from 'react'
 import { useParams, useNavigate } from '@/lib/navigation'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { useLanguage } from '@/components/providers'
-import { Layout } from '@/components/app-layout'
 import { Loading, CityLocationPicker } from '@/components'
 import { LocationPicker, MapCenterUpdater, DEFAULT_COORDINATES } from '@/app/dashboard/components/location-picker'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@/data'
@@ -328,19 +327,19 @@ export const ModeratorPropertyEditPage: React.FC = () => {
 
   if (!property) {
     return (
-      <Layout>
+      <>
         <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
           <p>{error || (isEnglish ? 'Property not found' : isRussian ? 'Объявление не найдено' : 'Elan tapılmadı')}</p>
           <button className="btn btn-ghost" onClick={() => navigate('/dashboard/review?tab=allListings')}>
             ← {isEnglish ? 'All Listings' : isRussian ? 'Все объявления' : 'Bütün Elanlar'}
           </button>
         </div>
-      </Layout>
+      </>
     )
   }
 
   return (
-    <Layout>
+    <>
       <section className="mpe-page">
         <div className="container">
           <div className="mpe-header">
@@ -1041,6 +1040,6 @@ export const ModeratorPropertyEditPage: React.FC = () => {
           )}
         </div>
       </section>
-    </Layout>
+    </>
   )
 }

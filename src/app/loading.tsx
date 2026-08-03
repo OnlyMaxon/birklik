@@ -1,9 +1,8 @@
-import {Layout} from '@/components/app-layout'
 import {PropertyCardSkeleton} from '@/components'
 
 export default function AppLoading() {
   return (
-    <Layout>
+    <>
       <section className="hero">
         <div className="hero-bg-img skeleton-shimmer" aria-hidden="true" />
       </section>
@@ -17,6 +16,6 @@ export default function AppLoading() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   )
 }

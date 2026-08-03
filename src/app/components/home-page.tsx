@@ -4,7 +4,6 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import {OptimizedImage} from '@/components/optimized-image'
 import { useLanguage } from '@/components/providers'
-import { Layout } from '@/components/app-layout'
 import {PropertyCard, Loading} from '@/components'
 import {SearchBar} from './search-bar'
 import {Filters} from './filters'
@@ -188,7 +187,7 @@ export const HomePage: React.FC<HomePageProps> = ({ initialPremium, initialStand
   }
 
   return (
-    <Layout>
+    <>
       <section className="hero">
         <OptimizedImage
           src="/hero.jpeg"
@@ -315,6 +314,6 @@ export const HomePage: React.FC<HomePageProps> = ({ initialPremium, initialStand
           </aside>
         </div>
       </section>
-    </Layout>
+    </>
   )
 }

@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Navigate, useSearchParams, Link, useNavigate } from '@/lib/navigation'
-import { Layout } from '@/components/app-layout'
 import { Loading } from '@/components'
 import { useAuth, useLanguage } from '@/components/providers'
 import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty } from '@/services'
@@ -203,7 +202,7 @@ export const ModerationPage: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <>
       <section className="moderation-page">
         <div className="container moderation-layout">
           <div className="moderation-content-wrapper">
@@ -726,6 +725,6 @@ export const ModerationPage: React.FC = () => {
           </div>
         )}
       </section>
-    </Layout>
+    </>
   )
 }

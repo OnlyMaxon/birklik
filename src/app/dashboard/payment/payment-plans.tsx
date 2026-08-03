@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import {Layout} from '@/components/app-layout'
 import {useAuth, useLanguage} from '@/components/providers'
 import {Link} from '@/lib/navigation'
 import {getPropertiesByOwner} from '@/services'
@@ -98,7 +97,7 @@ export function PaymentPlans({initialPropertyId}: {initialPropertyId: string}) {
         }
 
   return (
-    <Layout>
+    <>
       <main className="payment-page">
         <div className="container payment-shell">
           <div className="payment-heading">
@@ -157,6 +156,6 @@ export function PaymentPlans({initialPropertyId}: {initialPropertyId: string}) {
           <Link className="payment-back" to="/dashboard">← {text.back}</Link>
         </div>
       </main>
-    </Layout>
+    </>
   )
 }

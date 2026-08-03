@@ -1,4 +1,3 @@
-import { Layout } from '@/components/app-layout'
 import { getAppTranslations } from '@/lib/i18n/get-app-translations'
 
 function renderContent(text: string) {
@@ -18,7 +17,7 @@ export async function TermsPage() {
   const currentTerms = t.pages.terms
 
   return (
-    <Layout>
+    <>
       <div className="terms-page">
         <div className="terms-hero">
           <h1 className="terms-title">{currentTerms.title}</h1>
@@ -42,6 +41,6 @@ export async function TermsPage() {
           ))}
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

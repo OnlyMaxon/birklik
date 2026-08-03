@@ -1,6 +1,5 @@
 import {getAppTranslations} from '@/lib/i18n/get-app-translations'
 import {Link} from '@/lib/navigation'
-import {Layout} from '@/components/app-layout'
 import {PropertyCard} from '@/components'
 import {ImageGallery} from './image-gallery'
 import {FavoriteButton} from './favorite-button'
@@ -67,7 +66,7 @@ export async function PropertyPage({
     : []
 
   return (
-    <Layout>
+    <>
       <div className="property-page">
         <div className="container">
           <nav className="breadcrumb">
@@ -350,6 +349,6 @@ export async function PropertyPage({
           )}
         </div>
       </div>
-    </Layout>
+    </>
   )
 }

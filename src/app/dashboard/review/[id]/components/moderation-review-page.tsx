@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { useParams, Navigate, useNavigate } from '@/lib/navigation'
-import { Layout } from '@/components/app-layout'
 import { Loading } from '@/components'
 import { useAuth, useLanguage } from '@/components/providers'
 import { getPropertyById, approveProperty, rejectProperty, updateProperty } from '@/services'
@@ -103,7 +102,7 @@ export const ModerationReviewPage: React.FC = () => {
 
   if (!property || error) {
     return (
-      <Layout>
+      <>
         <section className="property-page">
           <div className="container">
             <div className="error-message">{error}</div>
@@ -112,7 +111,7 @@ export const ModerationReviewPage: React.FC = () => {
             </button>
           </div>
         </section>
-      </Layout>
+      </>
     )
   }
 
@@ -227,7 +226,7 @@ export const ModerationReviewPage: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <>
       <section className="moderation-review-page">
         <div className="container moderation-review-layout">
           <div className="review-header">
@@ -505,6 +504,6 @@ export const ModerationReviewPage: React.FC = () => {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   )
 }
