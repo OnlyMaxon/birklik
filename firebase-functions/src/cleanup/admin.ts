@@ -8,7 +8,7 @@
  * pnpm cleanup:execute  -- Реально удаляет
  */
 
-import * as admin from 'firebase-admin';
+import {admin} from '../firebase-admin';
 import * as path from 'path';
 import {
   runAllCleanups,

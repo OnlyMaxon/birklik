@@ -2,10 +2,16 @@ packages:
   - '.'
   - 'firebase-functions'
 
+overrides:
+  'postcss@<8.5.23': 8.5.25
+  'sharp@<0.35.0': 0.35.3
+  'uuid@<11.1.1': 11.1.1
+
 allowBuilds:
   '@firebase/util': true
   '@parcel/watcher': true
   '@swc/core': true
   esbuild: true
   protobufjs: true
+  re2: true
   sharp: true

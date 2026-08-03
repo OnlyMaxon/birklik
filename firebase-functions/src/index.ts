@@ -1,5 +1,5 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions/v1';
+import {admin} from './firebase-admin';
 import { cleanupOrphanedDrafts, expireStalePayments, logCleanupResult } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
 import { sendPushToUser } from './notifications/send-push';

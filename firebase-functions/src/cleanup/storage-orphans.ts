@@ -19,7 +19,7 @@
  *   --prefix <path>      папка Storage (по умолчанию properties/)
  */
 
-import * as admin from 'firebase-admin';
+import {admin} from '../firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
 

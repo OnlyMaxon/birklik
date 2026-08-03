@@ -14,6 +14,11 @@ const firestoreMocks = vi.hoisted(() => ({
   startAfterMock: vi.fn()
 }))
 
+const storageMocks = vi.hoisted(() => ({
+  refMock: vi.fn(),
+  deleteObjectMock: vi.fn()
+}))
+
 vi.mock('../lib/firebase/client', () => ({
   db: {},
   storage: {}
@@ -35,10 +40,10 @@ vi.mock('firebase/firestore', () => ({
 }))
 
 vi.mock('firebase/storage', () => ({
-  ref: vi.fn(),
+  ref: storageMocks.refMock,
   uploadBytes: vi.fn(),
   getDownloadURL: vi.fn(),
-  deleteObject: vi.fn()
+  deleteObject: storageMocks.deleteObjectMock
 }))
 
 const fallbackMockProperties = vi.hoisted(() => ([
@@ -98,6 +103,8 @@ describe('propertyService publication logic', () => {
     firestoreMocks.limitMock.mockImplementation((...args: unknown[]) => ({ op: 'limit', args }))
     firestoreMocks.startAfterMock.mockImplementation((...args: unknown[]) => ({ op: 'startAfter', args }))
     firestoreMocks.queryMock.mockImplementation((...args: unknown[]) => ({ args }))
+    storageMocks.refMock.mockImplementation((_: unknown, path: string) => ({ path }))
+    storageMocks.deleteObjectMock.mockResolvedValue(undefined)
   })
 
   it('creates publication with timestamps and active state', async () => {
@@ -125,6 +132,40 @@ describe('propertyService publication logic', () => {
     expect(firestoreMocks.updateDocMock).toHaveBeenCalledTimes(1)
     const updatePayload = firestoreMocks.updateDocMock.mock.calls[0][1] as Record<string, unknown>
     expect(updatePayload.updatedAt).toBeTypeOf('string')
+  })
+
+  it('deletes removed images only after the publication update succeeds', async () => {
+    const removedUrl = 'https://firebasestorage.googleapis.com/v0/b/test/o/properties%2Fowner%2Fold.jpg?alt=media'
+    const keptUrl = 'https://firebasestorage.googleapis.com/v0/b/test/o/properties%2Fowner%2Fkept.jpg?alt=media'
+    firestoreMocks.getDocMock.mockResolvedValue({
+      exists: () => true,
+      data: () => makeProperty({images: [removedUrl, keptUrl]})
+    })
+    firestoreMocks.updateDocMock.mockResolvedValue(undefined)
+
+    const ok = await updateProperty('p-1', {images: [keptUrl]})
+
+    expect(ok).toBe(true)
+    expect(storageMocks.refMock).toHaveBeenCalledWith({}, 'properties/owner/old.jpg')
+    expect(storageMocks.deleteObjectMock).toHaveBeenCalledTimes(1)
+    expect(firestoreMocks.updateDocMock.mock.invocationCallOrder[0])
+      .toBeLessThan(storageMocks.deleteObjectMock.mock.invocationCallOrder[0])
+  })
+
+  it('keeps removed images when the publication update fails', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const removedUrl = 'https://firebasestorage.googleapis.com/v0/b/test/o/properties%2Fowner%2Fold.jpg?alt=media'
+    firestoreMocks.getDocMock.mockResolvedValue({
+      exists: () => true,
+      data: () => makeProperty({images: [removedUrl]})
+    })
+    firestoreMocks.updateDocMock.mockRejectedValue(new Error('Firestore unavailable'))
+
+    const ok = await updateProperty('p-1', {images: []})
+
+    expect(ok).toBe(false)
+    expect(storageMocks.deleteObjectMock).not.toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 
   it.skip('hides inactive occupied publications in list response', async () => {

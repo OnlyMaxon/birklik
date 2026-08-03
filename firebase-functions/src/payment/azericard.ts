@@ -1,5 +1,5 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions/v1';
+import {admin} from '../firebase-admin';
 import * as crypto from 'crypto';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
@@ -220,9 +220,9 @@ export const azericardCallback = functions
           }
           await doc.ref.update({ status: 'cancelled', cancelledAt: admin.firestore.FieldValue.serverTimestamp() });
         }
-        res.redirect(`${frontendBase}/dashboard/payment/callback?payment=failed`);
+        res.redirect(`${frontendBase}/dashboard?payment=failed`);
       } else {
-        res.redirect(`${frontendBase}/dashboard/payment`);
+        res.redirect(`${frontendBase}/dashboard`);
       }
       return;
     }
@@ -231,7 +231,7 @@ export const azericardCallback = functions
     const { ORDER, ACTION, RC, APPROVAL, RRN, INT_REF, AMOUNT, TERMINAL, TRTYPE, P_SIGN } = body;
 
     if (!ORDER) {
-      res.redirect(`${frontendBase}/dashboard/payment/callback?payment=error`);
+      res.redirect(`${frontendBase}/dashboard?payment=error`);
       return;
     }
 
@@ -251,10 +251,10 @@ export const azericardCallback = functions
           });
           console.log('[Azericard] Reversal success. ORDER:', ORDER);
         }
-        res.redirect(`${frontendBase}/dashboard/payment/callback?payment=reversed`);
+        res.redirect(`${frontendBase}/dashboard?payment=reversed`);
       } else {
         console.warn('[Azericard] Reversal failed. ORDER:', ORDER, 'ACTION:', ACTION, 'RC:', RC);
-        res.redirect(`${frontendBase}/dashboard/payment/callback?payment=reversal_failed`);
+        res.redirect(`${frontendBase}/dashboard?payment=reversal_failed`);
       }
       return;
     }
@@ -288,7 +288,7 @@ export const azericardCallback = functions
 
       if (!isValidHex && !isValidBase64) {
         console.error('[Azericard] Invalid P_SIGN on success for ORDER:', ORDER);
-        res.redirect(`${frontendBase}/dashboard/payment/callback?payment=error`);
+        res.redirect(`${frontendBase}/dashboard?payment=error`);
         return;
       }
     }
@@ -303,7 +303,7 @@ export const azericardCallback = functions
 
     if (paymentQuery.empty) {
       console.error('[Azericard] Payment record not found for ORDER:', ORDER);
-      res.redirect(`${frontendBase}/dashboard/payment/callback?payment=error`);
+      res.redirect(`${frontendBase}/dashboard?payment=error`);
       return;
     }
 
@@ -336,7 +336,7 @@ export const azericardCallback = functions
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      res.redirect(`${frontendBase}/dashboard/payment/callback?payment=success`);
+      res.redirect(`${frontendBase}/dashboard?payment=success`);
     } else {
       console.warn('[Azericard] Payment failed. ORDER:', ORDER, 'ACTION:', ACTION, 'RC:', RC);
 
@@ -350,7 +350,7 @@ export const azericardCallback = functions
         await deleteDraftWithImages(payment.propertyId);
       }
 
-      res.redirect(`${frontendBase}/dashboard/payment/callback?payment=failed`);
+      res.redirect(`${frontendBase}/dashboard?payment=failed`);
     }
   });
 

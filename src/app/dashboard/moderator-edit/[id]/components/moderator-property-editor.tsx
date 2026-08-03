@@ -8,7 +8,7 @@ import {CityLocationPicker, FormPageSkeleton, InlineSpinner} from '@/components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@/data'
 import { resolveCity } from '@/data/city-aliases'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '@/types'
-import { getPropertyById, updateProperty, deletePropertyImages } from '@/services'
+import { getPropertyById, updateProperty } from '@/services'
 
 const DEFAULT_COORDINATES = {lat: 40.4093, lng: 49.8671}
 const LocationMap = dynamic(
@@ -314,9 +314,8 @@ export const ModeratorPropertyEditor: React.FC = () => {
       updates.vipExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
     }
 
-    if (removedImages.length > 0) {
-      await deletePropertyImages(removedImages)
-    }
+    // updateProperty removes discarded images only after the Firestore update
+    // succeeds, so a failed save cannot leave the listing with broken URLs.
     const ok = await updateProperty(id, updates, newFiles.length > 0 ? newFiles : undefined)
     if (!ok) {
       setError(t.listing.updateFailed)
