@@ -1,5 +1,5 @@
 // functions/src/cleanup/firestore-cleanup.ts
-import * as admin from 'firebase-admin';
+import {admin} from '../firebase-admin';
 import { validateSafeDelete, CLEANUP_RULES } from '../utils/cleanup-safety';
 
 interface CleanupLog {
