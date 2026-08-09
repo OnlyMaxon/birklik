@@ -9,7 +9,8 @@
   "functions": {
     "source": "firebase-functions",
     "runtime": "nodejs22",
-    "codebase": "default"
+    "codebase": "default",
+    "predeploy": ["pnpm --dir \"$RESOURCE_DIR\" run build"]
   }
 }
 
