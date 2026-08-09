@@ -3,9 +3,9 @@ import {admin} from './firebase-admin';
 import { cleanupOrphanedDrafts, expireStalePayments, logCleanupResult } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
 import { sendPushToUser } from './notifications/send-push';
-import { initiatePayment, azericardCallback, performReversal } from './payment/azericard';
+import { initiatePayment, azericardCallback } from './payment/azericard';
 
-export { initiatePayment, azericardCallback, performReversal };
+export { initiatePayment, azericardCallback };
 
 admin.initializeApp();
 
