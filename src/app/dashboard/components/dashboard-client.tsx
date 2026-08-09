@@ -16,6 +16,7 @@ import { isModerator } from '@/lib/auth/permissions'
 import type {Property} from '@/types'
 import {getPropertiesByOwner, updateProperty} from '@/services'
 import {useListingEditor} from '../hooks/use-listing-editor'
+import {useProfileForm} from '../hooks/use-profile-form'
 
 interface DashboardClientProps {
   initialTab?: DashboardTab
@@ -121,6 +122,8 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = '
     }
   }, [activeTab, user, loadListings])
 
+  const profileForm = useProfileForm()
+
   const listingEditor = useListingEditor({
     listings,
     onEditStarted: () => setActiveTab('add'),
@@ -189,7 +192,7 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = '
               {/* Notifications Tab */}
               {activeTab === 'notifications' && <NotificationsTab />}
 
-              {activeTab === 'profile' && <ProfileTab />}
+              {activeTab === 'profile' && <ProfileTab form={profileForm} />}
 
 
             </main>
