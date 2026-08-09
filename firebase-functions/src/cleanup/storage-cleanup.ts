@@ -25,19 +25,62 @@ function storagePathFromUrl(url: string): string | null {
   }
 }
 
+/** Максимальная глубина обхода подколлекций. Реальная вложенность — 2. */
+const MAX_DEPTH = 5;
+
 /**
- * Удаляет orphaned изображения объявлений.
+ * Собирает Storage-пути, на которые ссылается хоть один документ Firestore.
  *
- * Реальный путь в Storage: properties/{userId}/{timestamp}_{filename}
- * propertyId в пути НЕ хранится, поэтому логика:
- * 1. Группируем файлы по userId (parts[1])
- * 2. Для каждого userId получаем все его объявления из Firestore
- * 3. Собираем все URL изображений из этих объявлений
- * 4. Файлы старше 7 дней, URL которых нет ни в одном объявлении — orphaned
+ * Обход рекурсивный и без списка коллекций: все корневые плюс все подколлекции
+ * каждого документа. Документ читается целиком, а не по полю images — так ссылка
+ * не потеряется, если появится новое поле с картинкой.
+ */
+export async function collectReferencedPaths(): Promise<Set<string>> {
+  const db = admin.firestore();
+  const referenced = new Set<string>();
+
+  const walk = async (col: any, depth: number): Promise<void> => {
+    if (depth > MAX_DEPTH) return;
+    const snap = await col.get();
+    for (const doc of snap.docs) {
+      const re = /\/o\/([^"?\s\\]+)/g;
+      const text = JSON.stringify(doc.data());
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text)) !== null) {
+        try {
+          referenced.add(decodeURIComponent(m[1]));
+        } catch {
+          // повреждённый URL — пропускаем, файл останется жив
+        }
+      }
+      for (const sub of await doc.ref.listCollections()) {
+        await walk(sub, depth + 1);
+      }
+    }
+  };
+
+  for (const col of await db.listCollections()) {
+    await walk(col, 1);
+  }
+  return referenced;
+}
+
+/**
+ * Удаляет неиспользуемые изображения объявлений.
  *
- * Сверка идёт по декодированному пути и точному равенству. Прежний вариант
- * искал подстроку в URL через encodeURIComponent — при нестандартном символе
- * в имени кодировки расходились, и живое фото считалось сиротой.
+ * Путь в Storage: properties/{userId}/{timestamp}_{filename} — propertyId в нём
+ * не хранится.
+ *
+ * Раньше файлы группировались по владельцу папки, а ссылки искались запросом
+ * `properties where ownerId == этот_userId`. Это уничтожило 49 живых фотографий
+ * 2026-08-09: три объявления держат фото в папке ДРУГОГО пользователя (кто-то
+ * загружал их за владельцев), их ownerId в выборку не попадал, и файлы выглядели
+ * ничьими. Поэтому набор ссылок теперь собирается глобально по всему Firestore,
+ * а не по одному пользователю.
+ *
+ * Сверка — по декодированному пути и точному равенству. Прежний вариант искал
+ * подстроку в URL через encodeURIComponent, и при нестандартном символе в имени
+ * кодировки расходились.
  */
 export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -46,70 +89,41 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
 
   try {
     const bucket = admin.storage().bucket();
-    const db = admin.firestore();
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    // 30 дней вместо 7: запас на случай, если файл ещё не привязан к документу.
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const referencedPaths = await collectReferencedPaths();
+
+    // Предохранитель: ни одной разобранной ссылки на весь проект означало бы,
+    // что сиротами стали ВСЕ файлы. Это сбой обхода, а не реальное состояние.
+    if (referencedPaths.size === 0) {
+      console.error('[ERROR] cleanupOrphanedImages: 0 ссылок во всём Firestore — прерываю, иначе удалятся все файлы');
+      return { timestamp: new Date(), type: 'orphaned_images', status: 'failed', count: 0, deletedFiles, error: 'no referenced paths', duration: Date.now() - startTime };
+    }
 
     const [files] = await bucket.getFiles({ prefix: 'properties/' });
 
-    // Группируем файлы по userId (parts[1])
-    const filesByUser = new Map<string, typeof files>();
     for (const file of files) {
-      const parts = file.name.split('/');
-      // Ожидаем минимум: properties/{userId}/{filename}
-      if (parts.length < 3) continue;
-      const userId = parts[1];
-      if (!filesByUser.has(userId)) filesByUser.set(userId, []);
-      filesByUser.get(userId)!.push(file);
-    }
-
-    for (const [userId, userFiles] of filesByUser) {
       if (count >= 500) break;
 
-      // Получаем все объявления этого пользователя
-      const propertiesSnap = await db
-        .collection('properties')
-        .where('ownerId', '==', userId)
-        .get();
+      // Ожидаем минимум: properties/{userId}/{filename}
+      if (file.name.split('/').length < 3) continue;
+      if (referencedPaths.has(file.name)) continue;
 
-      // Собираем Storage-пути всех изображений из всех объявлений пользователя
-      const referencedPaths = new Set<string>();
-      for (const doc of propertiesSnap.docs) {
-        const images: string[] = doc.data().images || [];
-        for (const url of images) {
-          const p = storagePathFromUrl(url);
-          if (p) referencedPaths.add(p);
-        }
-      }
+      try {
+        const [metadata] = await file.getMetadata();
+        // Пропускаем свежие файлы (могут ещё не быть привязаны)
+        if (new Date(metadata.updated as string) > cutoff) continue;
 
-      // Предохранитель: у пользователя есть объявления, но ни одной разобранной
-      // ссылки — значит сломался разбор URL, а не все фото разом осиротели.
-      if (propertiesSnap.size > 0 && referencedPaths.size === 0) {
-        console.warn(`[WARN] ${userId}: ${propertiesSnap.size} объявлений, 0 распознанных ссылок — пропускаю`);
-        continue;
-      }
-
-      for (const file of userFiles) {
-        if (count >= 500) break;
-
-        try {
-          const [metadata] = await file.getMetadata();
-          const updatedAt = new Date(metadata.updated as string);
-
-          // Пропускаем свежие файлы (могут ещё не быть привязаны)
-          if (updatedAt > sevenDaysAgo) continue;
-
-          // Проверяем: ссылается ли на этот файл хоть одно объявление
-          if (!referencedPaths.has(file.name)) {
-            await file.delete();
-            deletedFiles.push(file.name);
-            count++;
-          }
-        } catch (err) {
-          console.warn(`[WARN] Error processing file ${file.name}:`, err);
-        }
+        await file.delete();
+        deletedFiles.push(file.name);
+        count++;
+      } catch (err) {
+        console.warn(`[WARN] Error processing file ${file.name}:`, err);
       }
     }
 
+    console.log(`[Cleanup] orphaned images: ${count} удалено, ссылок в базе ${referencedPaths.size}, файлов ${files.length}`);
     return { timestamp: new Date(), type: 'orphaned_images', status: 'success', count, deletedFiles, duration: Date.now() - startTime };
   } catch (error: any) {
     console.error('[ERROR] cleanupOrphanedImages:', error);
@@ -154,9 +168,13 @@ export async function cleanupTempFiles(): Promise<StorageCleanupLog> {
 }
 
 /**
- * Удаляет устаревшие аватары (старше 30 дней), которые больше не являются текущим
- * аватаром пользователя. Путь: avatars/{userId}/{timestamp}_{filename}.
- * Нынешний аватар пользователя хранится в users/{userId}.avatar как полный URL.
+ * Удаляет устаревшие аватары (старше 30 дней), на которые нигде нет ссылок.
+ * Путь: avatars/{userId}/{timestamp}_{filename}.
+ *
+ * Проверять только users/{userId}.avatar недостаточно: URL аватара копируется
+ * в комментарии (поле userAvatar), и удаление «не текущего» файла оставило бы
+ * в комментариях битые картинки. Поэтому сверка идёт по тому же глобальному
+ * набору ссылок, что и для фотографий объявлений.
  */
 export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
   const startTime = Date.now();
@@ -168,6 +186,12 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
     const db = admin.firestore();
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
+    const referencedPaths = await collectReferencedPaths();
+    if (referencedPaths.size === 0) {
+      console.error('[ERROR] cleanupOldAvatars: 0 ссылок во всём Firestore — прерываю');
+      return { timestamp: new Date(), type: 'old_avatars', status: 'failed', count: 0, deletedFiles, error: 'no referenced paths', duration: Date.now() - startTime };
+    }
+
     const [files] = await bucket.getFiles({ prefix: 'avatars/' });
 
     // Кэш: userId → текущий Storage-путь аватара (чтобы не запрашивать Firestore повторно)
@@ -176,6 +200,9 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
     for (const file of files) {
       if (count >= 200) break;
       try {
+        // Ссылается хоть кто-то — оставляем, даже если это не текущий аватар
+        if (referencedPaths.has(file.name)) continue;
+
         const [metadata] = await file.getMetadata();
         const updatedAt = new Date(metadata.updated as string);
         // Пропускаем свежие файлы — могут ещё не быть привязаны
@@ -188,17 +215,14 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
         if (!currentAvatarPathByUser.has(userId)) {
           const userDoc = await db.collection('users').doc(userId).get();
           const avatarUrl: string | undefined = userDoc.exists ? userDoc.data()?.['avatar'] : undefined;
-          if (avatarUrl && avatarUrl.includes('firebasestorage')) {
-            const match = avatarUrl.match(/\/o\/(.+?)\?/);
-            currentAvatarPathByUser.set(userId, match ? decodeURIComponent(match[1]) : null);
-          } else {
-            currentAvatarPathByUser.set(userId, null);
-          }
+          currentAvatarPathByUser.set(
+            userId,
+            avatarUrl && avatarUrl.includes('firebasestorage') ? storagePathFromUrl(avatarUrl) : null
+          );
         }
 
-        const currentPath = currentAvatarPathByUser.get(userId);
         // Удаляем если файл не является текущим аватаром
-        if (currentPath !== file.name) {
+        if (currentAvatarPathByUser.get(userId) !== file.name) {
           await file.delete();
           deletedFiles.push(file.name);
           count++;
@@ -208,6 +232,7 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
       }
     }
 
+    console.log(`[Cleanup] old avatars: ${count} удалено из ${files.length}`);
     return { timestamp: new Date(), type: 'old_avatars', status: 'success', count, deletedFiles, duration: Date.now() - startTime };
   } catch (error: any) {
     console.error('[ERROR] cleanupOldAvatars:', error);

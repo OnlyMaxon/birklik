@@ -354,79 +354,12 @@ export const azericardCallback = functions
     }
   });
 
-// =========================================================
-// FUNCTION 3: performReversal (TRTYPE=22)
-// Admin operation: builds reversal form params for browser redirect.
-// Returns { paymentUrl, params } — frontend submits as POST form.
-// =========================================================
-export const performReversal = functions
-  .region('europe-west1')
-  .runWith({ secrets: ['AZERICARD_PRIVATE_KEY', 'AZERICARD_TERMINAL', 'AZERICARD_CALLBACK_URL', 'AZERICARD_ENV'] })
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
-    }
 
-    const { orderId } = data as { orderId: string };
-    if (!orderId) {
-      throw new functions.https.HttpsError('invalid-argument', 'orderId is required');
-    }
-
-    // Find the completed payment record
-    const snap = await admin.firestore()
-      .collection('payments')
-      .where('orderId', '==', orderId)
-      .where('status', '==', 'completed')
-      .limit(1)
-      .get();
-
-    if (snap.empty) {
-      throw new functions.https.HttpsError('not-found', `No completed payment found for orderId: ${orderId}`);
-    }
-
-    const payment = snap.docs[0].data();
-
-    if (!payment.intRef) {
-      throw new functions.https.HttpsError('failed-precondition', 'Payment has no INT_REF — cannot reverse');
-    }
-    if (!payment.rrn) {
-      throw new functions.https.HttpsError('failed-precondition', 'Payment has no RRN — cannot reverse');
-    }
-
-    const terminal = process.env.AZERICARD_TERMINAL?.trim();
-    const privateKey = process.env.AZERICARD_PRIVATE_KEY?.trim();
-    const callbackUrl = process.env.AZERICARD_CALLBACK_URL?.trim();
-    if (!terminal || !privateKey || !callbackUrl) {
-      throw new functions.https.HttpsError('internal', 'Azericard not configured');
-    }
-
-    const timestamp = generateTimestamp();
-    const nonce = generateNonce();
-
-    const params: Record<string, string> = {
-      ORDER:     orderId,
-      AMOUNT:    Number(payment.amount).toFixed(2),
-      CURRENCY,
-      TERMINAL:  terminal,
-      TRTYPE:    '22',
-      RRN:       payment.rrn,
-      INT_REF:   payment.intRef,
-      TIMESTAMP: timestamp,
-      NONCE:     nonce,
-      BACKREF:   callbackUrl,
-    };
-
-    // MAC fields per official Azericard reversal_rsa.php example
-    const macFields = ['AMOUNT', 'CURRENCY', 'TERMINAL', 'TRTYPE', 'ORDER', 'RRN', 'INT_REF'];
-    const macSource = buildMacSource(macFields, params);
-    params.P_SIGN = signWithPrivateKey(macSource, privateKey);
-
-    const isTest = process.env.AZERICARD_ENV !== 'production';
-
-    console.log('[performReversal] Prepared TRTYPE=22 for ORDER:', orderId, 'INT_REF:', payment.intRef);
-
-    return {
-      paymentUrl: isTest ? AZERICARD_URL_TEST : AZERICARD_URL_PROD,
-      params,
-    };
-  });
+// FUNCTION 3 (performReversal, TRTYPE=22) удалена 2026-08-09.
+// Пользовательского интерфейса у неё не было ни в одной ветке: админ-панель
+// возврата убрали коммитом 8fabb3d, а функция осталась задеплоенной и вызываемой
+// напрямую любым залогиненным пользователем. Проверки владельца в ней не было
+// с самого начала (08c367b), и успешный возврат не понижал тариф объявления —
+// то есть позволял вернуть деньги, сохранив premium.
+// Возвраты делаются вручную через кабинет Azericard. Понадобится снова —
+// восстанавливать сразу с проверкой isModerator() и понижением тарифа.
