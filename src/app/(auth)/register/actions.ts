@@ -1,7 +1,13 @@
 'use server'
 
-import {adminAuth, adminDb} from '@/lib/firebase/admin'
-import {signInWithPassword, sendOobCode, IdentityToolkitError} from '@/lib/firebase/identity-toolkit'
+import {setDoc} from '@/lib/firebase/firestore-rest'
+import {createCustomToken} from '@/lib/firebase/google-auth'
+import {
+  signUpWithPassword,
+  updateDisplayName,
+  sendOobCode,
+  IdentityToolkitError
+} from '@/lib/firebase/identity-toolkit'
 import {createSession} from '@/lib/auth/session'
 import {registerSchema} from './validators'
 
@@ -9,26 +15,6 @@ export interface RegisterActionResult {
   success: boolean
   error?: string
   customToken?: string
-}
-
-interface AdminAuthError {
-  code: string
-}
-
-function isAdminAuthError(error: unknown): error is AdminAuthError {
-  return typeof error === 'object' && error !== null && 'code' in error && typeof (error as AdminAuthError).code === 'string'
-}
-
-// Admin SDK error codes differ from the client SDK codes the UI already knows how to
-// render — normalize them onto the same `auth/...` vocabulary.
-function toAuthErrorCode(error: unknown): string {
-  if (error instanceof IdentityToolkitError) return error.code
-  if (isAdminAuthError(error)) {
-    if (error.code === 'auth/email-already-exists') return 'auth/email-already-in-use'
-    if (error.code === 'auth/invalid-password') return 'auth/weak-password'
-    return error.code
-  }
-  return 'auth/unknown-error'
 }
 
 export async function registerAction(
@@ -43,14 +29,13 @@ export async function registerAction(
   }
 
   try {
-    const userRecord = await adminAuth.createUser({
-      email: parsed.data.email,
-      password: parsed.data.password,
-      displayName: parsed.data.name
-    })
+    // signUp сразу отдаёт idToken — он нужен и для письма с подтверждением,
+    // и для сессионной куки.
+    const {idToken, localId} = await signUpWithPassword(parsed.data.email, parsed.data.password)
+    await updateDisplayName(idToken, parsed.data.name)
 
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(parsed.data.name)}&background=1a365d&color=fff`
-    await adminDb.collection('users').doc(userRecord.uid).set({
+    await setDoc('users', localId, {
       name: parsed.data.name,
       email: parsed.data.email,
       phone: parsed.data.phone,
@@ -58,15 +43,13 @@ export async function registerAction(
       createdAt: new Date().toISOString()
     })
 
-    // Sign in immediately to get a fresh ID token — needed both for the session
-    // cookie and to trigger Firebase's own verification-email template via sendOobCode.
-    const {idToken} = await signInWithPassword(parsed.data.email, parsed.data.password)
     await sendOobCode('VERIFY_EMAIL', {idToken})
     await createSession(idToken)
 
-    const customToken = await adminAuth.createCustomToken(userRecord.uid)
+    const customToken = await createCustomToken(localId)
     return {success: true, customToken}
   } catch (error) {
-    return {success: false, error: toAuthErrorCode(error)}
+    const code = error instanceof IdentityToolkitError ? error.code : 'auth/unknown-error'
+    return {success: false, error: code}
   }
 }

@@ -69,6 +69,24 @@ export async function signInWithPassword(email: string, password: string): Promi
   return {...result, emailVerified: account?.emailVerified ?? false}
 }
 
+export interface SignUpResult {
+  idToken: string
+  localId: string
+}
+
+/**
+ * Регистрация пользователя. Заменяет adminAuth.createUser: signUp сразу
+ * возвращает idToken, поэтому отдельный вход после регистрации не нужен.
+ */
+export async function signUpWithPassword(email: string, password: string): Promise<SignUpResult> {
+  return callIdentityToolkit<SignUpResult>('signUp', {email, password, returnSecureToken: true})
+}
+
+/** Отображаемое имя задаётся отдельным вызовом — signUp его не принимает. */
+export async function updateDisplayName(idToken: string, displayName: string): Promise<void> {
+  await callIdentityToolkit('update', {idToken, displayName, returnSecureToken: false})
+}
+
 interface AccountInfo {
   localId: string
   email: string

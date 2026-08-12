@@ -8,6 +8,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "cf:build": "node scripts/cf-build.mjs",
+    "cf:preview": "node scripts/cf-build.mjs && opennextjs-cloudflare preview",
+    "cf:deploy": "node scripts/cf-build.mjs && opennextjs-cloudflare deploy",
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
@@ -27,7 +31,7 @@
     "@capacitor/core": "^8.5.0",
     "@capacitor/push-notifications": "^8.1.2",
     "firebase": "^12.17.0",
-    "firebase-admin": "^14.2.0",
+    "jose": "^6.2.8",
     "leaflet": "^1.9.4",
     "next": "^16.2.12",
     "next-intl": "^4.13.4",
@@ -38,6 +42,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.0",
+    "@opennextjs/cloudflare": "^1.20.2",
     "@types/leaflet": "^1.9.22",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
@@ -46,6 +51,7 @@
     "sharp": "^0.35.3",
     "typescript": "^5.9.3",
     "vite": "7.3.6",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.120.1"
   }
 }

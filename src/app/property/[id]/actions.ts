@@ -1,8 +1,15 @@
 'use server'
 
 import {revalidateTag} from 'next/cache'
-import {FieldValue} from 'firebase-admin/firestore'
-import {adminDb} from '@/lib/firebase/admin'
+import {
+  getDoc,
+  queryDocs,
+  updateDoc,
+  runTransaction,
+  generateDocumentId,
+  arrayUnion,
+  arrayRemove
+} from '@/lib/firebase/firestore-rest'
 import {getSession} from '@/lib/auth/session'
 import type {Booking, Comment, Property, ReportReason} from '@/types'
 import {propertyIdSchema, bookingSchema, commentSchema, replySchema, ratingSchema, reportCommentSchema} from './validators'
@@ -35,20 +42,21 @@ export async function createBookingAction(propertyId: string, checkInDate: strin
   if (nights <= 0) return {success: false, error: 'invalid-dates'}
 
   const totalPrice = nights * property.price.daily
-  const bookingsRef = adminDb.collection('bookings')
   const userName = profile?.name || 'User'
 
   try {
-    const booking = await adminDb.runTransaction(async transaction => {
-      const conflicting = await transaction.get(
-        bookingsRef.where('propertyId', '==', parsed.data.propertyId).where('status', 'in', ['approved', 'pending'])
-      )
+    const booking = await runTransaction(async transaction => {
+      const conflicting = await transaction.query<Booking>('bookings', {
+        where: [
+          ['propertyId', '==', parsed.data.propertyId],
+          ['status', 'in', ['approved', 'pending']]
+        ]
+      })
 
       const proposedCheckIn = new Date(parsed.data.checkInDate).getTime()
       const proposedCheckOut = new Date(parsed.data.checkOutDate).getTime()
 
-      for (const doc of conflicting.docs) {
-        const existing = doc.data() as Booking
+      for (const existing of conflicting) {
         const existingCheckIn = new Date(existing.checkInDate).getTime()
         const existingCheckOut = new Date(existing.checkOutDate).getTime()
         if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
@@ -56,7 +64,7 @@ export async function createBookingAction(propertyId: string, checkInDate: strin
         }
       }
 
-      const newDocRef = bookingsRef.doc()
+      const bookingId = generateDocumentId()
       const bookingData = {
         propertyId: parsed.data.propertyId,
         userId: session.uid,
@@ -71,8 +79,8 @@ export async function createBookingAction(propertyId: string, checkInDate: strin
         status: 'pending' as const,
         createdAt: new Date().toISOString()
       }
-      transaction.set(newDocRef, bookingData)
-      return {id: newDocRef.id, ...bookingData}
+      transaction.set('bookings', bookingId, bookingData)
+      return {id: bookingId, ...bookingData}
     })
 
     if (property.ownerId) {
@@ -110,15 +118,13 @@ export async function toggleFavoriteAction(propertyId: string): Promise<ActionRe
   const parsedId = propertyIdSchema.safeParse(propertyId)
   if (!parsedId.success) return {success: false, error: 'invalid-input'}
 
-  const propertyRef = adminDb.collection('properties').doc(parsedId.data)
-  const snapshot = await propertyRef.get()
-  if (!snapshot.exists) return {success: false, error: 'property-not-found'}
+  const property = await getDoc<Property>('properties', parsedId.data)
+  if (!property) return {success: false, error: 'property-not-found'}
 
-  const property = snapshot.data() as Property
   const isFavorited = (property.favorites || []).includes(session.uid)
 
-  await propertyRef.update({
-    favorites: isFavorited ? FieldValue.arrayRemove(session.uid) : FieldValue.arrayUnion(session.uid)
+  await updateDoc('properties', parsedId.data, {
+    favorites: isFavorited ? arrayRemove(session.uid) : arrayUnion(session.uid)
   })
 
   if (!isFavorited && property.ownerId && property.ownerId !== session.uid) {
@@ -149,10 +155,11 @@ export async function addCommentAction(propertyId: string, text: string): Promis
   const parsed = commentSchema.safeParse({propertyId, text})
   if (!parsed.success) return {success: false, error: 'invalid-input'}
 
-  const propertyRef = adminDb.collection('properties').doc(parsed.data.propertyId)
-  const [snapshot, profile] = await Promise.all([propertyRef.get(), getUserProfile(session.uid)])
-  if (!snapshot.exists) return {success: false, error: 'property-not-found'}
-  const property = snapshot.data() as Property
+  const [property, profile] = await Promise.all([
+    getDoc<Property>('properties', parsed.data.propertyId),
+    getUserProfile(session.uid)
+  ])
+  if (!property) return {success: false, error: 'property-not-found'}
 
   const newComment: Comment = {
     id: `${Date.now()}_${session.uid}`,
@@ -163,8 +170,8 @@ export async function addCommentAction(propertyId: string, text: string): Promis
     createdAt: new Date().toISOString()
   }
 
-  await propertyRef.update({
-    comments: FieldValue.arrayUnion(newComment),
+  await updateDoc('properties', parsed.data.propertyId, {
+    comments: arrayUnion(newComment),
     updatedAt: new Date().toISOString()
   })
 
@@ -196,17 +203,15 @@ export async function deleteCommentAction(propertyId: string, commentId: string)
   const parsedId = propertyIdSchema.safeParse(propertyId)
   if (!parsedId.success) return {success: false, error: 'invalid-input'}
 
-  const propertyRef = adminDb.collection('properties').doc(parsedId.data)
-  const snapshot = await propertyRef.get()
-  if (!snapshot.exists) return {success: false, error: 'property-not-found'}
+  const property = await getDoc<Property>('properties', parsedId.data)
+  if (!property) return {success: false, error: 'property-not-found'}
 
-  const property = snapshot.data() as Property
   const comments = property.comments || []
   const comment = comments.find(c => c.id === commentId)
   if (!comment) return {success: false, error: 'comment-not-found'}
   if (comment.userId !== session.uid && !session.moderator) return {success: false, error: 'forbidden'}
 
-  await propertyRef.update({
+  await updateDoc('properties', parsedId.data, {
     comments: comments.filter(c => c.id !== commentId),
     updatedAt: new Date().toISOString()
   })
@@ -222,11 +227,12 @@ export async function addReplyAction(propertyId: string, parentCommentId: string
   const parsed = replySchema.safeParse({propertyId, parentCommentId, text})
   if (!parsed.success) return {success: false, error: 'invalid-input'}
 
-  const propertyRef = adminDb.collection('properties').doc(parsed.data.propertyId)
-  const [snapshot, profile] = await Promise.all([propertyRef.get(), getUserProfile(session.uid)])
-  if (!snapshot.exists) return {success: false, error: 'property-not-found'}
+  const [property, profile] = await Promise.all([
+    getDoc<Property>('properties', parsed.data.propertyId),
+    getUserProfile(session.uid)
+  ])
+  if (!property) return {success: false, error: 'property-not-found'}
 
-  const property = snapshot.data() as Property
   const comments = property.comments || []
   if (!comments.some(c => c.id === parsed.data.parentCommentId)) {
     return {success: false, error: 'comment-not-found'}
@@ -246,7 +252,10 @@ export async function addReplyAction(propertyId: string, parentCommentId: string
     c.id === parsed.data.parentCommentId ? {...c, replies: [...(c.replies || []), newReply]} : c
   )
 
-  await propertyRef.update({comments: updatedComments, updatedAt: new Date().toISOString()})
+  await updateDoc('properties', parsed.data.propertyId, {
+    comments: updatedComments,
+    updatedAt: new Date().toISOString()
+  })
 
   revalidateTag(`property:${parsed.data.propertyId}`, 'max')
   return {success: true, reply: newReply}
@@ -262,23 +271,24 @@ export async function addRatingAction(propertyId: string, rating: number): Promi
   const hasBooked = await hasUserBookedProperty(session.uid, parsed.data.propertyId)
   if (!hasBooked) return {success: false, error: 'not-booked'}
 
-  const propertyRef = adminDb.collection('properties').doc(parsed.data.propertyId)
-  const snapshot = await propertyRef.get()
-  if (!snapshot.exists) return {success: false, error: 'property-not-found'}
+  const property = await getDoc<{ratings?: Record<string, number>; ownerId?: string}>(
+    'properties',
+    parsed.data.propertyId
+  )
+  if (!property) return {success: false, error: 'property-not-found'}
 
-  const property = snapshot.data() as Record<string, unknown>
-  const ratings = {...((property.ratings as Record<string, number>) || {}), [session.uid]: parsed.data.rating}
+  const ratings = {...(property.ratings || {}), [session.uid]: parsed.data.rating}
   const values = Object.values(ratings)
   const average = values.reduce((a, b) => a + b, 0) / values.length
 
-  await propertyRef.update({
+  await updateDoc('properties', parsed.data.propertyId, {
     ratings,
     rating: Math.round(average * 10) / 10,
     reviews: values.length,
     updatedAt: new Date().toISOString()
   })
 
-  const ownerId = property.ownerId as string | undefined
+  const ownerId = property.ownerId
   if (ownerId) {
     const profile = await getUserProfile(session.uid)
     const name = profile?.name || 'User'
@@ -316,16 +326,19 @@ export async function reportCommentAction(
 
   const profile = await getUserProfile(session.uid)
   const reportedByName = profile?.name || 'User'
-  const reportsRef = adminDb.collection('commentReports')
 
   try {
-    const created = await adminDb.runTransaction(async transaction => {
-      const existing = await transaction.get(
-        reportsRef.where('commentId', '==', parsed.data.commentId).where('reportedBy', '==', session.uid)
-      )
-      if (!existing.empty) throw new DuplicateReportError()
+    const created = await runTransaction(async transaction => {
+      const existing = await transaction.query('commentReports', {
+        where: [
+          ['commentId', '==', parsed.data.commentId],
+          ['reportedBy', '==', session.uid]
+        ],
+        limit: 1
+      })
+      if (existing.length > 0) throw new DuplicateReportError()
 
-      const reportRef = reportsRef.doc()
+      const reportId = generateDocumentId()
       const reportData = {
         propertyId: parsed.data.propertyId,
         commentId: parsed.data.commentId,
@@ -338,18 +351,18 @@ export async function reportCommentAction(
         status: 'open' as const,
         commentDeleted: false
       }
-      transaction.set(reportRef, reportData)
-      return {id: reportRef.id, ...reportData}
+      transaction.set('commentReports', reportId, reportData)
+      return {id: reportId, ...reportData}
     })
 
     // Fan-out to moderators — mirrors the existing (Firestore `users.isModerator` field)
     // moderator lookup used elsewhere; moderator status is otherwise tracked via
     // Firebase custom claims, so this list may be incomplete — pre-existing behavior.
-    const moderators = await adminDb.collection('users').where('isModerator', '==', true).get()
+    const moderators = await queryDocs('users', {where: [['isModerator', '==', true]]})
     await Promise.all(
-      moderators.docs.map(moderatorDoc =>
-        createNotification(moderatorDoc.id, {
-          userId: moderatorDoc.id,
+      moderators.map(moderator =>
+        createNotification(moderator.id, {
+          userId: moderator.id,
           type: 'commentReport',
           title: 'New comment report',
           message: `Report: ${created.reason}. Comment: "${created.commentText.slice(0, 50)}${created.commentText.length > 50 ? '...' : ''}"`,

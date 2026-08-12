@@ -2,6 +2,13 @@ packages:
   - '.'
   - 'firebase-functions'
 
+# Плоский node_modules без симлинков.
+# OpenNext при сборке воркера пересоздаёт симлинки pnpm-раскладки, а Windows
+# разрешает это только с правами администратора или включённым Developer Mode —
+# сборка падала с EPERM. Hoisted-раскладка убирает симлинки, и файлы просто
+# копируются. На Linux-CI поведение то же, поэтому local и CI не расходятся.
+nodeLinker: hoisted
+
 overrides:
   'postcss@<8.5.23': 8.5.25
   'sharp@<0.35.0': 0.35.3
@@ -15,3 +22,8 @@ allowBuilds:
   protobufjs: true
   re2: true
   sharp: true
+  workerd: true
+
+patchedDependencies:
+  '@firebase/firestore@4.17.0': patches/@firebase__firestore@4.17.0.patch
+  '@opennextjs/aws@4.1.0': patches/@opennextjs__aws@4.1.0.patch

@@ -1,0 +1,57 @@
+diff --git a/package.json b/package.json
+index 7a9e14f430f659eacc1393b883825903c6f49ac9..3bd60cda5e79a2cedfea86f9305dc7a49261c727 100644
+--- a/package.json
++++ b/package.json
+@@ -68,10 +68,6 @@
+   "exports": {
+     ".": {
+       "types": "./dist/index.d.ts",
+-      "node": {
+-        "require": "./dist/index.node.cjs.js",
+-        "import": "./dist/index.node.mjs"
+-      },
+       "react-native": "./dist/index.rn.js",
+       "browser": {
+         "require": "./dist/index.cjs.js",
+@@ -81,10 +77,6 @@
+     },
+     "./lite": {
+       "types": "./dist/lite/index.d.ts",
+-      "node": {
+-        "require": "./dist/lite/index.node.cjs.js",
+-        "import": "./dist/lite/index.node.mjs"
+-      },
+       "react-native": "./dist/lite/index.rn.esm.js",
+       "browser": {
+         "require": "./dist/lite/index.browser.cjs.js",
+@@ -94,10 +86,6 @@
+     },
+     "./lite/pipelines": {
+       "types": "./dist/lite/pipelines.d.ts",
+-      "node": {
+-        "require": "./dist/lite/pipelines.node.cjs.js",
+-        "import": "./dist/lite/pipelines.node.mjs"
+-      },
+       "react-native": "./dist/lite/pipelines.rn.esm.js",
+       "browser": {
+         "require": "./dist/lite/pipelines.browser.cjs.js",
+@@ -107,10 +95,6 @@
+     },
+     "./pipelines": {
+       "types": "./pipelines/pipelines.d.ts",
+-      "node": {
+-        "require": "./dist/pipelines.node.cjs.js",
+-        "import": "./dist/pipelines.node.mjs"
+-      },
+       "react-native": "./dist/index.rn.js",
+       "browser": {
+         "require": "./dist/pipelines.cjs.js",
+@@ -120,7 +104,7 @@
+     },
+     "./package.json": "./package.json"
+   },
+-  "main": "dist/index.node.cjs.js",
++  "main": "./dist/index.cjs.js",
+   "main-esm": "dist/index.node.mjs",
+   "react-native": "dist/index.rn.js",
+   "browser": "dist/index.esm.js",

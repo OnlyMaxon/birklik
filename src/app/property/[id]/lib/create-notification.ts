@@ -1,11 +1,7 @@
 import 'server-only'
-import {adminDb} from '@/lib/firebase/admin'
+import {addDoc} from '@/lib/firebase/firestore-rest'
 import type {Notification} from '@/types'
 
 export async function createNotification<T extends Omit<Notification, 'id' | 'createdAt'>>(userId: string, data: T): Promise<void> {
-  await adminDb
-    .collection('users')
-    .doc(userId)
-    .collection('notifications')
-    .add({...data, createdAt: new Date().toISOString()})
+  await addDoc(`users/${userId}/notifications`, {...data, createdAt: new Date().toISOString()})
 }

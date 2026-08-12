@@ -7,6 +7,11 @@ node_modules/
 dist/
 build/
 .next/
+.open-next/
+
+# Cloudflare Workers
+.wrangler/
+.dev.vars
 
 # Environment
 .env
@@ -14,6 +19,8 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+# Временный файл scripts/cf-build.mjs на время сборки воркера
+.env.*.build-stash
 
 # Logs
 npm-debug.log*

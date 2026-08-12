@@ -2,7 +2,7 @@
 
 import {signInWithPassword, sendOobCode, IdentityToolkitError} from '@/lib/firebase/identity-toolkit'
 import {createSession} from '@/lib/auth/session'
-import {adminAuth} from '@/lib/firebase/admin'
+import {createCustomToken} from '@/lib/firebase/google-auth'
 import {loginSchema, requestPasswordResetSchema} from './validators'
 
 export interface LoginActionResult {
@@ -19,7 +19,7 @@ export async function loginAction(email: string, password: string): Promise<Logi
   try {
     const {idToken, localId, emailVerified} = await signInWithPassword(parsed.data.email, parsed.data.password)
     await createSession(idToken)
-    const customToken = await adminAuth.createCustomToken(localId)
+    const customToken = await createCustomToken(localId)
     return {success: true, customToken, emailVerified}
   } catch (error) {
     const code = error instanceof IdentityToolkitError ? error.code : 'auth/unknown-error'

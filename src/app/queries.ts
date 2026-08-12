@@ -1,7 +1,6 @@
 import 'server-only'
 import {unstable_cache} from 'next/cache'
-import {FieldPath} from 'firebase-admin/firestore'
-import {adminDb} from '@/lib/firebase/admin'
+import {queryDocs, DOCUMENT_ID, type QueryOptions} from '@/lib/firebase/firestore-rest'
 import type {Property} from '@/types'
 
 const PAGE_SIZE = 20
@@ -25,45 +24,45 @@ export interface HomeProperties {
   standard: PropertiesPage
 }
 
-function toProperty(doc: FirebaseFirestore.QueryDocumentSnapshot): Property {
-  return {id: doc.id, ...(doc.data() as Omit<Property, 'id'>)}
-}
-
 async function fetchPremiumProperties(filters: HomePropertiesFilters): Promise<Property[]> {
-  let query = adminDb
-    .collection('properties')
-    .where('status', '==', 'active')
-    .where('listingTier', 'in', ['vip', 'premium'])
-    .limit(100) as FirebaseFirestore.Query
+  const where: QueryOptions['where'] = [
+    ['status', '==', 'active'],
+    ['listingTier', 'in', ['vip', 'premium']]
+  ]
+  if (filters.city) where.push(['city', '==', filters.city])
 
-  if (filters.city) query = query.where('city', '==', filters.city)
-
-  const snapshot = await query.get()
-  return snapshot.docs.map(toProperty)
+  return queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 100})
 }
 
 export async function getPropertiesPage(
   filters: HomePropertiesFilters,
   cursor: PropertyCursor | null
 ): Promise<PropertiesPage> {
-  let query = adminDb
-    .collection('properties')
-    .where('status', '==', 'active')
-    .orderBy('createdAt', 'desc')
-    .orderBy(FieldPath.documentId(), 'desc')
-    .limit(PAGE_SIZE + 1) as FirebaseFirestore.Query
+  const where: QueryOptions['where'] = [['status', '==', 'active']]
+  if (filters.city) where.push(['city', '==', filters.city])
 
-  if (filters.city) query = query.where('city', '==', filters.city)
-  if (cursor) query = query.startAfter(cursor.createdAt, cursor.id)
+  const properties = await queryDocs<Omit<Property, 'id'>>('properties', {
+    where,
+    // Сортировка по идентификатору вторым ключом делает курсор однозначным,
+    // когда несколько объявлений созданы в одну и ту же миллисекунду.
+    orderBy: [
+      ['createdAt', 'desc'],
+      [DOCUMENT_ID, 'desc']
+    ],
+    ...(cursor ? {startAfter: [cursor.createdAt, cursor.id]} : {}),
+    // Берём на один больше страницы, чтобы понять, есть ли продолжение.
+    limit: PAGE_SIZE + 1
+  })
 
-  const snapshot = await query.get()
-  const hasMore = snapshot.docs.length > PAGE_SIZE
-  const docs = snapshot.docs.slice(0, PAGE_SIZE)
-  const properties = docs.map(toProperty)
-  const lastDoc = docs[docs.length - 1]
-  const nextCursor = hasMore && lastDoc ? {createdAt: lastDoc.get('createdAt') as string, id: lastDoc.id} : null
+  const hasMore = properties.length > PAGE_SIZE
+  const page = properties.slice(0, PAGE_SIZE)
+  const lastProperty = page[page.length - 1]
+  // Курсор строится по createdAt, поэтому без него продолжать нечем — тогда
+  // страница считается последней, а не отдаёт заведомо битый курсор.
+  const nextCursor =
+    hasMore && lastProperty?.createdAt ? {createdAt: lastProperty.createdAt, id: lastProperty.id} : null
 
-  return {properties, cursor: nextCursor}
+  return {properties: page, cursor: nextCursor}
 }
 
 // Cached for the common case (no user-specific filters beyond city) — short revalidate
