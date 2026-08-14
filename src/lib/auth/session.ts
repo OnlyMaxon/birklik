@@ -1,6 +1,6 @@
 import 'server-only'
 import {cookies} from 'next/headers'
-import {importX509, jwtVerify, type JWTPayload} from 'jose'
+import {importX509, jwtVerify, decodeJwt, type JWTPayload} from 'jose'
 import {getAccessToken, getServiceAccount} from '@/lib/firebase/google-auth'
 
 const SESSION_COOKIE_NAME = 'session'
@@ -11,7 +11,13 @@ const IDENTITY_TOOLKIT_HOST = 'https://identitytoolkit.googleapis.com/v1'
 // они другие). Отдаются как x509 PEM, ключ объекта — kid из заголовка токена.
 const SESSION_COOKIE_CERTS_URL = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys'
 
-export async function createSession(idToken: string): Promise<void> {
+/** Кто именно вошёл — по данным только что выписанной куки. */
+export interface SessionClaims {
+  uid: string
+  email: string | null
+}
+
+export async function createSession(idToken: string): Promise<SessionClaims> {
   const {projectId} = getServiceAccount()
   const accessToken = await getAccessToken()
 
@@ -34,6 +40,13 @@ export async function createSession(idToken: string): Promise<void> {
     path: '/',
     maxAge: SESSION_EXPIRES_IN_MS / 1000
   })
+
+  // Куку выдал сам Google в ответ на авторизованный запрос, и idToken он при
+  // этом уже проверил — читаем claims без повторной проверки подписи. Это
+  // избавляет вызывающий код от чтения куки сразу после записи в том же
+  // запросе и экономит лишний обход к Identity Toolkit.
+  const claims = decodeJwt<SessionCookiePayload>(sessionCookie)
+  return {uid: claims.sub ?? '', email: claims.email ?? null}
 }
 
 export interface Session {

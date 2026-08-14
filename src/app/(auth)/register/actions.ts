@@ -1,7 +1,7 @@
 'use server'
 
 import {setDoc} from '@/lib/firebase/firestore-rest'
-import {createSession, getSession} from '@/lib/auth/session'
+import {createSession, type SessionClaims} from '@/lib/auth/session'
 import {profileSchema} from './validators'
 
 export interface CompleteRegistrationResult {
@@ -15,9 +15,9 @@ export interface CompleteRegistrationResult {
  * Учётку заводит клиентский SDK — только он проходит App Check. Здесь остаётся
  * серверная часть: выписать сессионную куку и создать профиль в Firestore.
  *
- * uid берётся из проверенной сессии, а не из аргументов: createSession отдаёт
- * idToken на проверку Google, после чего getSession возвращает подтверждённый
- * идентификатор. Подставить чужой uid клиент не может.
+ * uid берётся из выписанной сессии, а не из аргументов: createSession отдаёт
+ * idToken на проверку Google и возвращает подтверждённый идентификатор.
+ * Подставить чужой uid клиент не может.
  */
 export async function completeRegistrationAction(
   idToken: string,
@@ -29,14 +29,14 @@ export async function completeRegistrationAction(
     return {success: false, error: parsed.error.issues[0]?.message || 'auth/unknown-error'}
   }
 
+  let session: SessionClaims
   try {
-    await createSession(idToken)
+    session = await createSession(idToken)
   } catch {
     return {success: false, error: 'auth/invalid-user-token'}
   }
 
-  const session = await getSession()
-  if (!session) return {success: false, error: 'auth/invalid-user-token'}
+  if (!session.uid) return {success: false, error: 'auth/invalid-user-token'}
 
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(parsed.data.name)}&background=1a365d&color=fff`
 
