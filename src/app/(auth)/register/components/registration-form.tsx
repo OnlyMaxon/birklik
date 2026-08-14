@@ -4,9 +4,10 @@ import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth'
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
+import { validateName, validatePhoneNumber } from '@/utils/validators'
 import { completeRegistrationAction } from '../actions'
 
 export const RegistrationForm: React.FC = () => {
@@ -119,6 +120,20 @@ export const RegistrationForm: React.FC = () => {
       return
     }
 
+    // Имя и телефон проверяем ДО создания учётки. Те же правила стоят на сервере,
+    // но если дать ему отклонить их после createUserWithEmailAndPassword, учётка
+    // уже существует — исправив телефон, пользователь упрётся в
+    // auth/email-already-in-use и не сможет зарегистрироваться совсем.
+    if (!validateName(formData.name)) {
+      setError(getErrorMessage('auth/invalid-name'))
+      return
+    }
+
+    if (!validatePhoneNumber(formData.phone)) {
+      setError(getErrorMessage('auth/invalid-phone-number'))
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -141,6 +156,10 @@ export const RegistrationForm: React.FC = () => {
       )
 
       if (!result.success) {
+        // Куки нет, а SDK уже считает пользователя вошедшим. Разводим состояния,
+        // иначе дашборд будет отбрасывать на /login. Учётка при этом создана —
+        // войти обычным способом получится.
+        await signOut(auth)
         setError(getErrorMessage(result.error || ''))
         setLoading(false)
         return

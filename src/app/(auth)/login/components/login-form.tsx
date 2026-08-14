@@ -4,7 +4,7 @@ import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
 import { createSessionAction } from '@/lib/auth/actions'
@@ -78,6 +78,10 @@ export const LoginForm: React.FC = () => {
       // Сервер меняет idToken на сессионную куку — ей защищены серверные роуты.
       const session = await createSessionAction(await credential.user.getIdToken())
       if (!session.success) {
+        // Без куки серверные роуты считают гостем, а SDK — вошедшим: дашборд
+        // отбрасывал бы на /login, а эффект редиректа гнал бы обратно.
+        // Сбрасываем клиентский вход, чтобы состояния сошлись.
+        await signOut(auth)
         setError(t.messages.error)
         setLoading(false)
         return
