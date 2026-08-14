@@ -10,10 +10,6 @@ import 'server-only'
 const TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const JWT_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 
-// Аудитория для custom-токенов Firebase — значение фиксировано протоколом.
-const IDENTITY_TOOLKIT_AUDIENCE =
-  'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkitService'
-
 const ACCESS_TOKEN_LIFETIME_SECONDS = 3600
 // Обновляем заранее, чтобы токен не истёк на середине запроса.
 const ACCESS_TOKEN_REFRESH_MARGIN_SECONDS = 300
@@ -154,26 +150,4 @@ export async function getAccessToken(): Promise<string> {
   }
 
   return pendingAccessToken
-}
-
-/**
- * Custom-токен Firebase — им клиентский SDK в браузере логинится после того,
- * как серверный экшен проверил пароль (замена adminAuth.createCustomToken).
- */
-export async function createCustomToken(uid: string): Promise<string> {
-  const {clientEmail, privateKey} = getServiceAccount()
-  const issuedAt = Math.floor(Date.now() / 1000)
-
-  return signJwt(
-    {
-      iss: clientEmail,
-      sub: clientEmail,
-      aud: IDENTITY_TOOLKIT_AUDIENCE,
-      uid,
-      iat: issuedAt,
-      // Потолок, заданный Firebase для custom-токенов, — один час.
-      exp: issuedAt + 3600
-    },
-    privateKey
-  )
 }

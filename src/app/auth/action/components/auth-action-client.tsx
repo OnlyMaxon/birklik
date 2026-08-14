@@ -4,7 +4,9 @@ import React from 'react'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import {AuthSkeleton, InlineSpinner} from '@/components'
-import { verifyPasswordResetCodeAction, confirmPasswordResetAction, verifyEmailAction } from '../actions'
+import { verifyPasswordResetCode, confirmPasswordReset, applyActionCode } from 'firebase/auth'
+import { FirebaseError } from 'firebase/app'
+import { auth } from '@/lib/firebase/client'
 
 export const AuthActionClient: React.FC = () => {
   const { language } = useLanguage()
@@ -38,9 +40,8 @@ export const AuthActionClient: React.FC = () => {
       return
     }
 
-    const result = await verifyEmailAction(oobCode)
-
-    if (result.success) {
+    try {
+      await applyActionCode(auth, oobCode)
       setSuccess(true)
       setValidating(false)
 
@@ -48,12 +49,13 @@ export const AuthActionClient: React.FC = () => {
       setTimeout(() => {
         navigate('/login')
       }, 2000)
-    } else {
+    } catch (err) {
+      const code = err instanceof FirebaseError ? err.code : ''
       let errorMsg = language === 'en' ? 'Invalid or expired link' : language === 'ru' ? 'Недействительная или просроченная ссылка' : 'Doğrulama bağlantısı ya da sürəsi bitib'
 
-      if (result.error === 'auth/expired-action-code') {
+      if (code === 'auth/expired-action-code') {
         errorMsg = language === 'en' ? 'Verification link has expired' : language === 'ru' ? 'Ссылка подтверждения истекла' : 'Doğrulama bağlantısının müddəti bitib'
-      } else if (result.error === 'auth/invalid-action-code') {
+      } else if (code === 'auth/invalid-action-code') {
         errorMsg = language === 'en' ? 'Invalid verification link' : language === 'ru' ? 'Неверная ссылка подтверждения' : 'Doğrulama bağlantısı düzgün deyil'
       }
 
@@ -97,17 +99,18 @@ export const AuthActionClient: React.FC = () => {
         return
       }
 
-      const result = await verifyPasswordResetCodeAction(oobCode)
-
-      if (result.success) {
-        setEmail(result.email)
+      try {
+        // verifyPasswordResetCode возвращает почту, к которой привязан код —
+        // её показываем пользователю над формой нового пароля.
+        setEmail(await verifyPasswordResetCode(auth, oobCode))
         setIsCodeValid(true)
-      } else {
+      } catch (err) {
+        const code = err instanceof FirebaseError ? err.code : ''
         let errorMsg = language === 'en' ? 'Invalid or expired link' : language === 'ru' ? 'Недействительная или просроченная ссылка' : 'Sıfırlama bağlantısı ya da sürəsi bitib'
 
-        if (result.error === 'auth/expired-action-code') {
+        if (code === 'auth/expired-action-code') {
           errorMsg = language === 'en' ? 'Reset link has expired' : language === 'ru' ? 'Ссылка восстановления истекла' : 'Sıfırlama bağlantısının müddəti bitib'
-        } else if (result.error === 'auth/invalid-action-code') {
+        } else if (code === 'auth/invalid-action-code') {
           errorMsg = language === 'en' ? 'Invalid reset link' : language === 'ru' ? 'Неверная ссылка восстановления' : 'Sıfırlama bağlantısı düzgün deyil'
         }
 
@@ -142,9 +145,8 @@ export const AuthActionClient: React.FC = () => {
 
     setLoading(true)
 
-    const result = await confirmPasswordResetAction(oobCode!, password)
-
-    if (result.success) {
+    try {
+      await confirmPasswordReset(auth, oobCode!, password)
       setSuccess(true)
       setPassword('')
       setConfirmPassword('')
@@ -153,14 +155,15 @@ export const AuthActionClient: React.FC = () => {
       setTimeout(() => {
         navigate('/login')
       }, 3000)
-    } else {
+    } catch (err) {
+      const code = err instanceof FirebaseError ? err.code : ''
       let errorMsg = language === 'en' ? 'Error resetting password' : language === 'ru' ? 'Ошибка при восстановлении пароля' : 'Şifrəni sıfırlamakda xəta'
 
-      if (result.error === 'auth/expired-action-code') {
+      if (code === 'auth/expired-action-code') {
         errorMsg = language === 'en' ? 'Reset link has expired' : language === 'ru' ? 'Ссылка восстановления истекла' : 'Sıfırlama bağlantısının müddəti bitib'
-      } else if (result.error === 'auth/invalid-action-code') {
+      } else if (code === 'auth/invalid-action-code') {
         errorMsg = language === 'en' ? 'Invalid reset link' : language === 'ru' ? 'Неверная ссылка восстановления' : 'Sıfırlama bağlantısı düzgün deyil'
-      } else if (result.error === 'auth/weak-password') {
+      } else if (code === 'auth/weak-password') {
         errorMsg = language === 'en' ? 'Password is too weak' : language === 'ru' ? 'Пароль слишком слабый' : 'Şifrə çox zəif'
       }
 

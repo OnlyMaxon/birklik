@@ -4,9 +4,10 @@ import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import { signInWithCustomToken } from 'firebase/auth'
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
+import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
-import { loginAction, requestPasswordResetAction } from '../actions'
+import { createSessionAction } from '@/lib/auth/actions'
 
 export const LoginForm: React.FC = () => {
   const { t, language } = useLanguage()
@@ -24,6 +25,10 @@ export const LoginForm: React.FC = () => {
   const [resetError, setResetError] = React.useState('')
 
   React.useEffect(() => {
+    // Пока идёт отправка формы, не уводим со страницы: SDK помечает вход
+    // выполненным сразу, а сессионная кука выписывается следующим шагом —
+    // без неё серверный layout дашборда вернёт обратно на /login.
+    if (loading) return
     if (isAuthenticated) {
       const fbUser = auth.currentUser
       // Only redirect if authenticated AND email is verified
@@ -31,7 +36,7 @@ export const LoginForm: React.FC = () => {
         navigate('/dashboard')
       }
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate, loading])
 
   const getErrorMessage = (errorCode: string): string => {
     switch (errorCode) {
@@ -65,20 +70,22 @@ export const LoginForm: React.FC = () => {
     setLoading(true)
     setError('')
 
-    const result = await loginAction(email, password)
+    try {
+      // Вход выполняет браузер: App Check аттестует страницу, и только здесь
+      // можно получить валидный токен.
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password)
 
-    if (result.success && result.customToken) {
-      // Keep the client Firebase SDK's auth state in sync with the new server session
-      // Keep the client Firebase SDK in sync with the server session.
-      await signInWithCustomToken(auth, result.customToken)
-
-      if (!result.emailVerified) {
-        navigate('/verify-email')
-      } else {
-        navigate('/dashboard')
+      // Сервер меняет idToken на сессионную куку — ей защищены серверные роуты.
+      const session = await createSessionAction(await credential.user.getIdToken())
+      if (!session.success) {
+        setError(t.messages.error)
+        setLoading(false)
+        return
       }
-    } else {
-      setError(getErrorMessage(result.error || ''))
+
+      navigate(credential.user.emailVerified ? '/dashboard' : '/verify-email')
+    } catch (err) {
+      setError(getErrorMessage(err instanceof FirebaseError ? err.code : ''))
     }
 
     setLoading(false)
@@ -95,9 +102,14 @@ export const LoginForm: React.FC = () => {
     setResetError('')
     setResetMessage('')
 
-    const result = await requestPasswordResetAction(resetEmail)
+    let resetErrorCode = ''
+    try {
+      await sendPasswordResetEmail(auth, resetEmail.trim())
+    } catch (err) {
+      resetErrorCode = err instanceof FirebaseError ? err.code : 'auth/unknown-error'
+    }
 
-    if (result.success) {
+    if (!resetErrorCode) {
       setResetMessage(
         language === 'en'
           ? 'Password reset email has been sent. Check your inbox.'
@@ -114,11 +126,11 @@ export const LoginForm: React.FC = () => {
     } else {
       let errorMsg = language === 'en' ? 'Error sending reset email' : language === 'ru' ? 'Ошибка отправки письма' : 'E-poçt göndərmə xətası'
 
-      if (result.error === 'auth/user-not-found') {
+      if (resetErrorCode === 'auth/user-not-found') {
         errorMsg = language === 'en' ? 'No account found with this email' : language === 'ru' ? 'Аккаунт не найден' : 'Bu e-poçt ilə hesab tapılmadı'
-      } else if (result.error === 'auth/invalid-email') {
+      } else if (resetErrorCode === 'auth/invalid-email') {
         errorMsg = language === 'en' ? 'Invalid email address' : language === 'ru' ? 'Неверный email' : 'Hər hansı bir e-poçt ünvanı'
-      } else if (result.error === 'auth/too-many-requests') {
+      } else if (resetErrorCode === 'auth/too-many-requests') {
         errorMsg = language === 'en' ? 'Too many attempts. Try again later.' : language === 'ru' ? 'Слишком много попыток. Попробуйте позже.' : 'Həddindən artıq cəhd. Daha sonra yenidən cəhd edin.'
       }
 

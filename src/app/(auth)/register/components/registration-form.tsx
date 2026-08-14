@@ -4,9 +4,10 @@ import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import { signInWithCustomToken } from 'firebase/auth'
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth'
+import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
-import { registerAction } from '../actions'
+import { completeRegistrationAction } from '../actions'
 
 export const RegistrationForm: React.FC = () => {
   const { t, language } = useLanguage()
@@ -25,10 +26,14 @@ export const RegistrationForm: React.FC = () => {
   const [error, setError] = React.useState('')
 
   React.useEffect(() => {
-    if (isAuthenticated) {
+    // Во время отправки формы не перехватываем навигацию: createUserWithEmailAndPassword
+    // сразу делает пользователя авторизованным, но профиль и сессионная кука ещё
+    // не созданы, а новичка нужно вести на /verify-email, а не в дашборд.
+    if (loading) return
+    if (isAuthenticated && auth.currentUser?.emailVerified) {
       navigate('/dashboard')
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate, loading])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -60,6 +65,18 @@ export const RegistrationForm: React.FC = () => {
           : language === 'ru'
             ? 'Ошибка сети. Проверьте подключение'
             : 'Şəbəkə xətası. İnternet bağlantınızı yoxlayın'
+      case 'auth/invalid-name':
+        return language === 'en'
+          ? 'Please enter a valid name'
+          : language === 'ru'
+            ? 'Укажите корректное имя'
+            : 'Düzgün ad daxil edin'
+      case 'auth/invalid-phone-number':
+        return language === 'en'
+          ? 'Please enter a valid phone number'
+          : language === 'ru'
+            ? 'Укажите корректный номер телефона'
+            : 'Düzgün telefon nömrəsi daxil edin'
       default:
         return t.messages.error
     }
@@ -104,20 +121,34 @@ export const RegistrationForm: React.FC = () => {
 
     setLoading(true)
 
-    const result = await registerAction(
-      formData.name,
-      formData.email,
-      formData.phone,
-      formData.password
-    )
+    try {
+      // Учётку заводит браузер — App Check пропускает только его.
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email.trim(),
+        formData.password
+      )
 
-    if (result.success && result.customToken) {
-      // Keep the client Firebase SDK's auth state in sync with the new server session
-      // Keep the client Firebase SDK in sync with the server session.
-      await signInWithCustomToken(auth, result.customToken)
+      await updateProfile(credential.user, { displayName: formData.name.trim() })
+      await sendEmailVerification(credential.user)
+
+      // Сервер выписывает сессионную куку и создаёт профиль в Firestore,
+      // uid берёт из проверенного токена.
+      const result = await completeRegistrationAction(
+        await credential.user.getIdToken(),
+        formData.name,
+        formData.phone
+      )
+
+      if (!result.success) {
+        setError(getErrorMessage(result.error || ''))
+        setLoading(false)
+        return
+      }
+
       navigate('/verify-email')
-    } else {
-      setError(getErrorMessage(result.error || ''))
+    } catch (err) {
+      setError(getErrorMessage(err instanceof FirebaseError ? err.code : ''))
     }
 
     setLoading(false)
