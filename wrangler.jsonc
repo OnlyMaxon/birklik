@@ -3,10 +3,15 @@
   "name": "birklik-az",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-04-05",
-  // nodejs_compat нужен firebase-admin (node:crypto для подписи session-куки
-  // и custom-токенов). global_fetch_strictly_public — рекомендация OpenNext,
-  // без него self-fetch воркера уходит мимо публичной сети.
+  // nodejs_compat нужен рантайму Next и node:crypto (подпись JWT сервис-аккаунта).
+  // global_fetch_strictly_public — рекомендация OpenNext, без него self-fetch
+  // воркера уходит мимо публичной сети.
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Тестовый поддомен. Взят вместо workers.dev потому, что reCAPTCHA разрешает
+  // домен вместе со всеми поддоменами: birklik.az уже в списке ключа, значит
+  // App Check здесь работает без правок в Google Cloud Console.
+  "workers_dev": true,
+  "routes": [{"pattern": "next.birklik.az", "custom_domain": true}],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
