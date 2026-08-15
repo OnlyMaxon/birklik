@@ -10,7 +10,18 @@
     "source": "firebase-functions",
     "runtime": "nodejs22",
     "codebase": "default",
-    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"],
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "*.local",
+      "*.log",
+      "storage-backup",
+      "storage-orphans-report.json",
+      "serviceAccountKey.json"
+    ]
   }
 }
 

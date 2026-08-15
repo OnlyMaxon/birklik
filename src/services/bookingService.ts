@@ -182,6 +182,31 @@ export const getUserBookings = async (userId: string): Promise<Booking[]> => {
 }
 
 /**
+ * Retrieve every booking in the system for the moderation view
+ * Sorting happens in memory: an orderBy('createdAt') would silently drop
+ * documents that lack the field.
+ * @returns {Promise<Booking[]>} All bookings, newest first
+ * @throws {Error} On Firestore query failure
+ * @example
+ * const bookings = await getAllBookings()
+ */
+export const getAllBookings = async (): Promise<Booking[]> => {
+  try {
+    const snapshot = await getDocs(collection(db, COLLECTION_NAME))
+
+    return snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Booking, 'id'>)
+      }))
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+  } catch (error) {
+    logger.error('Error getting all bookings:', error)
+    return []
+  }
+}
+
+/**
  * Cancel and delete a booking
  * @param {string} bookingId - Booking Firestore document ID
  * @returns {Promise<boolean>} True on success, false on failure

@@ -240,14 +240,10 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
   }
 }
 
-export async function logStorageCleanupResult(log: StorageCleanupLog): Promise<void> {
-  try {
-    await admin.firestore().collection('cleanup-logs').add(log);
-  } catch (error) {
-    console.error('[ERROR] Failed to log storage cleanup:', error);
-  }
-}
-
+/**
+ * Отчёты о прогонах живут в Cloud Logging, а не в Firestore. Список удалённых
+ * файлов печатается целиком: именно по нему разбирали инцидент 2026-08-09.
+ */
 export async function runAllStorageCleanups(): Promise<StorageCleanupLog[]> {
   console.log('[INFO] Starting weekly Storage cleanup...');
 
@@ -261,7 +257,7 @@ export async function runAllStorageCleanups(): Promise<StorageCleanupLog[]> {
   for (const result of settled) {
     if (result.status === 'fulfilled') {
       results.push(result.value);
-      await logStorageCleanupResult(result.value);
+      console.log(`[Cleanup] ${result.value.type}: ${result.value.status}, удалено ${result.value.count}`, result.value.deletedFiles);
     } else {
       console.error('[ERROR] Storage cleanup task failed:', result.reason);
     }

@@ -250,7 +250,6 @@ async function main(): Promise<void> {
   }
 
   console.log('\n🗑️  Удаляю...');
-  const started = Date.now();
   const deleted: string[] = [];
   const failed: { name: string; error: string }[] = [];
 
@@ -272,20 +271,8 @@ async function main(): Promise<void> {
   }
   console.log(line);
 
-  try {
-    await admin.firestore().collection('cleanup-logs').add({
-      timestamp: new Date(),
-      type: 'orphaned_images_manual',
-      status: failed.length ? 'partial' : 'success',
-      count: deleted.length,
-      deletedFiles: deleted.slice(0, 500),
-      bytesFreed: totalBytes,
-      duration: Date.now() - started,
-    });
-  } catch (err) {
-    console.warn('Не удалось записать лог в cleanup-logs:', err);
-  }
-
+  // Список удалённого остаётся в storage-orphans-report.json рядом со скриптом
+  // и в выводе выше — в Firestore он больше не пишется.
   process.exit(failed.length ? 1 : 0);
 }
 
