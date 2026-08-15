@@ -448,14 +448,10 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
   }
 }
 
-export async function logCleanupResult(log: CleanupLog): Promise<void> {
-  try {
-    await admin.firestore().collection('cleanup-logs').add(log);
-  } catch (error) {
-    console.error('[ERROR] Failed to log cleanup result:', error);
-  }
-}
-
+/**
+ * Отчёты о прогонах живут в Cloud Logging, а не в Firestore: коллекция
+ * cleanup-logs росла на 24 документа в сутки, почти все — пустые прогоны.
+ */
 export async function runAllCleanups(): Promise<CleanupLog[]> {
   console.log('[INFO] Starting weekly Firestore cleanup...');
 
@@ -472,7 +468,7 @@ export async function runAllCleanups(): Promise<CleanupLog[]> {
   for (const result of settled) {
     if (result.status === 'fulfilled') {
       results.push(result.value);
-      await logCleanupResult(result.value);
+      console.log(`[Cleanup] ${result.value.type}: ${result.value.status}, удалено ${result.value.count}`, result.value.deletedIds);
     } else {
       console.error('[ERROR] Cleanup task failed:', result.reason);
     }

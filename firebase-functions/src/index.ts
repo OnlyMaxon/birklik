@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import {admin} from './firebase-admin';
-import { cleanupOrphanedDrafts, expireStalePayments, logCleanupResult } from './cleanup/firestore-cleanup';
+import { cleanupOrphanedDrafts, expireStalePayments } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
 import { sendPushToUser } from './notifications/send-push';
 import { initiatePayment, azericardCallback } from './payment/azericard';
@@ -37,12 +37,10 @@ export const cleanupDrafts = functions
     // Сначала гасим протухшие платежи: пока платёж висит в awaiting_payment,
     // привязанный к нему драфт для чистки неприкосновенен.
     const expired = await expireStalePayments();
-    console.log(`[Cleanup] stale payments: ${expired.count} expired`);
-    await logCleanupResult(expired);
+    console.log(`[Cleanup] stale payments: ${expired.count} expired`, expired.deletedIds);
 
     const result = await cleanupOrphanedDrafts();
-    console.log(`[Cleanup] drafts: ${result.count} deleted`);
-    await logCleanupResult(result);
+    console.log(`[Cleanup] drafts: ${result.count} deleted`, result.deletedIds);
     return null;
   });
 

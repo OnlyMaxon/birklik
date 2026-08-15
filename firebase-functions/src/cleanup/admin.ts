@@ -10,14 +10,8 @@
 
 import {admin} from '../firebase-admin';
 import * as path from 'path';
-import {
-  runAllCleanups,
-  logCleanupResult,
-} from './firestore-cleanup';
-import {
-  runAllStorageCleanups,
-  logStorageCleanupResult,
-} from './storage-cleanup';
+import { runAllCleanups } from './firestore-cleanup';
+import { runAllStorageCleanups } from './storage-cleanup';
 
 // Инициализируем Firebase Admin
 const serviceAccountPath = path.join(
