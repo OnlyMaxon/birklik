@@ -3,7 +3,7 @@ import { Navigate, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { Layout } from '../../layouts'
 import { Loading } from '../../components'
 import { useAuth, useLanguage } from '../../context'
-import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty, getAllBookings } from '../../services'
+import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty, getAllBookings, deleteBooking } from '../../services'
 import { createListingRejectedNotification } from '../../services/notificationsService'
 import { getAllReports, closeReport } from '../../services/reportService'
 import { getAllUsers, UserRecord } from '../../services/userService'
@@ -35,6 +35,7 @@ export const ModerationPage: React.FC = () => {
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
   const [isClosingReport, setIsClosingReport] = React.useState<string | null>(null)
   const [isDeletingListing, setIsDeletingListing] = React.useState<string | null>(null)
+  const [isDeletingBooking, setIsDeletingBooking] = React.useState<string | null>(null)
   const [allUsers, setAllUsers] = React.useState<UserRecord[]>([])
   const [userSearch, setUserSearch] = React.useState('')
   const [selectedUser, setSelectedUser] = React.useState<UserRecord | null>(null)
@@ -147,6 +148,23 @@ export const ModerationPage: React.FC = () => {
 
     await loadPendingListings()
     setIsDeletingListing(null)
+  }
+
+  // Бронь удаляется из Firestore насовсем: гостю и владельцу она больше не видна,
+  // а даты снова становятся свободными для новых броней.
+  const removeBooking = async (id: string) => {
+    setIsDeletingBooking(id)
+    setError('')
+
+    const ok = await deleteBooking(id)
+    if (!ok) {
+      setError(language === 'en' ? 'Could not delete booking.' : language === 'ru' ? 'Не удалось удалить бронирование.' : 'Rezervasiyanı silmək mümkün olmadı.')
+      setIsDeletingBooking(null)
+      return
+    }
+
+    await loadPendingListings()
+    setIsDeletingBooking(null)
   }
 
   const handleRejectPropertyClick = (property: Property) => {
@@ -735,6 +753,29 @@ export const ModerationPage: React.FC = () => {
                           <p className="ml-created-at">
                             {language === 'en' ? 'Booked:' : language === 'ru' ? 'Забронировано:' : 'Rezerv edilib:'} {formatDate(booking.createdAt)}
                           </p>
+
+                          <div className="moderation-actions">
+                            <button
+                              type="button"
+                              className="btn btn-sm ml-delete-btn"
+                              onClick={() => {
+                                const dates = `${formatDate(booking.checkInDate)} — ${formatDate(booking.checkOutDate)}`
+                                const question = language === 'en'
+                                  ? `Delete the booking of ${booking.userName || '—'} (${dates})? This cannot be undone.`
+                                  : language === 'ru'
+                                  ? `Удалить бронирование ${booking.userName || '—'} (${dates})? Отменить это будет нельзя.`
+                                  : `${booking.userName || '—'} rezervasiyasını silmək (${dates})? Bunu geri qaytarmaq olmayacaq.`
+                                if (confirm(question)) {
+                                  removeBooking(booking.id)
+                                }
+                              }}
+                              disabled={isDeletingBooking === booking.id}
+                            >
+                              {isDeletingBooking === booking.id
+                                ? t.messages.loading
+                                : (language === 'en' ? 'Delete booking' : language === 'ru' ? 'Удалить бронь' : 'Rezervasiyanı sil')}
+                            </button>
+                          </div>
                         </article>
                       )
                     })}
