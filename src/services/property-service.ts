@@ -14,12 +14,13 @@ import {
   DocumentSnapshot,
   QueryConstraint
 } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { ref, uploadBytes, deleteObject } from 'firebase/storage'
 import { auth } from '../lib/firebase/client'
 import { compressPropertyImage } from '../utils/image-compression'
 import { db, storage } from '../lib/firebase/client'
 import { Property, PropertyType, Language, Comment } from '../types'
 import * as logger from './logger'
+import {imageUrlFromStoragePath, normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 20
@@ -42,10 +43,11 @@ export interface PropertyFilters {
 }
 
 const mapDocToProperty = (snapshotDoc: { id: string; data: () => unknown }): Property => {
-  return {
+  const data = snapshotDoc.data() as Omit<Property, 'id'>
+  return normalizePropertyImageUrls({
     id: snapshotDoc.id,
-    ...(snapshotDoc.data() as Omit<Property, 'id'>)
-  }
+    ...data
+  })
 }
 
 const matchesSearch = (property: Property, searchTerm?: string, lang: Language = 'az'): boolean => {
@@ -291,7 +293,9 @@ export const updateProperty = async (
   try {
     const docRef = doc(db, COLLECTION_NAME, id)
     const current = await getDoc(docRef)
-    const currentData = current.exists() ? (current.data() as Property) : null
+    const currentData = current.exists()
+      ? normalizePropertyImageUrls(current.data() as Property)
+      : null
 
     // Upload new images if provided
     let newImageUrls: string[] = []
@@ -303,8 +307,11 @@ export const updateProperty = async (
     const cleanedUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     ) as Partial<Property>
+    if (cleanedUpdates.images) {
+      cleanedUpdates.images = normalizePropertyImageUrls({images: cleanedUpdates.images}).images || []
+    }
 
-    const finalImages = [...(updates.images || currentData?.images || []), ...newImageUrls]
+    const finalImages = [...(cleanedUpdates.images || currentData?.images || []), ...newImageUrls]
 
     const updateData = {
       ...cleanedUpdates,
@@ -368,7 +375,7 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
 /**
  * Upload property images to Firebase Storage
  * @param {File[]} files - Array of image files to upload
- * @returns {Promise<string[]>} Array of download URLs for uploaded images
+ * @returns {Promise<string[]>} Array of same-origin image API URLs
  * @throws {Error} On storage upload failure (individual errors logged to console)
  * @example
  * const urls = await uploadPropertyImages([imageFile1, imageFile2])
@@ -387,8 +394,7 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
       const storageRef = ref(storage, fileName)
 
       await uploadBytes(storageRef, compressed)
-      const url = await getDownloadURL(storageRef)
-      urls.push(url)
+      urls.push(imageUrlFromStoragePath(fileName))
     } catch (error) {
       logger.error('Error uploading image:', error)
     }
@@ -399,17 +405,16 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
 
 /**
  * Delete property images from Firebase Storage by URL
- * @param {string[]} urls - Array of Firebase Storage download URLs to delete
+ * @param {string[]} urls - Array of same-origin or legacy Firebase image URLs to delete
  * @returns {Promise<void>}
  * @throws {Error} On storage delete failure (individual errors logged to console)
  * @example
- * await deletePropertyImages(['https://firebasestorage.googleapis.com/...',...])
+ * await deletePropertyImages(['/api/images/properties/user/photo.webp'])
  */
 export const deletePropertyImages = async (urls: string[]): Promise<void> => {
   for (const url of urls) {
     try {
-      // Extract path from URL
-      const path = decodeURIComponent(url.split('/o/')[1]?.split('?')[0] || '')
+      const path = storagePathFromImageSource(url)
       if (path) {
         const storageRef = ref(storage, path)
         await deleteObject(storageRef)

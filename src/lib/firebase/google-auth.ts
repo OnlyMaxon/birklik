@@ -129,7 +129,8 @@ async function requestAccessToken(scope: string): Promise<string> {
 const REQUIRED_SCOPES = [
   'https://www.googleapis.com/auth/datastore',
   'https://www.googleapis.com/auth/firebase',
-  'https://www.googleapis.com/auth/identitytoolkit'
+  'https://www.googleapis.com/auth/identitytoolkit',
+  'https://www.googleapis.com/auth/devstorage.read_only'
 ].join(' ')
 
 /**

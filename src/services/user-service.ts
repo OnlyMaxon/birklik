@@ -1,5 +1,6 @@
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'
 import { db } from '../lib/firebase/client'
+import {toImageApiUrl} from '../lib/images'
 
 export interface UserRecord {
   id: string
@@ -15,7 +16,10 @@ export const getAllUsers = async (): Promise<UserRecord[]> => {
     const usersRef = collection(db, 'users')
     const q = query(usersRef, orderBy('createdAt', 'desc'))
     const snapshot = await getDocs(q)
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserRecord))
+    return snapshot.docs.map(doc => {
+      const user = { id: doc.id, ...doc.data() } as UserRecord
+      return {...user, avatar: toImageApiUrl(user.avatar)}
+    })
   } catch {
     return []
   }

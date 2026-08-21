@@ -2,6 +2,7 @@ import 'server-only'
 import {unstable_cache} from 'next/cache'
 import {queryDocs, DOCUMENT_ID, type QueryOptions} from '@/lib/firebase/firestore-rest'
 import type {Property} from '@/types'
+import {normalizePropertyImageUrls} from '@/lib/images'
 
 const PAGE_SIZE = 20
 
@@ -31,7 +32,8 @@ async function fetchPremiumProperties(filters: HomePropertiesFilters): Promise<P
   ]
   if (filters.city) where.push(['city', '==', filters.city])
 
-  return queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 100})
+  const properties = await queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 100})
+  return properties.map(normalizePropertyImageUrls)
 }
 
 export async function getPropertiesPage(
@@ -41,7 +43,7 @@ export async function getPropertiesPage(
   const where: QueryOptions['where'] = [['status', '==', 'active']]
   if (filters.city) where.push(['city', '==', filters.city])
 
-  const properties = await queryDocs<Omit<Property, 'id'>>('properties', {
+  const properties = (await queryDocs<Omit<Property, 'id'>>('properties', {
     where,
     // Сортировка по идентификатору вторым ключом делает курсор однозначным,
     // когда несколько объявлений созданы в одну и ту же миллисекунду.
@@ -52,7 +54,7 @@ export async function getPropertiesPage(
     ...(cursor ? {startAfter: [cursor.createdAt, cursor.id]} : {}),
     // Берём на один больше страницы, чтобы понять, есть ли продолжение.
     limit: PAGE_SIZE + 1
-  })
+  })).map(normalizePropertyImageUrls)
 
   const hasMore = properties.length > PAGE_SIZE
   const page = properties.slice(0, PAGE_SIZE)

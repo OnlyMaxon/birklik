@@ -3,6 +3,7 @@ import {unstable_cache} from 'next/cache'
 import {after} from 'next/server'
 import {getDoc, queryDocs, updateDoc, increment, type QueryOptions} from '@/lib/firebase/firestore-rest'
 import type {Property, Booking} from '@/types'
+import {normalizePropertyImageUrls, toImageApiUrl} from '@/lib/images'
 
 type PropertyMetadata = {title?: string; description?: string; image?: string}
 
@@ -33,7 +34,7 @@ export const getPropertyMetadata = unstable_cache(
     return {
       title: localized(property.title),
       description: localized(property.description),
-      image: typeof images[0] === 'string' ? images[0] : undefined
+      image: typeof images[0] === 'string' ? toImageApiUrl(images[0]) : undefined
     }
   },
   ['property-metadata'],
@@ -44,11 +45,12 @@ export const getPropertyMetadata = unstable_cache(
 // can be computed per propertyId — that's what lets a single mutation's
 // revalidateTag(`property:<id>`) invalidate exactly this property's cache entry.
 export async function getProperty(propertyId: string): Promise<Property | null> {
-  return unstable_cache(
+  const property = await unstable_cache(
     async () => getDoc<Omit<Property, 'id'>>('properties', propertyId),
     ['property', propertyId],
     {revalidate: 30, tags: [`property:${propertyId}`, 'properties']}
   )()
+  return property ? normalizePropertyImageUrls(property) : null
 }
 
 export async function getPropertyBookingsForAvailability(propertyId: string): Promise<Booking[]> {
@@ -62,7 +64,7 @@ export async function getSimilarProperties(property: Property): Promise<Property
   // Берём на одно больше десяти: текущий объект может оказаться в выборке и
   // будет отфильтрован.
   const properties = await queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 11})
-  return properties.filter(p => p.id !== property.id).slice(0, 10)
+  return properties.map(normalizePropertyImageUrls).filter(p => p.id !== property.id).slice(0, 10)
 }
 
 export async function hasUserBookedProperty(userId: string, propertyId: string): Promise<boolean> {
@@ -95,7 +97,7 @@ export interface CurrentUserProfile {
 export async function getUserProfile(userId: string): Promise<CurrentUserProfile | null> {
   const user = await getDoc<{name?: string; email?: string; phone?: string; avatar?: string}>('users', userId)
   if (!user) return null
-  return {id: userId, name: user.name || 'User', email: user.email || '', phone: user.phone || '', avatar: user.avatar}
+  return {id: userId, name: user.name || 'User', email: user.email || '', phone: user.phone || '', avatar: toImageApiUrl(user.avatar)}
 }
 
 // Не блокирует рендер страницы; потерянный инкремент при гонке — приемлемая

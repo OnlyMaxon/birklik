@@ -8,6 +8,7 @@ import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooki
 import { createBookingApprovedNotification, createBookingRejectedNotification } from '@/services/notifications-service'
 import {InlineSpinner, ListingRowsSkeleton} from '@/components'
 import * as logger from '@/services/logger'
+import {toImageApiUrl} from '@/lib/images'
 
 interface BookingWithProperty extends Booking {
   propertyTitle?: string
@@ -211,7 +212,7 @@ export const BookingsTab: React.FC = () => {
           bookingsWithDetails.push({
             ...booking,
             propertyTitle: getPropertyTitle(property),
-            propertyImage: property?.images?.[0]
+            propertyImage: toImageApiUrl(property?.images?.[0])
           })
         }
       })
@@ -255,7 +256,7 @@ export const BookingsTab: React.FC = () => {
                 id: bookingDoc.id,
                 ...booking,
                 propertyTitle: getPropertyTitle(property),
-                propertyImage: property?.images?.[0]
+                propertyImage: toImageApiUrl(property?.images?.[0])
               })
             }
           }

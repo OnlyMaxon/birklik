@@ -7,6 +7,7 @@ import L from 'leaflet'
 import { useLanguage } from '@/components/providers'
 import { Property, Language } from '../../types'
 import { cities } from '../../data'
+import {toImageApiUrl} from '@/lib/images'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
@@ -128,7 +129,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
             <Popup>
               <div className="map-popup">
                 <img
-                  src={property.images?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'}
+                  src={toImageApiUrl(property.images?.[0]) || 'https://via.placeholder.com/400x300?text=No+Image'}
                   alt={getLocalizedText(property.title)}
                   className="popup-image"
                 />

@@ -74,7 +74,7 @@ function parseArgs(): Options {
 }
 
 /**
- * Достаёт Storage-путь из download-URL.
+ * Достаёт Storage-путь из legacy download-URL или /api/images URL.
  * https://.../o/properties%2Fuid%2F123_a.jpg?alt=media  →  properties/uid/123_a.jpg
  *
  * Сравнение идёт по декодированному пути, а не по подстроке в URL: так файл
@@ -82,13 +82,14 @@ function parseArgs(): Options {
  */
 function extractStoragePaths(text: string): string[] {
   const out: string[] = [];
-  const re = /\/o\/([^"?\s\\]+)/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
-    try {
-      out.push(decodeURIComponent(m[1]));
-    } catch {
-      // повреждённый URL — пропускаем, файл при этом останется жив
+  for (const re of [/\/o\/([^"?\s\\]+)/g, /\/api\/images\/([^"?\s\\]+)/g]) {
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      try {
+        out.push(decodeURIComponent(m[1]));
+      } catch {
+        // повреждённый URL — пропускаем, файл при этом останется жив
+      }
     }
   }
   return out;

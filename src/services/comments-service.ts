@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../lib/firebase/client'
 import * as logger from './logger'
+import {toImageApiUrl} from '../lib/images'
 
 export interface Comment {
   id: string
@@ -65,10 +66,10 @@ export const commentsService = {
     try {
       const snapshot = await getDocs(collection(db, `properties/${propertyId}/comments`))
 
-      return snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      } as Comment))
+      return snapshot.docs.map((doc) => {
+        const comment = {id: doc.id, ...doc.data()} as Comment
+        return {...comment, userAvatar: toImageApiUrl(comment.userAvatar)}
+      })
     } catch (error) {
       logger.error('Error fetching comments:', error)
       throw new Error('Failed to load comments.')

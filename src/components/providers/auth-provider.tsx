@@ -8,13 +8,14 @@ import {
   User as FirebaseUser
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { ref, uploadBytes, deleteObject } from 'firebase/storage'
 import {auth, db, storage, initializeFirebaseAppCheck} from '@/lib/firebase/client'
 import type {User} from '@/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
 import {clearCsrfToken} from '@/services/csrf-service'
 import {logoutAction} from '@/lib/auth/actions'
+import {imageUrlFromStoragePath, storagePathFromImageSource, toImageApiUrl} from '@/lib/images'
 
 interface AuthContextType {
   user: User | null
@@ -53,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               name: userData.name || fbUser.displayName || 'User',
               email: fbUser.email || '',
               phone: userData.phone || '',
-              avatar: userData.avatar || fbUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'User')}&background=1a365d&color=fff`
+              avatar: toImageApiUrl(userData.avatar || fbUser.photoURL || '') || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'User')}&background=1a365d&color=fff`
             })
           } else {
             // Fallback to Firebase user data
@@ -62,7 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               name: fbUser.displayName || 'User',
               email: fbUser.email || '',
               phone: '',
-              avatar: fbUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(fbUser.displayName || 'User')}&background=1a365d&color=fff`
+              avatar: toImageApiUrl(fbUser.photoURL || '') || `https://ui-avatars.com/api/?name=${encodeURIComponent(fbUser.displayName || 'User')}&background=1a365d&color=fff`
             })
           }
         } catch (error) {
@@ -72,7 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: fbUser.displayName || 'User',
             email: fbUser.email || '',
             phone: '',
-            avatar: fbUser.photoURL || undefined
+            avatar: toImageApiUrl(fbUser.photoURL || '') || undefined
           })
         }
       } else {
@@ -121,7 +122,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         try {
           await uploadBytes(avatarRef, compressed)
-          uploadedAvatarUrl = await getDownloadURL(avatarRef)
+          uploadedAvatarUrl = imageUrlFromStoragePath(fileName)
           uploadedAvatarPath = fileName
           avatarUrl = uploadedAvatarUrl
         } catch (uploadError) {
@@ -155,9 +156,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } : prev)
 
         // Delete old avatar from Storage after successful save (best-effort)
-        if (uploadedAvatarUrl && oldAvatarUrl && oldAvatarUrl.includes('firebasestorage')) {
+        if (uploadedAvatarUrl && oldAvatarUrl) {
           try {
-            const oldPath = decodeURIComponent(oldAvatarUrl.split('/o/')[1]?.split('?')[0] || '')
+            const oldPath = storagePathFromImageSource(oldAvatarUrl)
             if (oldPath) await deleteObject(ref(storage, oldPath))
           } catch {
             // ignore — old file may already be gone

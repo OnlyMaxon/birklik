@@ -13,8 +13,9 @@ import {
   startAfter,
   DocumentSnapshot
 } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { ref, uploadBytes, deleteObject } from 'firebase/storage'
 import { db, storage, auth } from '../lib/firebase/client'
+import {imageUrlFromStoragePath, normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 import { compressPropertyImage } from '../utils/image-compression'
 import { Property } from '../types'
 import * as logger from './logger'
@@ -47,10 +48,10 @@ export const listingService = {
       const q = query(collection(db, 'properties'), ...constraints)
       const snapshot = await getDocs(q)
 
-      return snapshot.docs.map((doc) => ({
+      return snapshot.docs.map((doc) => normalizePropertyImageUrls({
         id: doc.id,
         ...doc.data()
-      })) as (Property & { id: string })[]
+      } as Property)) as (Property & { id: string })[]
     } catch (error) {
       logger.error('Error fetching listings:', error)
       throw error
@@ -81,10 +82,10 @@ export const listingService = {
       const q = query(collection(db, 'properties'), ...constraints)
       const snapshot = await getDocs(q)
 
-      return snapshot.docs.map((doc) => ({
+      return snapshot.docs.map((doc) => normalizePropertyImageUrls({
         id: doc.id,
         ...doc.data()
-      })) as (Property & { id: string })[]
+      } as Property)) as (Property & { id: string })[]
     } catch (error) {
       logger.error('Error fetching all listings:', error)
       throw error
@@ -163,7 +164,7 @@ export const listingService = {
    * Upload a single property image to Firebase Storage
    * @param {string} propertyId - Property Firestore document ID
    * @param {File} file - Image file to upload
-   * @returns {Promise<string>} Download URL of the uploaded image
+   * @returns {Promise<string>} Same-origin image API URL
    * @throws {Error} On storage upload failure
    * @example
    * const url = await listingService.uploadPropertyImage('prop_111', imageFile)
@@ -176,10 +177,9 @@ export const listingService = {
       const fileName = `${Date.now()}_${compressed.name}`
       const storageRef = ref(storage, `properties/${userId}/${fileName}`)
 
-      const snapshot = await uploadBytes(storageRef, compressed)
-      const downloadUrl = await getDownloadURL(snapshot.ref)
+      await uploadBytes(storageRef, compressed)
 
-      return downloadUrl
+      return imageUrlFromStoragePath(storageRef.fullPath)
     } catch (error) {
       logger.error('Error uploading image:', error)
       throw error
@@ -188,15 +188,17 @@ export const listingService = {
 
   /**
    * Delete a property image from Firebase Storage
-   * @param {string} imageUrl - Firebase Storage download URL or path
+   * @param {string} imageUrl - Same-origin image URL, legacy Firebase URL, or Storage path
    * @returns {Promise<void>}
    * @throws {Error} On storage delete failure
    * @example
-   * await listingService.deletePropertyImage('https://firebasestorage.googleapis.com/...')
+   * await listingService.deletePropertyImage('/api/images/properties/user/photo.webp')
    */
   async deletePropertyImage(imageUrl: string) {
     try {
-      const imageRef = ref(storage, imageUrl)
+      const path = storagePathFromImageSource(imageUrl)
+      if (!path) throw new Error('Invalid property image URL')
+      const imageRef = ref(storage, path)
       await deleteObject(imageRef)
     } catch (error) {
       logger.error('Error deleting image:', error)
@@ -208,7 +210,7 @@ export const listingService = {
    * Upload multiple property images in batch
    * @param {string} propertyId - Property Firestore document ID
    * @param {File[]} files - Array of image files to upload
-   * @returns {Promise<string[]>} Array of download URLs for uploaded images
+   * @returns {Promise<string[]>} Array of same-origin image API URLs
    * @throws {Error} On storage upload failure for any file
    * @example
    * const urls = await listingService.batchUploadImages('prop_222', [file1, file2])

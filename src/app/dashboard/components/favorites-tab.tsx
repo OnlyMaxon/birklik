@@ -7,6 +7,7 @@ import { Property } from '@/types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
 import * as logger from '@/services/logger'
+import {normalizePropertyImageUrls} from '@/lib/images'
 
 export const FavoritesTab: React.FC = () => {
   const { language } = useLanguage()
@@ -27,7 +28,7 @@ export const FavoritesTab: React.FC = () => {
           where('favorites', 'array-contains', user.id)
         )
         const snapshot = await getDocs(q)
-        setFavorites(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }) as Property))
+        setFavorites(snapshot.docs.map(doc => normalizePropertyImageUrls({...doc.data(), id: doc.id} as Property)))
       } catch (err) {
         logger.error('Error loading favorites:', err)
         setError(

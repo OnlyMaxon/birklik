@@ -12,11 +12,11 @@ interface StorageCleanupLog {
 }
 
 /**
- * Достаёт Storage-путь из download-URL.
+ * Достаёт Storage-путь из legacy download-URL или /api/images URL.
  * https://.../o/properties%2Fuid%2F123_a.jpg?alt=media  →  properties/uid/123_a.jpg
  */
 function storagePathFromUrl(url: string): string | null {
-  const match = url?.match?.(/\/o\/([^?]+)/);
+  const match = url?.match?.(/\/o\/([^?]+)/) || url?.match?.(/\/api\/images\/([^?"\s]+)/);
   if (!match) return null;
   try {
     return decodeURIComponent(match[1]);
@@ -43,14 +43,15 @@ export async function collectReferencedPaths(): Promise<Set<string>> {
     if (depth > MAX_DEPTH) return;
     const snap = await col.get();
     for (const doc of snap.docs) {
-      const re = /\/o\/([^"?\s\\]+)/g;
       const text = JSON.stringify(doc.data());
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(text)) !== null) {
-        try {
-          referenced.add(decodeURIComponent(m[1]));
-        } catch {
-          // повреждённый URL — пропускаем, файл останется жив
+      for (const re of [/\/o\/([^"?\s\\]+)/g, /\/api\/images\/([^"?\s\\]+)/g]) {
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(text)) !== null) {
+          try {
+            referenced.add(decodeURIComponent(m[1]));
+          } catch {
+            // повреждённый URL — пропускаем, файл останется жив
+          }
         }
       }
       for (const sub of await doc.ref.listCollections()) {
@@ -217,7 +218,7 @@ export async function cleanupOldAvatars(): Promise<StorageCleanupLog> {
           const avatarUrl: string | undefined = userDoc.exists ? userDoc.data()?.['avatar'] : undefined;
           currentAvatarPathByUser.set(
             userId,
-            avatarUrl && avatarUrl.includes('firebasestorage') ? storagePathFromUrl(avatarUrl) : null
+            avatarUrl ? storagePathFromUrl(avatarUrl) : null
           );
         }
 

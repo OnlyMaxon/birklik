@@ -246,8 +246,18 @@ export async function cleanupTestData(): Promise<CleanupLog> {
 
 /**
  * Удаляет изображения объявления из Storage по URL-ссылкам в документе.
- * URL формат: https://.../o/properties%2F{userId}%2F{filename}?...
+ * Поддерживает legacy Firebase URL и /api/images/{storagePath}.
  */
+function imageStoragePath(url: string): string | null {
+  const match = url.match(/\/o\/([^?]+)/) || url.match(/\/api\/images\/([^?]+)/);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
 async function deletePropertyImages(propertyId: string): Promise<void> {
   try {
     const doc = await admin.firestore().collection('properties').doc(propertyId).get();
@@ -258,9 +268,8 @@ async function deletePropertyImages(propertyId: string): Promise<void> {
 
     for (const url of images) {
       try {
-        const match = url.match(/\/o\/(.+?)\?/);
-        if (!match) continue;
-        const filePath = decodeURIComponent(match[1]);
+        const filePath = imageStoragePath(url);
+        if (!filePath) continue;
         await bucket.file(filePath).delete();
       } catch {
         // Файл уже удалён — игнорируем
@@ -310,9 +319,9 @@ export async function cleanupInactiveListings(): Promise<CleanupLog> {
       for (const [, images] of imagesByProp) {
         for (const url of images) {
           try {
-            const match = url.match(/\/o\/(.+?)\?/);
-            if (!match) continue;
-            await bucket.file(decodeURIComponent(match[1])).delete();
+            const filePath = imageStoragePath(url);
+            if (!filePath) continue;
+            await bucket.file(filePath).delete();
           } catch { /* файл уже удалён */ }
         }
       }

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import {toImageApiUrl} from '@/lib/images'
 
 interface ImageGalleryProps {
   images: string[]
@@ -8,6 +9,7 @@ interface ImageGalleryProps {
 }
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
+  const imageUrls = React.useMemo(() => images.map(image => toImageApiUrl(image) || image), [images])
   const [selectedIndex, setSelectedIndex] = React.useState(0)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const swipeStartX = React.useRef<number | null>(null)
@@ -16,11 +18,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
   const isPointerDown = React.useRef(false)
 
   const goToPrevious = () => {
-    setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+    setSelectedIndex((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1))
   }
 
   const goToNext = () => {
-    setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+    setSelectedIndex((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1))
   }
 
   const handleSwipeStart = (e: React.TouchEvent) => {
@@ -107,7 +109,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
-          <img src={images[selectedIndex]} alt={`${alt} - Main`} />
+          <img src={imageUrls[selectedIndex]} alt={`${alt} - Main`} />
           <button
             type="button"
             className="gallery-main-nav gallery-main-prev"
@@ -145,7 +147,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
         </div>
         
         <div className="gallery-thumbnails">
-          {images.map((image, index) => (
+          {imageUrls.map((image, index) => (
             <button
               key={index}
               className={`thumbnail ${selectedIndex === index ? 'active' : ''}`}
@@ -184,7 +186,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
             </button>
 
             <img 
-              src={images[selectedIndex]} 
+              src={imageUrls[selectedIndex]}
               alt={`${alt} - ${selectedIndex + 1}`} 
               className="modal-image"
             />
