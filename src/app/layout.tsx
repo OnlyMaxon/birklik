@@ -9,7 +9,16 @@ export const metadata: Metadata = {
   title: {default: 'Birklik.az', template: '%s | Birklik.az'},
   description: 'Azərbaycanda günlük kirayə evlər və istirahət məkanları',
   manifest: '/manifest.json',
-  icons: {icon: '/brand/generated/logo-32x32.png', apple: '/brand/generated/logo-180x180.png'}
+  // .ico указан первым и с sizes: 'any' — его спрашивают старые браузеры,
+  // почтовые клиенты и панель задач Windows, PNG им не подходит.
+  icons: {
+    icon: [
+      {url: '/brand/favicon.ico', sizes: 'any'},
+      {url: '/brand/generated/logo-32x32.png', type: 'image/png', sizes: '32x32'},
+      {url: '/brand/generated/logo-16x16.png', type: 'image/png', sizes: '16x16'}
+    ],
+    apple: '/brand/generated/logo-180x180.png'
+  }
 }
 
 export const viewport: Viewport = {width: 'device-width', initialScale: 1, themeColor: '#1a365d'}
