@@ -8,14 +8,14 @@ import {
   User as FirebaseUser
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { ref, uploadBytes, deleteObject } from 'firebase/storage'
+import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import {auth, db, storage, initializeFirebaseAppCheck} from '@/lib/firebase/client'
 import type {User} from '@/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
 import {clearCsrfToken} from '@/services/csrf-service'
 import {logoutAction} from '@/lib/auth/actions'
-import {imageUrlFromStoragePath, storagePathFromImageSource, toImageApiUrl} from '@/lib/images'
+import {storagePathFromImageSource, toImageApiUrl} from '@/lib/images'
 
 interface AuthContextType {
   user: User | null
@@ -122,7 +122,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         try {
           await uploadBytes(avatarRef, compressed)
-          uploadedAvatarUrl = imageUrlFromStoragePath(fileName)
+          // В Firestore кладём полный адрес с токеном, а не путь /api/images.
+          // База общая с сайтом на Vite, а там маршрута /api/images нет и
+          // обращение к Storage без токена отбивается App Check. На чтении
+          // ссылка всё равно переписывается через toImageApiUrl.
+          uploadedAvatarUrl = await getDownloadURL(avatarRef)
           uploadedAvatarPath = fileName
           avatarUrl = uploadedAvatarUrl
         } catch (uploadError) {

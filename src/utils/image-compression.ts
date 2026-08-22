@@ -1,3 +1,13 @@
+const BLOB_EXTENSIONS: Record<string, string> = {
+  'image/webp': 'webp',
+  'image/jpeg': 'jpg',
+  'image/png': 'png'
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
+  return new Promise(resolve => canvas.toBlob(resolve, type, quality))
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -56,17 +66,20 @@ export async function compressImage(
       }
     }
 
-    return await new Promise<File>((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return reject(new Error('Compression failed'))
-          const newName = file.name.replace(/\.[^.]+$/, '.webp')
-          resolve(new File([blob], newName, { type: 'image/webp' }))
-        },
-        'image/webp',
-        quality
-      )
-    })
+    // Браузер, не умеющий кодировать webp в canvas, по спецификации молча
+    // отдаёт PNG и игнорирует quality. Раньше результат всё равно называли
+    // .webp — так в Storage попадали PNG по 1–2 МБ вместо webp по 60 КБ.
+    // Смотрим фактический тип и при отказе переснимаем в jpeg: его умеют все.
+    let blob = await canvasToBlob(canvas, 'image/webp', quality)
+    if (!blob || blob.type !== 'image/webp') {
+      blob = await canvasToBlob(canvas, 'image/jpeg', quality)
+    }
+    if (!blob) throw new Error('Compression failed')
+
+    // Имя и тип всегда соответствуют содержимому, чем бы браузер ни ответил.
+    const extension = BLOB_EXTENSIONS[blob.type] ?? 'png'
+    const newName = file.name.replace(/\.[^.]+$/, `.${extension}`)
+    return new File([blob], newName, { type: blob.type })
   } finally {
     URL.revokeObjectURL(objectUrl)
   }

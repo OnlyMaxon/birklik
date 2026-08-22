@@ -13,9 +13,9 @@ import {
   startAfter,
   DocumentSnapshot
 } from 'firebase/firestore'
-import { ref, uploadBytes, deleteObject } from 'firebase/storage'
+import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import { db, storage, auth } from '../lib/firebase/client'
-import {imageUrlFromStoragePath, normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
+import {normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 import { compressPropertyImage } from '../utils/image-compression'
 import { Property } from '../types'
 import * as logger from './logger'
@@ -179,7 +179,10 @@ export const listingService = {
 
       await uploadBytes(storageRef, compressed)
 
-      return imageUrlFromStoragePath(storageRef.fullPath)
+      // Полный адрес с токеном, а не путь /api/images: база общая с сайтом на
+      // Vite, где такого маршрута нет, а Storage без токена отбивает App Check.
+      // На чтении ссылка переписывается через normalizePropertyImageUrls.
+      return await getDownloadURL(storageRef)
     } catch (error) {
       logger.error('Error uploading image:', error)
       throw error

@@ -14,13 +14,13 @@ import {
   DocumentSnapshot,
   QueryConstraint
 } from 'firebase/firestore'
-import { ref, uploadBytes, deleteObject } from 'firebase/storage'
+import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import { auth } from '../lib/firebase/client'
 import { compressPropertyImage } from '../utils/image-compression'
 import { db, storage } from '../lib/firebase/client'
 import { Property, PropertyType, Language, Comment } from '../types'
 import * as logger from './logger'
-import {imageUrlFromStoragePath, normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
+import {normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 
 const COLLECTION_NAME = 'properties'
 const PAGE_SIZE = 20
@@ -394,7 +394,10 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
       const storageRef = ref(storage, fileName)
 
       await uploadBytes(storageRef, compressed)
-      urls.push(imageUrlFromStoragePath(fileName))
+      // Полный адрес с токеном, а не путь /api/images: база общая с сайтом на
+      // Vite, где такого маршрута нет, а Storage без токена отбивает App Check.
+      // На чтении ссылка переписывается через normalizePropertyImageUrls.
+      urls.push(await getDownloadURL(storageRef))
     } catch (error) {
       logger.error('Error uploading image:', error)
     }
