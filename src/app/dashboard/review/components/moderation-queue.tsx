@@ -4,14 +4,18 @@ import React from 'react'
 import {useSearchParams, Link, useNavigate} from '@/lib/navigation'
 import {InlineSpinner, ListingRowsSkeleton} from '@/components'
 import {useLanguage} from '@/components/providers'
-import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty } from '@/services'
+import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty, getAllBookings, deleteBooking } from '@/services'
 import { createListingRejectedNotification } from '@/services/notifications-service'
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
-import { Language, Property, CommentReport } from '@/types'
+import { Language, Property, CommentReport, Booking } from '@/types'
 import { cities } from '@/data'
 
-type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'people'
+type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people'
+
+// Статусы броней берём из самих данных, а не из типа Booking: часть старых записей
+// лежит со статусом 'active', которого в типе нет.
+const KNOWN_BOOKING_STATUSES = ['pending', 'approved', 'cancellation_requested', 'rejected', 'cancelled']
 
 export const ModerationQueue: React.FC = () => {
   const { language, t } = useLanguage()
@@ -23,6 +27,11 @@ export const ModerationQueue: React.FC = () => {
   const [allComments, setAllComments] = React.useState<CommentWithProperty[]>([])
   const [allReports, setAllReports] = React.useState<CommentReport[]>([])
   const [allListings, setAllListings] = React.useState<Property[]>([])
+  const [allBookings, setAllBookings] = React.useState<Booking[]>([])
+  const [isDeletingBooking, setIsDeletingBooking] = React.useState<string | null>(null)
+  const [bookingSearch, setBookingSearch] = React.useState('')
+  const [bookingStatusFilter, setBookingStatusFilter] = React.useState<string>('all')
+  const [bookingSortOrder, setBookingSortOrder] = React.useState<'newest' | 'oldest'>('newest')
   const [searchQuery, setSearchQuery] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(true)
   const [isDeletingComment, setIsDeletingComment] = React.useState<string | null>(null)
@@ -49,20 +58,37 @@ export const ModerationQueue: React.FC = () => {
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)
     setError('')
-    const [listings, comments, reports, allProps, users] = await Promise.all([
+    const [listings, comments, reports, allProps, users, bookings] = await Promise.all([
       getPendingProperties(),
       getAllCommentsForModeration(),
       getAllReports(),
       getAllProperties(),
-      getAllUsers()
+      getAllUsers(),
+      getAllBookings()
     ])
     setPendingListings(listings)
     setAllComments(comments)
     setAllReports(reports)
     setAllListings(allProps)
     setAllUsers(users)
+    setAllBookings(bookings)
     setIsLoading(false)
   }, [])
+
+  const removeBooking = async (id: string) => {
+    setIsDeletingBooking(id)
+    setError('')
+
+    const ok = await deleteBooking(id)
+    if (!ok) {
+      setError(language === 'en' ? 'Could not delete booking.' : language === 'ru' ? 'Не удалось удалить бронирование.' : 'Rezervasiyanı silmək mümkün olmadı.')
+      setIsDeletingBooking(null)
+      return
+    }
+
+    await loadPendingListings()
+    setIsDeletingBooking(null)
+  }
 
   React.useEffect(() => {
     loadPendingListings()
@@ -175,6 +201,16 @@ export const ModerationQueue: React.FC = () => {
     return new Date(iso).toLocaleDateString(language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ')
   }
 
+  const bookingStatusLabel = (status: string) => {
+    if (status === 'all') return language === 'en' ? 'All' : language === 'ru' ? 'Все' : 'Hamısı'
+    if (status === 'pending') return language === 'en' ? 'Pending' : language === 'ru' ? 'Ожидает' : 'Gözləyir'
+    if (status === 'approved') return language === 'en' ? 'Approved' : language === 'ru' ? 'Подтверждено' : 'Təsdiqlənib'
+    if (status === 'cancellation_requested') return language === 'en' ? 'Cancellation asked' : language === 'ru' ? 'Запрос отмены' : 'Ləğv sorğusu'
+    if (status === 'rejected') return language === 'en' ? 'Rejected' : language === 'ru' ? 'Отклонено' : 'Rədd edilib'
+    if (status === 'cancelled') return language === 'en' ? 'Cancelled' : language === 'ru' ? 'Отменено' : 'Ləğv edilib'
+    return status // старая запись с неизвестным статусом — показываем как есть
+  }
+
   return (
     <>
       <section className="moderation-page">
@@ -210,6 +246,12 @@ export const ModerationQueue: React.FC = () => {
               onClick={() => setActiveTab('allListings')}
             >
               {language === 'en' ? 'All Listings' : language === 'ru' ? 'Все объявления' : 'Bütün Elanlar'} ({allListings.length})
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('bookings')}
+            >
+              {language === 'en' ? 'Bookings' : language === 'ru' ? 'Бронирования' : 'Rezervasiyalar'} ({allBookings.length})
             </button>
             <button
               className={`tab-btn ${activeTab === 'people' ? 'active' : ''}`}
@@ -554,6 +596,164 @@ export const ModerationQueue: React.FC = () => {
                             >
                               {isDeletingListing === listing.id && <InlineSpinner label={t.messages.loading} />}
                               {isDeletingListing === listing.id ? t.messages.loading : (language === 'en' ? 'Delete' : language === 'ru' ? 'Удалить' : 'Sil')}
+                            </button>
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
+            </div>
+          ) : activeTab === 'bookings' ? (
+            // BOOKINGS TAB
+            <div>
+              <div className="ml-toolbar">
+                <input
+                  type="text"
+                  className="people-search-input"
+                  style={{ margin: 0, flex: 1, minWidth: 0 }}
+                  placeholder={language === 'en' ? 'Search by guest, phone or listing...' : language === 'ru' ? 'Поиск по гостю, телефону или объявлению...' : 'Qonaq, telefon və ya elana görə axtarın...'}
+                  value={bookingSearch}
+                  onChange={(e) => setBookingSearch(e.target.value)}
+                />
+                <div className="ml-status-filters">
+                  {['all', ...Array.from(new Set(allBookings.map(b => b.status))).sort()].map(bf => (
+                    <button
+                      key={bf}
+                      type="button"
+                      className={`ml-filter-btn ${bookingStatusFilter === bf ? 'active' : ''}`}
+                      onClick={() => setBookingStatusFilter(bf)}
+                    >
+                      {bookingStatusLabel(bf)}
+                      {bf !== 'all' && (
+                        <span className="ml-filter-count">{allBookings.filter(b => b.status === bf).length}</span>
+                      )}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="ml-filter-btn ml-sort-btn"
+                    onClick={() => setBookingSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+                  >
+                    {bookingSortOrder === 'newest'
+                      ? (language === 'en' ? '↓ Newest' : language === 'ru' ? '↓ Новые' : '↓ Yeni')
+                      : (language === 'en' ? '↑ Oldest' : language === 'ru' ? '↑ Старые' : '↑ Köhnə')}
+                  </button>
+                </div>
+              </div>
+
+              {(() => {
+                // The listing may be gone: rejectProperty and deleteProperty drop the
+                // document, and only deleteProperty clears its bookings.
+                const listingById = new Map(allListings.map(listing => [listing.id, listing]))
+
+                const filtered = allBookings
+                  .filter(booking => {
+                    const query = bookingSearch.toLowerCase().trim()
+                    const listing = listingById.get(booking.propertyId)
+                    const title = listing ? getLocalizedText(listing.title).toLowerCase() : ''
+                    const matchSearch = !query
+                      || booking.userName?.toLowerCase().includes(query)
+                      || booking.userEmail?.toLowerCase().includes(query)
+                      || booking.userPhone?.toLowerCase().includes(query)
+                      || title.includes(query)
+                    const matchStatus = bookingStatusFilter === 'all' || booking.status === bookingStatusFilter
+                    return matchSearch && matchStatus
+                  })
+                  .sort((a, b) => {
+                    const aMs = a.createdAt ? new Date(a.createdAt).getTime() : 0
+                    const bMs = b.createdAt ? new Date(b.createdAt).getTime() : 0
+                    return bookingSortOrder === 'newest' ? bMs - aMs : aMs - bMs
+                  })
+
+                if (filtered.length === 0) return (
+                  <div className="moderation-empty card">
+                    <p>{language === 'en' ? 'No bookings found.' : language === 'ru' ? 'Бронирований не найдено.' : 'Rezervasiya tapılmadı.'}</p>
+                  </div>
+                )
+
+                return (
+                  <div className="moderation-list">
+                    {filtered.map((booking) => {
+                      const listing = listingById.get(booking.propertyId)
+                      return (
+                        <article key={booking.id} className="moderation-comment card">
+                          <div className="mb-head">
+                            <div className="mb-guest">
+                              <strong>{booking.userName || '—'}</strong>
+                              <span className="mb-contact">{booking.userPhone || '—'} · {booking.userEmail || '—'}</span>
+                            </div>
+                            <span className={`mb-status mb-status--${KNOWN_BOOKING_STATUSES.includes(booking.status) ? booking.status : 'unknown'}`}>
+                              {bookingStatusLabel(booking.status)}
+                            </span>
+                          </div>
+
+                          <div className="comment-property">
+                            <span className="property-label">
+                              {language === 'en' ? 'Listing:' : language === 'ru' ? 'Объявление:' : 'Elan:'}
+                            </span>
+                            {listing ? (
+                              <Link to={`/property/${booking.propertyId}`} className="property-link">
+                                {getLocalizedText(listing.title)}
+                              </Link>
+                            ) : (
+                              <span className="mb-orphan">
+                                {language === 'en' ? 'listing deleted' : language === 'ru' ? 'объявление удалено' : 'elan silinib'} · {booking.propertyId}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="mb-stay">
+                            <div className="mb-stay-item">
+                              <span className="mb-stay-label">{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş'}</span>
+                              <strong>{formatDate(booking.checkInDate)}</strong>
+                            </div>
+                            <span className="mb-stay-arrow">→</span>
+                            <div className="mb-stay-item">
+                              <span className="mb-stay-label">{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış'}</span>
+                              <strong>{formatDate(booking.checkOutDate)}</strong>
+                            </div>
+                            <div className="mb-stay-item">
+                              <span className="mb-stay-label">{language === 'en' ? 'Nights' : language === 'ru' ? 'Ночей' : 'Gecə'}</span>
+                              <strong>{booking.nights}</strong>
+                            </div>
+                            <div className="mb-stay-item">
+                              <span className="mb-stay-label">{language === 'en' ? 'Total' : language === 'ru' ? 'Сумма' : 'Məbləğ'}</span>
+                              <strong>{booking.totalPrice} {listing?.price?.currency || 'AZN'}</strong>
+                            </div>
+                          </div>
+
+                          {booking.rejectionReason && (
+                            <p className="report-field report-field--italic">
+                              <strong>{language === 'en' ? 'Reason:' : language === 'ru' ? 'Причина:' : 'Səbəb:'}</strong> {booking.rejectionReason}
+                            </p>
+                          )}
+
+                          <p className="ml-created-at">
+                            {language === 'en' ? 'Booked:' : language === 'ru' ? 'Забронировано:' : 'Rezerv edilib:'} {formatDate(booking.createdAt)}
+                          </p>
+
+                          <div className="moderation-actions">
+                            <button
+                              type="button"
+                              className="btn btn-sm ml-delete-btn"
+                              onClick={() => {
+                                const dates = `${formatDate(booking.checkInDate)} — ${formatDate(booking.checkOutDate)}`
+                                const question = language === 'en'
+                                  ? `Delete the booking of ${booking.userName || '—'} (${dates})? This cannot be undone.`
+                                  : language === 'ru'
+                                  ? `Удалить бронирование ${booking.userName || '—'} (${dates})? Отменить это будет нельзя.`
+                                  : `${booking.userName || '—'} rezervasiyasını silmək (${dates})? Bunu geri qaytarmaq olmayacaq.`
+                                if (confirm(question)) {
+                                  removeBooking(booking.id)
+                                }
+                              }}
+                              disabled={isDeletingBooking === booking.id}
+                            >
+                              {isDeletingBooking === booking.id
+                                ? t.messages.loading
+                                : (language === 'en' ? 'Delete booking' : language === 'ru' ? 'Удалить бронь' : 'Rezervasiyanı sil')}
                             </button>
                           </div>
                         </article>

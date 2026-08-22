@@ -119,11 +119,14 @@ service cloud.firestore {
          && request.resource.data.keys().hasOnly(['id', 'propertyId', 'userId', 'ownerId', 'userName', 'userEmail', 'userPhone', 'checkInDate', 'checkOutDate', 'nights', 'totalPrice', 'createdAt', 'status', 'approvedAt', 'rejectedAt', 'rejectionReason']))
       );
       
-      // Delete: owner/moderator can delete any booking, or user can delete their own cancelled bookings
+      // Delete: owner/moderator can delete any booking, or user can delete their own cancelled bookings.
+      // isModerator() идёт первым намеренно: следующая ветка читает документ объявления, а у
+      // части броней объявление уже удалено — get() вернёт null, обращение к .data оборвёт
+      // проверку ошибкой, и до модератора она бы не дошла.
       allow delete: if request.auth != null && (
-        (request.auth.uid == resource.data.userId && resource.data.status == 'cancelled')
+        isModerator()
+        || (request.auth.uid == resource.data.userId && resource.data.status == 'cancelled')
         || isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
-        || isModerator()
       );
     }
 

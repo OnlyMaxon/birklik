@@ -109,7 +109,21 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
-          <img src={imageUrls[selectedIndex]} alt={`${alt} - Main`} />
+          {/* Размытая подложка вместо обрезки: узкие и низкие снимки показываются
+              целиком, а поля по бокам заполняются тем же кадром. Адрес совпадает
+              с основным изображением, поэтому браузер берёт его из кэша и второй
+              загрузки не происходит. */}
+          <img
+            src={imageUrls[selectedIndex]}
+            alt=""
+            aria-hidden="true"
+            className="gallery-main-backdrop"
+          />
+          <img
+            src={imageUrls[selectedIndex]}
+            alt={`${alt} - Main`}
+            className="gallery-main-photo"
+          />
           <button
             type="button"
             className="gallery-main-nav gallery-main-prev"

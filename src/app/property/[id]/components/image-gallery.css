@@ -44,14 +44,32 @@
   background: rgba(11, 28, 63, 0.82);
 }
 
-.gallery-main img {
+/* Подложка: тот же кадр, растянутый по рамке и размытый. Заполняет поля,
+   которые остаются, когда пропорции фото не совпадают с пропорциями блока. */
+.gallery-main-backdrop {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Небольшое увеличение прячет полупрозрачную кайму, которую blur оставляет по краям */
+  transform: scale(1.1);
+  filter: blur(24px) brightness(0.82);
+  /* Декоративная — не перехватывает клики и свайпы у основного блока */
+  pointer-events: none;
+}
+
+/* Само фото: contain вместо cover, поэтому кадр виден целиком и не обрезается */
+.gallery-main-photo {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
-.gallery-main:hover img {
+.gallery-main:hover .gallery-main-photo {
   transform: scale(1.02);
 }
 
