@@ -303,7 +303,8 @@
       "ourApps": "Our apps",
       "downloadOn": "Download on the",
       "getItOn": "Get it on",
-      "taxNumber": "Registration No. (TIN): 2906348882"
+      "taxNumber": "Registration No. (TIN): 2906348882",
+      "builtBy": "Built by OnlyMaxon Studio"
     },
     "messages": {
       "contactSuccess": "Your request has been received! We will contact you soon.",

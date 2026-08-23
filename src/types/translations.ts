@@ -295,6 +295,7 @@ export interface Translations {
     privacy: string
     userAgreement: string
     copyright: string
+    builtBy: string
     whatWeDo: string
     ourApps: string
     downloadOn: string

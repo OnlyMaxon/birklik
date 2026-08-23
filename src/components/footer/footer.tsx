@@ -116,7 +116,7 @@ export const Footer: React.FC = () => {
                   {/* rel="noopener" — ссылка открывается в новой вкладке, без него
                       чужая страница получает доступ к window.opener нашей. */}
                   <a href="https://onlymaxon.com" target="_blank" rel="noopener noreferrer">
-                    OnlyMaxon
+                    {t.footer.builtBy}
                   </a>
                 </p>
               </div>
