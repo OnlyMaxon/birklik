@@ -112,6 +112,13 @@ export const Footer: React.FC = () => {
               <div className="footer-bottom">
                 <p>{t.footer.copyright}</p>
                 <p>{t.footer.taxNumber}</p>
+                <p className="footer-credit">
+                  {/* rel="noopener" — ссылка открывается в новой вкладке, без него
+                      чужая страница получает доступ к window.opener нашей. */}
+                  <a href="https://onlymaxon.com" target="_blank" rel="noopener noreferrer">
+                    OnlyMaxon
+                  </a>
+                </p>
               </div>
 
             </div>

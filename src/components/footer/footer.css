@@ -209,6 +209,23 @@
   color: rgba(255, 255, 255, 0.45);
 }
 
+/* Подпись студии — тише копирайта, чтобы не спорила с ним за внимание */
+.footer-credit {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.footer-credit a {
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-credit a:hover {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .footer-bg {
