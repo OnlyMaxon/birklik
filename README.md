@@ -375,3 +375,5 @@ Birklik.az — это маркетплейс краткосрочной арен
 - Данные: Firestore.
 - Файлы: Firebase Storage.
 - Карта: OpenStreetMap + React Leaflet.
+
+Карта: OpenStreetMap + React Leaflet. test Vite Сборка До PWA до Capacitor есть чат с Клаудом спец для этого Google Search Invented calilorucli42@gmail.com Google ReCaptcha ИнВент Надо Для всех Приложений Yandex Карты Добавлены Все Ключи либо в Claudflare либо в ENV Google Business profile invented calilorucli42@gmail.com business gmail info@birklik.az Google Cloud + Firebase trello+ BirCard Azerbaijan Bank give approve for integration the Bank payment in gmail calilorucli42@gmail.com approve + Важно Azericard : RSA Keys внутри Проекта и подключен Cloud Funtions в Папке Firebase Functions Token problem ctrl f5 solve with Cache (purge everything Cloudflare)
