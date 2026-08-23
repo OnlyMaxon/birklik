@@ -14,7 +14,7 @@ import type {User} from '@/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
 import {clearCsrfToken} from '@/services/csrf-service'
-import {logoutAction} from '@/lib/auth/actions'
+import {createSessionAction, logoutAction} from '@/lib/auth/actions'
 import {storagePathFromImageSource, toImageApiUrl} from '@/lib/images'
 
 interface AuthContextType {
@@ -42,8 +42,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeFirebaseAppCheck()
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
+        // Клиентский SDK держит вход в IndexedDB домена и восстанавливает его
+        // сам. У тех, кто заходил на старую Vite-версию, такая запись осталась,
+        // а серверной куки-сессии под неё нет — сервер считает гостем, клиент
+        // залогиненным, и страницы перекидывают друг на друга по кругу.
+        // Меняем свежий idToken на куку и приводим обе стороны к одному виду.
+        try {
+          const session = await createSessionAction(await fbUser.getIdToken())
+          if (!session.success) {
+            // Токен не приняли — разлогиниваем клиента, иначе петля вернётся.
+            await signOut(auth)
+            return
+          }
+        } catch {
+          await signOut(auth)
+          return
+        }
+
         setFirebaseUser(fbUser)
-        
+
         // Try to get user data from Firestore
         try {
           const userDoc = await getDoc(doc(db, 'users', fbUser.uid))
@@ -87,19 +104,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [])
 
   const logout = async (): Promise<void> => {
-    try {
-      // Clear sensitive data from sessionStorage
-      clearCsrfToken()
-      sessionStorage.clear()
+    // Clear sensitive data from sessionStorage
+    clearCsrfToken()
+    sessionStorage.clear()
 
-      await Promise.all([signOut(auth), logoutAction()])
-
-      // Clear user state
-      setUser(null)
-      setFirebaseUser(null)
-    } catch (error) {
-      logger.error('Logout error:', error)
+    // allSettled, а не all: раньше падение любого из двух шагов уводило в catch
+    // до очистки состояния, и пользователь оставался наполовину вошедшим —
+    // клиент считал его авторизованным, сервер нет, страницы гоняли по кругу
+    // между /login и /dashboard. Теперь оба шага выполняются независимо, а
+    // состояние гасится в любом случае.
+    const results = await Promise.allSettled([signOut(auth), logoutAction()])
+    for (const result of results) {
+      if (result.status === 'rejected') logger.error('Logout step failed:', result.reason)
     }
+
+    setUser(null)
+    setFirebaseUser(null)
   }
 
   const updateUserProfile = async (payload: { name: string; phone: string; avatar?: string; avatarFile?: File | null }): Promise<{ success: boolean; error?: string }> => {

@@ -3,9 +3,11 @@ import {queryDocs} from '@/lib/firebase/firestore-rest'
 
 const SITE_URL = 'https://birklik.az'
 
-// Карта пересобирается раз в час: объявления появляются и уходят с модерации
-// постоянно, а держать её вечной бессмысленно.
-export const revalidate = 3600
+// Карта строится по запросу, а не на сборке. С revalidate она пререндерилась
+// во время build, а scripts/cf-build.mjs на это время убирает env-файл с ключом
+// сервис-аккаунта — запрос падал, и в артефакт запекался список без единого
+// объявления. Поисковики ходят за картой редко, генерировать её на лету дёшево.
+export const dynamic = 'force-dynamic'
 
 // Потолок на случай роста базы. У поисковиков предел 50 000 адресов на файл,
 // до него далеко, но неограниченный запрос в Firestore лучше не оставлять.
@@ -41,9 +43,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: ['updatedAt', 'createdAt'],
       limit: MAX_PROPERTIES
     })
-  } catch {
+  } catch (error) {
     // Firestore недоступен — отдаём хотя бы статические страницы, пустая карта
-    // сайта хуже неполной.
+    // сайта хуже неполной. Но молчать нельзя: именно проглоченная ошибка
+    // однажды скрыла, что карта собирается без объявлений.
+    console.error('[sitemap] не удалось получить объявления:', error)
     return staticEntries
   }
 
