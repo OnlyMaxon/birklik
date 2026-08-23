@@ -5,7 +5,13 @@ import {getHomeProperties} from './queries'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('App')
-  return {title: t('site.name')}
+  return {
+    // Раньше здесь стояло site.name — заголовок выходил голым «Birklik.az», без
+    // единого ключевого слова, тогда как на старой сборке он был описательным.
+    // С шаблоном из layout получается «<описание> | Birklik.az».
+    title: t('site.tagline'),
+    alternates: {canonical: '/'}
+  }
 }
 
 export default async function Page() {

@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://birklik.az/sitemap.xml

@@ -223,6 +223,12 @@ export interface QueryOptions {
   /** Значения курсора в том же порядке, что и orderBy. */
   startAfter?: unknown[]
   limit?: number
+  /**
+   * Какие поля вернуть. Без него Firestore отдаёт документы целиком — для
+   * выборок вроде карты сайта это лишний трафик. Идентификатор приходит
+   * всегда, перечислять его не нужно.
+   */
+  select?: string[]
 }
 
 function buildStructuredQuery(collectionPath: string, options: QueryOptions): Record<string, unknown> {
@@ -270,6 +276,10 @@ function buildStructuredQuery(collectionPath: string, options: QueryOptions): Re
   }
 
   if (options.limit !== undefined) query.limit = options.limit
+
+  if (options.select?.length) {
+    query.select = {fields: options.select.map(fieldPath => ({fieldPath}))}
+  }
 
   return query
 }
