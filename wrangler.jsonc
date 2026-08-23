@@ -11,7 +11,13 @@
   // домен вместе со всеми поддоменами: birklik.az уже в списке ключа, значит
   // App Check здесь работает без правок в Google Cloud Console.
   "workers_dev": true,
-  "routes": [{"pattern": "next.birklik.az", "custom_domain": true}],
+  // Оба домена обязаны быть здесь. wrangler приводит привязки воркера к этому
+  // списку: если домен добавлен через дашборд, но забыт в конфиге, ближайший
+  // deploy его снимет и боевой адрес перестанет отвечать.
+  "routes": [
+    {"pattern": "birklik.az", "custom_domain": true},
+    {"pattern": "next.birklik.az", "custom_domain": true}
+  ],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
