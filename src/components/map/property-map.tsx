@@ -8,6 +8,7 @@ import { useLanguage } from '@/components/providers'
 import { Property, Language } from '../../types'
 import { cities } from '../../data'
 import {toImageApiUrl} from '@/lib/images'
+import {BASEMAP_ATTRIBUTION, BASEMAP_URL} from './basemap'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
@@ -116,10 +117,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
         className="leaflet-map"
       >
         {!singleProperty && <FitBoundsOnChange properties={properties} />}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        />
+        <TileLayer attribution={BASEMAP_ATTRIBUTION} url={BASEMAP_URL} />
         {properties.map((property) => (
           <Marker
             key={property.id}
