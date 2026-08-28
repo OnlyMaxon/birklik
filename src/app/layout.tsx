@@ -1,8 +1,6 @@
 import type {Metadata, Viewport} from 'next'
-import {getLocale, getMessages} from 'next-intl/server'
-import {Footer, Header, OfflineNotifier} from '@/components'
-import {Providers} from './providers'
-import {getCitiesWithListings} from './queries'
+import {cookies} from 'next/headers'
+import {routing, type AppLocale} from '@/messages/routing'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -24,32 +22,24 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {width: 'device-width', initialScale: 1, themeColor: '#1a365d'}
 
-// Ссылки на регионы в подвале нужны на каждой странице, иначе до посадочных
-// страниц поисковик добирается только через карту сайта. Но подвал не повод
-// ронять весь сайт: Firestore недоступен — рисуем без этого блока.
-async function getFooterRegions() {
-  try {
-    return await getCitiesWithListings()
-  } catch (error) {
-    console.error('[layout] не удалось получить регионы для подвала:', error)
-    return []
-  }
-}
-
+/**
+ * Здесь только каркас документа. Провайдеры, шапка и подвал переехали в
+ * SiteShell, который подключают уже сами разделы, — корневой layout не может
+ * знать язык из адреса: он родитель сегмента `[locale]` и рендерится раньше,
+ * а без middleware Next не сообщает layout-у путь запроса.
+ *
+ * Атрибут lang остаётся здесь, потому что <html> бывает только в корне. Берём
+ * его из куки — для нелокализованных страниц это и есть верный ответ, а на
+ * `/ru/*` язык дополнительно объявлен через hreflang, и его же выставляет
+ * клиент после гидратации.
+ */
 export default async function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
-  const [locale, messages, regions] = await Promise.all([getLocale(), getMessages(), getFooterRegions()])
+  const cookieLocale = (await cookies()).get('NEXT_LOCALE')?.value
+  const lang = routing.locales.includes(cookieLocale as AppLocale) ? cookieLocale : routing.defaultLocale
+
   return (
-    <html lang={locale}>
-      <body>
-        <Providers locale={locale} messages={messages}>
-          <div className="layout">
-            <Header />
-            <OfflineNotifier />
-            <main className="main-content">{children}</main>
-            <Footer regions={regions} />
-          </div>
-        </Providers>
-      </body>
+    <html lang={lang}>
+      <body>{children}</body>
     </html>
   )
 }

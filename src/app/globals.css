@@ -20,7 +20,7 @@
 @import './dashboard/review/components/moderation-queue.css';
 @import './dashboard/review/[id]/components/moderation-review.css';
 @import './dashboard/moderator-edit/[id]/components/moderator-property-editor.css';
-@import './terms/terms.css';
-@import './about/about.css';
-@import './contact/contact.css';
-@import './privacy/privacy.css';
+@import './[locale]/terms/terms.css';
+@import './[locale]/about/about.css';
+@import './[locale]/contact/contact.css';
+@import './[locale]/privacy/privacy.css';

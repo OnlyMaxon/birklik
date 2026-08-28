@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import {useLocale, useMessages} from 'next-intl'
-import {useRouter} from 'next/navigation'
+import {usePathname, useRouter} from 'next/navigation'
+import {localizePath} from '@/lib/locale-routes'
 import type {Language, Translations} from '@/types'
 
 interface LanguageContextType {
@@ -21,13 +22,25 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   const locale = useLocale() as Language
   const messages = useMessages() as {App: Translations}
   const router = useRouter()
+  const pathname = usePathname()
   const [language, setLanguageState] = useState<Language>(locale)
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
     localStorage.setItem('language', lang)
+    // Кука нужна по-прежнему: страницы объявлений и кабинета языка в адресе не
+    // имеют, и выбор для них хранится только здесь.
     document.cookie = `NEXT_LOCALE=${lang}; path=/; max-age=31536000; samesite=lax`
     document.documentElement.lang = lang
+
+    // А локализованные страницы обязаны сменить адрес: на /ru/about язык задан
+    // сегментом, и одной куки мало — она бы не пересилила адрес. Заодно
+    // получается ссылка, которой можно поделиться на нужном языке.
+    const localized = localizePath(pathname, lang)
+    if (localized !== pathname) {
+      router.replace(`${localized}${window.location.search}${window.location.hash}`)
+      return
+    }
     router.refresh()
   }
 

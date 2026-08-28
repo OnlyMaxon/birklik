@@ -1,6 +1,7 @@
 import type {MetadataRoute} from 'next'
 import {queryDocs} from '@/lib/firebase/firestore-rest'
 import {cityFromSlug, cityLandingPath} from '@/lib/city-landing'
+import {LOCALES, localizePath} from '@/lib/locale-routes'
 
 const SITE_URL = 'https://birklik.az'
 
@@ -48,13 +49,33 @@ const propertyDate = (property: SitemapProperty): Date | undefined => {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const buildStatic = (homeDate: Date | undefined): MetadataRoute.Sitemap =>
-    STATIC_PAGES.map(page => ({
-      url: `${SITE_URL}${page.path}`,
-      lastModified: page.lastModified ? new Date(page.lastModified) : homeDate,
-      changeFrequency: page.changeFrequency,
-      priority: page.priority
+  // Локализованные страницы попадают в карту во всех трёх языках. Для
+  // поисковика это разные адреса, и без явного перечисления русскую с
+  // английской он может просто не найти: внутренних ссылок на них немного.
+  const localizedEntries = (
+    path: string,
+    lastModified: Date | undefined,
+    changeFrequency: 'daily' | 'monthly' | 'yearly',
+    priority: number
+  ): MetadataRoute.Sitemap =>
+    LOCALES.map(locale => ({
+      url: `${SITE_URL}${localizePath(path, locale)}`,
+      lastModified,
+      changeFrequency,
+      // Азербайджанская версия основная — она без префикса и уже
+      // проиндексирована, поэтому вес у неё выше.
+      priority: locale === 'az' ? priority : Number((priority * 0.8).toFixed(2))
     }))
+
+  const buildStatic = (homeDate: Date | undefined): MetadataRoute.Sitemap =>
+    STATIC_PAGES.flatMap(page =>
+      localizedEntries(
+        page.path,
+        page.lastModified ? new Date(page.lastModified) : homeDate,
+        page.changeFrequency,
+        page.priority
+      )
+    )
 
   let properties: Array<SitemapProperty & {id: string}> = []
   try {
@@ -97,12 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const cityEntries: MetadataRoute.Sitemap = [...cityCounts.keys()]
     .filter(city => cityFromSlug(city.toLowerCase()) !== undefined)
-    .map(city => ({
-      url: `${SITE_URL}${cityLandingPath(city)}`,
-      lastModified: newestProperty,
-      changeFrequency: 'daily' as const,
-      priority: 0.7
-    }))
+    .flatMap(city => localizedEntries(cityLandingPath(city), newestProperty, 'daily', 0.7))
 
   // Страницы входа, регистрации и личного кабинета намеренно не включены:
   // индексировать их незачем, а в старой карте сайта они были.

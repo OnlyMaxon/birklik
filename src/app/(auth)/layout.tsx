@@ -1,3 +1,4 @@
+import {CookieLocaleShell} from '../cookie-locale-shell'
 import {RedirectIfAuthenticated} from './components/redirect-if-authenticated'
 
 // Серверного редиректа здесь намеренно нет. Он проверял только куку, а она
@@ -7,9 +8,9 @@ import {RedirectIfAuthenticated} from './components/redirect-if-authenticated'
 // сессию знает точно, а устаревшую куку AuthProvider тут же гасит.
 export default function AuthLayout({children}: {children: React.ReactNode}) {
   return (
-    <>
+    <CookieLocaleShell>
       <RedirectIfAuthenticated />
       {children}
-    </>
+    </CookieLocaleShell>
   )
 }

@@ -4,6 +4,7 @@ import {getLocale, getTranslations} from 'next-intl/server'
 import {Link} from '@/lib/navigation'
 import {PropertyCard} from '@/components/property-card'
 import {cityFromSlug, cityLandingPath, localizedCityName} from '@/lib/city-landing'
+import {localeAlternates, type LocaleCode} from '@/lib/locale-routes'
 import type {Language} from '@/types'
 import {getCitiesWithListings, getCityProperties} from './queries'
 import './city-landing.css'
@@ -20,7 +21,7 @@ import './city-landing.css'
 // регионе есть — пустая посадочная хуже отсутствующей.
 
 interface PageProps {
-  params: Promise<{city: string}>
+  params: Promise<{city: string; locale: string}>
 }
 
 // Страница ходит в Firestore на каждый запрос. Собирать её заранее нельзя:
@@ -35,7 +36,7 @@ interface PageProps {
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({params}: PageProps): Promise<Metadata> {
-  const {city: slug} = await params
+  const {city: slug, locale} = await params
   const city = cityFromSlug(slug)
   // Выдуманный регион. Настоящий 404 отсюда не выдать — корневой loading.tsx
   // открывает поток раньше, чем страница успевает решить, и код ответа уже
@@ -44,7 +45,7 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
   // видно, но в индекс она не попадёт.
   if (!city) return {robots: {index: false, follow: false}}
 
-  const [locale, t] = await Promise.all([getLocale(), getTranslations('App')])
+  const t = await getTranslations('App')
   const properties = await getCityProperties(city.value)
 
   const cityName = localizedCityName(city, locale as Language)
@@ -60,7 +61,7 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
   return {
     title: t('landing.title', values),
     description: t('landing.description', values),
-    alternates: {canonical: cityLandingPath(city.value)}
+    alternates: localeAlternates(cityLandingPath(city.value), locale as LocaleCode)
   }
 }
 
