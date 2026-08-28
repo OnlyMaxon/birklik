@@ -15,6 +15,7 @@ import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
 import {clearCsrfToken} from '@/services/csrf-service'
 import {createSessionAction, logoutAction} from '@/lib/auth/actions'
+import {hasServerSessionMarker, legacySweepDone, markLegacySweepDone} from '@/lib/auth/session-marker'
 import {storagePathFromImageSource, toImageApiUrl} from '@/lib/images'
 
 interface AuthContextType {
@@ -96,6 +97,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else {
         setFirebaseUser(null)
         setUser(null)
+
+        // Сверка в обратную сторону, без неё человек оказывался заперт.
+        // Кука сервера живёт 14 дней и переживает клиентскую сессию: логаут мог
+        // не донести до сервера свою половину (allSettled гасит состояние в
+        // любом случае), браузер мог вычистить IndexedDB. Тогда шапка рисует
+        // «Войти», клик по нему упирается в серверный редирект на /dashboard,
+        // а там клиент никого не знает — и всё сыплется ошибками App Check.
+        // Выход был один: чистить данные сайта руками.
+        // Разовая подчистка для тех, кто застрял ДО появления метки: их куку
+        // скриптом не разглядеть — она httpOnly, а метки рядом ещё нет. Поэтому
+        // один раз на браузер ходим на сервер вслепую. Дальше решает метка.
+        const needsLegacySweep = !hasServerSessionMarker() && !legacySweepDone()
+        if (hasServerSessionMarker() || needsLegacySweep) {
+          try {
+            await logoutAction()
+          } catch (error) {
+            // Не вышло — метка останется, повторим на следующей загрузке.
+            logger.error('Failed to clear stale server session:', error)
+          } finally {
+            if (needsLegacySweep) markLegacySweepDone()
+          }
+        }
       }
       setIsLoading(false)
     })

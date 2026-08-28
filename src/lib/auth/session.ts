@@ -2,6 +2,11 @@ import 'server-only'
 import {cookies} from 'next/headers'
 import {importX509, jwtVerify, decodeJwt, type JWTPayload} from 'jose'
 import {getAccessToken, getServiceAccount} from '@/lib/firebase/google-auth'
+// Метка «серверная сессия есть», видимая скриптам: сама кука httpOnly, и браузер
+// её не покажет, а клиенту надо уметь заметить, что сервер считает его вошедшим,
+// когда сам он таковым себя не считает. Ставится и снимается строго вместе с
+// настоящей кукой, иначе сверка начнёт врать.
+import {SESSION_MARKER_COOKIE_NAME} from './session-marker'
 
 const SESSION_COOKIE_NAME = 'session'
 const SESSION_EXPIRES_IN_MS = 14 * 24 * 60 * 60 * 1000 // 14 days — Firebase's max for session cookies
@@ -35,6 +40,13 @@ export async function createSession(idToken: string): Promise<SessionClaims> {
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE_NAME, sessionCookie, {
     httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: SESSION_EXPIRES_IN_MS / 1000
+  })
+  cookieStore.set(SESSION_MARKER_COOKIE_NAME, '1', {
+    httpOnly: false,
     secure: true,
     sameSite: 'lax',
     path: '/',
@@ -161,4 +173,5 @@ export async function getSession(): Promise<Session | null> {
 export async function clearSession(): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.delete(SESSION_COOKIE_NAME)
+  cookieStore.delete(SESSION_MARKER_COOKIE_NAME)
 }
