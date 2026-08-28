@@ -110,14 +110,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // один раз на браузер ходим на сервер вслепую. Дальше решает метка.
         const needsLegacySweep = !hasServerSessionMarker() && !legacySweepDone()
         if (hasServerSessionMarker() || needsLegacySweep) {
-          try {
-            await logoutAction()
-          } catch (error) {
-            // Не вышло — метка останется, повторим на следующей загрузке.
-            logger.error('Failed to clear stale server session:', error)
-          } finally {
-            if (needsLegacySweep) markLegacySweepDone()
-          }
+          // Намеренно БЕЗ await: интерфейсу этот ответ не нужен, а ждать его
+          // здесь означало бы задержать setIsLoading(false) на весь обход до
+          // сервера — то есть держать в состоянии загрузки каждого гостя при
+          // первом заходе, и намертво, если запрос не вернётся.
+          void logoutAction()
+            .catch(error => logger.error('Failed to clear stale server session:', error))
+            .finally(() => {
+              if (needsLegacySweep) markLegacySweepDone()
+            })
         }
       }
       setIsLoading(false)

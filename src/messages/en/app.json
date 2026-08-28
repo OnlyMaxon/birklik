@@ -828,6 +828,14 @@
       "toastOfflineSub": "You're working in offline mode",
       "toastOnline": "Connection restored",
       "toastOnlineSub": "Content is updating..."
+    },
+    "landing": {
+      "title": "Daily house rental — {city}",
+      "description": "Houses, villas and holiday places for daily rent in {city}. {count} active listings.",
+      "heading": "{city} — daily house rentals",
+      "found": "{count} listings",
+      "otherRegions": "Other regions",
+      "allListings": "All listings"
     }
   }
 }

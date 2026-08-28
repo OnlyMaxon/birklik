@@ -828,6 +828,14 @@
       "toastOfflineSub": "Oflayn rejimdə işləyirsiniz",
       "toastOnline": "Bağlantı bərpa edildi",
       "toastOnlineSub": "Məzmun yenilənir..."
+    },
+    "landing": {
+      "title": "Günlük ev kirayəsi — {city}",
+      "description": "{city} bölgəsində günlük və mövsümi kirayə evlər, villalar və istirahət məkanları. {count} aktiv elan.",
+      "heading": "{city} — günlük kirayə evlər",
+      "found": "{count} elan",
+      "otherRegions": "Digər bölgələr",
+      "allListings": "Bütün elanlar"
     }
   }
 }

@@ -16,18 +16,30 @@ import {propertyIdSchema} from './validators'
 
 type PropertyRouteProps = {params: Promise<{id: string}>}
 
+// Несуществующее объявление отдаёт код 200, а не 404: корневой loading.tsx
+// открывает поток раньше, чем страница успевает вызвать notFound(), и статус
+// уже отправлен. Пользователь при этом видит правильную страницу «не найдено»,
+// а вот поисковик — обычный ответ 200. Раз статусом не отбиться, отбиваемся
+// мета-тегом: noindex и БЕЗ canonical. Отдавать canonical на несуществующий
+// адрес было прямым приглашением его проиндексировать.
+const NOT_FOUND_METADATA: Metadata = {
+  title: 'Property',
+  robots: {index: false, follow: false}
+}
+
 export async function generateMetadata({params}: PropertyRouteProps): Promise<Metadata> {
   const parsedId = propertyIdSchema.safeParse((await params).id)
-  if (!parsedId.success) return {title: 'Property'}
+  if (!parsedId.success) return NOT_FOUND_METADATA
   const property = await getPropertyMetadata(parsedId.data)
+  if (!property) return NOT_FOUND_METADATA
   return {
-    title: property?.title ?? 'Property',
-    description: property?.description,
+    title: property.title,
+    description: property.description,
     // Канонический адрес: у объявления один URL, но до него добираются с
     // разными хвостами вроде utm-меток — без canonical поисковик считает их
     // разными страницами и дробит вес.
     alternates: {canonical: `/property/${parsedId.data}`},
-    openGraph: property?.image ? {images: [property.image]} : undefined
+    openGraph: property.image ? {images: [property.image]} : undefined
   }
 }
 

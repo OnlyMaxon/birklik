@@ -67,6 +67,35 @@ export async function getPropertiesPage(
   return {properties: page, cursor: nextCursor}
 }
 
+/**
+ * Регионы, где есть хотя бы одно активное объявление, от крупных к мелким.
+ *
+ * Нужно всем, кто рисует ссылки на посадочные страницы регионов: справочник
+ * городов куда шире реальной географии объявлений, и ссылка на пустой регион
+ * вела бы в 404. Считается одним запросом, а не по одному на город.
+ */
+export const getCitiesWithListings = unstable_cache(
+  async (): Promise<Array<{city: string; count: number}>> => {
+    const properties = await queryDocs<{city?: string}>('properties', {
+      where: [['status', '==', 'active']],
+      select: ['city'],
+      limit: 5000
+    })
+
+    const counts = new Map<string, number>()
+    for (const property of properties) {
+      if (!property.city) continue
+      counts.set(property.city, (counts.get(property.city) ?? 0) + 1)
+    }
+
+    return [...counts]
+      .map(([city, count]) => ({city, count}))
+      .sort((a, b) => b.count - a.count || a.city.localeCompare(b.city))
+  },
+  ['cities-with-listings'],
+  {revalidate: 300, tags: ['properties']}
+)
+
 // Cached for the common case (no user-specific filters beyond city) — short revalidate
 // window since new/changed listings should show up reasonably quickly on the homepage.
 export const getHomeProperties = unstable_cache(

@@ -1,5 +1,6 @@
 import type {MetadataRoute} from 'next'
 import {queryDocs} from '@/lib/firebase/firestore-rest'
+import {cityFromSlug, cityLandingPath} from '@/lib/city-landing'
 
 const SITE_URL = 'https://birklik.az'
 
@@ -35,7 +36,7 @@ const STATIC_PAGES: Array<{
   {path: '/user-agreement', lastModified: '2026-08-03', changeFrequency: 'yearly', priority: 0.3}
 ]
 
-type SitemapProperty = {updatedAt?: string; createdAt?: string}
+type SitemapProperty = {updatedAt?: string; createdAt?: string; city?: string}
 
 // Дата объявления: когда правили, иначе когда создали. Отсутствие обеих —
 // повод не выдумывать дату, а не ставить сегодняшнюю.
@@ -61,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // Только опубликованные: черновики, скрытые и ждущие модерации в выдаче
       // не нужны, а страницы у них всё равно закрыты.
       where: [['status', '==', 'active']],
-      select: ['updatedAt', 'createdAt'],
+      select: ['updatedAt', 'createdAt', 'city'],
       limit: MAX_PROPERTIES
     })
   } catch (error) {
@@ -87,7 +88,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticEntries = buildStatic(newestProperty)
 
+  // Посадочные страницы регионов — только те, где объявления есть: страница
+  // пустого региона отдаёт 404, и в карте сайта ей делать нечего.
+  const cityCounts = new Map<string, number>()
+  for (const property of properties) {
+    if (property.city) cityCounts.set(property.city, (cityCounts.get(property.city) ?? 0) + 1)
+  }
+
+  const cityEntries: MetadataRoute.Sitemap = [...cityCounts.keys()]
+    .filter(city => cityFromSlug(city.toLowerCase()) !== undefined)
+    .map(city => ({
+      url: `${SITE_URL}${cityLandingPath(city)}`,
+      lastModified: newestProperty,
+      changeFrequency: 'daily' as const,
+      priority: 0.7
+    }))
+
   // Страницы входа, регистрации и личного кабинета намеренно не включены:
   // индексировать их незачем, а в старой карте сайта они были.
-  return [...staticEntries, ...propertyEntries]
+  return [...staticEntries, ...cityEntries, ...propertyEntries]
 }

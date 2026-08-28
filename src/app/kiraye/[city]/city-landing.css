@@ -1,0 +1,91 @@
+.city-landing {
+  padding: 1.5rem 0 3rem;
+}
+
+.city-landing-crumbs {
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.city-landing-crumbs a {
+  color: var(--text-secondary, #64748b);
+  text-decoration: none;
+}
+
+.city-landing-crumbs a:hover {
+  text-decoration: underline;
+}
+
+.city-landing-head {
+  margin-bottom: 1.5rem;
+}
+
+.city-landing-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 0.35rem;
+}
+
+.city-landing-count {
+  color: var(--text-secondary, #64748b);
+  font-size: 0.95rem;
+}
+
+.city-landing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Перелинковка регионов. Список намеренно скромный: он для полноты обхода
+   и для тех, кому здесь не подошло, а не для привлечения внимания. */
+.city-landing-others {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.city-landing-others h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.city-landing-others ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.city-landing-others a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  font-size: 0.88rem;
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+.city-landing-others a:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.city-landing-badge {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #64748b);
+}
+
+@media (max-width: 480px) {
+  .city-landing-grid {
+    grid-template-columns: 1fr;
+  }
+}

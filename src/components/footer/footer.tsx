@@ -4,9 +4,30 @@ import React from 'react'
 import {OptimizedImage} from '@/components/optimized-image'
 import { Link } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
+import {cityLandingPath, localizedCityName} from '@/lib/city-landing'
+import {cities} from '@/data'
 
-export const Footer: React.FC = () => {
-  const { t } = useLanguage()
+export interface FooterRegion {
+  city: string
+  count: number
+}
+
+interface FooterProps {
+  /**
+   * Регионы с объявлениями. Приходят из корневого layout: ссылки на них должны
+   * быть на каждой странице, иначе до посадочных страниц регионов поисковик
+   * доберётся только через карту сайта. Пустой список — не ошибка, а признак
+   * того, что запрос не прошёл; тогда блок просто не рисуется.
+   */
+  regions?: FooterRegion[]
+}
+
+export const Footer: React.FC<FooterProps> = ({regions = []}) => {
+  const { t, language } = useLanguage()
+
+  const regionLinks = regions
+    .map(region => ({option: cities.find(city => city.value === region.city), count: region.count}))
+    .filter((entry): entry is {option: (typeof cities)[number]; count: number} => Boolean(entry.option))
 
   const handleStoreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
@@ -23,6 +44,20 @@ export const Footer: React.FC = () => {
                 <h2 className="footer-headline">{t.footer.whatWeDo}</h2>
                 <p className="footer-subline">{t.site.tagline}</p>
               </div>
+
+              {regionLinks.length > 0 && (
+                <nav className="footer-regions" aria-label={t.landing.otherRegions}>
+                  <p className="footer-regions-label">{t.landing.otherRegions}</p>
+                  <div className="footer-regions-list">
+                    {regionLinks.map(({option, count}) => (
+                      <Link key={option.value} to={cityLandingPath(option.value)} className="footer-region-link">
+                        {localizedCityName(option, language)}
+                        <span className="footer-region-count">{count}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </nav>
+              )}
 
               <nav className="footer-links" aria-label="Footer navigation">
                 <Link to="/about" className="footer-link">{t.footer.about}</Link>

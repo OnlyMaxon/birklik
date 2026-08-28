@@ -2,6 +2,7 @@ import type {Metadata, Viewport} from 'next'
 import {getLocale, getMessages} from 'next-intl/server'
 import {Footer, Header, OfflineNotifier} from '@/components'
 import {Providers} from './providers'
+import {getCitiesWithListings} from './queries'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -23,8 +24,20 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {width: 'device-width', initialScale: 1, themeColor: '#1a365d'}
 
+// Ссылки на регионы в подвале нужны на каждой странице, иначе до посадочных
+// страниц поисковик добирается только через карту сайта. Но подвал не повод
+// ронять весь сайт: Firestore недоступен — рисуем без этого блока.
+async function getFooterRegions() {
+  try {
+    return await getCitiesWithListings()
+  } catch (error) {
+    console.error('[layout] не удалось получить регионы для подвала:', error)
+    return []
+  }
+}
+
 export default async function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
-  const [locale, messages] = await Promise.all([getLocale(), getMessages()])
+  const [locale, messages, regions] = await Promise.all([getLocale(), getMessages(), getFooterRegions()])
   return (
     <html lang={locale}>
       <body>
@@ -33,7 +46,7 @@ export default async function RootLayout({children}: Readonly<{children: React.R
             <Header />
             <OfflineNotifier />
             <main className="main-content">{children}</main>
-            <Footer />
+            <Footer regions={regions} />
           </div>
         </Providers>
       </body>

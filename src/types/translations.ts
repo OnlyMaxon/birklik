@@ -302,6 +302,16 @@ export interface Translations {
     getItOn: string
     taxNumber: string
   }
+  // Посадочные страницы регионов. {city} и {count} подставляет next-intl,
+  // поэтому в готовом тексте фигурных скобок остаться не должно.
+  landing: {
+    title: string
+    description: string
+    heading: string
+    found: string
+    otherRegions: string
+    allListings: string
+  }
   messages: {
     contactSuccess: string
     noResults: string
