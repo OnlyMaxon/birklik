@@ -54,6 +54,16 @@ export function initializeFirebaseAppCheck() {
   browserGlobal.__birklikAppCheckInitialized = true
 }
 
+// App Check поднимается ДО getAuth и любого другого сервиса — намеренно.
+//
+// Раньше он включался внутри эффекта AuthProvider, то есть после того, как
+// модуль уже создал auth и SDK успевал уйти обновлять токен восстановленной
+// сессии. Тот запрос уходил без токена App Check и получал 401 reCAPTCHA —
+// именно эта ошибка и мелькала в консоли при каждой перезагрузке, пока
+// страница не догрузится. Firebase придерживает запросы до появления токена
+// только у тех сервисов, что созданы после initializeAppCheck.
+initializeFirebaseAppCheck()
+
 // Initialize services
 export const auth = getAuth(app)
 export const db = getFirestore(app)

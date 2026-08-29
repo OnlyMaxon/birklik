@@ -18,12 +18,15 @@ import {useAuth} from '@/components/providers'
  * состояние, форма просто отрисована — вход по ней и так требует ввода.
  */
 export function RedirectIfAuthenticated() {
-  const {isAuthenticated, isLoading} = useAuth()
+  const {isAuthenticated, isEmailVerified, isLoading} = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) navigate('/dashboard', {replace: true})
-  }, [isAuthenticated, isLoading, navigate])
+    if (isLoading || !isAuthenticated) return
+    // Неподтверждённую почту ведём сразу на подтверждение. Через /dashboard
+    // получался лишний прыжок: тот всё равно отбрасывает туда же.
+    navigate(isEmailVerified ? '/dashboard' : '/verify-email', {replace: true})
+  }, [isAuthenticated, isEmailVerified, isLoading, navigate])
 
   return null
 }

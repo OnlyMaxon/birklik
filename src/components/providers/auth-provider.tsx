@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth'
 import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
-import {auth, db, storage, initializeFirebaseAppCheck} from '@/lib/firebase/client'
+import {auth, db, storage} from '@/lib/firebase/client'
 import type {User} from '@/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
@@ -22,6 +22,12 @@ interface AuthContextType {
   user: User | null
   firebaseUser: FirebaseUser | null
   isAuthenticated: boolean
+  /**
+   * Подтверждена ли почта. Пока Firebase не ожил, ответ берётся из сессионной
+   * куки — иначе новичок после регистрации уезжал бы на /dashboard и только
+   * оттуда на /verify-email, лишним прыжком.
+   */
+  isEmailVerified: boolean
   isLoading: boolean
   logout: () => Promise<void>
   updateUserProfile: (payload: { name: string; phone: string; avatar?: string; avatarFile?: File | null }) => Promise<{ success: boolean; error?: string }>
@@ -31,16 +37,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 interface AuthProviderProps {
   children: ReactNode
+  /**
+   * Кто вошёл — по данным сервера. Приходит из обвязки страницы и снимает
+   * мигание: без него первый кадр рисовался гостем, потому что клиентский SDK
+   * поднимает сессию из IndexedDB асинхронно, и лишь потом появлялся аккаунт.
+   *
+   * Это только начальное значение. Хозяин состояния по-прежнему Firebase:
+   * onAuthStateChanged перезапишет его, а если сессия окажется недействительной
+   * — обнулит.
+   */
+  initialUser?: User | null
+  /** Подтверждена ли почта по данным куки — до того как оживёт Firebase. */
+  initialEmailVerified?: boolean
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+export const AuthProvider: React.FC<AuthProviderProps> = ({
+  children,
+  initialUser = null,
+  initialEmailVerified = false
+}) => {
+  const [user, setUser] = useState<User | null>(initialUser)
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  // Сервер уже подтвердил сессию — ждать нечего, иначе страницы под защитой
+  // показывали бы заглушку загрузки поверх готовых данных.
+  const [isLoading, setIsLoading] = useState(initialUser === null)
 
   // Listen to Firebase auth state changes
   useEffect(() => {
-    initializeFirebaseAppCheck()
+    // initializeFirebaseAppCheck здесь больше не вызывается: он поднимается при
+    // загрузке client.ts, до создания auth. Отсюда было поздно — SDK успевал
+    // отправить обновление токена без App Check и получить 401.
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
         // Клиентский SDK держит вход в IndexedDB домена и восстанавливает его
@@ -239,6 +265,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user,
       firebaseUser,
       isAuthenticated: !!user,
+      // Firebase — источник истины, как только он ожил; до этого верим куке.
+      isEmailVerified: firebaseUser ? firebaseUser.emailVerified : initialEmailVerified,
       isLoading,
       logout,
       updateUserProfile

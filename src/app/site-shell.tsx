@@ -1,6 +1,7 @@
 import type {ComponentProps} from 'react'
 import {Footer, Header, OfflineNotifier} from '@/components'
 import {getCitiesWithListings} from './queries'
+import {getSessionUser} from '@/lib/auth/session-user'
 import {Providers} from './providers'
 
 type ProviderMessages = ComponentProps<typeof Providers>['messages']
@@ -30,15 +31,27 @@ export async function SiteShell({
   // Ссылки на регионы нужны на каждой странице, иначе до посадочных страниц
   // поисковик добирается только через карту сайта. Но подвал не повод ронять
   // сайт: Firestore недоступен — рисуем без этого блока.
-  let regions: Awaited<ReturnType<typeof getCitiesWithListings>> = []
-  try {
-    regions = await getCitiesWithListings()
-  } catch (error) {
-    console.error('[shell] не удалось получить регионы для подвала:', error)
-  }
+  // Оба запроса параллельно: подвалу нужны регионы, шапке — вошедший. Ни один
+  // из них не повод ронять страницу, поэтому у каждого свой запасной ответ.
+  const [regions, sessionUser] = await Promise.all([
+    getCitiesWithListings().catch(error => {
+      console.error('[shell] не удалось получить регионы для подвала:', error)
+      return [] as Awaited<ReturnType<typeof getCitiesWithListings>>
+    }),
+    // Гость за это не платит: без сессионной куки запрос никуда не уходит.
+    getSessionUser().catch(error => {
+      console.error('[shell] не удалось определить вошедшего:', error)
+      return null
+    })
+  ])
 
   return (
-    <Providers locale={locale} messages={messages}>
+    <Providers
+      locale={locale}
+      messages={messages}
+      initialUser={sessionUser?.user ?? null}
+      initialEmailVerified={sessionUser?.emailVerified ?? false}
+    >
       <div className="layout">
         <Header />
         <OfflineNotifier />
