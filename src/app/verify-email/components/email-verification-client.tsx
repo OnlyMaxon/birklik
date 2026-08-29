@@ -5,6 +5,8 @@ import { useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
 import {AuthSkeleton, InlineSpinner} from '@/components'
 import { sendEmailVerification } from 'firebase/auth'
+import {createSessionAction} from '@/lib/auth/actions'
+import * as logger from '@/services/logger'
 
 export const EmailVerificationClient: React.FC = () => {
   const { language } = useLanguage()
@@ -27,6 +29,19 @@ export const EmailVerificationClient: React.FC = () => {
       // Reload user to get latest emailVerified status
       await firebaseUser.reload()
       if (firebaseUser.emailVerified) {
+        // Сессионная кука выписана при регистрации, когда почта подтверждена
+        // ещё не была, и claim email_verified в ней остаётся ложным навсегда:
+        // сама она не обновляется. Дашборд читает именно куку — и отбрасывал
+        // обратно сюда, а мы снова видели «подтверждено» и шли в дашборд.
+        // Получалась карусель.
+        //
+        // getIdToken(true) заставляет Firebase выдать СВЕЖИЙ токен, в котором
+        // подтверждение уже есть; на него и меняем куку, прежде чем уходить.
+        try {
+          await createSessionAction(await firebaseUser.getIdToken(true))
+        } catch (error) {
+          logger.error('Не удалось обновить сессию после подтверждения почты:', error)
+        }
         navigate('/dashboard')
       }
     }

@@ -62,7 +62,15 @@ export function initializeFirebaseAppCheck() {
 // именно эта ошибка и мелькала в консоли при каждой перезагрузке, пока
 // страница не догрузится. Firebase придерживает запросы до появления токена
 // только у тех сервисов, что созданы после initializeAppCheck.
-initializeFirebaseAppCheck()
+// try/catch обязателен: это уровень модуля, и исключение отсюда роняет
+// вычисление всего чанка, то есть белый экран вместо сайта. В эффекте, где
+// вызов жил раньше, цена падения была куда ниже. Без App Check часть запросов
+// получит отказ, но сайт останется на ногах.
+try {
+  initializeFirebaseAppCheck()
+} catch (error) {
+  console.error('[firebase] не удалось поднять App Check:', error)
+}
 
 // Initialize services
 export const auth = getAuth(app)
