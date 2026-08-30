@@ -39,7 +39,18 @@ export async function generateMetadata({params}: PropertyRouteProps): Promise<Me
     // разными хвостами вроде utm-меток — без canonical поисковик считает их
     // разными страницами и дробит вес.
     alternates: {canonical: `/property/${parsedId.data}`},
-    openGraph: property.image ? {images: [property.image]} : undefined
+    // Здесь стояло только `images` — и этого хватало, чтобы Next отбросил весь
+    // OpenGraph из корневого layout: он подменяет ключ целиком, а не сливает
+    // поля. Ссылка на объявление разворачивалась с фотографией, но без названия
+    // сайта и без подписи. Поэтому неизменная часть повторена явно.
+    openGraph: {
+      type: 'website',
+      siteName: 'Birklik.az',
+      title: `${property.title} | Birklik.az`,
+      description: property.description,
+      url: `/property/${parsedId.data}`,
+      ...(property.image ? {images: [property.image]} : {})
+    }
   }
 }
 

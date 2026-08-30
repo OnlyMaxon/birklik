@@ -35,7 +35,12 @@ export function HomePageSkeleton() {
         <div className="hero-bg-img skeleton-shimmer" aria-hidden="true" />
         <div className="container hero-content">
           <div className="hero-search-shell">
-            <div className="home-page-skeleton__tagline skeleton-shimmer" />
+            {/* Две полосы, а не одна: в шапке теперь заголовок и слоган под ним.
+                С одной полосой на их месте страница дёргалась при подстановке. */}
+            <div className="hero-copy">
+              <div className="home-page-skeleton__tagline skeleton-shimmer" />
+              <div className="home-page-skeleton__subline skeleton-shimmer" />
+            </div>
             <div className="search-bar-card home-page-skeleton__search">
               {Array.from({length: 3}, (_, index) => (
                 <div className="search-card-field" key={index}>

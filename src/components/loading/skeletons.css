@@ -56,6 +56,13 @@ button[aria-busy='true'] .inline-spinner {
   border-radius: 10px;
 }
 
+.home-page-skeleton__subline {
+  align-self: center;
+  width: min(20rem, 48%);
+  height: clamp(1.1rem, 1.8vw, 1.4rem);
+  border-radius: 8px;
+}
+
 .home-page-skeleton__search {
   pointer-events: none;
 }

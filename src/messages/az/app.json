@@ -2,7 +2,8 @@
   "App": {
     "site": {
       "name": "Birklik.az",
-      "tagline": "Azərbaycanda günlük və mövsümi ev kirayəsi"
+      "tagline": "Azərbaycanda günlük və mövsümi ev kirayəsi",
+      "description": "Azərbaycanda günlük kirayə evlər: villalar, bağ evləri və istirahət məkanları. Qəbələ, Quba, Qusar, Lənkəran və digər bölgələrdəki elanlara baxın və birbaşa ev sahibi ilə razılaşın."
     },
     "nav": {
       "home": "Ana səhifə",
@@ -321,7 +322,8 @@
     "hero": {
       "title": "Azərbaycanda ideal istirahət mərkəzini tapın",
       "subtitle": "Villalar, koteclər və mənzillər — ən ideal qiymətlərlə",
-      "tagline": "İstirahətinizi bizimlə planlaşdırın"
+      "tagline": "İstirahətinizi bizimlə planlaşdırın",
+      "headline": "Azərbaycanda günlük kirayə evlər"
     },
     "pricing": {
       "free": "Pulsuz",
@@ -834,6 +836,8 @@
       "description": "{city} bölgəsində günlük və mövsümi kirayə evlər, villalar və istirahət məkanları. {count} aktiv elan.",
       "heading": "{city} — günlük kirayə evlər",
       "found": "{count} elan",
+      "intro": "{city} bölgəsində günlük kirayə ev axtarırsınızsa, Birklik.az-da {count} aktiv elan var: bağ evləri, villalar, kotecler və istirahət məkanları. Hər elanda qiymət, otaq sayı, tutum, şəkillər və ev sahibi ilə birbaşa əlaqə göstərilib.",
+      "priceFrom": "Gecəlik qiymətlər {price} AZN-dən başlayır.",
       "otherRegions": "Digər bölgələr",
       "allListings": "Bütün elanlar"
     }

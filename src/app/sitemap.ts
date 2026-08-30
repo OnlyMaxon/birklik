@@ -1,7 +1,7 @@
 import type {MetadataRoute} from 'next'
 import {queryDocs} from '@/lib/firebase/firestore-rest'
 import {cityFromSlug, cityLandingPath} from '@/lib/city-landing'
-import {LOCALES, localizePath} from '@/lib/locale-routes'
+import {DEFAULT_LOCALE, LOCALES, localizePath} from '@/lib/locale-routes'
 
 const SITE_URL = 'https://birklik.az'
 
@@ -64,7 +64,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency,
       // Азербайджанская версия основная — она без префикса и уже
       // проиндексирована, поэтому вес у неё выше.
-      priority: locale === 'az' ? priority : Number((priority * 0.8).toFixed(2))
+      priority: locale === 'az' ? priority : Number((priority * 0.8).toFixed(2)),
+      // Языковые двойники прямо в карте сайта. В <head> hreflang уже стоит, но
+      // до него надо дойти и отрисовать страницу; в карте связь видна сразу, и
+      // Google явно рекомендует дублировать её здесь. Заодно это страховка от
+      // того, что русскую версию сочтут копией азербайджанской и выбросят как
+      // дубликат — а именно этого мы и опасались, вводя локаль в адрес.
+      alternates: {
+        languages: {
+          ...Object.fromEntries(
+            LOCALES.map(code => [code, `${SITE_URL}${localizePath(path, code)}`])
+          ),
+          'x-default': `${SITE_URL}${localizePath(path, DEFAULT_LOCALE)}`
+        }
+      }
     }))
 
   const buildStatic = (homeDate: Date | undefined): MetadataRoute.Sitemap =>
