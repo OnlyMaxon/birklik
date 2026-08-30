@@ -53,10 +53,14 @@ export function SiteJsonLd() {
         areaServed: 'AZ',
         availableLanguage: ['az', 'ru', 'en']
       },
-      // Только те профили, в которых уверены. Ссылка на несуществующую страницу
-      // в sameAs хуже её отсутствия: она рвёт связь сущности вместо того, чтобы
-      // её подтвердить.
-      sameAs: ['https://www.facebook.com/Birklik.az/']
+      // Адреса профилей, а не ссылки-приглашения: у Facebook в подвале стоит
+      // короткая /share/..., у Instagram — с хвостом ?igsh=... от QR-кода.
+      // В sameAs нужны канонические, по ним поисковик сверяет, что профиль наш.
+      sameAs: [
+        'https://www.facebook.com/Birklik.az/',
+        'https://www.instagram.com/birklik.az/',
+        'https://www.tiktok.com/@birklik.az'
+      ]
     },
     {
       '@type': 'WebSite',

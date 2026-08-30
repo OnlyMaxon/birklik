@@ -1,7 +1,7 @@
 import type {Metadata} from 'next'
-import {HomeBrowser} from '../components/home-browser'
+import {HomeBrowser} from '@/app/components/home-browser'
 import {getTranslations} from 'next-intl/server'
-import {getHomeProperties} from '../queries'
+import {getHomeProperties} from '@/app/queries'
 import {localeAlternates, localizePath, type LocaleCode} from '@/lib/locale-routes'
 import {openGraphFor} from '@/lib/seo'
 
