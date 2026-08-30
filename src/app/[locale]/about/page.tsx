@@ -1,12 +1,23 @@
 import type {Metadata} from 'next'
 import {getAppTranslations} from '@/lib/i18n/get-app-translations'
+import {localeAlternates, type LocaleCode} from '@/lib/locale-routes'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const {t} = await getAppTranslations()
-  return {title: t.pages.about.title}
+type PageProps = {params: Promise<{locale: string}>}
+
+export async function generateMetadata({params}: PageProps): Promise<Metadata> {
+  const {locale} = await params
+  const {t} = await getAppTranslations(locale)
+  return {
+    title: t.pages.about.title,
+    // Описание на языке страницы. Без него сюда подставлялось
+    // азербайджанское из корневого layout — на всех трёх языках.
+    description: t.site.description,
+    alternates: localeAlternates('/about', locale as LocaleCode)
+  }
 }
-export default async function Page() {
-  const { t } = await getAppTranslations()
+export default async function Page({params}: PageProps) {
+  const {locale} = await params
+  const {t} = await getAppTranslations(locale)
   const content = t.pages.about
 
   return (
