@@ -2,7 +2,8 @@ import type {Metadata} from 'next'
 import {HomeBrowser} from '../components/home-browser'
 import {getTranslations} from 'next-intl/server'
 import {getHomeProperties} from '../queries'
-import {localeAlternates, type LocaleCode} from '@/lib/locale-routes'
+import {localeAlternates, localizePath, type LocaleCode} from '@/lib/locale-routes'
+import {openGraphFor} from '@/lib/seo'
 
 export async function generateMetadata({
   params
@@ -10,12 +11,24 @@ export async function generateMetadata({
   params: Promise<{locale: string}>
 }): Promise<Metadata> {
   const [{locale}, t] = await Promise.all([params, getTranslations('App')])
+  const title = t('site.tagline')
+  const description = t('site.description')
   return {
     // Раньше здесь стояло site.name — заголовок выходил голым «Birklik.az», без
     // единого ключевого слова, тогда как на старой сборке он был описательным.
     // С шаблоном из layout получается «<описание> | Birklik.az».
-    title: t('site.tagline'),
-    alternates: localeAlternates('/', locale as LocaleCode)
+    title,
+    // Описание тоже своё на каждый язык. Без него сюда подставлялось
+    // азербайджанское из корневого layout — и в русской выдаче сниппет
+    // главной был на азербайджанском.
+    description,
+    alternates: localeAlternates('/', locale as LocaleCode),
+    openGraph: openGraphFor({
+      title,
+      description,
+      path: localizePath('/', locale as LocaleCode),
+      locale
+    })
   }
 }
 

@@ -33,6 +33,16 @@
   font-size: 0.95rem;
 }
 
+/* Ширина ограничена намеренно: строка длиной во весь экран читается тяжело,
+   а абзац здесь рассчитан на то, чтобы его действительно прочли. */
+.city-landing-intro {
+  margin-top: 0.75rem;
+  max-width: 68ch;
+  color: var(--text-secondary, #475569);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .city-landing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

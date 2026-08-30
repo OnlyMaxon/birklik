@@ -8,6 +8,19 @@ export const metadata: Metadata = {
   title: {default: 'Birklik.az', template: '%s | Birklik.az'},
   description: 'Azərbaycanda günlük kirayə evlər və istirahət məkanları',
   manifest: '/manifest.json',
+  // OpenGraph раньше не выставлялся нигде, кроме картинки объявления. Ссылка на
+  // сайт в WhatsApp, Telegram и Facebook разворачивалась в голый адрес без
+  // названия и превью. Эти же теги читают сборщики данных для ИИ-поиска —
+  // og:title с og:description для них зачастую единственное внятное описание
+  // страницы. Разделы перекрывают их своими значениями, здесь только запасные.
+  openGraph: {
+    type: 'website',
+    siteName: 'Birklik.az',
+    title: 'Birklik.az',
+    description: 'Azərbaycanda günlük kirayə evlər və istirahət məkanları',
+    images: [{url: '/hero.jpeg', width: 1920, height: 1080, alt: 'Birklik.az'}]
+  },
+  twitter: {card: 'summary_large_image'},
   // .ico указан первым и с sizes: 'any' — его спрашивают старые браузеры,
   // почтовые клиенты и панель задач Windows, PNG им не подходит.
   icons: {

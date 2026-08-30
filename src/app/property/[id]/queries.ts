@@ -7,14 +7,20 @@ import {normalizePropertyImageUrls, toImageApiUrl} from '@/lib/images'
 
 type PropertyMetadata = {title?: string; description?: string; image?: string}
 
+// Владелец пишет описание в textarea, и переводы строк попадают в базу как
+// есть. В мета-теге они выглядят обрывом посреди предложения, а в разметке
+// Schema.org — лишним мусором. Схлопываем любые пробельные последовательности
+// в один пробел; на самой странице объявления текст остаётся нетронутым.
+const singleLine = (text: string): string => text.replace(/\s+/g, ' ').trim()
+
 /** Заголовок и описание хранятся как `{az, en, ru}`; берём первый непустой. */
 function localized(value: unknown): string | undefined {
-  if (typeof value === 'string') return value || undefined
+  if (typeof value === 'string') return singleLine(value) || undefined
   if (!value || typeof value !== 'object') return undefined
   const translations = value as Record<string, unknown>
   for (const language of ['az', 'en', 'ru']) {
     const text = translations[language]
-    if (typeof text === 'string' && text) return text
+    if (typeof text === 'string' && text) return singleLine(text) || undefined
   }
   return undefined
 }

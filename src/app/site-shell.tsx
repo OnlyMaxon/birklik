@@ -3,6 +3,7 @@ import {Footer, Header, OfflineNotifier} from '@/components'
 import {getCitiesWithListings} from './queries'
 import {getSessionUser} from '@/lib/auth/session-user'
 import {Providers} from './providers'
+import {SiteJsonLd} from './site-json-ld'
 
 type ProviderMessages = ComponentProps<typeof Providers>['messages']
 
@@ -52,6 +53,9 @@ export async function SiteShell({
       initialUser={sessionUser?.user ?? null}
       initialEmailVerified={sessionUser?.emailVerified ?? false}
     >
+      {/* Разметка организации — на каждой странице: она описывает площадку, а
+          не конкретный экран. */}
+      <SiteJsonLd />
       <div className="layout">
         <Header />
         <OfflineNotifier />

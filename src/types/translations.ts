@@ -4,6 +4,8 @@ export interface Translations {
   site: {
     name: string
     tagline: string
+    /** Описание сайта для мета-тега и разметки — на языке посетителя. */
+    description: string
   }
   nav: {
     home: string
@@ -328,6 +330,8 @@ export interface Translations {
     title: string
     subtitle: string
     tagline: string
+    /** Заголовок первого уровня главной. Единственный h1 на странице. */
+    headline: string
   }
   pricing: {
     free: string

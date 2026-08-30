@@ -205,7 +205,15 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
         />
         <div className="container hero-content">
           <div className="hero-search-shell">
-            <p className="hero-tagline">{t.hero.tagline}</p>
+            {/* Единственный h1 страницы. До него главная жила вообще без
+                заголовка первого уровня: были только h3 карточек и h2 подвала,
+                то есть самая важная страница сайта не сообщала поисковику свою
+                тему ни строчкой. Слоган остался, но ниже и мельче — ключевую
+                фразу несёт заголовок, а не он. */}
+            <div className="hero-copy">
+              <h1 className="hero-headline">{t.hero.headline}</h1>
+              <p className="hero-tagline">{t.hero.tagline}</p>
+            </div>
             <SearchBar
               onChange={(value: string) => setFilters({ ...filters, search: value })}
               cityValue={filters.city}

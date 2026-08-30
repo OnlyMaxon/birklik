@@ -37,7 +37,16 @@
   gap: 16px;
 }
 
-.hero-tagline {
+/* Заголовок и слоган держим отдельной парой: у .hero-search-shell зазор 16px,
+   между двумя строками одного блока это выглядело бы разрывом. */
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Крупное начертание переехало сюда с .hero-tagline — теперь его носит h1. */
+.hero-headline {
   margin: 0;
   text-align: center;
   font-size: clamp(1.4rem, 3.5vw, 2.2rem);
@@ -48,9 +57,23 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 24px rgba(0, 0, 0, 0.5);
 }
 
+.hero-tagline {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.35;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
 @media (max-width: 768px) {
-  .hero-tagline {
+  .hero-headline {
     font-size: clamp(1.15rem, 5vw, 1.5rem);
+  }
+
+  .hero-tagline {
+    font-size: 0.9rem;
   }
 }
 

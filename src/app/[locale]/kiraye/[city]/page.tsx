@@ -4,9 +4,11 @@ import {getLocale, getTranslations} from 'next-intl/server'
 import {Link} from '@/lib/navigation'
 import {PropertyCard} from '@/components/property-card'
 import {cityFromSlug, cityLandingPath, localizedCityName} from '@/lib/city-landing'
-import {localeAlternates, type LocaleCode} from '@/lib/locale-routes'
-import type {Language} from '@/types'
+import {localeAlternates, localizePath, type LocaleCode} from '@/lib/locale-routes'
+import {openGraphFor} from '@/lib/seo'
+import type {Language, Property} from '@/types'
 import {getCitiesWithListings, getCityProperties} from './queries'
+import {CityJsonLd} from './city-json-ld'
 import './city-landing.css'
 
 // Посадочные страницы по регионам. Заводились ради двух вещей сразу:
@@ -58,11 +60,29 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
     return {title: t('landing.title', values), robots: {index: false, follow: true}}
   }
 
+  const title = t('landing.title', values)
+  const description = t('landing.description', values)
   return {
-    title: t('landing.title', values),
-    description: t('landing.description', values),
-    alternates: localeAlternates(cityLandingPath(city.value), locale as LocaleCode)
+    title,
+    description,
+    alternates: localeAlternates(cityLandingPath(city.value), locale as LocaleCode),
+    openGraph: openGraphFor({
+      title,
+      description,
+      path: localizePath(cityLandingPath(city.value), locale as LocaleCode),
+      locale
+    })
   }
+}
+
+// Минимальная цена за ночь по региону. Число живое и на каждой странице своё —
+// в отличие от шаблонного текста, который поисковик у девяти почти одинаковых
+// страниц вполне может счесть повторами.
+function lowestNightlyPrice(properties: Property[]): number | undefined {
+  const prices = properties
+    .map(property => property.price?.daily)
+    .filter((price): price is number => typeof price === 'number' && price > 0)
+  return prices.length > 0 ? Math.min(...prices) : undefined
 }
 
 export default async function Page({params}: PageProps) {
@@ -74,6 +94,7 @@ export default async function Page({params}: PageProps) {
   const [locale, t] = await Promise.all([getLocale(), getTranslations('App')])
   const language = locale as Language
   const cityName = localizedCityName(city, language)
+  const priceFrom = lowestNightlyPrice(properties)
 
   // Соседние регионы — тоже внутренние ссылки, и посетителю есть куда пойти,
   // если здесь не нашлось подходящего. Только заполненные: справочник городов
@@ -89,6 +110,13 @@ export default async function Page({params}: PageProps) {
 
   return (
     <div className="city-landing container">
+      <CityJsonLd
+        properties={properties}
+        cityName={cityName}
+        cityPath={cityLandingPath(city.value)}
+        locale={locale}
+      />
+
       <nav className="city-landing-crumbs" aria-label="breadcrumb">
         <Link to="/">{t('landing.allListings')}</Link>
       </nav>
@@ -96,6 +124,14 @@ export default async function Page({params}: PageProps) {
       <header className="city-landing-head">
         <h1>{t('landing.heading', {city: cityName})}</h1>
         <p className="city-landing-count">{t('landing.found', {count: properties.length})}</p>
+        {/* Связный абзац поверх сетки карточек. Без него страница региона —
+            только плитка ссылок: человеку она понятна, разбору содержимого
+            почти ничего не сообщает. Отсюда же ИИ-поиск берёт формулировку,
+            когда его спрашивают про аренду в конкретном районе. */}
+        <p className="city-landing-intro">
+          {t('landing.intro', {city: cityName, count: properties.length})}
+          {priceFrom !== undefined && ` ${t('landing.priceFrom', {price: priceFrom})}`}
+        </p>
       </header>
 
       <div className="city-landing-grid">

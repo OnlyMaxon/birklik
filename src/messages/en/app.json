@@ -2,7 +2,8 @@
   "App": {
     "site": {
       "name": "Birklik.az",
-      "tagline": "House Rentals in Azerbaijan"
+      "tagline": "House Rentals in Azerbaijan",
+      "description": "Daily house rentals in Azerbaijan: villas, cottages and holiday places. Browse listings in Gabala, Guba, Gusar, Lankaran and other regions, and deal directly with the owner."
     },
     "nav": {
       "home": "Home",
@@ -321,7 +322,8 @@
     "hero": {
       "title": "Your Perfect Azerbaijan Getaway Starts Here",
       "subtitle": "Villas, cottages and apartments — at the best prices",
-      "tagline": "Plan your getaway with us"
+      "tagline": "Plan your getaway with us",
+      "headline": "Daily house rentals in Azerbaijan"
     },
     "pricing": {
       "free": "Free",
@@ -834,6 +836,8 @@
       "description": "Houses, villas and holiday places for daily rent in {city}. {count} active listings.",
       "heading": "{city} — daily house rentals",
       "found": "{count} listings",
+      "intro": "Looking for a house to rent by the day in {city}? Birklik.az currently has {count} active listings: country houses, villas, cottages and holiday places. Every listing shows the price, number of rooms, capacity, photos and a direct contact for the owner.",
+      "priceFrom": "Nightly prices start from {price} AZN.",
       "otherRegions": "Other regions",
       "allListings": "All listings"
     }
