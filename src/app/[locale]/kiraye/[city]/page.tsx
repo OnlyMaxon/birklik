@@ -30,11 +30,13 @@ interface PageProps {
 // scripts/cf-build.mjs на время сборки прячет ключ сервис-аккаунта, запрос бы
 // не прошёл — ровно на этом однажды погорела карта сайта.
 //
-// Выдуманный регион теперь отдаёт настоящий 404 — с тех пор как заглушка
-// ожидания перестала висеть в корне приложения и открывать поток раньше
-// времени (см. `[locale]/(home)/loading.tsx`). Ограничить адреса через
-// generateStaticParams + dynamicParams=false не выходит: force-dynamic
-// отменяет проверку списка, проверено на боевом.
+// Выдуманный регион отдаёт 200, а не 404: корневой loading.tsx открывает поток
+// раньше, чем страница успевает решить. Убрать его нельзя — на нём держится
+// запас по процессорному времени, см. `src/app/loading.tsx`. Поэтому такие
+// адреса закрываются мета-тегом noindex в generateMetadata.
+//
+// Ограничить адреса через generateStaticParams + dynamicParams=false тоже не
+// выходит: force-dynamic отменяет проверку списка, проверено на боевом.
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({params}: PageProps): Promise<Metadata> {
