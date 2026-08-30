@@ -12,10 +12,14 @@ const SITE_URL = 'https://birklik.az'
  * обещающая рейтинг которого нет, приводит к тому, что Google перестаёт
  * доверять ей целиком.
  */
-export function PropertyJsonLd({property, title, description}: {
+export function PropertyJsonLd({property, title, description, cityName, cityPath}: {
   property: Property
   title: string
   description: string
+  /** Название региона на языке страницы — для хлебных крошек. */
+  cityName?: string
+  /** Адрес посадочной страницы региона; без него крошки не строим. */
+  cityPath?: string
 }) {
   const url = `${SITE_URL}/property/${property.id}`
 
@@ -88,7 +92,32 @@ export function PropertyJsonLd({property, title, description}: {
     }
   }
 
+  // Хлебные крошки отдельным узлом: в выдаче они превращают голый адрес в
+  // строку «birklik.az › Qəbələ › <объявление>» и показывают поисковику, что
+  // объявление принадлежит региону. Без города цепочку не строим — крошки из
+  // одного звена бессмысленны.
+  const breadcrumbs = cityName && cityPath
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {'@type': 'ListItem', position: 1, name: 'Birklik.az', item: SITE_URL},
+          {'@type': 'ListItem', position: 2, name: cityName, item: `${SITE_URL}${cityPath}`},
+          {'@type': 'ListItem', position: 3, name: title, item: url}
+        ]
+      }
+    : null
+
   return (
+    <>
+    {breadcrumbs && (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbs).replace(/</g, '\\u003c')
+        }}
+      />
+    )}
     <script
       type="application/ld+json"
       // Разметка собирается из наших же данных и сериализуется JSON.stringify,
@@ -96,5 +125,6 @@ export function PropertyJsonLd({property, title, description}: {
       // иначе строка вида </script> внутри текста закрыла бы тег раньше времени.
       dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd).replace(/</g, '\\u003c')}}
     />
+    </>
   )
 }

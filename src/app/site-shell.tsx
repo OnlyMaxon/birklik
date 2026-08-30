@@ -8,6 +8,24 @@ import {SiteJsonLd} from './site-json-ld'
 type ProviderMessages = ComponentProps<typeof Providers>['messages']
 
 /**
+ * Отсекает от переводов раздел `pages` перед отправкой в браузер.
+ *
+ * Там лежат тексты «О нас», правил, политики и пользовательского соглашения —
+ * 17 КБ, почти половина всего словаря. Уезжали они на КАЖДОЙ странице, хотя
+ * читают их только пять серверных страниц, каждая свою. Клиентским компонентам
+ * раздел не нужен ни одному — проверено по всему `src`.
+ *
+ * Серверная сторона не задета: `getAppTranslations` берёт словарь из
+ * `getMessages()` напрямую, минуя провайдер, и видит его целиком.
+ */
+function withoutServerOnlyMessages(messages: ProviderMessages): ProviderMessages {
+  const app = messages.App
+  if (!app || typeof app !== 'object' || Array.isArray(app)) return messages
+  const {pages: _serverOnly, ...rest} = app as Record<string, unknown>
+  return {...messages, App: rest as ProviderMessages[string]}
+}
+
+/**
  * Общая обвязка страницы: провайдеры, шапка, подвал.
  *
  * Вынесена из корневого layout, потому что язык у разных разделов берётся
@@ -49,7 +67,7 @@ export async function SiteShell({
   return (
     <Providers
       locale={locale}
-      messages={messages}
+      messages={withoutServerOnlyMessages(messages)}
       initialUser={sessionUser?.user ?? null}
       initialEmailVerified={sessionUser?.emailVerified ?? false}
     >

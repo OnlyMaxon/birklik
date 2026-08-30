@@ -2,6 +2,7 @@ import 'server-only'
 import {unstable_cache} from 'next/cache'
 import {queryDocs} from '@/lib/firebase/firestore-rest'
 import {normalizePropertyImageUrls} from '@/lib/images'
+import {toListItem} from '@/lib/property-list'
 import type {Property} from '@/types'
 
 // Тот же потолок, что и в карте сайта: неограниченный запрос в Firestore
@@ -21,6 +22,7 @@ export const getCityProperties = unstable_cache(
 
     return properties
       .map(normalizePropertyImageUrls)
+      .map(toListItem)
       .sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''))
   },
   ['city-properties'],

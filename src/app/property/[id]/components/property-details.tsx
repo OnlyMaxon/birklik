@@ -10,6 +10,7 @@ import {RatingWidget} from './rating-widget'
 import {CommentsSection} from './comments-section'
 import {PropertyMapSection} from './property-map-section'
 import {moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities} from '@/data'
+import {cityLandingPath} from '@/lib/city-landing'
 import {isPremiumActive} from '@/utils/premium-helper'
 import type {Booking, Language, Property} from '@/types'
 
@@ -58,6 +59,13 @@ export async function PropertyDetails({
     return t.districts[property.district] || ''
   })()
 
+  // Адрес посадочной страницы региона — если у объявления вообще проставлен
+  // город из справочника. У части старых записей city пустой, тогда в крошках
+  // остаётся район обычным текстом.
+  const cityHref = property.city && cities.some(c => c.value === property.city)
+    ? cityLandingPath(property.city)
+    : null
+
   const moreLabels = (property.extraFeatures || []).map(key => getOptionLabel(moreFilterOptions, key, t))
   const nearLabels = (property.nearbyPlaces || []).map(key => getOptionLabel(nearFilterOptions, key, t))
   const selectedLocationOptions = property.locationCategory ? cityLocationOptions[property.locationCategory] : null
@@ -72,7 +80,12 @@ export async function PropertyDetails({
           <nav className="breadcrumb">
             <Link to="/">{t.nav.home}</Link>
             <span>/</span>
-            <span>{cityLabel}</span>
+            {/* Регион был обычным текстом. Ссылкой он делает две вещи сразу:
+                посетителю даёт вернуться к соседним вариантам в том же районе,
+                а поисковику — контекстную ссылку на страницу региона с каждого
+                из объявлений. До этого на регионы вело только меню в подвале,
+                одинаковое на всех страницах. */}
+            {cityHref ? <Link to={cityHref}>{cityLabel}</Link> : <span>{cityLabel}</span>}
             <span>/</span>
             <span>{getLocalizedText(property.title)}</span>
             <span className="pp-property-id">#{property.id}</span>

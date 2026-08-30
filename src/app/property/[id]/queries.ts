@@ -4,6 +4,7 @@ import {after} from 'next/server'
 import {getDoc, queryDocs, updateDoc, increment, type QueryOptions} from '@/lib/firebase/firestore-rest'
 import type {Property, Booking} from '@/types'
 import {normalizePropertyImageUrls, toImageApiUrl} from '@/lib/images'
+import {toListItem} from '@/lib/property-list'
 
 type PropertyMetadata = {title?: string; description?: string; image?: string}
 
@@ -70,7 +71,11 @@ export async function getSimilarProperties(property: Property): Promise<Property
   // Берём на одно больше десяти: текущий объект может оказаться в выборке и
   // будет отфильтрован.
   const properties = await queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 11})
-  return properties.map(normalizePropertyImageUrls).filter(p => p.id !== property.id).slice(0, 10)
+  return properties
+    .map(normalizePropertyImageUrls)
+    .map(toListItem)
+    .filter(p => p.id !== property.id)
+    .slice(0, 10)
 }
 
 export async function hasUserBookedProperty(userId: string, propertyId: string): Promise<boolean> {

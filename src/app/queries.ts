@@ -3,6 +3,7 @@ import {unstable_cache} from 'next/cache'
 import {queryDocs, DOCUMENT_ID, type QueryOptions} from '@/lib/firebase/firestore-rest'
 import type {Property} from '@/types'
 import {normalizePropertyImageUrls} from '@/lib/images'
+import {toListItem} from '@/lib/property-list'
 
 const PAGE_SIZE = 20
 
@@ -33,7 +34,7 @@ async function fetchPremiumProperties(filters: HomePropertiesFilters): Promise<P
   if (filters.city) where.push(['city', '==', filters.city])
 
   const properties = await queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 100})
-  return properties.map(normalizePropertyImageUrls)
+  return properties.map(normalizePropertyImageUrls).map(toListItem)
 }
 
 export async function getPropertiesPage(
@@ -54,7 +55,7 @@ export async function getPropertiesPage(
     ...(cursor ? {startAfter: [cursor.createdAt, cursor.id]} : {}),
     // Берём на один больше страницы, чтобы понять, есть ли продолжение.
     limit: PAGE_SIZE + 1
-  })).map(normalizePropertyImageUrls)
+  })).map(normalizePropertyImageUrls).map(toListItem)
 
   const hasMore = properties.length > PAGE_SIZE
   const page = properties.slice(0, PAGE_SIZE)

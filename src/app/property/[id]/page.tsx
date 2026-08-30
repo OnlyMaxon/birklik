@@ -13,6 +13,9 @@ import {
   recordPropertyView
 } from './queries'
 import {propertyIdSchema} from './validators'
+import {getLocale} from 'next-intl/server'
+import {cityFromSlug, cityLandingPath, citySlug, localizedCityName} from '@/lib/city-landing'
+import type {Language} from '@/types'
 
 type PropertyRouteProps = {params: Promise<{id: string}>}
 
@@ -77,12 +80,21 @@ export default async function Page({params}: PropertyRouteProps) {
   // мета-теги, чтобы разметка и <title> не разъезжались.
   const seo = await getPropertyMetadata(parsedId.data)
 
+  // Регион для хлебных крошек. Берём из справочника: у части старых объявлений
+  // city пустой или записан вне списка — тогда крошек просто не будет.
+  const [locale, cityOption] = await Promise.all([
+    getLocale(),
+    Promise.resolve(property.city ? cityFromSlug(citySlug(property.city)) : undefined)
+  ])
+
   return (
     <>
       <PropertyJsonLd
         property={property}
         title={seo?.title ?? ''}
         description={seo?.description ?? ''}
+        cityName={cityOption ? localizedCityName(cityOption, locale as Language) : undefined}
+        cityPath={cityOption ? cityLandingPath(cityOption.value) : undefined}
       />
       <PropertyDetails
         property={property}
