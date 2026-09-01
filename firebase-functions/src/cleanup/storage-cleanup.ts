@@ -104,13 +104,39 @@ export async function cleanupOrphanedImages(): Promise<StorageCleanupLog> {
 
     const [files] = await bucket.getFiles({ prefix: 'properties/' });
 
+    // Сначала собираем кандидатов, и только потом решаем, удалять ли вообще.
+    const candidates: typeof files = [];
     for (const file of files) {
-      if (count >= 500) break;
-
-      // Ожидаем минимум: properties/{userId}/{filename}
-      if (file.name.split('/').length < 3) continue;
+      if (file.name.split('/').length < 3) continue; // ждём properties/{userId}/{filename}
       if (referencedPaths.has(file.name)) continue;
+      candidates.push(file);
+    }
 
+    // Порог здравого смысла.
+    //
+    // 2026-08-30 эта функция снесла 124 живые фотографии восьми объявлений:
+    // работала версия, не знавшая формата ссылок `/api/images/...`, и все такие
+    // файлы выглядели ничьими. Формально предохранитель выше сработать не мог —
+    // ссылки-то собрались, просто не все.
+    //
+    // Настоящие сироты появляются по одной-две за неделю. Когда «мусором» вдруг
+    // оказывается заметная доля бакета, это почти наверняка означает, что мы
+    // перестали понимать какой-то формат ссылки, а не что пользователи разом
+    // удалили сотню фотографий. В таком случае честнее не тронуть ничего и
+    // прокричать в лог.
+    const SANE_SHARE = 0.05;
+    if (candidates.length > Math.max(20, files.length * SANE_SHARE)) {
+      console.error(
+        `[ERROR] cleanupOrphanedImages: кандидатов на удаление ${candidates.length} из ${files.length} файлов ` +
+        `(> ${Math.round(SANE_SHARE * 100)}%) — прерываю. Похоже, часть ссылок перестала распознаваться. ` +
+        `Проверить collectReferencedPaths и форматы URL в Firestore.`
+      );
+      console.error('[ERROR] примеры кандидатов:', candidates.slice(0, 10).map(f => f.name));
+      return { timestamp: new Date(), type: 'orphaned_images', status: 'failed', count: 0, deletedFiles, error: `too many orphan candidates: ${candidates.length}/${files.length}`, duration: Date.now() - startTime };
+    }
+
+    for (const file of candidates) {
+      if (count >= 500) break;
       try {
         const [metadata] = await file.getMetadata();
         // Пропускаем свежие файлы (могут ещё не быть привязаны)
