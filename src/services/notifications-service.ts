@@ -1,33 +1,16 @@
 import { db } from '../lib/firebase/client'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingNotification, BookingApprovedNotification, BookingRejectedNotification, CommentNotification, FavoriteNotification, PremiumNotification, ReportNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification, InvoiceSentNotification } from '../types'
+import { Notification, BookingApprovedNotification, BookingRejectedNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification } from '../types'
 import * as logger from './logger'
+
+// Удалены как неиспользуемые (2026-08-31): createNotification и обёртки для
+// booking/comment/favorite/premium/report/invoice, а также
+// getModerationNotificationsCount. Живые уведомления шлют серверные экшены и
+// адресные создатели ниже.
 
 const COLLECTION_NAME = 'users'
 const NOTIFICATIONS_SUBCOLLECTION = 'notifications'
 
-/**
- * Generic function to create any notification type
- * @param {string} userId - User Firestore ID
- * @param {Object} notificationData - Notification data
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-const createNotification = async (
-  userId: string,
-  notificationData: Omit<Notification, 'id' | 'createdAt'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, userId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      ...notificationData,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating notification:', error)
-    return null
-  }
-}
 
 /**
  * Get all notifications for a user
@@ -66,55 +49,9 @@ export const getUnreadNotificationsCount = async (userId: string): Promise<numbe
   }
 }
 
-/**
- * Get moderation notifications count (commentReport type)
- * @param {string} userId - User Firestore ID (moderator)
- * @returns {Promise<number>} Count of moderation notifications
- */
-export const getModerationNotificationsCount = async (userId: string): Promise<number> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, userId, NOTIFICATIONS_SUBCOLLECTION)
-    const q = query(notificationsRef, where('type', '==', 'commentReport'))
-    const snapshot = await getDocs(q)
-    return snapshot.size
-  } catch (error) {
-    logger.error('Error getting moderation count:', error)
-    return 0
-  }
-}
 
-/**
- * Create booking notification for property owner
- * @param {string} ownerId - Property owner's user ID
- * @param {BookingNotification} notificationData - Booking notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createBookingNotification = (
-  ownerId: string,
-  notificationData: Omit<BookingNotification, 'id' | 'createdAt'>
-): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
-/**
- * Create comment notification for property owner
- * @param {string} ownerId - Property owner's user ID
- * @param {CommentNotification} notificationData - Comment notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createCommentNotification = (
-  ownerId: string,
-  notificationData: Omit<CommentNotification, 'id' | 'createdAt'>
-): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
-/**
- * Create favorite notification for property owner
- * @param {string} ownerId - Property owner's user ID
- * @param {FavoriteNotification} notificationData - Favorite notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createFavoriteNotification = (
-  ownerId: string,
-  notificationData: Omit<FavoriteNotification, 'id' | 'createdAt'>
-): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
 /**
  * Mark notification as read
@@ -150,61 +87,7 @@ export const deleteNotification = async (userId: string, notificationId: string)
   }
 }
 
-/**
- * Create premium notification for property owner
- * @param {string} ownerId - Property owner's user ID
- * @param {PremiumNotification} notificationData - Premium notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createPremiumNotification = (
-  ownerId: string,
-  notificationData: Omit<PremiumNotification, 'id' | 'createdAt'>
-): Promise<string | null> => createNotification(ownerId, notificationData as any)
 
-/**
- * Create comment report notification for all moderators
- * @param {ReportNotification} notificationData - Report notification details
- * @returns {Promise<string[]>} Array of created notification IDs
- */
-export const createReportNotification = async (
-  notificationData: Omit<ReportNotification, 'id' | 'createdAt' | 'userId' | 'relatedId' | 'relatedUserId' | 'relatedUserName' | 'actionUrl'>
-): Promise<string[]> => {
-  try {
-    // Get all users with moderator role
-    const usersRef = collection(db, COLLECTION_NAME)
-    const q = query(usersRef, where('isModerator', '==', true))
-    const snapshot = await getDocs(q)
-    
-    if (snapshot.empty) {
-      logger.warn('No moderators found for report notification')
-      return []
-    }
-
-    // Send notification to ALL moderators
-    const notificationIds: string[] = []
-    for (const moderatorDoc of snapshot.docs) {
-      const moderatorId = moderatorDoc.id
-      const notificationsRef = collection(db, COLLECTION_NAME, moderatorId, NOTIFICATIONS_SUBCOLLECTION)
-      
-      try {
-        const docRef = await addDoc(notificationsRef, {
-          ...notificationData,
-          userId: moderatorId,
-          read: false,
-          createdAt: new Date().toISOString()
-        })
-        notificationIds.push(docRef.id)
-      } catch (error) {
-        logger.error(`Error creating notification for moderator ${moderatorId}:`, error)
-      }
-    }
-    
-    return notificationIds
-  } catch (error) {
-    logger.error('Error creating report notification:', error)
-    return []
-  }
-}
 
 /**
  * Create rating notification for property owner
@@ -381,27 +264,3 @@ export const createListingRejectedNotification = async (
   }
 }
 
-/**
- * Create invoice/payment notification for property owner
- * @param {string} ownerId - Property owner's user ID
- * @param {InvoiceSentNotification} notificationData - Invoice sent notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createInvoiceSentNotification = async (
-  ownerId: string,
-  notificationData: Omit<InvoiceSentNotification, 'id' | 'createdAt' | 'userId'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      userId: ownerId,
-      ...notificationData,
-      read: false,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating invoice sent notification:', error)
-    return null
-  }
-}

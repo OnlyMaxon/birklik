@@ -13,7 +13,7 @@ import {auth, db, storage} from '@/lib/firebase/client'
 import type {User} from '@/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
-import {clearCsrfToken} from '@/services/csrf-service'
+import {validateAvatar} from '@/services/file-validation'
 import {createSessionAction, logoutAction} from '@/lib/auth/actions'
 import {hasServerSessionMarker, legacySweepDone, markLegacySweepDone} from '@/lib/auth/session-marker'
 import {storagePathFromImageSource, toImageApiUrl} from '@/lib/images'
@@ -154,8 +154,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   }, [])
 
   const logout = async (): Promise<void> => {
-    // Clear sensitive data from sessionStorage
-    clearCsrfToken()
+    // sessionStorage чистится целиком, поэтому отдельный вызов clearCsrfToken
+    // был лишним и до удаления самой службы.
     sessionStorage.clear()
 
     // allSettled, а не all: раньше падение любого из двух шагов уводило в catch
@@ -186,6 +186,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
 
       // Upload file FIRST, fail fast if upload fails
       if (payload.avatarFile) {
+        // Тип и размер проверяются до сжатия и загрузки: иначе отказ приходил от
+        // Storage и выглядел как «не удалось обновить профиль».
+        const check = validateAvatar(payload.avatarFile)
+        if (!check.valid) {
+          return { success: false, error: check.error || 'Invalid avatar file' }
+        }
+
         const compressed = await compressAvatarImage(payload.avatarFile)
         const fileName = `avatars/${firebaseUser.uid}/${Date.now()}_${compressed.name}`
         const avatarRef = ref(storage, fileName)

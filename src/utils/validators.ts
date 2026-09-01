@@ -37,7 +37,10 @@ export const validateEmail = (email: string): boolean => {
 
 /**
  * Validate password strength
- * Requires: at least 6 characters
+ * Requires: at least 8 characters
+ *
+ * В описании стояло «6», в коде — 8. Порог подняли при аудите 2026-07-21, а
+ * комментарий забыли; правда здесь за кодом.
  * @param password Password string
  * @returns true if password meets requirements
  */

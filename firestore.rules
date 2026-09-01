@@ -11,8 +11,21 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == ownerId;
     }
 
+    // В избранном менялась только отметка самого вошедшего.
+    // Проверяются обе стороны: и что добавили не чужой uid, и что убрали не чужой.
+    // hasOnly на пустом множестве истинен, поэтому «ничего не изменилось» тоже
+    // проходит — это не опасно и избавляет от отказа на повторном клике.
+    function togglesOwnFavoriteOnly(before, after) {
+      return after.toSet().difference(before.toSet()).hasOnly([request.auth.uid])
+        && before.toSet().difference(after.toSet()).hasOnly([request.auth.uid]);
+    }
+
     match /users/{userId} {
-      // Own profile: full read/write. Others: only public fields (name, avatar).
+      // Читать профиль может только он сам и модератор. Публичных полей здесь нет:
+      // имя и аватар автора комментария копируются в сам комментарий, а имя и
+      // телефон владельца объявления лежат в поле `owner` объявления. Прежний
+      // комментарий обещал «Others: only public fields» — правило этого не делало
+      // и не делает.
       allow read: if request.auth != null && (
         request.auth.uid == userId || isModerator()
       );
@@ -24,7 +37,13 @@ service cloud.firestore {
 
     match /users/{userId}/notifications/{notificationId} {
       allow read: if request.auth != null && request.auth.uid == userId;
+      // Писать в ЧУЖУЮ подколлекцию разрешено намеренно: уведомления рассылает
+      // клиент — владельцу о брони, гостю об ответе, модераторам о жалобе.
+      // Но само уведомление обязано признавать своего адресата: без сверки
+      // userId с путём документ мог заявить любого получателя и сбить разбор
+      // на клиенте.
       allow create: if request.auth != null
+        && request.resource.data.userId == userId
         && request.resource.data.read == false
         && request.resource.data.type is string
         && request.resource.data.message is string;
@@ -48,21 +67,29 @@ service cloud.firestore {
             && request.resource.data.status == 'draft')
         );
 
-      // Update: Owner can update allowed fields, Moderator can do anything, Users can ONLY increment counters atomically or add ratings
+      // Update: владелец правит своё, модератор — что угодно, любой вошедший —
+      // только собственную отметку «в избранном».
       allow update: if request.auth != null && (
         // Owner: paid-tier and moderation fields can only be changed server-side.
         (isOwner(resource.data.ownerId)
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'vipExpiresAt', 'isFeatured']))
         // Moderator: can update anything including status
         || isModerator()
-        // Any user: can ONLY increment views/likes/favorites/comments (updatedAt allowed alongside)
-        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes', 'favorites', 'comments', 'updatedAt'])
-          && request.resource.data.diff(resource.data).affectedKeys().size() > 0)
-        // Any user: can add/update ratings (updatedAt allowed alongside)
-        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratings', 'rating', 'reviews', 'updatedAt'])
-          && request.resource.data.diff(resource.data).affectedKeys().size() > 0
-          && request.resource.data.rating > 0 && request.resource.data.rating <= 5
-          && request.resource.data.reviews >= 0)
+        // Здесь были ещё views, likes, comments, а отдельной веткой — ratings,
+        // rating и reviews. То есть любой аутентифицированный мог переписать весь
+        // массив комментариев, накрутить просмотры и выставить оценку на ЧУЖОМ
+        // объявлении: проверялся только НАБОР изменённых полей, но не кто и не
+        // на чьей записи их меняет.
+        //
+        // Всё перечисленное давно пишет сервер под сервис-аккаунтом, а его правила
+        // не касаются: просмотры — recordPropertyView, комментарии и оценки —
+        // серверные экшены страницы объявления. Из браузера остаётся ровно один
+        // сценарий, он и разрешён.
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favorites'])
+          && togglesOwnFavoriteOnly(
+               resource.data.get('favorites', []),
+               request.resource.data.get('favorites', [])
+             ))
       );
 
       // Delete: owner or moderator
@@ -71,26 +98,13 @@ service cloud.firestore {
       );
     }
 
-    match /properties/{propertyId}/comments/{commentId} {
-      allow read: if true;
-      
-      // Create: user must match auth user, text length capped at 2000 chars
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.text is string
-        && request.resource.data.text.size() <= 2000;
-      
-      // Update: only comment author or moderator
-      allow update: if request.auth != null && (
-        request.auth.uid == resource.data.userId
-        || isModerator()
-      );
-      
-      // Delete: comment author or moderator
-      allow delete: if request.auth != null && (
-        request.auth.uid == resource.data.userId || isModerator()
-      );
-    }
+    // Подколлекции properties/{id}/comments в проде нет: комментарии лежат
+    // массивом `comments` внутри самого документа объявления, и пишет их сервер.
+    // Правила для неё существовали, но не относились ни к чему — код, который
+    // ими пользовался (commentsService), не вызывается ниоткуда. Оставлять
+    // разрешающее правило на неиспользуемый путь незачем: теперь он закрыт
+    // умолчанием. Если комментарии однажды переедут в подколлекцию — правила
+    // писать заново, вместе с переездом.
 
     match /bookings/{bookingId} {
       // Read: any authenticated user (needed for date-conflict checks when creating a booking)
@@ -105,9 +119,22 @@ service cloud.firestore {
       // Update: authorized users can update with different restrictions based on role
       allow update: if request.auth != null && (
         // Guest can change pending -> cancelled
-        (request.auth.uid == resource.data.userId 
-         && resource.data.status == 'pending' 
+        (request.auth.uid == resource.data.userId
+         && resource.data.status == 'pending'
          && request.resource.data.status == 'cancelled')
+        // Гость просит отменить ПОДТВЕРЖДЁННУЮ бронь: approved -> cancellation_requested.
+        // Сама отмена остаётся за владельцем, гость только поднимает флаг, поэтому
+        // разрешено менять ровно одно поле.
+        || (request.auth.uid == resource.data.userId
+         && resource.data.status == 'approved'
+         && request.resource.data.status == 'cancellation_requested'
+         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        // Владелец отвечает на запрос отмены: подтверждает (cancelled) либо
+        // возвращает бронь в силу (approved).
+        || (isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
+         && resource.data.status == 'cancellation_requested'
+         && (request.resource.data.status == 'cancelled' || request.resource.data.status == 'approved')
+         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
         // Property owner can change pending -> approved or pending -> rejected
         || (isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
          && resource.data.status == 'pending'

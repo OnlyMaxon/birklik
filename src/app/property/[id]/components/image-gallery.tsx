@@ -8,8 +8,16 @@ interface ImageGalleryProps {
   alt: string
 }
 
+// Заглушка на случай объявления без единой фотографии. Без неё галерея рисовала
+// <img> с пустым src: браузер показывал сломанную картинку, а стрелки и счётчик
+// листали пустоту.
+const NO_IMAGE = 'https://via.placeholder.com/900x600?text=No+Image'
+
 export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
-  const imageUrls = React.useMemo(() => images.map(image => toImageApiUrl(image) || image), [images])
+  const imageUrls = React.useMemo(() => {
+    const urls = (images || []).map(image => toImageApiUrl(image) || image)
+    return urls.length > 0 ? urls : [NO_IMAGE]
+  }, [images])
   const [selectedIndex, setSelectedIndex] = React.useState(0)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const swipeStartX = React.useRef<number | null>(null)
@@ -176,7 +184,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
       {isModalOpen && (
         <div className="gallery-modal" onClick={() => setIsModalOpen(false)}>
           <div
-            className="modal-content"
+            className="gallery-modal-content"
             onClick={(e) => e.stopPropagation()}
             onTouchStart={handleSwipeStart}
             onTouchMove={handleSwipeMove}
@@ -212,7 +220,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, alt }) => {
             </button>
 
             <div className="modal-counter">
-              {selectedIndex + 1} / {images.length}
+              {selectedIndex + 1} / {imageUrls.length}
             </div>
           </div>
         </div>

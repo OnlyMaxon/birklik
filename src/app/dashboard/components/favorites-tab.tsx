@@ -28,7 +28,15 @@ export const FavoritesTab: React.FC = () => {
           where('favorites', 'array-contains', user.id)
         )
         const snapshot = await getDocs(q)
-        setFavorites(snapshot.docs.map(doc => normalizePropertyImageUrls({...doc.data(), id: doc.id} as Property)))
+        // Только то, что сейчас на витрине. В избранном оседают объявления,
+        // которые потом скрыли — по истечении тарифа или решением модератора; их
+        // страница теперь закрыта, и карточка вела бы в никуда. Фильтр в памяти,
+        // чтобы не заводить составной индекс ради одной вкладки.
+        setFavorites(
+          snapshot.docs
+            .map(doc => normalizePropertyImageUrls({...doc.data(), id: doc.id} as Property))
+            .filter(property => property.status === 'active')
+        )
       } catch (err) {
         logger.error('Error loading favorites:', err)
         setError(

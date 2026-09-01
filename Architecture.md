@@ -132,9 +132,46 @@ pnpm functions:build
 pnpm android:sync
 ```
 
+## Listing tiers and visibility
+
+A single helper decides whether a paid tier is in force: `src/utils/premium-helper.ts`
+(`isTierActive`, `isTierExpired`, `tierRank`). It requires both a matching `listingTier` and a
+future expiry date. Badges, ordering and dashboard labels all read from it — never from the
+tier or the date alone.
+
+Visibility is decided in two places on purpose:
+
+- `isOnDisplay` in `src/lib/property-list.ts` filters lists at read time, so an expired listing
+  leaves the site the moment its date passes;
+- the scheduled `expirePaidTiers` function then records that in Firestore (`status: 'inactive'`,
+  `expiredAt`), which is what the dashboard and the owner's renew button read.
+
+Expired listings are never deleted. They keep their data and photos and return to the site on
+renewal.
+
+## Geography
+
+Two controlled axes plus one legacy label:
+
+| Field | Role |
+|---|---|
+| `city` | Region, from the 73-entry directory. Drives region landing pages, the city filter, breadcrumbs and the sitemap. |
+| `locationTags` | Places inside a region: villages from `cityDistricts`, Baku districts and metro stations from `cityLocationOptions`. Selected in `CityLocationPicker`; the search filter uses these. |
+| `district` | A display label only — a copy of `locationTags[0]`, typed as a plain string. Kept for older records; render it through `districtLabel`. |
+
+`cityDistricts` currently covers 15 of the 73 regions.
+
 ## Known technical debt
 
 - The dashboard screen remains large and should be split into smaller route-local components.
 - Most authenticated reads still use the browser Firebase SDK; moving them server-side requires a Firebase session-cookie layer.
-- Booking conflict enforcement should eventually move to a trusted server transaction or slot-document design.
-- Test coverage remains focused on services and filtering.
+- Non-existent URLs answer 200 instead of 404: the root `loading.tsx` opens the response stream
+  before a route can call `notFound()`. It is there because the Workers Free CPU limit needs
+  streaming. Removing it is the first task after moving to Workers Paid — see `AUDIT.md`.
+- Booking conflicts are checked when a booking is created, approved and edited, but Firestore
+  does not lock date ranges, so two simultaneous requests can still both be accepted. Bookings
+  carry no payment, so the owner resolves this by hand; a slot-document design was considered
+  and judged disproportionate.
+- `cityDistricts` has no entries for most regions, so the second location level is unavailable
+  outside the 15 listed there.
+- Test coverage remains focused on tier logic, file validation, filtering and the Firestore REST client.

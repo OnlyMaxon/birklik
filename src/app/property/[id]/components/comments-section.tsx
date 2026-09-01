@@ -3,7 +3,6 @@
 import React from 'react'
 import {useLanguage} from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import {sanitizeInput} from '@/utils/sanitization'
 import type {Comment} from '@/types'
 import {addCommentAction, deleteCommentAction, addReplyAction} from '../actions'
 import {ReportCommentModal} from './report-comment-modal'
@@ -100,7 +99,12 @@ export function CommentsSection({propertyId, initialComments, currentUserId, isA
                   <button onClick={() => handleDeleteComment(comment.id)} className="comment-delete-btn" title="Delete">✕</button>
                 )}
               </div>
-              <p className="comment-text">{sanitizeInput(comment.text)}</p>
+              {/* Текст выводится как есть: React экранирует его сам, и второй
+                  проход только ломал вывод — «Ev & bağ» доходил до читателя как
+                  «Ev &amp; bağ». Прежний sanitizeInput к тому же работал через
+                  document.createElement и уронил бы серверный рендер страницы на
+                  первом же комментарии. Ответы ниже всегда рендерились так. */}
+              <p className="comment-text">{comment.text}</p>
               <p className="comment-date">{formatDate(comment.createdAt)}</p>
 
               <div className="pp-comment-actions">

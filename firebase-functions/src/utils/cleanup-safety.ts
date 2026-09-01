@@ -63,13 +63,16 @@ export async function validateSafeDelete(
     };
   }
 
-  // Проверка 3: Активные documents (только явное true блокирует)
-  if (doc.isActive === true) {
-    return {
-      safe: false,
-      reason: 'Document is still active',
-    };
-  }
+  // Проверка 3 убрана.
+  //
+  // Здесь стояло `if (doc.isActive === true) → небезопасно`, а createProperty
+  // ставит `isActive: true` вообще всем объявлениям. То есть проверка блокировала
+  // не «живое», а вообще всё, и cleanupStalePendingListings не удалила бы ни
+  // одной записи, даже если бы её запустили.
+  //
+  // Видимость на витрине определяет `status`, и он уже проверен выше списком
+  // protectedStatuses. Поле isActive означает другое — временное «занято» на
+  // выбранные владельцем даты, к удалению оно отношения не имеет.
 
   // Проверка 4: Недавние обновления
   if (doc.lastUpdated) {

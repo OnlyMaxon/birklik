@@ -8,7 +8,14 @@
       "Bash(grep -r \"#2E7D5B\\\\|#4a9971\\\\|#1d5940\\\\|#FF7A00\\\\|ff7a00\\\\|#4DA8DA\" src/ --include=\"*.css\" -l)",
       "Bash(sed -n '354,362p' src/pages/ModerationPage/ModerationPage.css)",
       "Bash(sed -n '85,92p' src/pages/PropertyPage/PropertyPage.css)",
-      "Bash(pnpm add *)"
+      "Bash(pnpm add *)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\VS\\\\Birklik.az\\\\src\" -Recurse -File | Where-Object { $_.Extension -in \".ts\",\".tsx\",\".css\",\".json\" } | Select-Object @{n='p';e={$_.FullName.Replace\\(\"D:\\\\VS\\\\Birklik.az\\\\\",\"\"\\)}}, @{n='kb';e={[math]::Round\\($_.Length/1kb,1\\)}} | Sort-Object p | Format-Table -AutoSize | Out-String -Width 200)",
+      "PowerShell(git -C \"d:\\\\VS\\\\Birklik.az\" show df0f068 --stat)",
+      "PowerShell(git -C \"d:\\\\VS\\\\Birklik.az\" show df0f068 --format=\"%B\" -s)",
+      "PowerShell(& \"d:\\\\VS\\\\Birklik.az\\\\node_modules\\\\.bin\\\\vitest.cmd\" run 2>&1 | Select-Object -Last 30; Write-Output \"TESTS_EXIT=$LASTEXITCODE\")",
+      "PowerShell(node \"C:\\\\Users\\\\calil\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--VS-Birklik-az\\\\1c41441b-1230-4d95-b820-509d826ba9fd\\\\scratchpad\\\\check-cancellations.cjs\")",
+      "PowerShell(node \"C:\\\\Users\\\\calil\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--VS-Birklik-az\\\\1c41441b-1230-4d95-b820-509d826ba9fd\\\\scratchpad\\\\check-badges.cjs\")",
+      "PowerShell(node \"C:\\\\Users\\\\calil\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--VS-Birklik-az\\\\1c41441b-1230-4d95-b820-509d826ba9fd\\\\scratchpad\\\\check-i18n-css.cjs\")"
     ]
   }
 }

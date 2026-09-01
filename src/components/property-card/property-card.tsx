@@ -6,9 +6,9 @@ import { Link } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import { useAuth } from '@/components/providers'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favorites-service'
-import { getCsrfToken } from '../../services/csrf-service'
 import { Property, Language } from '../../types'
-import { cities } from '../../data'
+import { isTierActive } from '../../utils/premium-helper'
+import { cities, districtLabel } from '../../data'
 import * as logger from '../../services/logger'
 
 interface PropertyCardProps {
@@ -48,7 +48,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
       if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
       return property.city
     }
-    return t.districts[property.district] || property.district
+    return districtLabel(property.district, t)
   })()
 
   const nights = React.useMemo(() => {
@@ -69,8 +69,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
 
     setIsFavoriting(true)
     try {
-      const csrfToken = getCsrfToken()
-      await toggleFavorite(property.id, user.id, isFavorited, csrfToken)
+      await toggleFavorite(property.id, user.id, isFavorited)
       setIsFavorited(!isFavorited)
       onFavoriteToggle?.(property.id, !isFavorited)
     } catch (error) {
@@ -83,12 +82,12 @@ export const PropertyCard = React.memo<PropertyCardProps>(({
 
   const totalPrice = nights > 0 ? property.price.daily * nights : property.price.daily
 
-  // Check if premium is still active
-  const isPremium = React.useMemo(() =>
-    property.premiumExpiresAt ? new Date(property.premiumExpiresAt).getTime() > Date.now() : false,
-    [property.premiumExpiresAt]
-  )
-  const isVIP = property.listingTier === 'vip'
+  // Значок показывается, только если совпадает тариф И не вышел срок.
+  // До этого Premium проверял одну дату, не глядя на тариф, а VIP — один тариф,
+  // не глядя на дату: снятый Premium продолжал светиться, а корона VIP не гасла
+  // после окончания оплаченного срока вовсе.
+  const isPremium = React.useMemo(() => isTierActive(property, 'premium'), [property])
+  const isVIP = React.useMemo(() => isTierActive(property, 'vip'), [property])
 
   return (
     <div className="property-card">

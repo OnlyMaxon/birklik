@@ -1,4 +1,4 @@
-import type {Amenity, District, ListingTier, LocationCategory, PropertyType} from '@/types'
+import type {Amenity, ListingTier, LocationCategory, PropertyType} from '@/types'
 
 export type DashboardTab = 'listings' | 'add' | 'favorites' | 'bookings' | 'notifications' | 'profile'
 
@@ -12,7 +12,7 @@ export interface ListingFormState {
   listingTier: ListingTier
   tierPlanDuration: '14days' | '30days'
   type: PropertyType | ''
-  district: District | ''
+  district: string
   address: string
   price: string
   rooms: string

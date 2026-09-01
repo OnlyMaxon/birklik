@@ -329,6 +329,25 @@
   box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.12);
 }
 
+/* ── Заявка на занятые даты ──
+   Не исчезает и не отклоняется сама: решение за владельцем. Приглушается, чтобы
+   в списке сразу было видно, какие заявки уже не подтвердить, не выясняя это
+   отказом при нажатии. */
+.booking-card--blocked {
+  opacity: 0.68;
+}
+
+.bk-blocked-note {
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.08);
+  color: #c2410c;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
 /* ── Cancellation sent ── */
 .booking-sent-badge {
   display: inline-flex;

@@ -71,7 +71,7 @@ vi.mock('../data', () => ({
   mockProperties: fallbackMockProperties
 }))
 
-import { createProperty, getProperties, updateProperty } from './property-service'
+import { createProperty, updateProperty } from './property-service'
 
 const makeProperty = (overrides: Partial<Property> = {}): Property => ({
   id: 'p-1',
@@ -168,34 +168,6 @@ describe('propertyService publication logic', () => {
     consoleError.mockRestore()
   })
 
-  it.skip('hides inactive occupied publications in list response', async () => {
-    // TODO: Implement filtering by publication status
-    const hiddenProperty = makeProperty({
-      id: 'hidden',
-      isActive: false,
-      unavailableTo: '2999-01-01'
-    })
-    const visibleProperty = makeProperty({ id: 'visible', isActive: true })
-
-    firestoreMocks.getDocsMock.mockResolvedValue({
-      docs: [
-        { id: hiddenProperty.id, data: () => hiddenProperty },
-        { id: visibleProperty.id, data: () => visibleProperty }
-      ]
-    })
-
-    const result = await getProperties()
-
-    expect(result.properties.map((p) => p.id)).toEqual(['visible'])
-  })
-
-  it.skip('uses fallback publications when firestore returns empty', async () => {
-    // TODO: Implement fallback publications mechanism
-    firestoreMocks.getDocsMock.mockResolvedValue({ docs: [] })
-
-    const result = await getProperties({ type: 'villa' })
-
-    expect(result.properties.length).toBeGreaterThan(0)
-    expect(result.properties[0].id).toBe('fallback-1')
-  })
+  // Два пропущенных теста на getProperties удалены вместе с самой функцией:
+  // публичные списки собирает сервер, клиентская выборка не вызывалась ниоткуда.
 })

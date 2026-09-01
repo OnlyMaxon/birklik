@@ -1,4 +1,9 @@
-// File validation service for secure uploads
+// Проверка файлов перед загрузкой в Storage.
+//
+// До этого модуль вызывался только из тестов: приложение грузило что угодно, а
+// тип и размер отбивали правила Storage — пользователь вместо понятного текста
+// получал невнятный отказ хранилища. Теперь проверка стоит на самом пути
+// загрузки, поэтому и правила здесь должны быть посильными для живых имён файлов.
 
 export interface FileValidationResult {
   valid: boolean
@@ -9,16 +14,39 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024 // 5MB
 
+// Разделители пути, переход на уровень выше и управляющие символы, включая NUL.
+// Диапазон задан кодами намеренно: в буквальном виде класс управляющих символов
+// легко спутать с «пробел или дефис», а такая опечатка отвергала бы обычные имена.
+const DANGEROUS_FILENAME = new RegExp('[/\\\\]|\\.\\.|[\\u0000-\\u001f]')
+
 /**
- * Validate a property image file for upload (type, size, filename)
- * @param {File} file - Image file to validate
- * @returns {FileValidationResult} Validation result with valid flag and optional error message
- * @example
- * const result = validatePropertyImage(imageFile)
- * if (!result.valid) logger.error(result.error)
+ * Имя файла: запрещено только то, что действительно опасно в пути хранилища.
+ *
+ * Прежнее правило требовало `^[a-zA-Z0-9_\-. ]+$` — то есть отвергало любое имя с
+ * кириллицей или азербайджанскими буквами: `фото.jpg`, `şəkil.jpg`. Пока проверка
+ * не вызывалась, это никому не мешало; включи её в загрузку — и половина здешних
+ * телефонов упёрлась бы в отказ на ровном месте.
+ *
+ * Имя попадает в путь `properties/{uid}/{timestamp}_{name}`, поэтому опасны
+ * разделители и управляющие символы, а не алфавит.
+ */
+function validateFilename(filename: string): FileValidationResult {
+  if (!filename || filename.trim() === '') {
+    return { valid: false, error: 'Filename is empty' }
+  }
+  if (filename.length > 200) {
+    return { valid: false, error: 'Filename is too long' }
+  }
+  if (DANGEROUS_FILENAME.test(filename)) {
+    return { valid: false, error: 'Filename contains invalid characters' }
+  }
+  return { valid: true }
+}
+
+/**
+ * Проверяет фотографию объявления: тип, размер, имя файла.
  */
 export const validatePropertyImage = (file: File): FileValidationResult => {
-  // Check file type
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     return {
       valid: false,
@@ -26,7 +54,6 @@ export const validatePropertyImage = (file: File): FileValidationResult => {
     }
   }
 
-  // Check file size
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
@@ -34,28 +61,13 @@ export const validatePropertyImage = (file: File): FileValidationResult => {
     }
   }
 
-  // Check filename for safety
-  const filename = file.name
-  if (!/^[a-zA-Z0-9_\-. ]+$/.test(filename)) {
-    return {
-      valid: false,
-      error: 'Filename contains invalid characters'
-    }
-  }
-
-  return { valid: true }
+  return validateFilename(file.name)
 }
 
 /**
- * Validate user avatar file (stricter than property images)
- * @param {File} file - Avatar file to validate
- * @returns {FileValidationResult} Validation result with valid flag and optional error message
- * @example
- * const result = validateAvatar(avatarFile)
- * if (result.valid) await uploadAvatar(avatarFile)
+ * Проверяет аватар — те же правила, но вдвое строже по размеру.
  */
 export const validateAvatar = (file: File): FileValidationResult => {
-  // Check file type
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     return {
       valid: false,
@@ -63,7 +75,6 @@ export const validateAvatar = (file: File): FileValidationResult => {
     }
   }
 
-  // Check file size (stricter for avatars)
   if (file.size > MAX_AVATAR_SIZE) {
     return {
       valid: false,
@@ -71,44 +82,28 @@ export const validateAvatar = (file: File): FileValidationResult => {
     }
   }
 
-  return { valid: true }
+  return validateFilename(file.name)
 }
 
 /**
- * Validate multiple files in batch (all must pass individual checks)
- * @param {FileList | File[]} files - Array of files to validate
- * @param {boolean} [isAvatar=false] - If true, applies stricter avatar validation
- * @returns {FileValidationResult} Validation result for entire batch
- * @example
- * const result = validateMultipleFiles(fileList)
- * if (result.valid) await batchUpload(fileList)
+ * Пакетная проверка: подходят все файлы или не подходит ни один.
+ *
+ * Общего ограничения на суммарный вес здесь больше нет. Оно стояло на пяти файлах
+ * (`MAX_FILE_SIZE * 5`), тогда как объявление допускает 20 фотографий у Standard и
+ * VIP и 30 у Premium — то есть законная загрузка упиралась бы в него сразу.
+ * Каждый файл ограничен своим размером, этого достаточно.
  */
 export const validateMultipleFiles = (files: FileList | File[], isAvatar = false): FileValidationResult => {
   const fileArray = Array.from(files)
 
-  // Check at least one file
   if (fileArray.length === 0) {
     return { valid: false, error: 'No files selected' }
   }
 
-  // Check total size
-  const totalSize = fileArray.reduce((sum, file) => sum + file.size, 0)
-  const maxTotalSize = isAvatar ? MAX_AVATAR_SIZE : MAX_FILE_SIZE * 5 // max 5 files for properties
-  
-  if (totalSize > maxTotalSize) {
-    return {
-      valid: false,
-      error: `Total size exceeds limit. Max: ${(maxTotalSize / 1024 / 1024).toFixed(0)}MB`
-    }
-  }
-
-  // Validate each file
+  const validator = isAvatar ? validateAvatar : validatePropertyImage
   for (const file of fileArray) {
-    const validator = isAvatar ? validateAvatar : validatePropertyImage
     const result = validator(file)
-    if (!result.valid) {
-      return result
-    }
+    if (!result.valid) return result
   }
 
   return { valid: true }

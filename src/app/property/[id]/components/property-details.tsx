@@ -9,9 +9,9 @@ import {BookingCalendar} from './booking-calendar'
 import {RatingWidget} from './rating-widget'
 import {CommentsSection} from './comments-section'
 import {PropertyMapSection} from './property-map-section'
-import {moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities} from '@/data'
+import {moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities, districtLabel} from '@/data'
 import {cityLandingPath} from '@/lib/city-landing'
-import {isPremiumActive} from '@/utils/premium-helper'
+import {isTierActive} from '@/utils/premium-helper'
 import type {Booking, Language, Property} from '@/types'
 
 interface PropertyDetailsProps {
@@ -56,7 +56,7 @@ export async function PropertyDetails({
       if (cityObj) return language === 'en' ? cityObj.en : language === 'ru' ? (cityObj.ru || cityObj.az) : cityObj.az
       return property.city
     }
-    return t.districts[property.district] || ''
+    return districtLabel(property.district, t)
   })()
 
   // Адрес посадочной страницы региона — если у объявления вообще проставлен
@@ -98,8 +98,12 @@ export async function PropertyDetails({
               <div className="pp-title-card">
                 <div className="pp-title-card__badges">
                   <span className="badge badge-primary">{t.propertyTypes[property.type]}</span>
-                  {property.listingTier === 'vip' && <span className="badge badge-vip">VIP</span>}
-                  {isPremiumActive(property.premiumExpiresAt) && <span className="badge badge-premium">Premium</span>}
+                  {/* Оба значка спрашивают у одного помощника: и тариф, и срок.
+                      Раньше VIP проверял только тариф, Premium — только дату,
+                      поэтому корона не гасла никогда, а ромб переживал смену
+                      тарифа на бесплатный. */}
+                  {isTierActive(property, 'vip') && <span className="badge badge-vip">VIP</span>}
+                  {isTierActive(property, 'premium') && <span className="badge badge-premium">Premium</span>}
                 </div>
                 <div className="pp-title-card__top">
                   <h1 className="pp-page-title">{getLocalizedText(property.title)}</h1>
@@ -274,8 +278,11 @@ export async function PropertyDetails({
                 </div>
                 <div className="pp-section-body">
                   <p className="pp-address-text">{getLocalizedText(property.address)}</p>
-                  {property.city && (
-                    <p className="pp-city-line"><strong>{t.property.city}:</strong> {property.city}</p>
+                  {/* Название региона на языке посетителя, а не сырое значение из
+                      справочника: здесь печаталось `Gabala` на всех трёх языках,
+                      хотя строкой выше тот же регион уже выводился как «Qəbələ». */}
+                  {cityLabel && (
+                    <p className="pp-city-line"><strong>{t.property.city}:</strong> {cityLabel}</p>
                   )}
                   {locationLabels.length > 0 && (
                     <div className="pp-chips-wrap" style={{marginBottom: '0.75rem'}}>

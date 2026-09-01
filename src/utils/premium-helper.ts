@@ -1,36 +1,84 @@
 /**
- * Premium listing helper functions
+ * Тарифы объявления: единственное место, где решается «действует ли VIP/Premium».
+ *
+ * До этого ответ считался в четырёх местах по-разному, и каждое ошибалось в свою
+ * сторону: карточка проверяла у Premium дату и не смотрела на тариф, у VIP —
+ * наоборот. Отсюда бралось и то, что снятый тариф продолжал показывать значок,
+ * и то, что «вечная корона» переживала оплаченный срок.
  */
 
-/**
- * Calculate premium expiration date (3 weeks from now)
- * @returns ISO date string when premium expires
- */
-export const calculatePremiumExpiresAt = (): string => {
-  const now = new Date()
-  const expiresAt = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000) // 3 weeks = 21 days
-  return expiresAt.toISOString()
+import type {ListingTier} from '@/types'
+
+interface TieredListing {
+  listingTier?: ListingTier
+  premiumExpiresAt?: string
+  vipExpiresAt?: string
 }
 
 /**
- * Check if a property has active premium status
- * @param premiumExpiresAt ISO date string
- * @returns true if premium is still active
+ * Момент окончания срока в миллисекундах.
+ *
+ * Дата лежит в двух видах: `YYYY-MM-DD` у старых записей и полный ISO с
+ * 23:59:59 из редактора модератора. `Date` разбирает оба, но date-only даёт
+ * полночь UTC — значит последний оплаченный день считался бы прошедшим с самого
+ * утра. Поэтому у короткой формы берём конец дня.
  */
-export const isPremiumActive = (premiumExpiresAt?: string): boolean => {
-  if (!premiumExpiresAt) return false
-  return new Date(premiumExpiresAt).getTime() > Date.now()
+function expiryTimestamp(value: string): number | null {
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T23:59:59.999Z` : value
+  const parsed = new Date(normalized)
+  return Number.isNaN(parsed.getTime()) ? null : parsed.getTime()
+}
+
+/** Дата окончания текущего тарифа объявления, если тариф платный. */
+export function tierExpiresAt(listing: TieredListing): string | undefined {
+  if (listing.listingTier === 'vip') return listing.vipExpiresAt
+  if (listing.listingTier === 'premium') return listing.premiumExpiresAt
+  return undefined
 }
 
 /**
- * Get remaining days for premium listing
- * @param premiumExpiresAt ISO date string
- * @returns number of days remaining (0 if expired)
+ * Действует ли у объявления именно этот платный тариф.
+ *
+ * Требуется и совпадение тарифа, и непросроченная дата. Платный тариф без даты
+ * считается недействующим намеренно: такая запись сломана (дату ставит либо
+ * колбэк банка, либо модератор), и показывать по ней значок значило бы раздавать
+ * платное место даром.
  */
-export const getPremiumRemainingDays = (premiumExpiresAt?: string): number => {
-  if (!premiumExpiresAt || !isPremiumActive(premiumExpiresAt)) return 0
-  const expiresAt = new Date(premiumExpiresAt).getTime()
-  const now = Date.now()
-  const daysRemaining = Math.ceil((expiresAt - now) / (24 * 60 * 60 * 1000))
-  return Math.max(daysRemaining, 0)
+export function isTierActive(listing: TieredListing, tier: 'vip' | 'premium'): boolean {
+  if (listing.listingTier !== tier) return false
+  const raw = tier === 'vip' ? listing.vipExpiresAt : listing.premiumExpiresAt
+  if (!raw) return false
+  const expires = expiryTimestamp(raw)
+  return expires !== null && expires > Date.now()
+}
+
+/** Тариф платный, но срок вышел — объявление ждёт продления. */
+export function isTierExpired(listing: TieredListing): boolean {
+  const tier = listing.listingTier
+  if (tier !== 'vip' && tier !== 'premium') return false
+  const raw = tierExpiresAt(listing)
+  if (!raw) return true
+  const expires = expiryTimestamp(raw)
+  return expires === null || expires <= Date.now()
+}
+
+/**
+ * Вес объявления в выдаче: Premium выше VIP, VIP выше обычного.
+ * Истёкший платный тариф опускается к обычным.
+ */
+export function tierRank(listing: TieredListing): number {
+  if (isTierActive(listing, 'premium')) return 3
+  if (isTierActive(listing, 'vip')) return 2
+  return 1
+}
+
+/**
+ * Осталось дней до конца тарифа. Ноль, если срок вышел или даты нет.
+ */
+export function tierRemainingDays(listing: TieredListing): number {
+  const raw = tierExpiresAt(listing)
+  if (!raw) return 0
+  const expires = expiryTimestamp(raw)
+  if (expires === null || expires <= Date.now()) return 0
+  return Math.ceil((expires - Date.now()) / (24 * 60 * 60 * 1000))
 }

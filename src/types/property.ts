@@ -1,5 +1,15 @@
 export type PropertyType = 'villa' | 'apartment' | 'house' | 'cottage' | 'penthouse' | 'aframe' | 'sanatorium' | 'recreation'
 
+/**
+ * Список районов Абшерона. Оставлен ради подписей в переводах (`t.districts`) —
+ * им подписываются старые записи, у которых не заполнен `city`.
+ *
+ * ⚠️ Типом поля `district` он больше не служит и служить не может. Значение туда
+ * попадает не выбором из списка, а копией первого элемента `locationTags`:
+ * в боевой базе там двадцать разных значений — названия сёл как есть (`Vəndam`,
+ * `Talıstan`, `Qəçreş`) и опечатанные варианты самого списка (`merdekan` вместо
+ * `mardakan`, `suvelan` вместо `shuvalan`). Union это никогда не описывал.
+ */
 export type District = 'mardakan' | 'novkhani' | 'buzovna' | 'bilgah' | 'zagulba' | 'pirshagi' | 'shuvalan' | 'baku' | 'nabran' | 'gabala'
 
 export type LocationCategory = 'rayon' | 'metro'
@@ -60,7 +70,13 @@ export type ListingStatus = 'active' | 'pending' | 'inactive' | 'draft'
 export interface Property {
   id: string
   type: PropertyType
-  district: District
+  /**
+   * Подпись места внутри региона. Свободная строка, а не значение из списка:
+   * пишется как копия `locationTags[0]`. Управляемая ось географии — `city`,
+   * тонкая — `locationTags`; это поле лишь дублирует второе и живёт ради
+   * старых записей.
+   */
+  district: string
   price: PropertyPrice
   rooms: number
   minGuests: number
@@ -115,7 +131,9 @@ export interface FilterState {
   maxPrice: number | null
   rooms: number | null
   type: PropertyType | ''
-  district: District | ''
+  // Фильтра по району здесь больше нет: интерфейс поиска его никогда не
+  // заполнял — место выбирается через город и `locationTags`, — а сравнение
+  // всё равно не сходилось из-за свободных значений в данных.
   hasPool: boolean | null
   extraFilters: string[]
   nearbyPlaces: string[]

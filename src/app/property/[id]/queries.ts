@@ -4,9 +4,9 @@ import {after} from 'next/server'
 import {getDoc, queryDocs, updateDoc, increment, type QueryOptions} from '@/lib/firebase/firestore-rest'
 import type {Property, Booking} from '@/types'
 import {normalizePropertyImageUrls, toImageApiUrl} from '@/lib/images'
-import {toListItem} from '@/lib/property-list'
+import {isOnDisplay, toListItem} from '@/lib/property-list'
 
-type PropertyMetadata = {title?: string; description?: string; image?: string}
+type PropertyMetadata = {title?: string; description?: string; image?: string; status?: string}
 
 // Владелец пишет описание в textarea, и переводы строк попадают в базу как
 // есть. В мета-теге они выглядят обрывом посреди предложения, а в разметке
@@ -31,7 +31,7 @@ function localized(value: unknown): string | undefined {
 // оставались пустыми, и соцсети получали страницу без title и картинки.
 export const getPropertyMetadata = unstable_cache(
   async (propertyId: string): Promise<PropertyMetadata | null> => {
-    const property = await getDoc<{title?: unknown; description?: unknown; images?: unknown}>(
+    const property = await getDoc<{title?: unknown; description?: unknown; images?: unknown; status?: unknown}>(
       'properties',
       propertyId
     )
@@ -41,7 +41,10 @@ export const getPropertyMetadata = unstable_cache(
     return {
       title: localized(property.title),
       description: localized(property.description),
-      image: typeof images[0] === 'string' ? toImageApiUrl(images[0]) : undefined
+      image: typeof images[0] === 'string' ? toImageApiUrl(images[0]) : undefined,
+      // Статус нужен метаданным: объявление вне витрины не должно попадать
+      // в индекс, даже если кто-то пришёл по прямой ссылке.
+      status: typeof property.status === 'string' ? property.status : undefined
     }
   },
   ['property-metadata'],
@@ -72,6 +75,7 @@ export async function getSimilarProperties(property: Property): Promise<Property
   // будет отфильтрован.
   const properties = await queryDocs<Omit<Property, 'id'>>('properties', {where, limit: 11})
   return properties
+    .filter(isOnDisplay)
     .map(normalizePropertyImageUrls)
     .map(toListItem)
     .filter(p => p.id !== property.id)

@@ -24,7 +24,6 @@ const initialFilters: FilterState = {
   minGuests: null,
   maxGuests: null,
   type: '',
-  district: '',
   minPrice: null,
   maxPrice: null,
   rooms: null,
@@ -142,7 +141,6 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
       minGuests: filters.minGuests || undefined,
       maxGuests: filters.maxGuests || undefined,
       type: filters.type || undefined,
-      district: filters.district || undefined,
       minPrice: filters.minPrice || undefined,
       maxPrice: filters.maxPrice || undefined,
       rooms: filters.rooms || undefined,
@@ -171,7 +169,6 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
   const activeFilterCount = [
     filters.type,
     filters.city,
-    filters.district,
     filters.minPrice,
     filters.maxPrice,
     filters.rooms,

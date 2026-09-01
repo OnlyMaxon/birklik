@@ -1,4 +1,5 @@
 import { Property, PropertyType, District, Amenity, LocationCategory } from '../types'
+import { tierRank } from '../utils/premium-helper'
 import { expandSearchTerms } from './city-aliases'
 
 export interface FilterOption {
@@ -376,6 +377,19 @@ const includesAny = (values: string[] | undefined, selected: string[]): boolean 
   return selected.some((item) => values.includes(item))
 }
 
+/**
+ * Подпись района для показа.
+ *
+ * В данных здесь свободная строка, а в переводах лежат только десять
+ * абшеронских ключей. Что не нашлось — показываем как есть: `Vəndam` понятнее
+ * пустоты, а раньше половина значений и не находилась.
+ */
+export const districtLabel = (district: string | undefined, t: any): string => {
+  if (!district) return ''
+  const labels = t?.districts as Record<string, string> | undefined
+  return labels?.[district] || district
+}
+
 export const getOptionLabel = (options: FilterOption[] | LocationOption[], key: string, t: any): string => {
   const option = options.find((entry) => entry.key === key)
   if (!option) return key
@@ -393,7 +407,6 @@ export const filterProperties = (
     minGuests?: number
     maxGuests?: number | string
     type?: PropertyType | ''
-    district?: District | ''
     minPrice?: number
     maxPrice?: number
     rooms?: number
@@ -471,8 +484,9 @@ export const filterProperties = (
     // Type filter
     if (filters.type && property.type !== filters.type) return false
 
-    // District filter
-    if (filters.district && property.district !== filters.district) return false
+    // Фильтр по району убран: интерфейс его не заполнял, а сравнение строгим
+    // равенством всё равно почти ничего не находило — в данных там свободный
+    // текст. Место ищется через город и locationTags ниже.
 
     // Price filter
     if (filters.minPrice && property.price.daily < filters.minPrice) return false
@@ -531,12 +545,9 @@ export const filterProperties = (
 
     return true
   }).sort((a, b) => {
-    const now = new Date().toISOString()
-    const tierRank = (p: Property) => {
-      if ((p.isFeatured || p.listingTier === 'premium') && p.premiumExpiresAt && p.premiumExpiresAt > now) return 3
-      if (p.listingTier === 'vip' && (!p.vipExpiresAt || p.vipExpiresAt > now)) return 2
-      return 1
-    }
+    // Вес тарифа считает общий помощник. Прежняя копия сравнивала даты строками
+    // с полным ISO — из-за этого последний оплаченный день пропадал ещё утром, —
+    // а VIP без даты держала наверху бессрочно.
     const rankDiff = tierRank(b) - tierRank(a)
     if (rankDiff !== 0) return rankDiff
     const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0

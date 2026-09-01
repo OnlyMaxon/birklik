@@ -136,7 +136,11 @@
   animation: fadeIn 0.2s ease;
 }
 
-.modal-content {
+/* Своё имя, а не общее `.modal-content` из base.css. Тот задаёт белый фон,
+   скругление и max-width: 500px — и всё это доставалось лайтбоксу галереи,
+   потому что здешнее правило перекрывало только размеры, а фон и радиус нет.
+   Класс общий, файлы разные, порядок склейки не гарантирован. */
+.gallery-modal-content {
   position: relative;
   max-width: 90vw;
   max-height: 90vh;

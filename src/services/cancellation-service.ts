@@ -94,6 +94,31 @@ export const getOwnerCancellationRequests = async (ownerId: string): Promise<Can
 }
 
 /**
+ * Запрос на отмену, привязанный к брони.
+ *
+ * Владелец отвечает на запрос из списка броней, а там на руках только id брони —
+ * документ запроса приходится искать по нему.
+ */
+export const getCancellationRequestByBooking = async (
+  bookingId: string
+): Promise<CancellationRequest | null> => {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('bookingId', '==', bookingId),
+      where('status', '==', 'pending')
+    )
+    const snapshot = await getDocs(q)
+    const found = snapshot.docs[0]
+    if (!found) return null
+    return {id: found.id, ...found.data()} as CancellationRequest
+  } catch (error) {
+    logger.error('Error finding cancellation request by booking:', error)
+    return null
+  }
+}
+
+/**
  * Approve cancellation request
  * @param requestId - Cancellation request ID
  * @returns Success status

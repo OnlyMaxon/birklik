@@ -8,6 +8,21 @@ import type {Booking} from '@/types'
 import {createBookingAction} from '../actions'
 import {buildCalendarCells, getTodayISO} from '../lib/calendar'
 
+/**
+ * Какие брони занимают даты.
+ *
+ * Ожидающие ответа владельца — тоже занимают. Сервер при создании брони отбивает
+ * пересечение и с `approved`, и с `pending`, а календарь закрашивал только
+ * подтверждённые: дата выглядела свободной, человек выбирал её, жал «Отправить» и
+ * получал отказ «эти даты уже заняты».
+ */
+const BLOCKING_STATUSES: ReadonlyArray<Booking['status']> = ['approved', 'pending']
+
+const blocksDate = (booking: Booking, dateISO: string): boolean =>
+  BLOCKING_STATUSES.includes(booking.status)
+  && dateISO >= booking.checkInDate
+  && dateISO < booking.checkOutDate
+
 interface BookingCalendarProps {
   propertyId: string
   dailyPrice: number
@@ -66,9 +81,7 @@ export function BookingCalendar({
       return true
     }
 
-    return bookings.some(
-      booking => booking.status === 'approved' && dateISO >= booking.checkInDate && dateISO < booking.checkOutDate
-    )
+    return bookings.some(booking => blocksDate(booking, dateISO))
   }
 
   const isDateInSelectedRange = (dateISO: string | undefined, checkIn: string, checkOut: string) => {
@@ -198,7 +211,12 @@ export function BookingCalendar({
     ? (language === 'en' ? `Available again from ${formatDate(unavailableTo)}.` : language === 'ru' ? `Снова будет доступно с ${formatDate(unavailableTo)}.` : `${formatDate(unavailableTo)} tarixindən sonra yenidən boş olacaq.`)
     : ''
 
-  const latestBooking = bookings[0]
+  // Самая свежая из действующих. Раньше бралась просто первая запись выборки —
+  // а она приходит без сортировки и вполне может оказаться отменённой или
+  // отклонённой, то есть подпись «Последнее бронирование» врала дважды.
+  const latestBooking = bookings
+    .filter(booking => BLOCKING_STATUSES.includes(booking.status))
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))[0]
 
   return (
     <div className="availability-card">
@@ -225,7 +243,7 @@ export function BookingCalendar({
           const isDisabled = isCellDisabled(cell.dateISO)
           const isBusy = !!cell.dateISO && !!unavailableFrom && !!unavailableTo && cell.dateISO >= unavailableFrom && cell.dateISO <= unavailableTo
           const isBookedBlocked = !isBusy && !!cell.dateISO && cell.inMonth && bookings.some(
-            b => b.status === 'approved' && cell.dateISO! >= b.checkInDate && cell.dateISO! < b.checkOutDate
+            booking => blocksDate(booking, cell.dateISO!)
           )
           const isCheckIn = cell.dateISO === selectedCheckIn
           const isCheckOut = cell.dateISO === selectedCheckOut

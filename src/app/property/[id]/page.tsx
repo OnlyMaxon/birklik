@@ -40,6 +40,9 @@ export async function generateMetadata({params}: PropertyRouteProps): Promise<Me
   if (!parsedId.success) return NOT_FOUND_METADATA
   const property = await getPropertyMetadata(parsedId.data)
   if (!property) return NOT_FOUND_METADATA
+  // Объявление вне статуса `active` убрано с витрины — в индексе ему тоже не место.
+  // Владелец и модератор страницу увидят, но метаданные им ни к чему.
+  if (property.status !== 'active') return NOT_FOUND_METADATA
   return {
     title: property.title,
     description: property.description,
@@ -70,6 +73,13 @@ export default async function Page({params}: PropertyRouteProps) {
   if (!property) notFound()
 
   const session = await getSession()
+
+  // С витрины скрытое объявление убирают все списки, но по прямой ссылке страница
+  // открывалась при любом статусе: так были доступны и неоплаченные черновики, и
+  // не прошедшие модерацию, и объявления с истёкшим тарифом. Владельцу и модератору
+  // страница нужна — проверить и продлить, — остальным её быть не должно.
+  const isOwner = session?.uid === property.ownerId
+  if (property.status !== 'active' && !isOwner && !session?.moderator) notFound()
 
   const [bookings, similarProperties, hasBooked, userRating] = await Promise.all([
     getPropertyBookingsForAvailability(parsedId.data),
@@ -105,7 +115,7 @@ export default async function Page({params}: PropertyRouteProps) {
         bookings={bookings}
         similarProperties={similarProperties}
         isAuthenticated={!!session}
-        isOwner={session?.uid === property.ownerId}
+        isOwner={isOwner}
         isFavorited={session ? (property.favorites || []).includes(session.uid) : false}
         hasBooked={hasBooked}
         userRating={userRating}

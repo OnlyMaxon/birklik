@@ -104,11 +104,10 @@ export const Header: React.FC = () => {
 
   const handleLogoClick = () => {
     setMenuOpen(false)
-    if (location.pathname === '/') {
-      window.location.reload()
-    } else {
-      navigate('/')
-    }
+    // Никакой перезагрузки страницы. Клик по логотипу на главной вызывал
+    // window.location.reload() — полный круг: сеть, разбор бандла, повторный
+    // серверный рендер. Обычный переход по адресу делает то же самое даром.
+    navigate('/')
   }
 
   const languages = [

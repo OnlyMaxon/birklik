@@ -60,7 +60,10 @@ export function RatingWidget({propertyId, averageRating, reviewCount, initialUse
             key={star}
             className={`star-btn ${userRating === star ? 'active' : ''} ${userRating && star <= userRating ? 'filled' : ''}`}
             onClick={() => handleRating(star)}
-            disabled={!isAuthenticated || isSubmitting}
+            // Гостю звёзды остаются кликабельными: обработчик подскажет, что нужно
+            // войти. Раньше кнопки были disabled, и эта подсказка была недостижима —
+            // человек просто жал в никуда.
+            disabled={isSubmitting}
             title={`${star} ${t.property.star}`}
           >
             ★

@@ -78,7 +78,6 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
   const resetAdvancedOnly = () => {
     onFilterChange({
       ...filters,
-      district: '',
       extraFilters: [],
       nearbyPlaces: [],
       city: '',

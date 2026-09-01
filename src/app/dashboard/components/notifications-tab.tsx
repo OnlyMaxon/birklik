@@ -3,7 +3,7 @@ import { useNavigate } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import { useAuth } from '@/components/providers'
 import type {Notification, NotificationType} from '@/types'
-import {getUserNotifications, deleteNotification} from '@/services/notifications-service'
+import {getUserNotifications, deleteNotification, markNotificationAsRead} from '@/services/notifications-service'
 import {ListingRowsSkeleton} from '@/components'
 import * as logger from '@/services/logger'
 
@@ -172,17 +172,23 @@ export const NotificationsTab = React.memo(() => {
     loadNotifications()
   }, [user?.id])
 
+  // Пометка «прочитано» именно помечает. Раньше обе кнопки звали
+  // deleteNotification: галочка молча уничтожала уведомление, «Всё прочитано»
+  // стирало сразу все непрочитанные, а поле read не выставлялось никогда — из-за
+  // этого счётчик в шапке падал только вместе с удалением.
   const handleMarkAsRead = async (notificationId: string) => {
     if (!user?.id) return
-    await deleteNotification(user.id, notificationId)
-    setNotifications(prev => prev.filter(n => n.id !== notificationId))
+    const ok = await markNotificationAsRead(user.id, notificationId)
+    if (!ok) return
+    setNotifications(prev => prev.map(n => (n.id === notificationId ? {...n, read: true} : n)))
   }
 
   const handleMarkAllAsRead = async () => {
     if (!user?.id) return
     const unread = notifications.filter(n => !n.read)
-    await Promise.all(unread.map(n => deleteNotification(user.id, n.id)))
-    setNotifications(prev => prev.filter(n => n.read))
+    const results = await Promise.all(unread.map(n => markNotificationAsRead(user.id, n.id)))
+    const failed = new Set(unread.filter((_, index) => !results[index]).map(n => n.id))
+    setNotifications(prev => prev.map(n => (n.read || failed.has(n.id) ? n : {...n, read: true})))
   }
 
   const handleDelete = async (notificationId: string) => {
@@ -199,8 +205,14 @@ export const NotificationsTab = React.memo(() => {
 
   const handleModalAction = async () => {
     if (!selectedNotification || !user?.id) return
-    await deleteNotification(user.id, selectedNotification.id)
-    setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id))
+    // Переход по уведомлению помечает его прочитанным, а не стирает: человек
+    // может захотеть вернуться к нему позже, и удаление здесь было неожиданным.
+    if (!selectedNotification.read) {
+      const ok = await markNotificationAsRead(user.id, selectedNotification.id)
+      if (ok) {
+        setNotifications(prev => prev.map(n => (n.id === selectedNotification.id ? {...n, read: true} : n)))
+      }
+    }
     setSelectedNotification(null)
 
     const n = selectedNotification as unknown as Record<string, unknown>

@@ -72,6 +72,23 @@ async function deleteDraftWithImages(propertyId: string): Promise<void> {
   try {
     const propDoc = await admin.firestore().collection('properties').doc(propertyId).get();
     if (!propDoc.exists) return;
+
+    // Удаляется ТОЛЬКО черновик — объявление, которое до оплаты не существовало
+    // как публикация. Всё остальное при неудачной оплате трогать нельзя: оно
+    // живёт само по себе, а оплата лишь меняла тариф.
+    //
+    // Прежде вызов был обвязан условием `!payment.isUpgrade`, а `isUpgrade`
+    // считался как «status === 'active'» ещё на этапе initiatePayment. Пока
+    // истечение тарифов не работало, скрытых объявлений просто не бывало и это
+    // сходило с рук. С появлением расписания expirePaidTiers статус `inactive`
+    // стал обычным делом — и неудачная попытка продлить такое объявление снесла
+    // бы его вместе с фотографиями.
+    const status = propDoc.data()?.status;
+    if (status !== 'draft') {
+      console.warn(`[Azericard] Skip delete of ${propertyId}: status is '${status}', not a draft`);
+      return;
+    }
+
     const images: string[] = propDoc.data()?.images || [];
     await propDoc.ref.delete();
     const bucket = admin.storage().bucket();
@@ -87,9 +104,36 @@ async function deleteDraftWithImages(propertyId: string): Promise<void> {
   }
 }
 
-function getExpiryDate(duration: string): string {
-  const d = new Date();
-  d.setDate(d.getDate() + (duration === '14days' ? 14 : 30));
+/**
+ * Дата окончания тарифа после оплаты.
+ *
+ * Отсчёт идёт от текущей даты истечения, если она ещё не прошла, и только иначе
+ * — от сегодня. Раньше считалось всегда от сегодня: владелец, продлевавший
+ * заранее, терял весь неиспользованный остаток уже оплаченного срока.
+ *
+ * `currentExpiry` берётся по тому тарифу, который покупают. Значит продление
+ * того же тарифа прибавляется к остатку, а переход с VIP на Premium начинает
+ * срок заново — как и должно быть, это разные пакеты.
+ */
+function getExpiryDate(duration: string, currentExpiry?: string): string {
+  const days = duration === '14days' ? 14 : 30;
+  let base = new Date();
+
+  if (currentExpiry) {
+    // Даты лежат в двух видах: 'YYYY-MM-DD' у записей от банка и полный ISO из
+    // редактора модератора. Короткую форму дотягиваем до конца дня, иначе
+    // последний оплаченный день пропадал бы.
+    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(currentExpiry)
+      ? `${currentExpiry}T23:59:59.999Z`
+      : currentExpiry;
+    const parsed = new Date(normalized);
+    if (!Number.isNaN(parsed.getTime()) && parsed.getTime() > Date.now()) {
+      base = parsed;
+    }
+  }
+
+  const d = new Date(base);
+  d.setDate(d.getDate() + days);
   const p = (n: number) => n.toString().padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
@@ -261,7 +305,19 @@ export const azericardCallback = functions
 
     // Верификация подписи Azericard (MPI public key) — только для успешных транзакций
     const azericardPublicKey = process.env.AZERICARD_PUBLIC_KEY;
-    if (azericardPublicKey && ACTION === '0' && RC === '00') {
+    if (ACTION === '0' && RC === '00') {
+      // Нечем проверить подпись — значит платёж не принимается.
+      //
+      // Прежнее условие включало проверку только при наличии ключа: пустой или
+      // потерянный секрет молча превращал колбэк в «принимаю что угодно». Цена
+      // такой оплошности высокая — свой ORDER пользователь знает, initiatePayment
+      // возвращает его прямо в браузер, а адрес колбэка публичный.
+      if (!azericardPublicKey) {
+        console.error('[Azericard] AZERICARD_PUBLIC_KEY не задан — платёж не принимается. ORDER:', ORDER);
+        res.redirect(`${frontendBase}/dashboard?payment=error`);
+        return;
+      }
+
       const cbFields = ['AMOUNT', 'TERMINAL', 'APPROVAL', 'RRN', 'INT_REF'];
       const cbParams = { AMOUNT, TERMINAL, APPROVAL: APPROVAL ?? '', RRN: RRN ?? '', INT_REF: INT_REF ?? '' };
       const macSource = buildMacSource(cbFields, cbParams);
@@ -312,20 +368,36 @@ export const azericardCallback = functions
 
     // ACTION=0 и RC=00 означает успешный платёж
     if (ACTION === '0' && RC === '00') {
-      const expiryDate = getExpiryDate(payment.duration);
+      const propertyRef = admin.firestore().collection('properties').doc(payment.propertyId);
+      const propertySnap = await propertyRef.get();
+      const currentExpiry = payment.tier === 'premium'
+        ? (propertySnap.data()?.premiumExpiresAt as string | undefined)
+        : (propertySnap.data()?.vipExpiresAt as string | undefined);
+      const expiryDate = getExpiryDate(payment.duration, currentExpiry);
 
-      await admin.firestore().collection('properties').doc(payment.propertyId).update({
-        // Upgrade: property stays active (already passed moderation). New listing: send to moderation.
-        ...(!payment.isUpgrade ? { status: 'pending' } : {}),
+      // Куда объявление попадает после оплаты — решает его нынешний статус, а не
+      // флаг isUpgrade, посчитанный ещё до перехода в банк.
+      //
+      // `active` и `inactive` означают, что модерацию оно уже проходило: первое
+      // сейчас на витрине, второе скрыто из-за истёкшего тарифа. Содержимое с тех
+      // пор не менялось, поэтому продление возвращает объявление на витрину сразу.
+      // Черновик оплачен впервые — ему модерация нужна. Неизвестный статус тоже
+      // отправляем на проверку: ошибиться в сторону модерации безопаснее.
+      const currentStatus = propertySnap.data()?.status;
+      const nextStatus = currentStatus === 'active' || currentStatus === 'inactive'
+        ? 'active'
+        : 'pending';
+
+      await propertyRef.update({
+        status: nextStatus,
+        // Отметка о моменте скрытия больше не нужна — объявление вернулось.
+        expiredAt: '',
         listingTier: payment.tier,
-        ...(payment.tier === 'premium' ? {
-          isFeatured: true,
-          premiumExpiresAt: expiryDate,
-        } : {}),
-        ...(payment.tier === 'vip' ? {
-          isFeatured: false,
-          vipExpiresAt: expiryDate,
-        } : {}),
+        // Дата прежнего тарифа стирается. Иначе она остаётся в документе и
+        // продолжает влиять: значок и место в выдаче смотрят именно на дату.
+        ...(payment.tier === 'premium'
+          ? { isFeatured: true, premiumExpiresAt: expiryDate, vipExpiresAt: '' }
+          : { isFeatured: false, vipExpiresAt: expiryDate, premiumExpiresAt: '' }),
       });
 
       await paymentDoc.ref.update({

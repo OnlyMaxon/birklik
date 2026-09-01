@@ -1,7 +1,6 @@
 import { db } from '../lib/firebase/client'
-import { collection, doc, query, where, getDocs, getDoc, runTransaction, updateDoc, deleteDoc } from 'firebase/firestore'
+import { collection, doc, query, where, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { Booking } from '../types'
-import { validateCsrfToken } from './csrf-service'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'bookings'
@@ -14,146 +13,15 @@ export class BookingConflictError extends Error {
   }
 }
 
-/**
- * Create a new booking record with CSRF protection and atomic conflict checking
- * Uses Firestore transactions to prevent race conditions
- * @param {Omit<Booking, 'id' | 'createdAt'>} booking - Booking data (excluding id and creation timestamp)
- * @param {string} csrfToken - CSRF token for validation
- * @returns {Promise<Booking | null>} Created booking with id and timestamp, or null on failure
- * @throws {Error} On Firestore write failure, CSRF validation failure, or if booking conflicts with existing booking
- */
-export const createBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>, csrfToken: string): Promise<Booking | null> => {
-  try {
-    // Validate CSRF token
-    if (!validateCsrfToken(csrfToken)) {
-      logger.error('CSRF token validation failed')
-      throw new Error('Security validation failed. Please try again.')
-    }
+// createBooking удалена (2026-08-31): бронь создаёт серверный экшен
+// createBookingAction. Здесь же жила известная гонка — getDocs внутри
+// runTransaction, то есть чтения вне снапшота транзакции.
 
-    const now = new Date().toISOString()
-    const bookingData = {
-      ...booking,
-      createdAt: now,
-      status: 'pending' as const
-    }
+// getPropertyBookings удалена: страница объявления берёт брони через
+// getPropertyBookingsForAvailability на сервере.
 
-    // Use transaction for atomic conflict check and booking creation
-    const result = await runTransaction(db, async (transaction) => {
-      // Read conflicting bookings atomically
-      const qApproved = query(
-        collection(db, COLLECTION_NAME),
-        where('propertyId', '==', booking.propertyId),
-        where('status', '==', 'approved')
-      )
-      const qPending = query(
-        collection(db, COLLECTION_NAME),
-        where('propertyId', '==', booking.propertyId),
-        where('status', '==', 'pending')
-      )
-      
-      const snapshotApproved = await getDocs(qApproved)
-      const snapshotPending = await getDocs(qPending)
-      
-      const allSnapshots = [...snapshotApproved.docs, ...snapshotPending.docs]
-
-      // Check for conflicts
-      const proposedCheckIn = new Date(booking.checkInDate).getTime()
-      const proposedCheckOut = new Date(booking.checkOutDate).getTime()
-
-      for (const doc of allSnapshots) {
-        const existingBooking = doc.data() as Omit<Booking, 'id'>
-        const existingCheckIn = new Date(existingBooking.checkInDate).getTime()
-        const existingCheckOut = new Date(existingBooking.checkOutDate).getTime()
-
-        // Check for overlap
-        if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
-          throw new BookingConflictError('These dates are already booked for this property')
-        }
-      }
-
-      // No conflicts found - create booking
-      const collectionRef = collection(db, COLLECTION_NAME)
-      const newDocRef = doc(collectionRef)
-      transaction.set(newDocRef, bookingData)
-      
-      return { id: newDocRef.id, ...bookingData }
-    })
-
-    return result as Booking
-  } catch (error) {
-    if (error instanceof BookingConflictError) {
-      logger.error('Booking conflict:', error.message)
-      throw error
-    }
-    logger.error('Error creating booking:', error)
-    return null
-  }
-}
-
-/**
- * Retrieve all bookings for a property (for property owner)
- * @param {string} propertyId - Property Firestore document ID
- * @returns {Promise<Booking[]>} Array of bookings for the property
- * @throws {Error} On Firestore query failure
- * @example
- * const bookings = await getPropertyBookings('prop_789')
- */
-export const getPropertyBookings = async (propertyId: string): Promise<Booking[]> => {
-  try {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where('propertyId', '==', propertyId)
-    )
-    const snapshot = await getDocs(q)
-
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...(doc.data() as Omit<Booking, 'id'>)
-    }))
-  } catch (error) {
-    logger.error('Error getting property bookings:', error)
-    return []
-  }
-}
-
-/**
- * Check if a booking conflicts with existing bookings for the same property
- * @param {string} propertyId - Property Firestore document ID
- * @param {string} checkInDate - Proposed check-in date (ISO string)
- * @param {string} checkOutDate - Proposed check-out date (ISO string)
- * @returns {Promise<boolean>} True if there's a date conflict, false otherwise
- * @throws {Error} On Firestore query failure
- * @example
- * const hasConflict = await checkBookingConflict('prop_123', '2024-04-01', '2024-04-05')
- */
-export const checkBookingConflict = async (propertyId: string, checkInDate: string, checkOutDate: string): Promise<boolean> => {
-  try {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where('propertyId', '==', propertyId),
-      where('status', 'in', ['approved', 'pending'])
-    )
-    const snapshot = await getDocs(q)
-
-    const proposedCheckIn = new Date(checkInDate).getTime()
-    const proposedCheckOut = new Date(checkOutDate).getTime()
-
-    for (const bookingDoc of snapshot.docs) {
-      const booking = bookingDoc.data() as Omit<Booking, 'id'>
-      const existingCheckIn = new Date(booking.checkInDate).getTime()
-      const existingCheckOut = new Date(booking.checkOutDate).getTime()
-
-      if (proposedCheckIn < existingCheckOut && proposedCheckOut > existingCheckIn) {
-        return true
-      }
-    }
-
-    return false
-  } catch (error) {
-    logger.error('Error checking booking conflict:', error)
-    throw error
-  }
-}
+// checkBookingConflict удалена: пересечение дат проверяет сервер при создании
+// брони и editBooking при правке.
 
 /**
  * Retrieve all bookings made by a specific user
@@ -248,6 +116,12 @@ export const cancelBooking = async (bookingId: string): Promise<{success: boolea
       return { success: false }
     }
 
+    // Статус брони помечается сразу. Раньше запрос создавался, а сама бронь
+    // оставалась 'approved': гость видел «Запрос отправлен» только до
+    // перезагрузки, после неё бронь снова выглядела обычной подтверждённой, и
+    // владелец в своём списке ничего особенного не замечал.
+    await updateDoc(docRef, { status: 'cancellation_requested' })
+
     await createCancellationRequestNotification(bookingData.ownerId, {
       type: 'cancellationRequest',
       title: '❌ Cancellation Request',
@@ -271,30 +145,8 @@ export const cancelBooking = async (bookingId: string): Promise<{success: boolea
   }
 }
 
-/**
- * Check if a user has an active booking for a specific property
- * @param {string} userId - User Firestore ID
- * @param {string} propertyId - Property Firestore document ID
- * @returns {Promise<boolean>} True if user has active booking, false otherwise
- * @throws {Error} On Firestore query failure
- * @example
- * const hasBooked = await hasUserBookedProperty('user_789', 'prop_999')
- */
-export const hasUserBookedProperty = async (userId: string, propertyId: string): Promise<boolean> => {
-  try {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where('userId', '==', userId),
-      where('propertyId', '==', propertyId),
-      where('status', '==', 'approved')
-    )
-    const snapshot = await getDocs(q)
-    return snapshot.docs.length > 0
-  } catch (error) {
-    logger.error('Error checking booking:', error)
-    return false
-  }
-}
+// hasUserBookedProperty удалена: одноимённая проверка живёт в
+// property/[id]/queries.ts и работает на сервере.
 
 /**
  * Accept a pending booking request
@@ -314,10 +166,38 @@ export const acceptBooking = async (bookingId: string): Promise<Booking | null> 
     const now = new Date().toISOString()
     const existing = bookingSnap.data() as Omit<Booking, 'id'>
 
+    // Пересечение с уже подтверждённой бронью. Проверки здесь не было вовсе, а
+    // при этом потоке несколько заявок на одну неделю — обычное дело: бронь ни к
+    // чему не обязывает, и интерес проявляют сразу несколько человек. Владелец
+    // мог подтвердить двоих подряд, и оба гостя считали дом своим.
+    //
+    // Сравниваются только подтверждённые: ожидающие заявки друг другу не мешают,
+    // в том и смысл — владелец выбирает из них одну.
+    const approved = await getDocs(
+      query(
+        collection(db, COLLECTION_NAME),
+        where('propertyId', '==', existing.propertyId),
+        where('status', '==', 'approved')
+      )
+    )
+
+    const clashes = approved.docs.some(other => {
+      if (other.id === bookingId) return false
+      const rival = other.data() as Omit<Booking, 'id'>
+      return existing.checkInDate < rival.checkOutDate && existing.checkOutDate > rival.checkInDate
+    })
+
+    if (clashes) {
+      throw new BookingConflictError('These dates are already approved for another guest')
+    }
+
     await updateDoc(docRef, { status: 'approved', approvedAt: now })
 
     return { id: bookingSnap.id, ...existing, status: 'approved', approvedAt: now }
   } catch (error) {
+    // Пересечение — осмысленный отказ, а не сбой: пробрасываем, чтобы владелец
+    // увидел причину и не гадал.
+    if (error instanceof BookingConflictError) throw error
     logger.error('Error accepting booking:', error)
     return null
   }
@@ -382,11 +262,89 @@ export const editBooking = async (
     }
 
     const existing = bookingSnap.data() as Omit<Booking, 'id'>
+
+    // Проверка пересечения с другими бронями объекта. Её не было вовсе: владелец
+    // мог передвинуть подтверждённую бронь ровно на те даты, которые уже заняты
+    // другой бронью, и обе оставались в силе.
+    const checkInDate = (filteredUpdates.checkInDate as string | undefined) ?? existing.checkInDate
+    const checkOutDate = (filteredUpdates.checkOutDate as string | undefined) ?? existing.checkOutDate
+
+    if (checkOutDate <= checkInDate) {
+      logger.error('Booking checkout must be after checkin')
+      return null
+    }
+
+    const siblings = await getDocs(
+      query(
+        collection(db, COLLECTION_NAME),
+        where('propertyId', '==', existing.propertyId),
+        where('status', 'in', ['approved', 'pending'])
+      )
+    )
+
+    // Даты хранятся как 'YYYY-MM-DD', поэтому сравниваются строками напрямую.
+    const clashes = siblings.docs.some(sibling => {
+      if (sibling.id === bookingId) return false
+      const other = sibling.data() as Omit<Booking, 'id'>
+      return checkInDate < other.checkOutDate && checkOutDate > other.checkInDate
+    })
+
+    if (clashes) {
+      throw new BookingConflictError('These dates overlap another booking for this property')
+    }
+
     await updateDoc(docRef, filteredUpdates)
 
     return { id: bookingSnap.id, ...existing, ...filteredUpdates }
   } catch (error) {
+    // Конфликт дат — не сбой, а осмысленный отказ: пробрасываем, чтобы интерфейс
+    // объяснил причину, а не показал общее «не удалось».
+    if (error instanceof BookingConflictError) throw error
     logger.error('Error editing booking:', error)
+    return null
+  }
+}
+
+/**
+ * Ответ владельца на запрос отмены подтверждённой брони.
+ *
+ * До этого отвечать было нечем: запрос создавался, уведомление уходило, а
+ * интерфейса не существовало — в боевой базе так накопилось 52 висящих запроса.
+ *
+ * @param approve true — бронь отменяется, false — остаётся в силе
+ * @returns обновлённая бронь; уведомление гостю шлёт вызывающий код, у него есть язык
+ */
+export const resolveCancellationRequest = async (
+  bookingId: string,
+  approve: boolean
+): Promise<Booking | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, bookingId)
+    const snapshot = await getDoc(docRef)
+    if (!snapshot.exists()) return null
+
+    const existing = snapshot.data() as Omit<Booking, 'id'>
+    if (existing.status !== 'cancellation_requested') {
+      logger.warn(`Booking ${bookingId} is not awaiting cancellation`)
+      return null
+    }
+
+    const status = approve ? ('cancelled' as const) : ('approved' as const)
+    await updateDoc(docRef, { status })
+
+    // Документ запроса закрываем следом. Если его нет — бронь всё равно уже
+    // переведена, и оставлять её в подвешенном состоянии хуже.
+    const { getCancellationRequestByBooking, approveCancellationRequest, rejectCancellationRequest } =
+      await import('./cancellation-service')
+    const request = await getCancellationRequestByBooking(bookingId)
+    if (request) {
+      if (approve) await approveCancellationRequest(request.id)
+      else await rejectCancellationRequest(request.id)
+    }
+
+    return { id: bookingId, ...existing, status }
+  } catch (error) {
+    logger.error('Error resolving cancellation request:', error)
     return null
   }
 }
@@ -398,6 +356,16 @@ export const editBooking = async (
  */
 export const deleteBooking = async (bookingId: string): Promise<boolean> => {
   try {
+    // Запросы на отмену этой брони уходят вместе с ней. Раньше бронь удаляли, а
+    // запрос оставался: он ссылался в пустоту, нигде не показывался и просто
+    // лежал в базе. Так накопилось 52 документа.
+    const requests = await getDocs(
+      query(collection(db, 'cancellationRequests'), where('bookingId', '==', bookingId))
+    )
+    for (const request of requests.docs) {
+      await deleteDoc(request.ref)
+    }
+
     await deleteDoc(doc(db, COLLECTION_NAME, bookingId))
     return true
   } catch (error) {

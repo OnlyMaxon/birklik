@@ -179,12 +179,12 @@ export const LoginForm: React.FC = () => {
                 />
               </div>
 
-              <div className="form-row">
-                <label className="checkbox-label">
-                  <input type="checkbox" />
-                  <span>{t.auth.rememberMe}</span>
-                </label>
-                <button 
+              {/* Флажок «Запомнить меня» убран: он ни к чему не был подключён —
+                  ни состояния, ни обработчика. Вход и так запоминается: клиентский
+                  SDK хранит сессию в IndexedDB, а серверная кука живёт 14 дней.
+                  Снятая галочка обещала обратное и не делала ничего. */}
+              <div className="form-row form-row--end">
+                <button
                   type="button"
                   onClick={() => setShowResetModal(true)}
                   className="forgot-link"

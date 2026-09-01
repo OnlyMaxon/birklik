@@ -6,7 +6,7 @@ import { useNavigate } from '@/lib/navigation'
 import L from 'leaflet'
 import { useLanguage } from '@/components/providers'
 import { Property, Language } from '../../types'
-import { cities } from '../../data'
+import { cities, districtLabel } from '../../data'
 import {toImageApiUrl} from '@/lib/images'
 import {BASEMAP_ATTRIBUTION, BASEMAP_URL} from './basemap'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -139,7 +139,7 @@ export const PropertyMap: React.FC<PropertyMapProps> = ({
                       if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
                       return property.city
                     }
-                    return t.districts[property.district] || ''
+                    return districtLabel(property.district, t)
                   })()}</p>
                   <p className="popup-price">
                     <strong>{property.price.daily} {property.price.currency}</strong> / {t.property.perNight}

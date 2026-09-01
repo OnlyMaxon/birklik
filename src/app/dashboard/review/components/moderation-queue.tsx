@@ -9,7 +9,7 @@ import { createListingRejectedNotification } from '@/services/notifications-serv
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
 import { Language, Property, CommentReport, Booking } from '@/types'
-import { cities } from '@/data'
+import { cities, districtLabel } from '@/data'
 
 type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people'
 
@@ -295,7 +295,7 @@ export const ModerationQueue: React.FC = () => {
                       <p className="moderation-meta">
                         {listing.price.daily} {listing.price.currency} / {t.property.perNight}
                         {' · '}
-                        {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return t.districts[listing.district] || listing.district })()}
+                        {(() => { if (listing.city) { const c = cities.find(x => x.value === listing.city); if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az; return listing.city } return districtLabel(listing.district, t) })()}
                       </p>
                       <p className="moderation-description">{getLocalizedText(listing.description)}</p>
                       <p className="moderation-owner">
@@ -546,7 +546,7 @@ export const ModerationQueue: React.FC = () => {
                                   if (c) return language === 'en' ? c.en : language === 'ru' ? (c.ru || c.az) : c.az
                                   return listing.city
                                 }
-                                return t.districts[listing.district] || listing.district
+                                return districtLabel(listing.district, t)
                               })()}
                             </p>
                             <p className="moderation-owner">

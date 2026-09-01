@@ -9,27 +9,18 @@ import {
   query,
   where,
   orderBy,
-  limit,
-  startAfter,
-  DocumentSnapshot,
-  QueryConstraint
+  limit
 } from 'firebase/firestore'
 import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import { auth } from '../lib/firebase/client'
 import { compressPropertyImage } from '../utils/image-compression'
+import { validatePropertyImage } from './file-validation'
 import { db, storage } from '../lib/firebase/client'
-import { Property, PropertyType, Language, Comment } from '../types'
+import { Property, PropertyType, Comment } from '../types'
 import * as logger from './logger'
 import {normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 
 const COLLECTION_NAME = 'properties'
-const PAGE_SIZE = 20
-
-const isPubliclyVisible = (property: Property): boolean => {
-  // Older records may not have status; treat them as active.
-  if (!property.status) return true
-  return property.status === 'active'
-}
 
 export interface PropertyFilters {
   type?: PropertyType | 'all'
@@ -50,135 +41,14 @@ const mapDocToProperty = (snapshotDoc: { id: string; data: () => unknown }): Pro
   })
 }
 
-const matchesSearch = (property: Property, searchTerm?: string, lang: Language = 'az'): boolean => {
-  if (!searchTerm) return true
+// matchesSearch удалена вместе с getProperties — использовалась только там.
 
-  const searchLower = searchTerm.toLowerCase().trim()
-  if (!searchLower) return true
-
-  const title = property.title?.[lang] || ''
-  const description = property.description?.[lang] || ''
-  const address = property.address?.[lang] || ''
-  const district = property.district || ''
-
-  return (
-    title.toLowerCase().includes(searchLower) ||
-    description.toLowerCase().includes(searchLower) ||
-    address.toLowerCase().includes(searchLower) ||
-    district.toLowerCase().includes(searchLower)
-  )
-}
-
-/**
- * Retrieve paginated properties list with optional filtering and sorting
- * @param {PropertyFilters} [filters] - Optional filter criteria (type, district, price range, rooms, search)
- * @param {DocumentSnapshot} [lastDoc] - Cursor for pagination, obtained from previous query
- * @returns {Promise<{ properties: Property[]; lastDoc: DocumentSnapshot | null }>} Array of properties and cursor for next page
- * @throws {Error} On Firestore query failure or network error
- * @example
- * const { properties, lastDoc } = await getProperties(
- *   { type: 'apartment', minPrice: 100, maxPrice: 500 }
- * )
- */
-export const getProperties = async (
-  filters?: PropertyFilters,
-  lastDoc?: DocumentSnapshot
-): Promise<{ properties: Property[]; lastDoc: DocumentSnapshot | null }> => {
-  try {
-    const constraints: QueryConstraint[] = []
-
-    // Status filter - only active properties
-    constraints.push(where('status', '==', 'active'))
-
-    // Add filters
-    if (filters?.type && filters.type !== 'all') {
-      constraints.push(where('type', '==', filters.type))
-    }
-    if (filters?.district) {
-      constraints.push(where('district', '==', filters.district))
-    }
-    if (filters?.city) {
-      constraints.push(where('city', '==', filters.city))
-    }
-    if (filters?.minPrice) {
-      constraints.push(where('price.daily', '>=', filters.minPrice))
-    }
-    if (filters?.maxPrice) {
-      constraints.push(where('price.daily', '<=', filters.maxPrice))
-    }
-    if (filters?.minRooms) {
-      constraints.push(where('rooms', '>=', filters.minRooms))
-    }
-
-    // Only add ordering without filters to avoid index requirement
-    constraints.push(orderBy('createdAt', 'desc'))
-    constraints.push(limit(PAGE_SIZE))
-
-    if (lastDoc) {
-      constraints.push(startAfter(lastDoc))
-    }
-
-    const q = query(collection(db, COLLECTION_NAME), ...constraints)
-    const snapshot = await getDocs(q)
-
-    const filteredDocs = snapshot.docs
-      .map(doc => ({ doc, property: mapDocToProperty(doc) }))
-      .filter(({ property }) => {
-        if (!isPubliclyVisible(property)) return false
-        if (filters?.maxRooms && property.rooms > filters.maxRooms) return false
-        return matchesSearch(property, filters?.search)
-      })
-      // Sort by tier priority: premium → vip → standard, then by date within each tier
-      .sort((a, b) => {
-        const tierRank = (p: Property) => {
-          if (p.isFeatured || p.listingTier === 'premium') return 3
-          if (p.listingTier === 'vip') return 2
-          return 1
-        }
-        const rankDiff = tierRank(b.property) - tierRank(a.property)
-        if (rankDiff !== 0) return rankDiff
-        return new Date(b.property.createdAt || 0).getTime() - new Date(a.property.createdAt || 0).getTime()
-      })
-    const properties = filteredDocs.map(({ property }) => property)
-    // Cursor uses last Firestore doc (before client filtering) so pagination is correct.
-    // hasMore is true only when Firestore returned a full page.
-    const newLastDoc = snapshot.docs.length === PAGE_SIZE
-      ? snapshot.docs[snapshot.docs.length - 1]
-      : null
-
-    return { properties, lastDoc: newLastDoc }
-  } catch (error) {
-    logger.error('Error getting properties:', error)
-    return { properties: [], lastDoc: null }
-  }
-}
-
-/**
- * Fetch all active VIP and Premium properties without pagination.
- * Used to guarantee tier listings always appear at the top regardless of age.
- */
-export const getAllPremiumProperties = async (
-  filters?: { city?: string }
-): Promise<Property[]> => {
-  try {
-    const constraints: QueryConstraint[] = [
-      where('status', '==', 'active'),
-      where('listingTier', 'in', ['vip', 'premium']),
-      limit(100),
-    ]
-    if (filters?.city) {
-      constraints.push(where('city', '==', filters.city))
-    }
-    const q = query(collection(db, COLLECTION_NAME), ...constraints)
-    const snapshot = await getDocs(q)
-    return snapshot.docs
-      .map(doc => mapDocToProperty(doc))
-      .filter(isPubliclyVisible)
-  } catch (error) {
-    logger.error('Error getting premium properties:', error)
-    return []
-  }
-}
+// getProperties и getAllPremiumProperties удалены (2026-08-31).
+//
+// Обе не вызывались ниоткуда: публичные списки давно собирает сервер через
+// REST-клиент (src/app/queries.ts, kiraye/[city]/queries.ts). Их собственная
+// сортировка по тарифу к тому же расходилась с общей: премиум считался
+// действующим по одному лишь listingTier, без проверки срока.
 
 /**
  * Fetch a single property by its Firestore document ID
@@ -354,12 +224,18 @@ export const deleteProperty = async (id: string): Promise<boolean> => {
       await deletePropertyImages(property.images)
     }
 
-    // Delete all bookings for this property
-    const bookingsRef = collection(db, 'bookings')
-    const bookingsQuery = query(bookingsRef, where('propertyId', '==', id))
-    const bookingsSnapshot = await getDocs(bookingsQuery)
-    
+    // Брони объявления, а вместе с ними и запросы на их отмену: иначе запрос
+    // остаётся ссылаться в пустоту.
+    const bookingsSnapshot = await getDocs(
+      query(collection(db, 'bookings'), where('propertyId', '==', id))
+    )
     for (const bookingDoc of bookingsSnapshot.docs) {
+      const requests = await getDocs(
+        query(collection(db, 'cancellationRequests'), where('bookingId', '==', bookingDoc.id))
+      )
+      for (const request of requests.docs) {
+        await deleteDoc(request.ref)
+      }
       await deleteDoc(bookingDoc.ref)
     }
 
@@ -388,6 +264,15 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
 
   for (const file of files) {
     try {
+      // Проверка стоит здесь, а не в форме: путей загрузки несколько (кабинет,
+      // редактор модератора), и обойти общий для них шаг нельзя. Раньше модуль
+      // проверки вызывался только из тестов, а отказ приходил от Storage — без
+      // объяснения, что именно не так с файлом.
+      const check = validatePropertyImage(file)
+      if (!check.valid) {
+        throw new Error(check.error || 'Invalid image file')
+      }
+
       const compressed = await compressPropertyImage(file)
       const timestamp = Date.now()
       const fileName = `properties/${userId}/${timestamp}_${compressed.name}`
@@ -399,7 +284,10 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
       // На чтении ссылка переписывается через normalizePropertyImageUrls.
       urls.push(await getDownloadURL(storageRef))
     } catch (error) {
+      // Раньше сбой просто логировался, и файл молча пропадал: объявление
+      // сохранялось с меньшим числом фотографий, а человек об этом не узнавал.
       logger.error('Error uploading image:', error)
+      throw error instanceof Error ? error : new Error('Image upload failed')
     }
   }
 
@@ -508,6 +396,14 @@ export const approveProperty = async (id: string): Promise<boolean> => {
 
     const currentData = current.data() as Partial<Property>
 
+    // Одобрять можно только то, что действительно ждёт модерации. Проверки не
+    // было, а страница проверки открывается по прямой ссылке с любым id — так
+    // черновик неоплаченного VIP/Premium можно было активировать в обход оплаты.
+    if (currentData.status !== 'pending') {
+      logger.warn(`Property ${id} is not pending moderation (status: ${currentData.status})`)
+      return false
+    }
+
     await updateDoc(docRef, {
       status: 'active',
       isFeatured: currentData.listingTier === 'premium',
@@ -543,6 +439,23 @@ export const rejectProperty = async (id: string): Promise<boolean> => {
       await deletePropertyImages(data.images)
     }
 
+    // Брони удаляемого объявления уходят вместе с ним, а с ними и запросы на
+    // отмену. Раньше их чистил только deleteProperty, а отклонение оставляло
+    // висеть: в базе так осели брони, ссылающиеся на несуществующие объявления,
+    // и вкладка модерации показывала их с подписью «объявление удалено».
+    const bookingsSnapshot = await getDocs(
+      query(collection(db, 'bookings'), where('propertyId', '==', id))
+    )
+    for (const bookingDoc of bookingsSnapshot.docs) {
+      const requests = await getDocs(
+        query(collection(db, 'cancellationRequests'), where('bookingId', '==', bookingDoc.id))
+      )
+      for (const request of requests.docs) {
+        await deleteDoc(request.ref)
+      }
+      await deleteDoc(bookingDoc.ref)
+    }
+
     await deleteDoc(docRef)
     return true
   } catch (error) {
@@ -561,51 +474,8 @@ export const rejectProperty = async (id: string): Promise<boolean> => {
  * @param {string} csrfToken - CSRF token for validation
  * @returns {Promise<boolean>} True on success, false if property not found or update fails
  */
-export const addCommentToProperty = async (
-  propertyId: string,
-  userId: string,
-  userName: string,
-  userAvatar: string | undefined,
-  text: string,
-  csrfToken: string
-): Promise<boolean> => {
-  try {
-    const { validateCsrfToken } = await import('./csrf-service')
-    if (!validateCsrfToken(csrfToken)) {
-      logger.error('CSRF token validation failed for addCommentToProperty')
-      throw new Error('Security validation failed. Please try again.')
-    }
-
-    const docRef = doc(db, COLLECTION_NAME, propertyId)
-    const current = await getDoc(docRef)
-
-    if (!current.exists()) {
-      return false
-    }
-
-    const currentData = current.data() as Property
-    const comments = currentData.comments || []
-
-    const newComment = {
-      id: `${Date.now()}_${userId}`,
-      userId,
-      userName,
-      userAvatar,
-      text,
-      createdAt: new Date().toISOString()
-    }
-
-    await updateDoc(docRef, {
-      comments: [...comments, newComment],
-      updatedAt: new Date().toISOString()
-    })
-
-    return true
-  } catch (error) {
-    logger.error('Error adding comment:', error)
-    return false
-  }
-}
+// addCommentToProperty удалена (2026-08-31): комментарии пишет серверный экшен
+// `addCommentAction`, эта версия не вызывалась ниоткуда.
 
 /**
  * Add a reply to an existing comment
@@ -617,56 +487,8 @@ export const addCommentToProperty = async (
  * @param {string} text - Reply text
  * @returns {Promise<boolean>} True on success, false if property or parent comment not found
  */
-export const addReplyToComment = async (
-  propertyId: string,
-  parentCommentId: string,
-  userId: string,
-  userName: string,
-  userAvatar: string | undefined,
-  text: string
-): Promise<boolean> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, propertyId)
-    const current = await getDoc(docRef)
-
-    if (!current.exists()) {
-      return false
-    }
-
-    const currentData = current.data() as Property
-    const comments = currentData.comments || []
-
-    // Find and update the parent comment
-    const updatedComments = comments.map(comment => {
-      if (comment.id === parentCommentId) {
-        const newReply = {
-          id: `${Date.now()}_${userId}`,
-          userId,
-          userName,
-          userAvatar,
-          text,
-          createdAt: new Date().toISOString(),
-          parentCommentId
-        }
-        return {
-          ...comment,
-          replies: [...(comment.replies || []), newReply]
-        }
-      }
-      return comment
-    })
-
-    await updateDoc(docRef, {
-      comments: updatedComments,
-      updatedAt: new Date().toISOString()
-    })
-
-    return true
-  } catch (error) {
-    logger.error('Error adding reply:', error)
-    return false
-  }
-}
+// addReplyToComment удалена (2026-08-31): ответы пишет серверный экшен
+// `addReplyAction`, эта версия не вызывалась ниоткуда.
 
 /**
  * Toggle like status for a property by a user
@@ -677,154 +499,17 @@ export const addReplyToComment = async (
  * @example
  * const toggled = await toggleLikeProperty('prop_111', 'user_456')
  */
-export const toggleLikeProperty = async (propertyId: string, userId: string): Promise<boolean> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, propertyId)
-    const current = await getDoc(docRef)
+// toggleLikeProperty удалена (2026-08-31): не вызывалась ниоткуда, а правила
+// Firestore после чистки и не пропустили бы запись в `likes` из браузера.
 
-    if (!current.exists()) {
-      return false
-    }
-
-    const currentData = current.data() as Property
-    const likes = currentData.likes || []
-    const isLiked = likes.includes(userId)
-
-    const updatedLikes = isLiked
-      ? likes.filter(id => id !== userId)
-      : [...likes, userId]
-
-    await updateDoc(docRef, {
-      likes: updatedLikes,
-      updatedAt: new Date().toISOString()
-    })
-
-    return true
-  } catch (error) {
-    logger.error('Error toggling like:', error)
-    return false
-  }
-}
-
-/**
- * Add rating to a property by a user (1-5 stars) with CSRF protection
- * Only users who have booked the property can rate it
- * @param {string} propertyId - Property Firestore document ID
- * @param {string} userId - User Firestore ID
- * @param {number} rating - Rating value (1-5)
- * @param {string} userName - User's name for notification
- * @param {string} csrfToken - CSRF token for validation
- * @returns {Promise<{success: boolean; hasBooked?: boolean}>} Success status and booking check
- */
-export const addRatingToProperty = async (
-  propertyId: string,
-  userId: string,
-  rating: number,
-  userName: string = 'User',
-  csrfToken: string = ''
-): Promise<{ success: boolean; hasBooked?: boolean }> => {
-  try {
-    const { validateCsrfToken } = await import('./csrf-service')
-    if (!validateCsrfToken(csrfToken)) {
-      logger.error('CSRF token validation failed for addRatingToProperty')
-      throw new Error('Security validation failed. Please try again.')
-    }
-
-    if (rating < 1 || rating > 5) {
-      logger.error('Invalid rating: must be 1-5')
-      return { success: false }
-    }
-
-    const docRef = doc(db, COLLECTION_NAME, propertyId)
-    const current = await getDoc(docRef)
-
-    if (!current.exists()) {
-      return { success: false }
-    }
-
-    const currentData = current.data() as Record<string, unknown>
-    
-    // Check if user has booked this property
-    try {
-      const { hasUserBookedProperty } = await import('./booking-service')
-      const hasBooked = await hasUserBookedProperty(userId, propertyId)
-      if (!hasBooked) {
-        logger.warn(`User ${userId} attempted to rate property ${propertyId} without booking`)
-        return { success: false, hasBooked: false }
-      }
-    } catch (error) {
-      logger.warn('Could not verify booking status, allowing rating anyway')
-    }
-
-    const ratings = (currentData?.ratings as Record<string, number>) || {}
-    ratings[userId] = rating
-
-    // Calculate average rating
-    const ratingValues = Object.values(ratings).filter((v): v is number => typeof v === 'number')
-    const averageRating = ratingValues.length > 0 
-      ? ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length 
-      : 0
-
-    await updateDoc(docRef, {
-      ratings,
-      rating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
-      reviews: ratingValues.length, // Total number of reviews
-      updatedAt: new Date().toISOString()
-    })
-
-    // Create notification for property owner
-    try {
-      const ownerId = currentData?.ownerId as string
-      const { createRatingNotification } = await import('./notifications-service')
-      if (ownerId) {
-        await createRatingNotification(ownerId, {
-          type: 'rating',
-          title: `⭐ ${rating} stars`,
-          message: `${userName} rated your property with ${rating} stars`,
-          propertyId,
-          raterName: userName,
-          ratingValue: rating,
-          relatedId: propertyId,
-          relatedUserName: userName,
-          actionUrl: `/property/${propertyId}`,
-          read: false
-        })
-      }
-    } catch (error) {
-      logger.warn('Could not create rating notification:', error)
-    }
-
-    return { success: true }
-  } catch (error) {
-    logger.error('Error adding rating:', error)
-    return { success: false }
-  }
-}
-
-/**
- * Get user's rating for a property
- * @param {string} propertyId - Property Firestore document ID
- * @param {string} userId - User Firestore ID
- * @returns {Promise<number | null>} User's rating (1-5) or null if not rated
- */
-export const getUserRatingForProperty = async (propertyId: string, userId: string): Promise<number | null> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, propertyId)
-    const current = await getDoc(docRef)
-
-    if (!current.exists()) {
-      return null
-    }
-
-    const currentData = current.data() as Record<string, unknown>
-    const ratings = (currentData?.ratings as Record<string, number>) || {}
-    
-    return typeof ratings[userId] === 'number' ? ratings[userId] : null
-  } catch (error) {
-    logger.error('Error getting user rating:', error)
-    return null
-  }
-}
+// addRatingToProperty и getUserRatingForProperty удалены (2026-08-31).
+//
+// Обе не вызывались ниоткуда — оценки давно ставит серверный экшен
+// `addRatingAction` на странице объявления, а «своя» оценка приходит из
+// `property/[id]/queries.ts`. Опасна была именно мёртвая версия: проверку
+// «бронировал ли вообще» она делала в try/catch и при любом сбое писала в лог
+// «Could not verify booking status, allowing rating anyway» — то есть пропускала
+// оценку от человека без брони. Живой экшен в том же случае просто отказывает.
 
 /**
  * Delete a comment from a property
@@ -872,28 +557,10 @@ export const deleteCommentFromProperty = async (
  * @example
  * const incremented = await incrementPropertyViews('prop_333')
  */
-export const incrementPropertyViews = async (propertyId: string): Promise<boolean> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, propertyId)
-    const current = await getDoc(docRef)
-
-    if (!current.exists()) {
-      return false
-    }
-
-    const currentViews = (current.data() as Property).views || 0
-
-    await updateDoc(docRef, {
-      views: currentViews + 1,
-      updatedAt: new Date().toISOString()
-    })
-
-    return true
-  } catch (error) {
-    logger.error('Error incrementing views:', error)
-    return false
-  }
-}
+// incrementPropertyViews удалена (2026-08-31). Не вызывалась ниоткуда, и хорошо:
+// она читала счётчик и записывала «прочитанное плюс один», то есть теряла
+// просмотры при одновременных заходах. Живой путь — `recordPropertyView` на
+// сервере, он использует атомарный increment Firestore.
 
 /**
  * Get all comments from all properties for moderation

@@ -34,6 +34,20 @@ interface CommandOptions {
   verbose: boolean;
 }
 
+/** Вопрос в терминал с ответом по умолчанию «нет». */
+function askYesNo(question: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const readline = require('readline').createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    readline.question(question, (answer: string) => {
+      readline.close();
+      resolve(answer.trim().toLowerCase() === 'y');
+    });
+  });
+}
+
 /**
  * Парсит command line аргументы
  */
@@ -100,16 +114,16 @@ async function main(): Promise<void> {
       '📋 DRY RUN MODE - Ничего не будет удалено, только показываем результаты'
     );
   } else {
-    console.log(
-      '⚠️  EXECUTE MODE - Будут реально удалены данные. Уверены? (Y/n)'
+    // Подтверждение спрашивается по-настоящему. Раньше здесь печаталось
+    // «Уверены? (Y/n)», а ответа никто не ждал — закомментированный prompt
+    // создавал полную видимость защиты и тут же удалял данные.
+    const confirmed = await askYesNo(
+      '⚠️  РЕЖИМ УДАЛЕНИЯ. Данные будут удалены безвозвратно. Продолжить? (y/N) '
     );
-
-    // В production переспросить подтверждение
-    // const answer = await prompt();
-    // if (answer.toLowerCase() !== 'y') {
-    //   console.log('Отменено');
-    //   process.exit(0);
-    // }
+    if (!confirmed) {
+      console.log('Отменено.');
+      process.exit(0);
+    }
   }
 
   console.log('');

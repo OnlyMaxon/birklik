@@ -274,6 +274,21 @@ export const ModeratorPropertyEditor: React.FC = () => {
       setIsSubmitting(false)
       return
     }
+    // Платный тариф без даты — сломанная запись: значок и место наверху требуют
+    // непросроченной даты, поэтому такое объявление платит, но не получает
+    // ничего. Одно такое в базе уже есть, больше заводить не даём.
+    if (
+      (form.listingTier === 'premium' && !form.premiumExpiresAt) ||
+      (form.listingTier === 'vip' && !form.vipExpiresAt)
+    ) {
+      setError(isEnglish
+        ? 'Set an expiry date for the paid tier'
+        : isRussian
+          ? 'Укажите дату окончания платного тарифа'
+          : 'Ödənişli paket üçün bitmə tarixi seçin')
+      setIsSubmitting(false)
+      return
+    }
 
     const daily = Number(form.price)
     const selectedDistrict = (form.locationTags.length > 0 ? form.locationTags[0] : 'baku') as District
@@ -305,14 +320,17 @@ export const ModeratorPropertyEditor: React.FC = () => {
       images: existingImages,
     }
 
-    if (form.listingTier === 'premium' && form.premiumExpiresAt) {
-      const [ey, em, ed] = form.premiumExpiresAt.split('-').map(Number)
-      updates.premiumExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
+    // Дата действующего тарифа записывается, дата прежнего — стирается.
+    // Раньше поле только записывалось и никогда не очищалось: объявление,
+    // переведённое с Premium на бесплатный, уносило дату с собой и продолжало
+    // показывать значок Premium, потому что карточка смотрела именно на дату.
+    const expiryFromForm = (value: string): string => {
+      if (!value) return ''
+      const [ey, em, ed] = value.split('-').map(Number)
+      return new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
     }
-    if (form.listingTier === 'vip' && form.vipExpiresAt) {
-      const [ey, em, ed] = form.vipExpiresAt.split('-').map(Number)
-      updates.vipExpiresAt = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
-    }
+    updates.premiumExpiresAt = form.listingTier === 'premium' ? expiryFromForm(form.premiumExpiresAt) : ''
+    updates.vipExpiresAt = form.listingTier === 'vip' ? expiryFromForm(form.vipExpiresAt) : ''
 
     // updateProperty removes discarded images only after the Firestore update
     // succeeds, so a failed save cannot leave the listing with broken URLs.

@@ -4,8 +4,13 @@ import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { Booking, Property } from '@/types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
-import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooking, deleteBooking } from '@/services'
-import { createBookingApprovedNotification, createBookingRejectedNotification } from '@/services/notifications-service'
+import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooking, deleteBooking, resolveCancellationRequest, BookingConflictError } from '@/services'
+import {
+  createBookingApprovedNotification,
+  createBookingRejectedNotification,
+  createCancellationApprovedNotification,
+  createCancellationRejectedNotification
+} from '@/services/notifications-service'
 import {InlineSpinner, ListingRowsSkeleton} from '@/components'
 import * as logger from '@/services/logger'
 import {toImageApiUrl} from '@/lib/images'
@@ -122,7 +127,30 @@ export const BookingsTab: React.FC = () => {
     sortPriceHigh: language === 'en' ? 'Price (high to low)' : language === 'ru' ? 'Цена (выше)' : 'Qiymət (yüksəkdən aşağıya)',
     sortPriceLow: language === 'en' ? 'Price (low to high)' : language === 'ru' ? 'Цена (ниже)' : 'Qiymət (aşağıdan yüksəyə)',
     sortName: language === 'en' ? 'Name (A-Z)' : language === 'ru' ? 'Название (А-Я)' : 'Ad (A-Z)',
-    canceling: language === 'en' ? 'Canceling...' : language === 'ru' ? 'Отмена...' : 'Ləğv edilir...'
+    canceling: language === 'en' ? 'Canceling...' : language === 'ru' ? 'Отмена...' : 'Ləğv edilir...',
+    requestCancellation: language === 'en' ? 'Request cancellation' : language === 'ru' ? 'Запросить отмену' : 'Ləğv sorğusu göndər',
+    confirmCancellation: language === 'en' ? 'Confirm cancellation' : language === 'ru' ? 'Подтвердить отмену' : 'Ləğvi təsdiqlə',
+    keepBooking: language === 'en' ? 'Keep booking' : language === 'ru' ? 'Оставить бронь' : 'Rezervasiyanı saxla',
+    datesClash: language === 'en'
+      ? 'These dates overlap another booking for this listing'
+      : language === 'ru'
+        ? 'Эти даты пересекаются с другим бронированием этого объявления'
+        : 'Bu tarixlər elanın başqa rezervasiyası ilə üst-üstə düşür',
+    datesAlreadyApproved: language === 'en'
+      ? 'You have already approved another guest for these dates'
+      : language === 'ru'
+        ? 'На эти даты вы уже подтвердили другого гостя'
+        : 'Bu tarixlərə artıq başqa qonağı təsdiqləmisiniz',
+    datesTaken: language === 'en'
+      ? 'Dates already taken'
+      : language === 'ru'
+        ? 'Даты уже заняты'
+        : 'Tarixlər artıq tutulub',
+    datesTakenHint: language === 'en'
+      ? 'To approve this request, first free up the dates'
+      : language === 'ru'
+        ? 'Чтобы подтвердить эту заявку, сначала освободите даты'
+        : 'Bu sorğunu təsdiqləmək üçün əvvəlcə tarixləri boşaldın'
   }
 
   const getStatusLabel = (status: string): string => {
@@ -288,8 +316,12 @@ export const BookingsTab: React.FC = () => {
       setActionInProgress({ type: 'cancel', bookingId })
       const result = await cancelBooking(bookingId)
       if (result.success) {
+        // Ожидающая бронь отменяется сразу, подтверждённая уходит на согласование
+        // к владельцу. Раньше в обоих случаях рисовалось «Запрос отправлен», хотя
+        // ожидающая уже была отменена.
+        const nextStatus = result.requestId ? 'cancellation_requested' : 'cancelled'
         setMyBookings(prev => prev.map(b =>
-          b.id === bookingId ? { ...b, status: 'cancellation_requested' } : b
+          b.id === bookingId ? { ...b, status: nextStatus } : b
         ))
         setError('')
       } else {
@@ -328,8 +360,13 @@ export const BookingsTab: React.FC = () => {
         setError(t.actionError)
       }
     } catch (err) {
-      logger.error('Error accepting booking:', err)
-      setError(t.actionError)
+      // Даты уже отданы другому гостю — объяснимая причина, а не сбой.
+      if (err instanceof BookingConflictError) {
+        setError(t.datesAlreadyApproved)
+      } else {
+        logger.error('Error accepting booking:', err)
+        setError(t.actionError)
+      }
     } finally {
       setActionInProgress(null)
     }
@@ -390,6 +427,69 @@ export const BookingsTab: React.FC = () => {
     }
   }
 
+  /**
+   * Ответ владельца на запрос отмены. Отвечать было нечем: запрос создавался,
+   * уведомление уходило, а интерфейса не существовало — в базе так осело
+   * 52 висящих запроса.
+   */
+  const handleRespondCancellation = async (booking: BookingWithProperty, approve: boolean) => {
+    const question = approve
+      ? (language === 'en' ? 'Cancel this booking for the guest?' : language === 'ru' ? 'Отменить бронирование гостя?' : 'Qonağın rezervasiyası ləğv edilsin?')
+      : (language === 'en' ? 'Keep this booking active?' : language === 'ru' ? 'Оставить бронирование в силе?' : 'Rezervasiya qüvvədə qalsın?')
+    if (!confirm(question)) return
+
+    try {
+      setActionInProgress({ type: approve ? 'reject' : 'accept', bookingId: booking.id })
+      const updated = await resolveCancellationRequest(booking.id, approve)
+      if (!updated) {
+        setError(t.actionError)
+        return
+      }
+
+      const shared = {
+        read: false as const,
+        bookingId: booking.id,
+        propertyId: booking.propertyId,
+        propertyTitle: booking.propertyTitle || '',
+        checkInDate: booking.checkInDate,
+        checkOutDate: booking.checkOutDate
+      }
+
+      if (approve) {
+        await createCancellationApprovedNotification(booking.userId, {
+          ...shared,
+          type: 'cancellationApproved',
+          title: language === 'en' ? 'Booking cancelled' : language === 'ru' ? 'Бронирование отменено' : 'Rezervasiya ləğv edildi',
+          message: language === 'en'
+            ? 'The owner approved your cancellation request'
+            : language === 'ru'
+              ? 'Владелец подтвердил вашу отмену'
+              : 'Sahib ləğv sorğunuzu təsdiqlədi'
+        })
+        setIncomingRequests(prev => prev.filter(b => b.id !== booking.id))
+      } else {
+        await createCancellationRejectedNotification(booking.userId, {
+          ...shared,
+          type: 'cancellationRejected',
+          title: language === 'en' ? 'Cancellation declined' : language === 'ru' ? 'Отмена отклонена' : 'Ləğv rədd edildi',
+          message: language === 'en'
+            ? 'The owner kept your booking active'
+            : language === 'ru'
+              ? 'Владелец оставил бронирование в силе'
+              : 'Sahib rezervasiyanı qüvvədə saxladı'
+        })
+        setIncomingRequests(prev => prev.map(b => (b.id === booking.id ? { ...b, status: 'approved' } : b)))
+      }
+
+      setError('')
+    } catch (err) {
+      logger.error('Error resolving cancellation request:', err)
+      setError(t.actionError)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
   const handleEditApprovedBooking = (booking: BookingWithProperty) => {
     setEditingBookingId(booking.id)
     setEditingDates({ checkIn: booking.checkInDate, checkOut: booking.checkOutDate })
@@ -424,8 +524,13 @@ export const BookingsTab: React.FC = () => {
         setError(t.actionError)
       }
     } catch (err) {
-      logger.error('Error updating booking dates:', err)
-      setError(t.actionError)
+      // Пересечение с другой бронью — объяснимая причина, а не сбой.
+      if (err instanceof BookingConflictError) {
+        setError(t.datesClash)
+      } else {
+        logger.error('Error updating booking dates:', err)
+        setError(t.actionError)
+      }
     } finally {
       setActionInProgress(null)
     }
@@ -553,7 +658,10 @@ export const BookingsTab: React.FC = () => {
                     </div>
                   )}
 
-                  {booking.status === 'pending' && (
+                  {/* Подтверждённую бронь гость тоже может попросить отменить —
+                      кнопка показывалась только у ожидающих, поэтому ветка с
+                      запросом на отмену была недостижима из интерфейса вовсе. */}
+                  {(booking.status === 'pending' || booking.status === 'approved') && (
                     <div className="booking-card__actions">
                       <button
                         className="bk-btn bk-btn--cancel"
@@ -562,7 +670,9 @@ export const BookingsTab: React.FC = () => {
                         aria-busy={actionInProgress?.bookingId === booking.id}
                       >
                         {actionInProgress?.bookingId === booking.id && <InlineSpinner label={t.canceling} />}
-                        {actionInProgress?.bookingId === booking.id ? t.canceling : t.cancel}
+                        {actionInProgress?.bookingId === booking.id
+                          ? t.canceling
+                          : booking.status === 'approved' ? t.requestCancellation : t.cancel}
                       </button>
                     </div>
                   )}
@@ -574,10 +684,25 @@ export const BookingsTab: React.FC = () => {
 
         {activeSubTab === 'requests' && (
           incomingRequests.length === 0 ? emptyState : (
-            sortBookings(incomingRequests).map(booking => (
+            sortBookings(incomingRequests).map(booking => {
+            // Заявка, чьи даты уже отданы другому гостю. Автоматически её никто не
+            // отклоняет — решение за владельцем, — но помечается сразу, а не после
+            // отказа при попытке подтвердить. Несколько заявок на одну неделю здесь
+            // норма: бронь ни к чему не обязывает, и владелец выбирает из них одну.
+            const blockedBy = booking.status === 'pending'
+              ? incomingRequests.find(other =>
+                  other.id !== booking.id &&
+                  other.status === 'approved' &&
+                  other.propertyId === booking.propertyId &&
+                  booking.checkInDate < other.checkOutDate &&
+                  booking.checkOutDate > other.checkInDate
+                )
+              : undefined
+
+            return (
               <div
                 key={booking.id}
-                className="booking-card booking-card--request"
+                className={`booking-card booking-card--request${blockedBy ? ' booking-card--blocked' : ''}`}
                 onClick={(e) => handleNavigateToProperty(booking.propertyId, e as React.MouseEvent<HTMLDivElement>)}
                 role="button"
                 tabIndex={0}
@@ -654,13 +779,23 @@ export const BookingsTab: React.FC = () => {
                     )}
                   </div>
 
+                  {blockedBy && (
+                    <p className="bk-blocked-note">
+                      {t.datesTaken}: {blockedBy.checkInDate} → {blockedBy.checkOutDate}, {blockedBy.userName}
+                    </p>
+                  )}
+
                   <div className="booking-card__actions">
                     {booking.status === 'pending' && (
                       <>
                         <button
                           className="bk-btn bk-btn--accept"
                           onClick={() => handleAcceptBooking(booking)}
-                          disabled={actionInProgress?.bookingId === booking.id}
+                          // Подтвердить нельзя, пока даты за другим гостем: сервер
+                          // всё равно откажет, и кнопка вела бы к гарантированной
+                          // ошибке. Освободить даты можно, сняв ту бронь.
+                          disabled={actionInProgress?.bookingId === booking.id || !!blockedBy}
+                          title={blockedBy ? t.datesTakenHint : undefined}
                           aria-busy={actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept'}
                         >
                           {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'accept' && <InlineSpinner label={t.accept} />}{t.accept}
@@ -672,6 +807,30 @@ export const BookingsTab: React.FC = () => {
                           aria-busy={actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject'}
                         >
                           {actionInProgress?.bookingId === booking.id && actionInProgress.type === 'reject' && <InlineSpinner label={t.reject} />}{t.reject}
+                        </button>
+                      </>
+                    )}
+
+                    {/* Гость попросил отменить подтверждённую бронь — владелец
+                        отвечает отсюда. Уведомление о таком запросе уже ведёт
+                        именно в этот подраздел. */}
+                    {booking.status === 'cancellation_requested' && (
+                      <>
+                        <button
+                          className="bk-btn bk-btn--reject"
+                          onClick={() => handleRespondCancellation(booking, true)}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                          aria-busy={actionInProgress?.bookingId === booking.id}
+                        >
+                          {actionInProgress?.bookingId === booking.id && <InlineSpinner label={t.confirmCancellation} />}
+                          {t.confirmCancellation}
+                        </button>
+                        <button
+                          className="bk-btn bk-btn--accept"
+                          onClick={() => handleRespondCancellation(booking, false)}
+                          disabled={actionInProgress?.bookingId === booking.id}
+                        >
+                          {t.keepBooking}
                         </button>
                       </>
                     )}
@@ -716,7 +875,8 @@ export const BookingsTab: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))
+              )
+            })
           )
         )}
       </div>

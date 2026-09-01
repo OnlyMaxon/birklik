@@ -30,8 +30,16 @@ function ageInHours(createdAt: any): number {
 
 /**
  * Скрывает объявления с истёкшим premium/VIP: status → inactive, expiredAt = now.
- * listingTier и premiumExpiresAt/vipExpiresAt НЕ трогаем — нужны для кнопки "Продлить".
- * Через 30 дней cleanupInactiveListings удалит их насовсем.
+ *
+ * listingTier и premiumExpiresAt/vipExpiresAt НЕ трогаем — они нужны кнопке
+ * «Продлить» и подписи «тариф истёк» в кабинете.
+ *
+ * ⚠️ Ничего не удаляется и удаляться не должно. Объявление вместе с фотографиями
+ * остаётся в базе сколько угодно долго — оно просто уходит с витрины: главная,
+ * страницы регионов, поиск, карта сайта и блок похожих отбирают только `active`.
+ * Владелец продлевает тариф и возвращает объявление, ничего не заполняя заново.
+ * Прежняя `cleanupInactiveListings` сносила такие записи через 30 дней вместе с
+ * фотографиями — удалена намеренно, восстанавливать не надо.
  */
 export async function cleanupExpiredPremium(): Promise<CleanupLog> {
   const startTime = Date.now();
@@ -280,57 +288,62 @@ async function deletePropertyImages(propertyId: string): Promise<void> {
   }
 }
 
+// cleanupInactiveListings удалена намеренно (2026-08-31).
+//
+// Она сносила объявления со статусом 'inactive' через 30 дней после истечения
+// тарифа — вместе с фотографиями. По решению владельца площадки истёкшее
+// объявление не удаляется никогда: оно остаётся в базе целиком и лишь пропадает
+// с витрины, чтобы владелец мог вернуть его одним продлением, ничего не заполняя
+// заново. Скрытие делает cleanupExpiredPremium, см. выше.
+
 /**
- * Удаляет объявления со статусом 'inactive', которые не были продлены 30+ дней.
- * expiredAt — ISO-строка, проставляется cleanupExpiredPremium при деактивации.
+ * Удаляет запросы на отмену, чья бронь больше не существует.
+ *
+ * Такой запрос никому не виден и ничего не значит: интерфейс владельца работает
+ * от статуса самой брони, а её уже нет. В боевой базе их накопилось 52 штуки —
+ * все со времён, когда поток отмены создавал документ и слал уведомление, а
+ * обработать его было нечем.
+ *
+ * Источник новых сирот перекрыт в приложении: `deleteBooking` теперь удаляет
+ * запрос вместе с бронью. Эта функция — сеть под ним, на случай удалений мимо
+ * приложения (чистка объявлений, ручные правки в консоли).
  */
-export async function cleanupInactiveListings(): Promise<CleanupLog> {
+export async function cleanupOrphanedCancellationRequests(): Promise<CleanupLog> {
   const startTime = Date.now();
   const deletedIds: string[] = [];
-  let count = 0;
 
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-
-    const query = await admin
+    const snap = await admin
       .firestore()
-      .collection('properties')
-      .where('status', '==', 'inactive')
-      .where('expiredAt', '<', thirtyDaysAgo)
+      .collection('cancellationRequests')
       .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
 
-    // Собираем URLs изображений ДО удаления документов
-    const imagesByProp = new Map<string, string[]>();
-    for (const doc of query.docs) {
-      imagesByProp.set(doc.id, doc.data().images || []);
-    }
-
-    const batch = admin.firestore().batch();
-    for (const doc of query.docs) {
-      batch.delete(doc.ref);
-      deletedIds.push(doc.id);
-      count++;
-    }
-
-    if (count > 0) {
-      await batch.commit();
-      const bucket = admin.storage().bucket();
-      for (const [, images] of imagesByProp) {
-        for (const url of images) {
-          try {
-            const filePath = imageStoragePath(url);
-            if (!filePath) continue;
-            await bucket.file(filePath).delete();
-          } catch { /* файл уже удалён */ }
-        }
+    // Существование брони проверяется по одному документу на запрос. Их немного,
+    // и точечное чтение надёжнее выборки: бронь могла быть удалена только что.
+    for (const doc of snap.docs) {
+      const bookingId = doc.data().bookingId;
+      if (!bookingId) {
+        deletedIds.push(doc.id);
+        continue;
       }
+      const booking = await admin.firestore().collection('bookings').doc(bookingId).get();
+      if (!booking.exists) deletedIds.push(doc.id);
     }
 
-    return { timestamp: new Date(), type: 'inactive_listings', status: 'success', count, deletedIds, duration: Date.now() - startTime };
+    if (deletedIds.length > 0) {
+      const batch = admin.firestore().batch();
+      for (const id of deletedIds) {
+        batch.delete(admin.firestore().collection('cancellationRequests').doc(id));
+      }
+      await batch.commit();
+    }
+
+    console.log(`[Cleanup] запросов на отмену без брони удалено: ${deletedIds.length}`);
+    return { timestamp: new Date(), type: 'orphaned_cancellation_requests', status: 'success', count: deletedIds.length, deletedIds, duration: Date.now() - startTime };
   } catch (error: any) {
-    console.error('[ERROR] cleanupInactiveListings:', error);
-    return { timestamp: new Date(), type: 'inactive_listings', status: 'failed', count, deletedIds, error: error.message, duration: Date.now() - startTime };
+    console.error('[ERROR] cleanupOrphanedCancellationRequests:', error);
+    return { timestamp: new Date(), type: 'orphaned_cancellation_requests', status: 'failed', count: 0, deletedIds, error: error.message, duration: Date.now() - startTime };
   }
 }
 
@@ -462,11 +475,14 @@ export async function cleanupOrphanedDrafts(): Promise<CleanupLog> {
  * cleanup-logs росла на 24 документа в сутки, почти все — пустые прогоны.
  */
 export async function runAllCleanups(): Promise<CleanupLog[]> {
-  console.log('[INFO] Starting weekly Firestore cleanup...');
+  // «Ручная», а не «еженедельная»: по расписанию этот набор не ходит вообще,
+  // добраться до него можно только через `pnpm cleanup:execute`.
+  console.log('[INFO] Ручная чистка Firestore: старт...');
 
+  // cleanupExpiredPremium здесь нет намеренно: она ходит по своему расписанию
+  // (функция expirePaidTiers, ежедневно) и ничего не удаляет — ей не место в
+  // ручной чистке. Удаление истёкших объявлений не делается вовсе.
   const settled = await Promise.allSettled([
-    cleanupExpiredPremium(),
-    cleanupInactiveListings(),
     cleanupStalePendingListings(),
     cleanupRejectedBookings(),
     cleanupCancelledBookings(),

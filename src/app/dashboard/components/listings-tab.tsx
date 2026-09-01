@@ -4,8 +4,9 @@ import {useState} from 'react'
 import {Link} from '@/lib/navigation'
 import {useLanguage} from '@/components/providers'
 import {InlineSpinner, ListingRowsSkeleton} from '@/components'
-import {cities} from '@/data'
+import {cities, districtLabel} from '@/data'
 import {deleteProperty, updateProperty} from '@/services'
+import {isTierActive, isTierExpired, tierExpiresAt} from '@/utils/premium-helper'
 import type {Language, Property} from '@/types'
 import type {PaymentNotification} from './dashboard-types'
 
@@ -26,8 +27,12 @@ const getTodayISO = () => {
   return `${year}-${month}-${day}`
 }
 const isOccupationExpired = (property: Property) => Boolean(property.unavailableTo && property.unavailableTo < getTodayISO())
-const isPremiumExpired = (property: Property) => Boolean(property.premiumExpiresAt && property.listingTier === 'premium' && property.premiumExpiresAt < getTodayISO())
-const isPremiumActive = (property: Property) => Boolean(property.premiumExpiresAt && property.listingTier === 'premium' && property.premiumExpiresAt >= getTodayISO())
+
+/** Платный тариф объявления, если он вообще платный. */
+const paidTierOf = (property: Property): 'vip' | 'premium' | null =>
+  property.listingTier === 'vip' || property.listingTier === 'premium' ? property.listingTier : null
+
+const tierLabel = (tier: 'vip' | 'premium') => (tier === 'vip' ? '👑 VIP' : '⭐ Premium')
 
 export function ListingsTab({listings, isLoading, paymentNotification, onAdd, onEdit, onReload}: ListingsTabProps) {
   const {language, t} = useLanguage()
@@ -47,7 +52,12 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this listing?')) return
+    const question = isEnglish
+      ? 'Delete this listing? This cannot be undone.'
+      : isRussian
+        ? 'Удалить объявление? Отменить это будет нельзя.'
+        : 'Elanı silmək istəyirsiniz? Bunu geri qaytarmaq olmayacaq.'
+    if (!window.confirm(question)) return
     if (!await deleteProperty(id)) {
       setActionError(t.messages.error)
       return
@@ -106,6 +116,14 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
           <div className="listings-list">
             {listings.filter(property => property.status !== 'draft').map(property => {
               const status = property.status || 'active'
+              // Тарифная колонка раньше была написана целиком под premium: у VIP
+              // не показывалось ни срока, ни предупреждения, ни кнопки продления —
+              // продлить VIP из кабинета было попросту нечем.
+              const paidTier = paidTierOf(property)
+              const tierEndsAt = tierExpiresAt(property)
+              const tierEndsLabel = tierEndsAt
+                ? new Date(tierEndsAt).toLocaleDateString(isEnglish ? 'en-GB' : isRussian ? 'ru-RU' : 'az-Latn-AZ')
+                : ''
               const isCurrentlyActive = property.isActive !== false || isOccupationExpired(property)
               const isPendingModeration = status === 'pending'
               const isInactivePremium = status === 'inactive'
@@ -119,7 +137,7 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
               const city = cities.find(item => item.value === property.city)
               const location = city
                 ? (isEnglish ? city.en : isRussian ? city.ru || city.az : city.az)
-                : property.city || t.districts[property.district] || property.district
+                : property.city || districtLabel(property.district, t)
 
               return (
                 <div key={property.id} className="listing-item card">
@@ -141,16 +159,23 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
                         </span>
                       )}
                       {property.unavailableFrom && property.unavailableTo && <span className="listing-busy-dates">{isEnglish ? 'Dates:' : isRussian ? 'Даты:' : 'Tarix:'} {property.unavailableFrom} — {property.unavailableTo}</span>}
-                      {property.listingTier === 'premium' && isPremiumExpired(property) && (
+                      {paidTier && isTierExpired(property) && (
                         <span className="listing-premium-expired">
-                          ⏰ {isEnglish ? 'Premium expired — click Extend!' : isRussian ? 'Премиум истек — нажмите Продлить!' : 'Premium bitdi — Uzat düyməsinə klik!'}
-                          {isInactivePremium && property.expiredAt && (() => {
-                            const daysLeft = 30 - Math.floor((Date.now() - new Date(property.expiredAt).getTime()) / 86400000)
-                            return daysLeft > 0 ? ` (${isEnglish ? `${daysLeft}d until deletion` : isRussian ? `${daysLeft} дн. до удаления` : `silinməyə ${daysLeft} gün`})` : null
-                          })()}
+                          {/* Обратного отсчёта «дней до удаления» здесь больше нет:
+                              истёкшее объявление не удаляется вовсе — оно ждёт
+                              продления сколько угодно долго, просто не показываясь. */}
+                          ⏰ {isEnglish
+                            ? `${tierLabel(paidTier)} expired — hidden until you extend`
+                            : isRussian
+                              ? `${tierLabel(paidTier)} истёк — объявление скрыто до продления`
+                              : `${tierLabel(paidTier)} bitdi — uzadılana qədər gizlidir`}
                         </span>
                       )}
-                      {property.listingTier === 'premium' && isPremiumActive(property) && <span className="listing-premium-active">⭐ {isEnglish ? `Premium until ${property.premiumExpiresAt}` : isRussian ? `Премиум до ${property.premiumExpiresAt}` : `Premium ${property.premiumExpiresAt} qədər`}</span>}
+                      {paidTier && isTierActive(property, paidTier) && (
+                        <span className="listing-premium-active">
+                          {isEnglish ? `${tierLabel(paidTier)} until ${tierEndsLabel}` : isRussian ? `${tierLabel(paidTier)} до ${tierEndsLabel}` : `${tierLabel(paidTier)} ${tierEndsLabel} qədər`}
+                        </span>
+                      )}
                       {!isPendingModeration && !isCurrentlyActive && property.unavailableTo && <span className="listing-inactive-hint">{isEnglish ? 'Click Activate to restore.' : isRussian ? 'Нажмите Активировать для восстановления.' : '"Aktiv et" düyməsinə klik edin.'}</span>}
                     </div>
                   </div>
@@ -158,7 +183,7 @@ export function ListingsTab({listings, isLoading, paymentNotification, onAdd, on
                     {!isPendingModeration && (isCurrentlyActive
                       ? <button className="btn btn-ghost btn-sm" onClick={() => handleOpenBusyModal(property)}>{isEnglish ? 'Hide' : isRussian ? 'Скрыть' : 'Qeyri-aktiv et'}</button>
                       : <button className="btn btn-accent btn-sm" onClick={() => handleSetActive(property.id)}>{isEnglish ? 'Activate' : isRussian ? 'Активировать' : 'Aktiv et'}</button>)}
-                    {property.listingTier === 'premium' && isPremiumExpired(property) && <Link className="btn btn-primary btn-sm" to={`/dashboard/payment?propertyId=${encodeURIComponent(property.id)}`}>⭐ {isEnglish ? 'Extend' : isRussian ? 'Продлить' : 'Uzat'}</Link>}
+                    {paidTier && isTierExpired(property) && <Link className="btn btn-primary btn-sm" to={`/dashboard/payment?propertyId=${encodeURIComponent(property.id)}`}>{tierLabel(paidTier).slice(0, 2)} {isEnglish ? 'Extend' : isRussian ? 'Продлить' : 'Uzat'}</Link>}
                     <button className="btn btn-ghost btn-sm" onClick={() => onEdit(property)}>{t.dashboard.edit}</button>
                     <button className="btn btn-ghost btn-sm text-error" onClick={() => handleDelete(property.id)}>{t.dashboard.delete}</button>
                   </div></div>

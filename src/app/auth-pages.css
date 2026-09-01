@@ -52,6 +52,13 @@
   margin: 0.5rem 0;
 }
 
+/* Ряд с единственным элементом — «Забыли пароль?». Раньше слева от него стоял
+   флажок «Запомнить меня», и space-between разводил их по краям; без флажка
+   ссылка уехала бы влево. */
+.form-row--end {
+  justify-content: flex-end;
+}
+
 .checkbox-label {
   display: flex;
   align-items: center;

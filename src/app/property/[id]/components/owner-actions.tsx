@@ -23,10 +23,8 @@ export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
   const [upgradeModal, setUpgradeModal] = React.useState<'vip' | 'premium' | null>(null)
   const [isUpgrading, setIsUpgrading] = React.useState(false)
 
-  const handleMoveUp = () => {
-    alert(language === 'en' ? 'Move up feature coming soon' : language === 'ru' ? 'Функция перемещения вперед скоро' : 'Öndə getmə xüsusiyyəti tezliklə')
-  }
-
+  // Кнопка «İreli Çək» убрана (2026-08-31). Возможности за ней не было: клик
+  // показывал «скоро». Появится — вернём вместе с работающим поведением.
   const handleUpgradeConfirm = async (duration: '14days' | '30days') => {
     if (!upgradeModal) return
     setIsUpgrading(true)
@@ -60,9 +58,6 @@ export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
   return (
     <>
       <div className="pp-owner-actions">
-        <button onClick={handleMoveUp} className="btn btn-sm btn-primary">
-          {language === 'en' ? '↑ Move Up' : language === 'ru' ? '↑ Вперед' : '↑ İreli Çək'}
-        </button>
         {listingTier !== 'vip' && listingTier !== 'premium' && (
           <button onClick={() => setUpgradeModal('vip')} className="btn btn-sm pp-owner-btn--vip">
             {language === 'en' ? '★ Upgrade to VIP' : language === 'ru' ? '★ VIP' : '★ VIP-ə yüksəlt'}

@@ -6,6 +6,7 @@ import {InlineSpinner, PropertyPageSkeleton} from '@/components'
 import {useLanguage} from '@/components/providers'
 import { getPropertyById, approveProperty, rejectProperty, updateProperty } from '@/services'
 import { createListingRejectedNotification } from '@/services/notifications-service'
+import { districtLabel } from '@/data'
 import { Property, Language } from '@/types'
 
 export const ModerationReview: React.FC = () => {
@@ -258,8 +259,8 @@ export const ModerationReview: React.FC = () => {
             <article className="review-card">
               <div className="review-image-section">
                 {property.images && property.images.length > 0 ? (
-                  <div className="gallery-wrapper">
-                    <div className="gallery-main">
+                  <div className="mr-gallery-wrapper">
+                    <div className="mr-gallery-main">
                       <img 
                         src={property.images[currentImageIndex] || 'https://via.placeholder.com/600x400?text=No+Image'} 
                         alt={`${getLocalizedText(property.title)} - ${currentImageIndex + 1}`} 
@@ -268,7 +269,7 @@ export const ModerationReview: React.FC = () => {
                       {property.images.length > 1 && (
                         <>
                           <button 
-                            className="gallery-nav-btn gallery-prev" 
+                            className="mr-gallery-nav-btn mr-gallery-prev" 
                             onClick={handlePrevImage}
                             aria-label="Previous image"
                             title="Previous"
@@ -276,25 +277,25 @@ export const ModerationReview: React.FC = () => {
                             ‹
                           </button>
                           <button 
-                            className="gallery-nav-btn gallery-next" 
+                            className="mr-gallery-nav-btn mr-gallery-next" 
                             onClick={handleNextImage}
                             aria-label="Next image"
                             title="Next"
                           >
                             ›
                           </button>
-                          <div className="gallery-counter">
+                          <div className="mr-gallery-counter">
                             {currentImageIndex + 1} / {property.images.length}
                           </div>
                         </>
                       )}
                     </div>
                     {property.images.length > 1 && (
-                      <div className="gallery-thumbnails">
+                      <div className="mr-gallery-thumbnails">
                         {property.images.map((image, index) => (
                           <button
                             key={index}
-                            className={`gallery-thumbnail ${index === currentImageIndex ? 'active' : ''}`}
+                            className={`mr-gallery-thumbnail ${index === currentImageIndex ? 'active' : ''}`}
                             onClick={() => goToImage(index)}
                             title={`Image ${index + 1}`}
                             aria-label={`Go to image ${index + 1}`}
@@ -324,7 +325,7 @@ export const ModerationReview: React.FC = () => {
                   </div>
                   <div className="meta-item">
                     <strong>{language === 'en' ? 'District:' : language === 'ru' ? 'Район:' : 'Rayon:'}</strong>
-                    <span>{t.districts?.[property.district] || property.district}</span>
+                    <span>{districtLabel(property.district, t)}</span>
                   </div>
                   <div className="meta-item">
                     <strong>{language === 'en' ? 'Price:' : language === 'ru' ? 'Цена:' : 'Qiymət:'}</strong>
