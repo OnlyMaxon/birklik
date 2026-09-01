@@ -149,6 +149,23 @@ Visibility is decided in two places on purpose:
 Expired listings are never deleted. They keep their data and photos and return to the site on
 renewal.
 
+## Scheduled functions
+
+All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed
+separately from the worker — `pnpm functions:deploy`. A fix that only sits in the repository
+is not in production; a stale deployment of `cleanupStorage` once deleted 124 live photos for
+that reason (see `AUDIT.md`).
+
+| Function | Schedule | What it does |
+|---|---|---|
+| `cleanupDrafts` | every 2 hours | Expires stale payments, then removes abandoned drafts. Skips a draft while its payment is still `awaiting_payment`. |
+| `expirePaidTiers` | daily 03:00 UTC | Marks listings whose paid tier ran out as `inactive` and records `expiredAt`. Deletes nothing. |
+| `cleanupStaleRequests` | Sundays 05:00 UTC | Removes cancellation requests whose booking no longer exists. |
+| `cleanupStorage` | Sundays 04:00 UTC | Removes unreferenced images, `temp/` files and old avatars. Aborts if orphan candidates exceed 5% of the bucket — that shape of result means a URL format stopped being recognised, not that users deleted a hundred photos. |
+
+Deletion of expired listings is deliberately not implemented: an expired listing keeps its
+data and photos indefinitely and only leaves the site.
+
 ## Geography
 
 Two controlled axes plus one legacy label:
