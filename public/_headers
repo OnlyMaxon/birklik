@@ -78,12 +78,8 @@
   Content-Type: image/svg+xml
 
 # ============================================
-# MANIFEST & CONFIG - NO CACHE
+# CONFIG - NO CACHE
 # ============================================
-/manifest.json
-  Cache-Control: no-cache, no-store, must-revalidate
-  Content-Type: application/manifest+json
-
 /robots.txt
   Cache-Control: no-cache, no-store
   Content-Type: text/plain

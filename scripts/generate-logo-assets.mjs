@@ -16,11 +16,9 @@ const horizontalSizes = [
   { width: 256, height: 64, name: 'logo-256x64.png' }
 ]
 
+// 192 и 512 остались не ради манифеста, которого больше нет, а ради пуш-уведомлений:
+// sw.js берёт отсюда icon и badge. Остальные размеры — favicon и apple-touch-icon.
 const squareSizes = [512, 256, 192, 180, 128, 96, 64, 32, 16]
-
-// Maskable icon sizes — need solid background + safe zone padding (inner 80%)
-const maskableSizes = [512, 192]
-const BRAND_GREEN = { r: 46, g: 125, b: 91, alpha: 1 }
 
 async function run() {
   await mkdir(outputDir, { recursive: true })
@@ -50,27 +48,6 @@ async function run() {
       .toFile(path.join(outputDir, `logo-${size}x${size}.png`))
   }
 
-  // Maskable icons: solid brand-green background, logo fits in 60% (well within 80% safe zone)
-  for (const size of maskableSizes) {
-    const logoSize = Math.round(size * 0.6)
-    const logoBuffer = await sharp(trimmedSource)
-      .resize(logoSize, logoSize, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .png()
-      .toBuffer()
-
-    await sharp({
-      create: {
-        width: size,
-        height: size,
-        channels: 4,
-        background: BRAND_GREEN
-      }
-    })
-      .composite([{ input: logoBuffer, gravity: 'center' }])
-      .png({ compressionLevel: 9 })
-      .toFile(path.join(outputDir, `logo-maskable-${size}x${size}.png`))
-  }
-
   await sharp(trimmedSource)
     .resize(512, 512, { fit: 'contain', background: '#ffffff00' })
     .webp({ quality: 90 })
@@ -82,7 +59,6 @@ async function run() {
     .toFile(path.join(outputDir, 'logo-1024x256.webp'))
 
   console.log('Logo assets generated in public/brand/generated')
-  console.log('Maskable icons generated: logo-maskable-512x512.png, logo-maskable-192x192.png')
 }
 
 run().catch((error) => {

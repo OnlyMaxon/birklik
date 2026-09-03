@@ -21,15 +21,9 @@
     "functions:logs": "firebase functions:log --project birklik-65289",
     "firestore:deploy-rules": "firebase deploy --only firestore:rules --project birklik-65289",
     "cleanup:dry": "pnpm --dir firebase-functions cleanup:dry",
-    "cleanup:execute": "pnpm --dir firebase-functions cleanup:execute",
-    "android:sync": "pnpm build && pnpm exec cap sync android",
-    "android:open": "pnpm exec cap open android",
-    "android:run": "pnpm build && pnpm exec cap sync android && pnpm exec cap run android"
+    "cleanup:execute": "pnpm --dir firebase-functions cleanup:execute"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.0",
-    "@capacitor/core": "^8.5.0",
-    "@capacitor/push-notifications": "^8.1.2",
     "firebase": "^12.17.0",
     "jose": "^6.2.8",
     "leaflet": "^1.9.4",
@@ -41,7 +35,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.0",
     "@opennextjs/cloudflare": "^1.20.2",
     "@types/leaflet": "^1.9.22",
     "@types/react": "^19.2.18",

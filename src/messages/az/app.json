@@ -827,7 +827,7 @@
     "offline": {
       "banner": "İnternet bağlantısı yoxdur",
       "toastOffline": "Bağlantı kəsildi",
-      "toastOfflineSub": "Oflayn rejimdə işləyirsiniz",
+      "toastOfflineSub": "Bağlantı bərpa olunana qədər sayt işləməyəcək",
       "toastOnline": "Bağlantı bərpa edildi",
       "toastOnlineSub": "Məzmun yenilənir..."
     },

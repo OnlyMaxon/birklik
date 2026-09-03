@@ -3,12 +3,14 @@ import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { db, getFirebaseMessaging } from '../lib/firebase/client'
 import { useAuth } from '@/components/providers'
 
+// Только веб-пуши. Нативная ветка через @capacitor/push-notifications удалена
+// вместе с обёрткой Android: мобильное приложение переезжает на Expo и будет
+// жить отдельным репозиторием со своей регистрацией токенов.
+//
+// Токены, записанные прежним Android-приложением, остаются в users.fcmTokens и
+// протухнут сами: sendPushToUser удаляет их, как только FCM ответит
+// registration-token-not-registered.
 const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
-
-// Detect native Capacitor environment
-const isNative = () =>
-  typeof (window as any).Capacitor !== 'undefined' &&
-  (window as any).Capacitor?.isNativePlatform?.()
 
 async function saveToken(userId: string, token: string) {
   const userRef = doc(db, 'users', userId)
@@ -33,6 +35,8 @@ async function setupWebPush(userId: string) {
     const messaging = await getFirebaseMessaging()
     if (!messaging) return
 
+    // Воркер регистрирует AppClientEffects; здесь дожидаемся готовности той же
+    // регистрации — своей у пушей нет, public/sw.js существует ровно ради них.
     const registration = await navigator.serviceWorker.ready
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
@@ -45,47 +49,11 @@ async function setupWebPush(userId: string) {
   }
 }
 
-async function setupNativePush(userId: string) {
-  try {
-    const { PushNotifications } = await import('@capacitor/push-notifications')
-
-    const permResult = await PushNotifications.requestPermissions()
-    if (permResult.receive !== 'granted') return
-
-    await PushNotifications.register()
-
-    PushNotifications.addListener('registration', async ({ value: token }) => {
-      await saveToken(userId, token)
-    })
-
-    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      const data = action.notification.data
-      if (!data?.type) return
-
-      let url = '/'
-      if (data.type === 'booking') url = '/dashboard?tab=bookings&subtab=requests'
-      else if (data.type === 'bookingApproved' || data.type === 'bookingRejected')
-        url = '/dashboard?tab=bookings&subtab=my-bookings'
-      else if (['comment', 'reply', 'favorite', 'rating'].includes(data.type) && data.propertyId)
-        url = `/property/${data.propertyId}`
-
-      window.location.href = url
-    })
-  } catch {
-    // Native push not available — silent
-  }
-}
-
 export function usePushNotifications() {
   const { user } = useAuth()
 
   useEffect(() => {
     if (!user?.id) return
-
-    if (isNative()) {
-      setupNativePush(user.id)
-    } else {
-      setupWebPush(user.id)
-    }
+    setupWebPush(user.id)
   }, [user?.id])
 }

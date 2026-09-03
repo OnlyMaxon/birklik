@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://birklik.az'),
   title: {default: 'Birklik.az', template: '%s | Birklik.az'},
   description: 'Azərbaycanda günlük kirayə evlər və istirahət məkanları',
-  manifest: '/manifest.json',
   // OpenGraph раньше не выставлялся нигде, кроме картинки объявления. Ссылка на
   // сайт в WhatsApp, Telegram и Facebook разворачивалась в голый адрес без
   // названия и превью. Эти же теги читают сборщики данных для ИИ-поиска —
