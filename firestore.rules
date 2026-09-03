@@ -29,9 +29,22 @@ service cloud.firestore {
       allow read: if request.auth != null && (
         request.auth.uid == userId || isModerator()
       );
-      allow create: if request.auth != null && request.auth.uid == userId;
+      // Признаки модератора в профиль не пишет никто из браузера: настоящее право
+      // живёт в заявке токена, а поле `isModerator` расставляет скрипт под
+      // сервис-аккаунтом. Раньше здесь стерегли только 'moderator' и 'admin' —
+      // полей, которых в базе нет ни у кого. А по 'isModerator' сервер ищет, кому
+      // разослать жалобы на комментарии, и в уведомление уходит имя пожаловавшегося.
+      // То есть любой мог выписать себе это поле и начать получать жалобы вместе с
+      // личностью заявителя.
+      allow create: if request.auth != null && request.auth.uid == userId
+        && !request.resource.data.keys().hasAny(['moderator', 'admin', 'isModerator']);
+      // На обновлении сверяются ИЗМЕНЁННЫЕ ключи, а не все. request.resource.data —
+      // это документ целиком после записи, поэтому keys() видел бы и поля, которые
+      // никто не трогал: пользователь с уже проставленным isModerator не смог бы
+      // поправить даже собственное имя.
       allow update: if request.auth != null && request.auth.uid == userId
-        && !request.resource.data.keys().hasAny(['moderator', 'admin']);
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['moderator', 'admin', 'isModerator']);
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
 

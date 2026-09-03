@@ -146,7 +146,8 @@ pnpm install
 pnpm dev
 pnpm build                  # plain Next build — does NOT produce a worker
 pnpm typecheck
-pnpm test:run
+pnpm test:run               # unit tests; must pass without an emulator
+pnpm test:rules             # security rules against the Firestore emulator (needs JAVA_HOME)
 
 pnpm cf:build               # OpenNext build for Workers
 pnpm cf:deploy              # build and deploy the worker
@@ -229,8 +230,25 @@ Two controlled axes plus one legacy label:
   and judged disproportionate.
 - `cityDistricts` has no entries for most regions, so the second location level is unavailable
   outside the 15 listed there.
-- Firestore rules have never been verified by behaviour, only compiled. The service account lacks
-  `firebaserules.rulesets.test` and the emulator needs Java 11 while the dev machine has 8. This
-  becomes blocking if the mobile client ships, because without a server it has no path into
-  Firestore except the rules.
-- Test coverage remains focused on tier logic, file validation, filtering and the Firestore REST client.
+- Test coverage remains focused on tier logic, file validation, filtering, the Firestore REST
+  client and the security rules.
+
+## Security rules
+
+`pnpm test:rules` runs 66 tests against the Firestore emulator: it starts the emulator, runs
+`vitest` with `vitest.rules.config.ts`, then shuts it down. Tests live in `tests/rules/` and are
+excluded from the default suite, because `pnpm test:run` must pass without an emulator.
+
+The emulator project is `demo-birklik-rules`. The `demo-` prefix is what guarantees the SDK
+cannot reach the real Firebase even if environment variables say otherwise.
+
+It needs a JDK — set `JAVA_HOME` to `/c/Program Files/Java/jdk-26.0.2.1` on the dev machine. A
+bare `java -version` still reports 1.8 there because an Oracle shim comes first on PATH.
+
+Two habits these tests exist to enforce:
+
+- **`request.resource.data` on an update is the whole document after the write**, not the changed
+  fields. Guarding with `keys().hasAny([...])` therefore also matches fields nobody touched. Use
+  `diff(resource.data).affectedKeys()` on updates, plain `keys()` only on creates.
+- **Writing a field its existing value does not make it an affected key.** A rule that forbids
+  changing `status` will still allow a write that sets `status` to what it already was.

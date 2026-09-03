@@ -6,6 +6,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: [],
+    // Тесты правил живут в tests/rules и требуют поднятого эмулятора Firestore.
+    // Здесь их быть не должно: `pnpm test:run` обязан проходить без эмулятора.
+    // Запуск — `pnpm test:rules`, конфиг vitest.rules.config.ts.
+    exclude: ['**/node_modules/**', '**/dist/**', '.next/**', 'tests/rules/**'],
   },
   resolve: {
     alias: {

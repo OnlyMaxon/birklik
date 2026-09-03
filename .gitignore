@@ -66,3 +66,9 @@ set-moderator.js
 storage-backup/
 firebase-functions/storage-backup/
 firebase-functions/storage-orphans-report.json
+
+# Логи эмуляторов Firebase (pnpm test:rules)
+firestore-debug.log
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
