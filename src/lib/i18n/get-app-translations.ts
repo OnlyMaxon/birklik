@@ -1,6 +1,6 @@
 import 'server-only'
 import {getLocale, getMessages, setRequestLocale} from 'next-intl/server'
-import type {Language, Translations} from '@/types'
+import type {Language, Translations} from '@birklik/core/types'
 
 /**
  * Переводы для серверной страницы.

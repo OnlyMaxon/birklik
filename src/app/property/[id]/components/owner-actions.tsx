@@ -6,7 +6,7 @@ import {InlineSpinner} from '@/components'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import firebaseApp from '@/lib/firebase/client'
 import * as logger from '@/services/logger'
-import type {ListingTier} from '@/types'
+import type {ListingTier} from '@birklik/core/types'
 
 interface OwnerActionsProps {
   propertyId: string

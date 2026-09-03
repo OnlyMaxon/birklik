@@ -1,5 +1,5 @@
 import {z} from 'zod'
-import {validatePhoneNumber, validateName} from '@/utils/validators'
+import {validatePhoneNumber, validateName} from '@birklik/core/utils/validators'
 
 // Только те поля, что пишем в Firestore сами. Почту и пароль проверяет Firebase
 // при создании учётки в браузере и возвращает свои коды ошибок.

@@ -1,4 +1,4 @@
-import type {Language, Property} from '@/types'
+import type {Language, Property} from '@birklik/core/types'
 import {LOCALES, localizePath, type LocaleCode} from '@/lib/locale-routes'
 
 const SITE_URL = 'https://birklik.az'

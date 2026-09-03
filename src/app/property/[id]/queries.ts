@@ -2,7 +2,7 @@ import 'server-only'
 import {unstable_cache} from 'next/cache'
 import {after} from 'next/server'
 import {getDoc, queryDocs, updateDoc, increment, type QueryOptions} from '@/lib/firebase/firestore-rest'
-import type {Property, Booking} from '@/types'
+import type {Property, Booking} from '@birklik/core/types'
 import {normalizePropertyImageUrls, toImageApiUrl} from '@/lib/images'
 import {isOnDisplay, toListItem} from '@/lib/property-list'
 

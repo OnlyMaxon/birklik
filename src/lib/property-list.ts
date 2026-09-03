@@ -1,5 +1,5 @@
-import type {Property} from '@/types'
-import {isTierExpired} from '@/utils/premium-helper'
+import type {Property} from '@birklik/core/types'
+import {isTierExpired} from '@birklik/core/utils/premium-helper'
 
 /**
  * Показывать ли объявление в списках прямо сейчас.

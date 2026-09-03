@@ -5,7 +5,7 @@ import {OptimizedImage} from '@/components/optimized-image'
 import { Link } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import {cityLandingPath, localizedCityName} from '@/lib/city-landing'
-import {cities} from '@/data'
+import {cities} from '@birklik/core/data'
 
 export interface FooterRegion {
   city: string

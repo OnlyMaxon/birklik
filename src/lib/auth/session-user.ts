@@ -2,7 +2,7 @@ import 'server-only'
 import {getDoc} from '@/lib/firebase/firestore-rest'
 import {toImageApiUrl} from '@/lib/images'
 import {getSession} from './session'
-import type {User} from '@/types'
+import type {User} from '@birklik/core/types'
 
 /**
  * Кто вошёл — по данным сервера, ещё до того как в браузере оживёт Firebase.

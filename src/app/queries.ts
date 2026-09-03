@@ -1,7 +1,7 @@
 import 'server-only'
 import {unstable_cache} from 'next/cache'
 import {queryDocs, DOCUMENT_ID, type QueryOptions} from '@/lib/firebase/firestore-rest'
-import type {Property} from '@/types'
+import type {Property} from '@birklik/core/types'
 import {normalizePropertyImageUrls} from '@/lib/images'
 import {isOnDisplay, toListItem} from '@/lib/property-list'
 

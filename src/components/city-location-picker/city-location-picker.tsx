@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '@/components/providers'
-import { cityLocationOptions, cities, cityDistricts } from '../../data'
-import { LocationCategory } from '../../types'
+import { cityLocationOptions, cities, cityDistricts } from '@birklik/core/data'
+import { LocationCategory } from '@birklik/core/types'
 
 interface CityLocationPickerProps {
   city: string

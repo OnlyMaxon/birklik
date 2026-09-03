@@ -6,9 +6,9 @@ import { Link } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import { useAuth } from '@/components/providers'
 import { toggleFavorite, isPropertyFavorited } from '../../services/favorites-service'
-import { Property, Language } from '../../types'
-import { isTierActive } from '../../utils/premium-helper'
-import { cities, districtLabel } from '../../data'
+import { Property, Language } from '@birklik/core/types'
+import { isTierActive } from '@birklik/core/utils/premium-helper'
+import { cities, districtLabel } from '@birklik/core/data'
 import * as logger from '../../services/logger'
 
 interface PropertyCardProps {

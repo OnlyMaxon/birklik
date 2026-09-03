@@ -24,9 +24,44 @@ There is no mobile app in this repository. The Capacitor Android wrapper was rem
 2026-09-03; the mobile client is being rebuilt on Expo in a separate repository against this
 same Firebase project.
 
+## Shared domain logic: `core/`
+
+`core/` is a **git submodule** — the repository `birklik-core`, published as `@birklik/core`.
+The Expo app mounts the same submodule. Domain rules therefore exist in exactly one copy: how a
+paid tier expires, what stays on display, how bookings are filtered.
+
+```
+core/src/types      listing, booking, user, notification
+core/src/data       73-region directory, city aliases, filtering
+core/src/utils      premium-helper (with tests), validators
+core/src/messages   az / en / ru translations
+```
+
+It ships as TypeScript source, so `transpilePackages: ['@birklik/core']` in `next.config.ts`
+compiles it. pnpm links it through the workspace (`core` is listed in `pnpm-workspace.yaml`).
+
+**After `git clone`, `core/` is empty** — run `git submodule update --init`, or the build fails
+on an unresolved `@birklik/core`.
+
+Changing shared logic takes three commits: one in `birklik-core`, then a submodule pointer
+bump here, then the same in the mobile repo. Skip the last and the app builds against the old
+version without saying so.
+
+`core` has **no `lib: DOM`** in its tsconfig, deliberately: browser-only code will not compile
+there. That is why `image-compression.ts` stayed here (canvas) and why the dead `validateFile`
+was dropped rather than moved.
+
+`services/` has not moved. The two apps use different Firebase packages —
+`firebase/firestore` against `@react-native-firebase/firestore` — so that code needs an
+abstraction layer, not a copy.
+
+Note that `pnpm test:run` also picks up the tests inside `core/`, since the submodule sits
+inside this repository. That is intentional: the web suite validates the shared code too.
+
 ## Source layout
 
 ```text
+core/                    # git submodule: @birklik/core, shared with the Expo app
 src/
   app/
     [locale]/            # Locale-prefixed routes — see Internationalization
@@ -56,10 +91,10 @@ src/
     firebase/            # client.ts (browser SDK), firestore-rest.ts + google-auth.ts (server)
     i18n/                # getAppTranslations
     navigation.tsx city-landing.ts locale-routes.ts property-list.ts seo.ts images.ts
-  messages/              # az/ en/ ru/ + request.ts, routing.ts
+  messages/              # request.ts, routing.ts — next-intl wiring only;
+                         # the translations themselves live in core/
   services/              # Firebase/domain operations
-  types/                 # Domain and translation types
-  utils/                 # Framework-independent helpers
+  utils/                 # image-compression only — the rest moved to core/
 ```
 
 Route-specific UI lives in the route's `components/` directory. Shared UI lives in `src/components`. Firebase/domain operations stay in `src/services` and do not belong in UI files.

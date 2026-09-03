@@ -4,7 +4,7 @@ import React from 'react'
 import {useLanguage} from '@/components/providers'
 import {InlineSpinner} from '@/components'
 import {useNavigate} from '@/lib/navigation'
-import type {Booking} from '@/types'
+import type {Booking} from '@birklik/core/types'
 import {createBookingAction} from '../actions'
 import {buildCalendarCells, getTodayISO} from '../lib/calendar'
 

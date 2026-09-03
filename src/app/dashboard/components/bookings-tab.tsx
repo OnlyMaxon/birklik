@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage, useAuth } from '@/components/providers'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
-import { Booking, Property } from '@/types'
+import { Booking, Property } from '@birklik/core/types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
 import { getUserBookings, cancelBooking, acceptBooking, rejectBooking, editBooking, deleteBooking, resolveCancellationRequest, BookingConflictError } from '@/services'

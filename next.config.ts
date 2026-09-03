@@ -5,6 +5,10 @@ import {LOCALE_PREFIXED_STATIC_PATHS} from './src/lib/locale-routes'
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // @birklik/core лежит подмодулем в core/ и отдаётся ИСХОДНИКАМИ на TypeScript,
+  // без сборки: тот же код читает мобильное приложение, а собирать его дважды
+  // под две разные среды незачем. Значит компилировать его должен Next.
+  transpilePackages: ['@birklik/core'],
   // Адреса азербайджанской версии остаются без префикса — они уже
   // проиндексированы, и переезд на /az/ обнулил бы накопленное. Снаружи
   // `/about`, внутри `/az/about`; перенаправления нет, сразу 200.

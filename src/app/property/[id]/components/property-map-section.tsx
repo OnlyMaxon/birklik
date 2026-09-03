@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import {MapSkeleton} from '@/components'
-import type {Property} from '@/types'
+import type {Property} from '@birklik/core/types'
 
 const PropertyMap = dynamic(
   () => import('@/components/map').then(module => module.PropertyMap),

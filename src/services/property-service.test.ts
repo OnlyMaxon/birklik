@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Property } from '../types'
+import type { Property } from '@birklik/core/types'
 
 const firestoreMocks = vi.hoisted(() => ({
   addDocMock: vi.fn(),

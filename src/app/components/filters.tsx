@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '@/components/providers'
-import type {FilterState, PropertyType} from '@/types'
-import {propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions} from '@/data'
+import type {FilterState, PropertyType} from '@birklik/core/types'
+import {propertyTypes, moreFilterOptions, nearFilterOptions, cityLocationOptions} from '@birklik/core/data'
 import {CityLocationPicker} from '@/components/city-location-picker'
 
 interface FiltersProps {

@@ -25,6 +25,7 @@
     "cleanup:execute": "pnpm --dir firebase-functions cleanup:execute"
   },
   "dependencies": {
+    "@birklik/core": "workspace:*",
     "firebase": "^12.17.0",
     "jose": "^6.2.8",
     "leaflet": "^1.9.4",

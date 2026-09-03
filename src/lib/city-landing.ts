@@ -1,5 +1,5 @@
-import {cities, type CityOption} from '@/data'
-import type {Language} from '@/types'
+import {cities, type CityOption} from '@birklik/core/data'
+import type {Language} from '@birklik/core/types'
 
 // Азербайджанское «kirayə» — аренда. Сегмент участвует в самом запросе, ради
 // которого страницы и заводятся, поэтому латиницей и без диакритики: адреса

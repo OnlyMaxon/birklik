@@ -1,4 +1,4 @@
-import type {Property} from '@/types'
+import type {Property} from '@birklik/core/types'
 
 const SITE_URL = 'https://birklik.az'
 

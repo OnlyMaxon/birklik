@@ -3,7 +3,7 @@
 import React from 'react'
 import {useLanguage} from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import type {Comment} from '@/types'
+import type {Comment} from '@birklik/core/types'
 import {addCommentAction, deleteCommentAction, addReplyAction} from '../actions'
 import {ReportCommentModal} from './report-comment-modal'
 

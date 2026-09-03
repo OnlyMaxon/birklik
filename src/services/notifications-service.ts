@@ -1,6 +1,6 @@
 import { db } from '../lib/firebase/client'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingApprovedNotification, BookingRejectedNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification } from '../types'
+import { Notification, BookingApprovedNotification, BookingRejectedNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification } from '@birklik/core/types'
 import * as logger from './logger'
 
 // Удалены как неиспользуемые (2026-08-31): createNotification и обёртки для

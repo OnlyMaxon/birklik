@@ -16,7 +16,7 @@ import { auth } from '../lib/firebase/client'
 import { compressPropertyImage } from '../utils/image-compression'
 import { validatePropertyImage } from './file-validation'
 import { db, storage } from '../lib/firebase/client'
-import { Property, PropertyType, Comment } from '../types'
+import { Property, PropertyType, Comment } from '@birklik/core/types'
 import * as logger from './logger'
 import {normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 

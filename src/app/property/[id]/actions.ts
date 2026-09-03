@@ -11,7 +11,7 @@ import {
   arrayRemove
 } from '@/lib/firebase/firestore-rest'
 import {getSession} from '@/lib/auth/session'
-import type {Booking, Comment, Property, ReportReason} from '@/types'
+import type {Booking, Comment, Property, ReportReason} from '@birklik/core/types'
 import {propertyIdSchema, bookingSchema, commentSchema, replySchema, ratingSchema, reportCommentSchema} from './validators'
 import {getProperty, getUserProfile, hasUserBookedProperty} from './queries'
 import {createNotification} from './lib/create-notification'

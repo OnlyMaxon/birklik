@@ -3,8 +3,8 @@ import {unstable_cache} from 'next/cache'
 import {queryDocs} from '@/lib/firebase/firestore-rest'
 import {normalizePropertyImageUrls} from '@/lib/images'
 import {isOnDisplay, toListItem} from '@/lib/property-list'
-import {tierRank} from '@/utils/premium-helper'
-import type {Property} from '@/types'
+import {tierRank} from '@birklik/core/utils/premium-helper'
+import type {Property} from '@birklik/core/types'
 
 // Тот же потолок, что и в карте сайта: неограниченный запрос в Firestore
 // оставлять не хочется, а до предела ещё далеко.

@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { useLanguage } from '@/components/providers'
-import {cities} from '@/data'
+import {cities} from '@birklik/core/data'
 
 interface SearchBarProps {
   onChange: (value: string) => void

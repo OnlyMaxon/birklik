@@ -2,7 +2,7 @@
 
 import {useLanguage} from '@/components/providers'
 import * as logger from '@/services/logger'
-import type {LocalizedText} from '@/types'
+import type {LocalizedText} from '@birklik/core/types'
 
 interface ShareButtonProps {
   propertyId: string

@@ -3,10 +3,10 @@
 import React from 'react'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import {useAuth, useLanguage} from '@/components/providers'
-import {resolveCity} from '@/data/city-aliases'
+import {resolveCity} from '@birklik/core/data/city-aliases'
 import firebaseApp from '@/lib/firebase/client'
 import {createProperty, deleteProperty, updateProperty} from '@/services'
-import type {Amenity, District, ListingStatus, ListingTier, LocationCategory, Property, PropertyType} from '@/types'
+import type {Amenity, District, ListingStatus, ListingTier, LocationCategory, Property, PropertyType} from '@birklik/core/types'
 import * as logger from '@/services/logger'
 import {DEFAULT_COORDINATES, type ListingFormState} from '../components/dashboard-types'
 

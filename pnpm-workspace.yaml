@@ -1,6 +1,10 @@
 packages:
   - '.'
   - 'firebase-functions'
+  # Подмодуль git: общая предметная логика, её же тянет мобильное приложение.
+  # После `git clone` папка пустая — нужен `git submodule update --init`,
+  # иначе сборка упадёт на ненайденном @birklik/core.
+  - 'core'
 
 # Плоский node_modules без симлинков.
 # OpenNext при сборке воркера пересоздаёт симлинки pnpm-раскладки, а Windows

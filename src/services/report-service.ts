@@ -1,5 +1,5 @@
 import { db } from '../lib/firebase/client'
-import { CommentReport, ReportReason } from '../types'
+import { CommentReport, ReportReason } from '@birklik/core/types'
 import * as logger from './logger'
 import {
   collection,

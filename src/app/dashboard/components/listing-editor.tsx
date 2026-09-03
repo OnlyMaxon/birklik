@@ -4,8 +4,8 @@ import React, {type Dispatch, type FormEvent, type SetStateAction} from 'react'
 import dynamic from 'next/dynamic'
 import {CityLocationPicker, InlineSpinner} from '@/components'
 import {useLanguage} from '@/components/providers'
-import {amenitiesList, moreFilterOptions, nearFilterOptions, propertyTypes} from '@/data'
-import type {Amenity, ListingTier, PropertyType} from '@/types'
+import {amenitiesList, moreFilterOptions, nearFilterOptions, propertyTypes} from '@birklik/core/data'
+import type {Amenity, ListingTier, PropertyType} from '@birklik/core/types'
 import {DEFAULT_COORDINATES, type ListingFormState} from './dashboard-types'
 
 const LocationMap = dynamic(

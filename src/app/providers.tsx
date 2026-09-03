@@ -4,7 +4,7 @@ import {NextIntlClientProvider} from 'next-intl'
 import {AuthProvider, LanguageProvider} from '@/components/providers'
 import {AppClientEffects} from '@/components/app-client-effects'
 import type {AbstractIntlMessages} from 'next-intl'
-import type {User} from '@/types'
+import type {User} from '@birklik/core/types'
 
 interface ProvidersProps {
   children: React.ReactNode

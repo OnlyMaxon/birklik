@@ -4,10 +4,10 @@ import {useState} from 'react'
 import {Link} from '@/lib/navigation'
 import {useLanguage} from '@/components/providers'
 import {InlineSpinner, ListingRowsSkeleton} from '@/components'
-import {cities, districtLabel} from '@/data'
+import {cities, districtLabel} from '@birklik/core/data'
 import {deleteProperty, updateProperty} from '@/services'
-import {isTierActive, isTierExpired, tierExpiresAt} from '@/utils/premium-helper'
-import type {Language, Property} from '@/types'
+import {isTierActive, isTierExpired, tierExpiresAt} from '@birklik/core/utils/premium-helper'
+import type {Language, Property} from '@birklik/core/types'
 import type {PaymentNotification} from './dashboard-types'
 
 interface ListingsTabProps {

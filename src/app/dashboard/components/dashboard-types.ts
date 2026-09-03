@@ -1,4 +1,4 @@
-import type {Amenity, ListingTier, LocationCategory, PropertyType} from '@/types'
+import type {Amenity, ListingTier, LocationCategory, PropertyType} from '@birklik/core/types'
 
 export type DashboardTab = 'listings' | 'add' | 'favorites' | 'bookings' | 'notifications' | 'profile'
 

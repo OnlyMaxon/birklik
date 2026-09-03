@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import {useLocale, useMessages} from 'next-intl'
 import {usePathname, useRouter} from 'next/navigation'
 import {localizePath} from '@/lib/locale-routes'
-import type {Language, Translations} from '@/types'
+import type {Language, Translations} from '@birklik/core/types'
 
 interface LanguageContextType {
   language: Language

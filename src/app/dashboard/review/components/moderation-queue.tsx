@@ -8,8 +8,8 @@ import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModer
 import { createListingRejectedNotification } from '@/services/notifications-service'
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
-import { Language, Property, CommentReport, Booking } from '@/types'
-import { cities, districtLabel } from '@/data'
+import { Language, Property, CommentReport, Booking } from '@birklik/core/types'
+import { cities, districtLabel } from '@birklik/core/data'
 
 type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people'
 

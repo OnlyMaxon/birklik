@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLanguage } from '@/components/providers'
 import {InlineSpinner} from '@/components'
-import type {ReportReason} from '@/types'
+import type {ReportReason} from '@birklik/core/types'
 import {reportCommentAction} from '../actions'
 import * as logger from '@/services/logger'
 

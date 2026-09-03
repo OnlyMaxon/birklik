@@ -15,7 +15,7 @@ import {
 import {propertyIdSchema} from './validators'
 import {getLocale} from 'next-intl/server'
 import {cityFromSlug, cityLandingPath, citySlug, localizedCityName} from '@/lib/city-landing'
-import type {Language} from '@/types'
+import type {Language} from '@birklik/core/types'
 
 type PropertyRouteProps = {params: Promise<{id: string}>}
 

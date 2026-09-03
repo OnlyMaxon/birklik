@@ -10,7 +10,7 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { ref, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import {auth, db, storage} from '@/lib/firebase/client'
-import type {User} from '@/types'
+import type {User} from '@birklik/core/types'
 import * as logger from '@/services/logger'
 import {compressAvatarImage} from '@/utils/image-compression'
 import {validateAvatar} from '@/services/file-validation'

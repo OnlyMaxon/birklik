@@ -3,7 +3,7 @@
 import React from 'react'
 import { useLanguage, useAuth } from '@/components/providers'
 import {CardsSkeleton, PropertyCard} from '@/components'
-import { Property } from '@/types'
+import { Property } from '@birklik/core/types'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase/client'
 import * as logger from '@/services/logger'

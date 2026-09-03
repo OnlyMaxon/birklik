@@ -6,8 +6,8 @@ import {InlineSpinner, PropertyPageSkeleton} from '@/components'
 import {useLanguage} from '@/components/providers'
 import { getPropertyById, approveProperty, rejectProperty, updateProperty } from '@/services'
 import { createListingRejectedNotification } from '@/services/notifications-service'
-import { districtLabel } from '@/data'
-import { Property, Language } from '@/types'
+import { districtLabel } from '@birklik/core/data'
+import { Property, Language } from '@birklik/core/types'
 
 export const ModerationReview: React.FC = () => {
   const { id } = useParams<{ id: string }>()

@@ -9,10 +9,10 @@ import {BookingCalendar} from './booking-calendar'
 import {RatingWidget} from './rating-widget'
 import {CommentsSection} from './comments-section'
 import {PropertyMapSection} from './property-map-section'
-import {moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities, districtLabel} from '@/data'
+import {moreFilterOptions, nearFilterOptions, cityLocationOptions, getOptionLabel, cities, districtLabel} from '@birklik/core/data'
 import {cityLandingPath} from '@/lib/city-landing'
-import {isTierActive} from '@/utils/premium-helper'
-import type {Booking, Language, Property} from '@/types'
+import {isTierActive} from '@birklik/core/utils/premium-helper'
+import type {Booking, Language, Property} from '@birklik/core/types'
 
 interface PropertyDetailsProps {
   property: Property

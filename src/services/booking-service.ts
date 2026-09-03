@@ -1,6 +1,6 @@
 import { db } from '../lib/firebase/client'
 import { collection, doc, query, where, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'
-import { Booking } from '../types'
+import { Booking } from '@birklik/core/types'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'bookings'

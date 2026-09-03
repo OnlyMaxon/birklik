@@ -4,7 +4,7 @@ import React from 'react'
 import {useAuth, useLanguage} from '@/components/providers'
 import {Link} from '@/lib/navigation'
 import {getPropertiesByOwner} from '@/services'
-import type {Property} from '@/types'
+import type {Property} from '@birklik/core/types'
 import './payment.css'
 
 type PaidTier = 'vip' | 'premium'

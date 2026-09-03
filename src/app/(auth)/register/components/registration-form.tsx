@@ -7,7 +7,7 @@ import {InlineSpinner} from '@/components'
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
-import { validateName, validatePhoneNumber } from '@/utils/validators'
+import { validateName, validatePhoneNumber } from '@birklik/core/utils/validators'
 import { completeRegistrationAction } from '../actions'
 
 export const RegistrationForm: React.FC = () => {

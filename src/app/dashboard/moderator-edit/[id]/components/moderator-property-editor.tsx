@@ -5,9 +5,9 @@ import dynamic from 'next/dynamic'
 import { useParams, useNavigate } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import {CityLocationPicker, FormPageSkeleton, InlineSpinner} from '@/components'
-import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@/data'
-import { resolveCity } from '@/data/city-aliases'
-import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '@/types'
+import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@birklik/core/data'
+import { resolveCity } from '@birklik/core/data/city-aliases'
+import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '@birklik/core/types'
 import { getPropertyById, updateProperty } from '@/services'
 
 const DEFAULT_COORDINATES = {lat: 40.4093, lng: 49.8671}
