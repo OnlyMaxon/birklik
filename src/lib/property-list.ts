@@ -1,24 +1,9 @@
 import type {Property} from '@birklik/core/types'
-import {isTierExpired} from '@birklik/core/utils/premium-helper'
 
-/**
- * Показывать ли объявление в списках прямо сейчас.
- *
- * Статус `inactive` объявлению проставляет ночная функция `expirePaidTiers`, и
- * между окончанием тарифа и её прогоном проходит до суток. Всё это время
- * объявление формально `active` — то есть выборки его брали, и оно висело на
- * витрине уже после того, как оплаченный срок кончился.
- *
- * Здесь та же проверка делается по дате, в момент показа: истёкшее уходит с
- * витрины сразу. Ночная функция после этого лишь закрепляет положение в базе,
- * проставляя `status` и `expiredAt`.
- *
- * Обычный тариф не истекает — `isTierExpired` для него всегда ложь.
- */
-export function isOnDisplay(property: Pick<Property, 'status' | 'listingTier' | 'premiumExpiresAt' | 'vipExpiresAt'>): boolean {
-  if (property.status && property.status !== 'active') return false
-  return !isTierExpired(property)
-}
+// isOnDisplay переехал в общий пакет: то же правило применяет мобильное
+// приложение, и разъехаться им нельзя. Реэкспорт оставлен, чтобы не править
+// десяток мест импорта — здесь по-прежнему «всё про списки объявлений».
+export {isOnDisplay} from '@birklik/core/utils/display'
 
 /**
  * Убирает из объявления то, что нужно только на его собственной странице.
