@@ -1,6 +1,6 @@
 import {afterAll, beforeEach, describe, it} from 'vitest'
 import {assertFails, assertSucceeds} from '@firebase/rules-unit-testing'
-import {doc, getDoc, setDoc, updateDoc, deleteDoc} from 'firebase/firestore'
+import {doc, getDoc, setDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove} from 'firebase/firestore'
 import {
   getTestEnv, authed, anon, moderator,
   OWNER, GUEST, STRANGER, PROPERTY_ID, propertyDoc
@@ -86,6 +86,65 @@ describe('properties: избранное', () => {
     await assertFails(
       updateDoc(property(authed(env, STRANGER)), {favorites: [STRANGER], views: 9999})
     )
+  })
+})
+
+// Проверки выше писали массив целиком, а рабочий код и на сайте, и в
+// приложении пользуется arrayUnion/arrayRemove. Это ДРУГОЙ путь: значение
+// вычисляет сервер, и правила видят документ уже после преобразования.
+// Без этих проверок правила считались бы протестированными, а боевой сценарий
+// оставался бы не покрытым ни одним тестом.
+describe('properties: избранное через arrayUnion и arrayRemove', () => {
+  it('добавляет себя', async () => {
+    await assertSucceeds(
+      updateDoc(property(authed(env, STRANGER)), {favorites: arrayUnion(STRANGER)})
+    )
+  })
+
+  it('убирает себя', async () => {
+    await env.withSecurityRulesDisabled(async ctx => {
+      await setDoc(doc(ctx.firestore(), 'properties', PROPERTY_ID), propertyDoc({favorites: [STRANGER]}))
+    })
+    await assertSucceeds(
+      updateDoc(property(authed(env, STRANGER)), {favorites: arrayRemove(STRANGER)})
+    )
+  })
+
+  it('добавляет себя, не трогая чужие отметки', async () => {
+    await env.withSecurityRulesDisabled(async ctx => {
+      await setDoc(doc(ctx.firestore(), 'properties', PROPERTY_ID), propertyDoc({favorites: [GUEST]}))
+    })
+    await assertSucceeds(
+      updateDoc(property(authed(env, STRANGER)), {favorites: arrayUnion(STRANGER)})
+    )
+  })
+
+  it('повторное добавление себя не отклоняется', async () => {
+    await env.withSecurityRulesDisabled(async ctx => {
+      await setDoc(doc(ctx.firestore(), 'properties', PROPERTY_ID), propertyDoc({favorites: [STRANGER]}))
+    })
+    await assertSucceeds(
+      updateDoc(property(authed(env, STRANGER)), {favorites: arrayUnion(STRANGER)})
+    )
+  })
+
+  it('ЗАПРЕЩЕНО добавлять чужой uid', async () => {
+    await assertFails(
+      updateDoc(property(authed(env, STRANGER)), {favorites: arrayUnion(GUEST)})
+    )
+  })
+
+  it('ЗАПРЕЩЕНО убирать чужой uid', async () => {
+    await env.withSecurityRulesDisabled(async ctx => {
+      await setDoc(doc(ctx.firestore(), 'properties', PROPERTY_ID), propertyDoc({favorites: [GUEST, STRANGER]}))
+    })
+    await assertFails(
+      updateDoc(property(authed(env, STRANGER)), {favorites: arrayRemove(GUEST)})
+    )
+  })
+
+  it('ЗАПРЕЩЕНО невошедшему', async () => {
+    await assertFails(updateDoc(property(anon(env)), {favorites: arrayUnion('anyone')}))
   })
 })
 
