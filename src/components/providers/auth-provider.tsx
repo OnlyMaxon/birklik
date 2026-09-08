@@ -29,6 +29,14 @@ interface AuthContextType {
    */
   isEmailVerified: boolean
   isLoading: boolean
+  /**
+   * Успел ли клиентский SDK сообщить, кто вошёл. Отличается от `isLoading`: у
+   * посетителя с серверной кукой тот ложен сразу, а `firebaseUser` ещё пуст.
+   *
+   * Спрашивать обязан всякий, кто по ПУСТОМУ `firebaseUser` решает уводить
+   * человека со страницы. Иначе решение принимается до ответа Firebase.
+   */
+  hasFirebaseResolved: boolean
   logout: () => Promise<void>
   updateUserProfile: (payload: { name: string; phone: string; avatar?: string; avatarFile?: File | null }) => Promise<{ success: boolean; error?: string }>
 }
@@ -61,6 +69,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   // Сервер уже подтвердил сессию — ждать нечего, иначе страницы под защитой
   // показывали бы заглушку загрузки поверх готовых данных.
   const [isLoading, setIsLoading] = useState(initialUser === null)
+  // ⚠️ Отдельный признак: сказал ли своё слово САМ Firebase.
+  //
+  // isLoading для этого не годится — у засеянного с сервера посетителя он ложен
+  // с первого кадра, тогда как firebaseUser ещё null: клиентский SDK поднимает
+  // вход из IndexedDB асинхронно. Получалось, что isAuthenticated уже истинно,
+  // а firebaseUser пуст, и две страницы, читающие РАЗНЫЕ источники, гоняли
+  // человека по кругу: /verify-email видел пустой firebaseUser и уводил на
+  // /login, а тот по засеянному isAuthenticated возвращал обратно.
+  const [hasFirebaseResolved, setHasFirebaseResolved] = useState(false)
 
   // Listen to Firebase auth state changes
   useEffect(() => {
@@ -68,6 +85,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     // загрузке client.ts, до создания auth. Отсюда было поздно — SDK успевал
     // отправить обновление токена без App Check и получить 401.
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      // try/finally, а не отметка в конце: ниже есть ранние return (токен не
+      // приняли — разлогиниваем). Выйди мы через них без отметки, ожидающие
+      // страницы остались бы ждать навсегда.
+      try {
       if (fbUser) {
         // Клиентский SDK держит вход в IndexedDB домена и восстанавливает его
         // сам. У тех, кто заходил на старую Vite-версию, такая запись осталась,
@@ -147,7 +168,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
             })
         }
       }
-      setIsLoading(false)
+      } finally {
+        setHasFirebaseResolved(true)
+        setIsLoading(false)
+      }
     })
 
     return () => unsubscribe()
@@ -275,6 +299,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       // Firebase — источник истины, как только он ожил; до этого верим куке.
       isEmailVerified: firebaseUser ? firebaseUser.emailVerified : initialEmailVerified,
       isLoading,
+      hasFirebaseResolved,
       logout,
       updateUserProfile
     }}>

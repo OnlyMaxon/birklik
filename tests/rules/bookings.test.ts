@@ -151,3 +151,49 @@ describe('bookings: удаление', () => {
     await assertFails(deleteDoc(booking(authed(env, STRANGER))))
   })
 })
+
+describe('bookings: правка сроков модератором', () => {
+  // Модератору разрешены ровно четыре поля — те же, что пропускает editBooking.
+  it('модератор двигает даты и пересчитанный срок', async () => {
+    await assertSucceeds(updateDoc(booking(moderator(env)), {
+      checkInDate: '2026-10-02',
+      checkOutDate: '2026-10-09',
+      nights: 7,
+      totalPrice: 700
+    }))
+  })
+
+  // Ветка модератора не читает объявление намеренно: у части боевых броней его
+  // уже нет, и get() оборвал бы проверку ошибкой.
+  it('модератор правит бронь, у которой объявление удалено', async () => {
+    await env.clearFirestore()
+    await env.withSecurityRulesDisabled(async ctx => {
+      await setDoc(doc(ctx.firestore(), 'bookings', BOOKING_ID), bookingDoc({propertyId: 'нет-такого'}))
+    })
+    await assertSucceeds(updateDoc(booking(moderator(env)), {
+      checkOutDate: '2026-10-09',
+      nights: 8
+    }))
+  })
+
+  it('ЗАПРЕЩЕНО модератору менять этой веткой статус', async () => {
+    await assertFails(updateDoc(booking(moderator(env)), {
+      checkOutDate: '2026-10-09',
+      status: 'approved'
+    }))
+  })
+
+  it('ЗАПРЕЩЕНО модератору переписывать гостя', async () => {
+    await assertFails(updateDoc(booking(moderator(env)), {
+      checkOutDate: '2026-10-09',
+      userId: STRANGER
+    }))
+  })
+
+  it('ЗАПРЕЩЕНО постороннему двигать даты', async () => {
+    await assertFails(updateDoc(booking(authed(env, STRANGER)), {
+      checkOutDate: '2026-10-09',
+      nights: 8
+    }))
+  })
+})

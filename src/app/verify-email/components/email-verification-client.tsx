@@ -11,7 +11,7 @@ import * as logger from '@/services/logger'
 export const EmailVerificationClient: React.FC = () => {
   const { language } = useLanguage()
   const navigate = useNavigate()
-  const {firebaseUser, isLoading: isAuthLoading, logout} = useAuth()
+  const {firebaseUser, isLoading: isAuthLoading, hasFirebaseResolved, logout} = useAuth()
 
   const [loading, setLoading] = React.useState(false)
   const [message, setMessage] = React.useState('')
@@ -20,6 +20,20 @@ export const EmailVerificationClient: React.FC = () => {
 
   // Check if email is already verified
   React.useEffect(() => {
+    // ⚠️ Пока Firebase не ответил, пустой firebaseUser не значит «не вошёл» —
+    // клиентский SDK поднимает сессию из IndexedDB асинхронно.
+    //
+    // Отсюда была вторая карусель, уже /verify-email ↔ /login. У вернувшегося
+    // посетителя состояние засеяно с сервера: isAuthenticated истинно с первого
+    // кадра, isLoading ложен, а firebaseUser ещё пуст. Эта страница по пустому
+    // firebaseUser уводила на /login, а RedirectIfAuthenticated там по
+    // засеянному isAuthenticated возвращал обратно — и так до падения React.
+    // Двое читали разные источники и не могли договориться.
+    //
+    // Проверять надо именно hasFirebaseResolved: isLoading тут не помощник, он
+    // у засеянного ложен сразу.
+    if (!hasFirebaseResolved) return
+
     const checkVerified = async () => {
       if (!firebaseUser) {
         navigate('/login')
@@ -50,7 +64,7 @@ export const EmailVerificationClient: React.FC = () => {
     // Check every 3 seconds if email was verified
     const interval = setInterval(checkVerified, 3000)
     return () => clearInterval(interval)
-  }, [firebaseUser, navigate])
+  }, [firebaseUser, hasFirebaseResolved, navigate])
 
   const handleResendEmail = async () => {
     if (!firebaseUser || resendCooldown > 0) return
@@ -141,7 +155,9 @@ export const EmailVerificationClient: React.FC = () => {
     navigate('/login')
   }
 
-  if (isAuthLoading) return <AuthSkeleton />
+  // Заглушка держится и до ответа Firebase: до него неизвестно даже, чей это
+  // адрес почты — в заголовке ниже стоит firebaseUser?.email.
+  if (isAuthLoading || !hasFirebaseResolved) return <AuthSkeleton />
 
   return (
     <>

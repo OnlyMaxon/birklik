@@ -1,5 +1,5 @@
-import { db } from '../lib/firebase/client'
-import { collection, doc, query, where, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { auth, db } from '../lib/firebase/client'
+import { collection, doc, query, where, getDocs, getDoc, updateDoc, deleteDoc, QueryConstraint } from 'firebase/firestore'
 import { Booking } from '@birklik/core/types'
 import * as logger from './logger'
 
@@ -293,6 +293,29 @@ export const editBooking = async (
       throw new BookingConflictError('These dates overlap another booking for this property')
     }
 
+    // Срок и сумма пересчитываются от дат, а не берутся из вызова. Раньше их не
+    // трогал никто: интерфейс владельца передаёт только даты, поэтому бронь,
+    // растянутую с трёх ночей до семи, база продолжала считать трёхдневной — и
+    // по сроку, и по деньгам.
+    const nights = Math.round(
+      (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / 86_400_000
+    )
+
+    if (filteredUpdates.nights === undefined) {
+      filteredUpdates.nights = nights
+    }
+
+    // Ставка берётся из самой брони, а не из объявления: цена объявления с тех пор
+    // могла измениться, а договаривались по той, что записана здесь.
+    if (
+      filteredUpdates.totalPrice === undefined
+      && nights !== existing.nights
+      && existing.nights > 0
+      && typeof existing.totalPrice === 'number'
+    ) {
+      filteredUpdates.totalPrice = Math.round((existing.totalPrice / existing.nights) * nights)
+    }
+
     await updateDoc(docRef, filteredUpdates)
 
     return { id: bookingSnap.id, ...existing, ...filteredUpdates }
@@ -350,23 +373,67 @@ export const resolveCancellationRequest = async (
 }
 
 /**
+ * Убирает запросы отмены, привязанные к брони.
+ *
+ * Запросы уходят вместе с бронью: иначе они ссылаются в пустоту, нигде не
+ * показываются и просто лежат в базе — так однажды накопилось 52 документа.
+ *
+ * Вынесено в отдельную функцию со своим catch намеренно. Это уборка, и её отказ
+ * не должен отменять главное действие. Раньше поиск шёл прямо в deleteBooking, и
+ * исключение отсюда обрывало удаление целиком: модератор жал «Удалить бронь»,
+ * получал permission-denied на запросах отмены, а бронь оставалась на месте.
+ *
+ * ⚠️ Firestore проверяет правила по УСЛОВИЯМ запроса, а не по тому, что он вернёт.
+ * Ветки правила для гостя и владельца смотрят в поля документа, поэтому те же
+ * поля обязаны стоять и в самом запросе — поиска по одному bookingId им мало.
+ * Ветка модератора данных документа не касается и такого ограничения не требует.
+ */
+const cleanupCancellationRequests = async (
+  bookingId: string,
+  booking: Omit<Booking, 'id'>
+): Promise<void> => {
+  const user = auth.currentUser
+  if (!user) return
+
+  try {
+    const constraints: QueryConstraint[] = [where('bookingId', '==', bookingId)]
+
+    const token = await user.getIdTokenResult()
+    if (token.claims.moderator !== true) {
+      if (booking.ownerId === user.uid) {
+        constraints.push(where('ownerId', '==', user.uid))
+      } else if (booking.userId === user.uid) {
+        constraints.push(where('guestId', '==', user.uid))
+      } else {
+        // Ни гость, ни владелец, ни модератор — читать запросы отмены нечем.
+        return
+      }
+    }
+
+    const requests = await getDocs(query(collection(db, 'cancellationRequests'), ...constraints))
+    for (const request of requests.docs) {
+      await deleteDoc(request.ref)
+    }
+  } catch (error) {
+    logger.warn('Could not clean up cancellation requests for booking', error)
+  }
+}
+
+/**
  * Delete a booking (owner/moderator only)
  * @param {string} bookingId - Booking Firestore document ID
  * @returns {Promise<boolean>} Success status
  */
 export const deleteBooking = async (bookingId: string): Promise<boolean> => {
   try {
-    // Запросы на отмену этой брони уходят вместе с ней. Раньше бронь удаляли, а
-    // запрос оставался: он ссылался в пустоту, нигде не показывался и просто
-    // лежал в базе. Так накопилось 52 документа.
-    const requests = await getDocs(
-      query(collection(db, 'cancellationRequests'), where('bookingId', '==', bookingId))
-    )
-    for (const request of requests.docs) {
-      await deleteDoc(request.ref)
+    const docRef = doc(db, COLLECTION_NAME, bookingId)
+    const snapshot = await getDoc(docRef)
+
+    if (snapshot.exists()) {
+      await cleanupCancellationRequests(bookingId, snapshot.data() as Omit<Booking, 'id'>)
     }
 
-    await deleteDoc(doc(db, COLLECTION_NAME, bookingId))
+    await deleteDoc(docRef)
     return true
   } catch (error) {
     logger.error('Error deleting booking:', error)

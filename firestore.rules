@@ -157,6 +157,16 @@ service cloud.firestore {
         || (isOwner(get(/databases/$(database)/documents/properties/$(resource.data.propertyId)).data.ownerId)
          && resource.data.status == 'approved'
          && request.resource.data.keys().hasOnly(['id', 'propertyId', 'userId', 'ownerId', 'userName', 'userEmail', 'userPhone', 'checkInDate', 'checkOutDate', 'nights', 'totalPrice', 'createdAt', 'status', 'approvedAt', 'rejectedAt', 'rejectionReason']))
+        // Модератор правит сроки брони в любом статусе — в том числе там, где
+        // объявление уже удалено и ветки владельца выше не сработают: get() вернёт
+        // null. Поэтому ветка не читает объявление вовсе.
+        //
+        // Разрешены ровно четыре поля, и сверяются ИЗМЕНЁННЫЕ ключи, а не все.
+        // Список совпадает с allowedFields в editBooking; статус, гостя и стоимость
+        // сверх пересчёта модератор через это правило не трогает.
+        || (isModerator()
+         && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['checkInDate', 'checkOutDate', 'nights', 'totalPrice']))
       );
       
       // Delete: owner/moderator can delete any booking, or user can delete their own cancelled bookings.
@@ -191,9 +201,18 @@ service cloud.firestore {
 
     match /cancellationRequests/{requestId} {
       // Read: guest can read their own cancellation requests, or owner can read requests for their properties
+      // Модератор добавлен потому, что удаление брони сначала подчищает связанные с
+      // ней запросы отмены, а этот поиск ему запрещали — весь deleteBooking падал
+      // с permission-denied ещё до самой брони.
+      //
+      // ⚠️ Правила запроса проверяются по его условиям, а не по найденным документам.
+      // Две первые ветки требуют, чтобы в запросе стояло ограничение по guestId или
+      // ownerId; ветка модератора данных документа не касается, поэтому ему разрешён
+      // поиск по одному bookingId. См. cleanupCancellationRequests в booking-service.
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.guestId
         || request.auth.uid == resource.data.ownerId
+        || isModerator()
       );
 
       // Create: guest must match auth user

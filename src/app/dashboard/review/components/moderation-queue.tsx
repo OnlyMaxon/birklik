@@ -4,7 +4,7 @@ import React from 'react'
 import {useSearchParams, Link, useNavigate} from '@/lib/navigation'
 import {InlineSpinner, ListingRowsSkeleton} from '@/components'
 import {useLanguage} from '@/components/providers'
-import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty, getAllBookings, deleteBooking } from '@/services'
+import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModeration, CommentWithProperty, getAllProperties, deleteProperty, rejectProperty, getAllBookings, deleteBooking, editBooking, BookingConflictError } from '@/services'
 import { createListingRejectedNotification } from '@/services/notifications-service'
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
@@ -16,6 +16,13 @@ type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'booking
 // Статусы броней берём из самих данных, а не из типа Booking: часть старых записей
 // лежит со статусом 'active', которого в типе нет.
 const KNOWN_BOOKING_STATUSES = ['pending', 'approved', 'cancellation_requested', 'rejected', 'cancelled']
+
+// Сколько ночей выйдет при выбранных датах. null — даты ещё не заданы или выезд
+// не позже заезда; в этом случае сохранять нечего, и кнопка блокируется.
+const nightsBetween = (checkIn: string, checkOut: string): number | null => {
+  if (!checkIn || !checkOut || checkOut <= checkIn) return null
+  return Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000)
+}
 
 export const ModerationQueue: React.FC = () => {
   const { language, t } = useLanguage()
@@ -29,6 +36,9 @@ export const ModerationQueue: React.FC = () => {
   const [allListings, setAllListings] = React.useState<Property[]>([])
   const [allBookings, setAllBookings] = React.useState<Booking[]>([])
   const [isDeletingBooking, setIsDeletingBooking] = React.useState<string | null>(null)
+  const [editingBookingId, setEditingBookingId] = React.useState<string | null>(null)
+  const [editingDates, setEditingDates] = React.useState<{ checkIn: string; checkOut: string } | null>(null)
+  const [isSavingBooking, setIsSavingBooking] = React.useState(false)
   const [bookingSearch, setBookingSearch] = React.useState('')
   const [bookingStatusFilter, setBookingStatusFilter] = React.useState<string>('all')
   const [bookingSortOrder, setBookingSortOrder] = React.useState<'newest' | 'oldest'>('newest')
@@ -88,6 +98,56 @@ export const ModerationQueue: React.FC = () => {
 
     await loadPendingListings()
     setIsDeletingBooking(null)
+  }
+
+  const startEditingBooking = (booking: Booking) => {
+    setError('')
+    setEditingBookingId(booking.id)
+    setEditingDates({ checkIn: booking.checkInDate, checkOut: booking.checkOutDate })
+  }
+
+  const cancelEditingBooking = () => {
+    setEditingBookingId(null)
+    setEditingDates(null)
+  }
+
+  // Срок и сумму пересчитывает editBooking по датам — здесь их не передаём.
+  // Стоимость пересчитывается по ставке самой брони, а не по цене объявления:
+  // цена могла с тех пор измениться, а договаривались по записанной.
+  const saveBookingDates = async () => {
+    if (!editingBookingId || !editingDates) return
+
+    if (editingDates.checkOut <= editingDates.checkIn) {
+      setError(language === 'en' ? 'Check-out must be after check-in.' : language === 'ru' ? 'Выезд должен быть позже заезда.' : 'Çıxış tarixi girişdən sonra olmalıdır.')
+      return
+    }
+
+    setIsSavingBooking(true)
+    setError('')
+
+    try {
+      const updated = await editBooking(editingBookingId, {
+        checkInDate: editingDates.checkIn,
+        checkOutDate: editingDates.checkOut
+      })
+
+      if (!updated) {
+        setError(language === 'en' ? 'Could not update booking.' : language === 'ru' ? 'Не удалось изменить бронирование.' : 'Rezervasiyanı dəyişmək mümkün olmadı.')
+        return
+      }
+
+      setAllBookings(prev => prev.map(b => (b.id === updated.id ? updated : b)))
+      cancelEditingBooking()
+    } catch (err) {
+      // Пересечение с другой бронью — осмысленный отказ, а не сбой.
+      if (err instanceof BookingConflictError) {
+        setError(language === 'en' ? 'These dates overlap another booking.' : language === 'ru' ? 'Эти даты пересекаются с другой бронью.' : 'Bu tarixlər başqa rezervasiya ilə üst-üstə düşür.')
+      } else {
+        setError(language === 'en' ? 'Could not update booking.' : language === 'ru' ? 'Не удалось изменить бронирование.' : 'Rezervasiyanı dəyişmək mümkün olmadı.')
+      }
+    } finally {
+      setIsSavingBooking(false)
+    }
   }
 
   React.useEffect(() => {
@@ -257,7 +317,7 @@ export const ModerationQueue: React.FC = () => {
               className={`tab-btn ${activeTab === 'people' ? 'active' : ''}`}
               onClick={() => setActiveTab('people')}
             >
-              {language === 'en' ? 'People' : language === 'ru' ? 'Люди' : 'İnsanlar'} ({allUsers.length})
+              {language === 'en' ? 'People' : language === 'ru' ? 'Люди' : 'İstifadəçilər'} ({allUsers.length})
             </button>
           </div>
 
@@ -704,25 +764,56 @@ export const ModerationQueue: React.FC = () => {
                             )}
                           </div>
 
-                          <div className="mb-stay">
-                            <div className="mb-stay-item">
-                              <span className="mb-stay-label">{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş'}</span>
-                              <strong>{formatDate(booking.checkInDate)}</strong>
+                          {editingBookingId === booking.id && editingDates ? (
+                            // Правка сроков. Ночи и сумму не спрашиваем: их выводит
+                            // editBooking из дат, чтобы бронь не осталась с прежним
+                            // сроком при новых датах. Здесь показываем, что получится.
+                            <div className="mb-stay mb-stay--editing">
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş'}</span>
+                                <input
+                                  type="date"
+                                  className="mb-date-input"
+                                  value={editingDates.checkIn}
+                                  onChange={(e) => setEditingDates(prev => prev && ({ ...prev, checkIn: e.target.value }))}
+                                />
+                              </div>
+                              <span className="mb-stay-arrow">→</span>
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış'}</span>
+                                <input
+                                  type="date"
+                                  className="mb-date-input"
+                                  value={editingDates.checkOut}
+                                  onChange={(e) => setEditingDates(prev => prev && ({ ...prev, checkOut: e.target.value }))}
+                                />
+                              </div>
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Nights' : language === 'ru' ? 'Ночей' : 'Gecə'}</span>
+                                <strong>{nightsBetween(editingDates.checkIn, editingDates.checkOut) ?? '—'}</strong>
+                              </div>
                             </div>
-                            <span className="mb-stay-arrow">→</span>
-                            <div className="mb-stay-item">
-                              <span className="mb-stay-label">{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış'}</span>
-                              <strong>{formatDate(booking.checkOutDate)}</strong>
+                          ) : (
+                            <div className="mb-stay">
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Check-in' : language === 'ru' ? 'Заезд' : 'Giriş'}</span>
+                                <strong>{formatDate(booking.checkInDate)}</strong>
+                              </div>
+                              <span className="mb-stay-arrow">→</span>
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Check-out' : language === 'ru' ? 'Выезд' : 'Çıxış'}</span>
+                                <strong>{formatDate(booking.checkOutDate)}</strong>
+                              </div>
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Nights' : language === 'ru' ? 'Ночей' : 'Gecə'}</span>
+                                <strong>{booking.nights}</strong>
+                              </div>
+                              <div className="mb-stay-item">
+                                <span className="mb-stay-label">{language === 'en' ? 'Total' : language === 'ru' ? 'Сумма' : 'Məbləğ'}</span>
+                                <strong>{booking.totalPrice} {listing?.price?.currency || 'AZN'}</strong>
+                              </div>
                             </div>
-                            <div className="mb-stay-item">
-                              <span className="mb-stay-label">{language === 'en' ? 'Nights' : language === 'ru' ? 'Ночей' : 'Gecə'}</span>
-                              <strong>{booking.nights}</strong>
-                            </div>
-                            <div className="mb-stay-item">
-                              <span className="mb-stay-label">{language === 'en' ? 'Total' : language === 'ru' ? 'Сумма' : 'Məbləğ'}</span>
-                              <strong>{booking.totalPrice} {listing?.price?.currency || 'AZN'}</strong>
-                            </div>
-                          </div>
+                          )}
 
                           {booking.rejectionReason && (
                             <p className="report-field report-field--italic">
@@ -735,6 +826,41 @@ export const ModerationQueue: React.FC = () => {
                           </p>
 
                           <div className="moderation-actions">
+                            {editingBookingId === booking.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-primary"
+                                  onClick={saveBookingDates}
+                                  disabled={
+                                    isSavingBooking
+                                    || !editingDates
+                                    || nightsBetween(editingDates.checkIn, editingDates.checkOut) === null
+                                  }
+                                >
+                                  {isSavingBooking
+                                    ? t.messages.loading
+                                    : (language === 'en' ? 'Save' : language === 'ru' ? 'Сохранить' : 'Yadda saxla')}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm"
+                                  onClick={cancelEditingBooking}
+                                  disabled={isSavingBooking}
+                                >
+                                  {language === 'en' ? 'Cancel' : language === 'ru' ? 'Отмена' : 'Ləğv et'}
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                onClick={() => startEditingBooking(booking)}
+                                disabled={isDeletingBooking === booking.id}
+                              >
+                                {language === 'en' ? 'Edit dates' : language === 'ru' ? 'Изменить сроки' : 'Tarixləri dəyiş'}
+                              </button>
+                            )}
                             <button
                               type="button"
                               className="btn btn-sm ml-delete-btn"
@@ -749,7 +875,7 @@ export const ModerationQueue: React.FC = () => {
                                   removeBooking(booking.id)
                                 }
                               }}
-                              disabled={isDeletingBooking === booking.id}
+                              disabled={isDeletingBooking === booking.id || editingBookingId === booking.id}
                             >
                               {isDeletingBooking === booking.id
                                 ? t.messages.loading
