@@ -12,9 +12,10 @@ import {
 } from '@/lib/firebase/firestore-rest'
 import {getSession} from '@/lib/auth/session'
 import type {Booking, Comment, Property, ReportReason} from '@birklik/core/types'
-import {propertyIdSchema, bookingSchema, commentSchema, replySchema, ratingSchema, reportCommentSchema} from './validators'
-import {getProperty, getUserProfile, hasUserBookedProperty} from './queries'
+import {propertyIdSchema, bookingSchema, replySchema, reportCommentSchema} from './validators'
+import {getProperty, getUserProfile} from './queries'
 import {createNotification} from './lib/create-notification'
+import {addComment, addRating} from './lib/interactions'
 
 export async function revalidatePropertyAction(propertyId: string) {
   const validatedPropertyId = propertyIdSchema.parse(propertyId)
@@ -148,52 +149,17 @@ export async function toggleFavoriteAction(propertyId: string): Promise<ActionRe
   return {success: true, isFavorited: !isFavorited}
 }
 
+/**
+ * Сам комментарий добавляет `addComment` из `./lib/interactions` — там же, где
+ * его добавляет мобильное приложение через `/api/property/comments`. Здесь
+ * остаётся только получение вошедшего: у браузера это сессионная кука, у
+ * приложения — токен в заголовке.
+ */
 export async function addCommentAction(propertyId: string, text: string): Promise<ActionResult<{comment: Comment}>> {
   const session = await getSession()
   if (!session) return {success: false, error: 'not-authenticated'}
 
-  const parsed = commentSchema.safeParse({propertyId, text})
-  if (!parsed.success) return {success: false, error: 'invalid-input'}
-
-  const [property, profile] = await Promise.all([
-    getDoc<Property>('properties', parsed.data.propertyId),
-    getUserProfile(session.uid)
-  ])
-  if (!property) return {success: false, error: 'property-not-found'}
-
-  const newComment: Comment = {
-    id: `${Date.now()}_${session.uid}`,
-    userId: session.uid,
-    userName: profile?.name || 'User',
-    userAvatar: profile?.avatar || '',
-    text: parsed.data.text,
-    createdAt: new Date().toISOString()
-  }
-
-  await updateDoc('properties', parsed.data.propertyId, {
-    comments: arrayUnion(newComment),
-    updatedAt: new Date().toISOString()
-  })
-
-  if (property.ownerId && property.ownerId !== session.uid) {
-    await createNotification(property.ownerId, {
-      userId: property.ownerId,
-      type: 'comment',
-      title: 'New comment',
-      message: `${newComment.userName} commented: "${text.slice(0, 50)}${text.length > 50 ? '...' : ''}"`,
-      read: false,
-      propertyId: parsed.data.propertyId,
-      commentId: newComment.id,
-      commenterName: newComment.userName,
-      commentText: text,
-      relatedId: parsed.data.propertyId,
-      relatedUserId: session.uid,
-      relatedUserName: newComment.userName
-    })
-  }
-
-  revalidateTag(`property:${parsed.data.propertyId}`, 'max')
-  return {success: true, comment: newComment}
+  return addComment({uid: session.uid}, propertyId, text)
 }
 
 export async function deleteCommentAction(propertyId: string, commentId: string): Promise<ActionResult> {
@@ -261,54 +227,12 @@ export async function addReplyAction(propertyId: string, parentCommentId: string
   return {success: true, reply: newReply}
 }
 
+/** Как и с комментарием: логика общая, здесь только вошедший из куки. */
 export async function addRatingAction(propertyId: string, rating: number): Promise<ActionResult> {
   const session = await getSession()
   if (!session) return {success: false, error: 'not-authenticated'}
 
-  const parsed = ratingSchema.safeParse({propertyId, rating})
-  if (!parsed.success) return {success: false, error: 'invalid-input'}
-
-  const hasBooked = await hasUserBookedProperty(session.uid, parsed.data.propertyId)
-  if (!hasBooked) return {success: false, error: 'not-booked'}
-
-  const property = await getDoc<{ratings?: Record<string, number>; ownerId?: string}>(
-    'properties',
-    parsed.data.propertyId
-  )
-  if (!property) return {success: false, error: 'property-not-found'}
-
-  const ratings = {...(property.ratings || {}), [session.uid]: parsed.data.rating}
-  const values = Object.values(ratings)
-  const average = values.reduce((a, b) => a + b, 0) / values.length
-
-  await updateDoc('properties', parsed.data.propertyId, {
-    ratings,
-    rating: Math.round(average * 10) / 10,
-    reviews: values.length,
-    updatedAt: new Date().toISOString()
-  })
-
-  const ownerId = property.ownerId
-  if (ownerId) {
-    const profile = await getUserProfile(session.uid)
-    const name = profile?.name || 'User'
-    await createNotification(ownerId, {
-      userId: ownerId,
-      type: 'rating',
-      title: `${parsed.data.rating} stars`,
-      message: `${name} rated your property ${parsed.data.rating} stars`,
-      read: false,
-      propertyId: parsed.data.propertyId,
-      raterName: name,
-      ratingValue: parsed.data.rating,
-      relatedId: parsed.data.propertyId,
-      relatedUserId: session.uid,
-      relatedUserName: name
-    })
-  }
-
-  revalidateTag(`property:${parsed.data.propertyId}`, 'max')
-  return {success: true}
+  return addRating({uid: session.uid}, propertyId, rating)
 }
 
 export async function reportCommentAction(

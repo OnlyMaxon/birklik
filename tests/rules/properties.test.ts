@@ -193,6 +193,37 @@ describe('properties: владелец', () => {
     await assertFails(updateDoc(property(authed(env, OWNER)), {isFeatured: true}))
   })
 
+  // Репутацию объявления владелец не правит. Аудит закрыл такую правку на ЧУЖИХ
+  // записях, а на своей она оставалась: ветка владельца перечисляла запрещённые
+  // поля, и полей доверия в том перечне не было.
+  it('ЗАПРЕЩЕНО выставлять себе оценку', async () => {
+    await assertFails(updateDoc(property(authed(env, OWNER)), {rating: 5}))
+  })
+
+  it('ЗАПРЕЩЕНО приписывать себе отзывы', async () => {
+    await assertFails(updateDoc(property(authed(env, OWNER)), {reviews: 200}))
+  })
+
+  it('ЗАПРЕЩЕНО подменять карту оценок', async () => {
+    await assertFails(updateDoc(property(authed(env, OWNER)), {ratings: {[STRANGER]: 5}}))
+  })
+
+  it('ЗАПРЕЩЕНО стирать комментарии на своём объявлении', async () => {
+    await assertFails(updateDoc(property(authed(env, OWNER)), {comments: []}))
+  })
+
+  it('ЗАПРЕЩЕНО накручивать просмотры', async () => {
+    await assertFails(updateDoc(property(authed(env, OWNER)), {views: 99999}))
+  })
+
+  // Отметку «в избранном» владелец ставит на общих основаниях — отдельной
+  // веткой правила, где сверяется, что добавляет он именно себя.
+  it('владелец добавляет своё объявление в избранное как все', async () => {
+    await assertSucceeds(
+      updateDoc(property(authed(env, OWNER)), {favorites: arrayUnion(OWNER)})
+    )
+  })
+
   it('удаляет своё объявление', async () => {
     await assertSucceeds(deleteDoc(property(authed(env, OWNER))))
   })

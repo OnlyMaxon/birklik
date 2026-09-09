@@ -84,8 +84,22 @@ service cloud.firestore {
       // только собственную отметку «в избранном».
       allow update: if request.auth != null && (
         // Owner: paid-tier and moderation fields can only be changed server-side.
+        //
+        // ⚠️ Во второй строке списка — поля доверия: оценки, отзывы, комментарии,
+        // просмотры и отметки. Раньше их здесь не было, и владелец МОГ из
+        // браузера выставить своему объявлению 5.0 с сотней отзывов, стереть
+        // неудобные комментарии и накрутить просмотры. Аудит закрыл такую правку
+        // на ЧУЖИХ объявлениях, а на своём она оставалась.
+        //
+        // Всё это пишет только сервер: комментарии и оценки — через
+        // `src/app/property/[id]/lib/interactions.ts`, просмотры —
+        // `recordPropertyView`. Владелец правит описание, цену, фотографии и
+        // удобства; репутацию объявления он не правит.
         (isOwner(resource.data.ownerId)
-          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'vipExpiresAt', 'isFeatured']))
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+               'ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'vipExpiresAt', 'isFeatured',
+               'rating', 'reviews', 'ratings', 'comments', 'views', 'likes', 'favorites'
+             ]))
         // Moderator: can update anything including status
         || isModerator()
         // Здесь были ещё views, likes, comments, а отдельной веткой — ratings,
