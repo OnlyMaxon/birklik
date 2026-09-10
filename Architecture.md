@@ -21,8 +21,10 @@ Birklik.az is a multilingual property rental marketplace built with Next.js App 
 | Tests | Vitest |
 
 There is no mobile app in this repository. The Capacitor Android wrapper was removed on
-2026-09-03; the mobile client is being rebuilt on Expo in a separate repository against this
-same Firebase project.
+2026-09-03. The mobile client was rebuilt on Expo in a separate repository (`Birklik-mobile`)
+against this same Firebase project, and has been running on real data since 2026-09-08. It is
+not a passive consumer: two route handlers here exist solely to serve it — see
+*Requests from the mobile app*.
 
 ## Shared domain logic: `core/`
 
@@ -32,9 +34,10 @@ paid tier expires, what stays on display, how bookings are filtered.
 
 ```
 core/src/types      listing, booking, user, notification
-core/src/data       73-region directory, city aliases, filtering
-core/src/utils      premium-helper (with tests), validators
-core/src/messages   az / en / ru translations
+core/src/data       74-region directory, city aliases, filtering (with tests)
+core/src/utils      premium-helper, display, images, basemap, auth-errors (all with
+                    tests), validators
+core/src/messages   az / en / ru translations (with a completeness test)
 ```
 
 It ships as TypeScript source, so `transpilePackages: ['@birklik/core']` in `next.config.ts`
@@ -50,6 +53,13 @@ version without saying so.
 `core` has **no `lib: DOM`** in its tsconfig, deliberately: browser-only code will not compile
 there. That is why `image-compression.ts` stayed here (canvas) and why the dead `validateFile`
 was dropped rather than moved.
+
+A shared package accumulates exports nobody imports, and **`tsc` does not report them**: a
+sweep on 2026-09-10 found ten and removed them (seven notification sub-interfaces, the
+`districts` list, `validateEmail`, `validatePassword`). Checking for more means grepping each
+exported name across `src/`, `firebase-functions/src/` and the mobile repo, then checking
+whether it is used inside its own file — a type that only feeds another export in the same
+module is not dead.
 
 `services/` has not moved. The two apps use different Firebase packages —
 `firebase/firestore` against `@react-native-firebase/firestore` — so that code needs an
@@ -74,6 +84,7 @@ src/
     dashboard/           # Owner cabinet; add, payment, moderator-edit, review
     property/[id]/       # Listing page: components, lib, actions, queries, validators
     api/images/[...path] # Image proxy
+    api/property/        # comments, ratings — written by the mobile app over an ID token
     verify-email/
     components/          # Home-route UI only
     layout.tsx           # Document shell only: <html><body>
@@ -109,6 +120,29 @@ key must never reach the browser.
 Authenticated reads and all writes go through the browser SDK (`src/lib/firebase/client.ts`) and
 are therefore governed by `firestore.rules`. Public, cacheable reads — home, region pages,
 listing pages, sitemap — go through the REST client.
+
+## Requests from the mobile app
+
+The Expo app talks to Firestore directly with the client SDK, under `firestore.rules` — it has
+no server of its own. Two operations cannot work that way, so they come here instead:
+
+| Route | Why it is not a client write |
+|---|---|
+| `POST /api/property/comments` | Rules deny the client any write to `comments`: that field once allowed overwriting somebody else's reviews. The website writes it server-side under the service account. |
+| `POST /api/property/ratings` | A rating recalculates `rating` and `reviews` on the listing. Rules deny the client those fields, or anyone could score a listing they never stayed at. |
+
+Both reuse the same domain functions the website calls (`src/app/property/[id]/lib/interactions.ts`),
+so there is one implementation, not two that drift.
+
+**Authentication here is not the session cookie.** The app sends a Firebase ID token as
+`Authorization: Bearer <token>`; `src/lib/auth/id-token.ts` verifies it. The two paths look
+alike and are not interchangeable — a session cookie is signed with Identity Toolkit keys, an
+ID token with `securetoken` keys. Swap the certificate URL and sign-in from the app stops
+working entirely.
+
+Revocation is deliberately not checked on ID tokens: they live an hour and the SDK refreshes
+them. Session cookies last fourteen days, so there the revocation check is mandatory and
+present.
 
 ## Rendering boundaries
 
@@ -181,8 +215,10 @@ pnpm install
 pnpm dev
 pnpm build                  # plain Next build — does NOT produce a worker
 pnpm typecheck
-pnpm test:run               # unit tests; must pass without an emulator
-pnpm test:rules             # security rules against the Firestore emulator (needs JAVA_HOME)
+pnpm test:run               # 102 unit tests; must pass without an emulator
+                            # (45 here + 57 inside core/, which the suite picks up)
+pnpm test:rules             # 90 security-rules tests against the Firestore emulator
+                            # (needs JAVA_HOME)
 
 pnpm cf:build               # OpenNext build for Workers
 pnpm cf:deploy              # build and deploy the worker
@@ -246,11 +282,11 @@ Two controlled axes plus one legacy label:
 
 | Field | Role |
 |---|---|
-| `city` | Region, from the 73-entry directory. Drives region landing pages, the city filter, breadcrumbs and the sitemap. |
+| `city` | Region, from the 74-entry directory. Drives region landing pages, the city filter, breadcrumbs and the sitemap. |
 | `locationTags` | Places inside a region: villages from `cityDistricts`, Baku districts and metro stations from `cityLocationOptions`. Selected in `CityLocationPicker`; the search filter uses these. |
 | `district` | A display label only — a copy of `locationTags[0]`, typed as a plain string. Kept for older records; render it through `districtLabel`. |
 
-`cityDistricts` currently covers 15 of the 73 regions.
+`cityDistricts` currently covers 15 of the 74 regions.
 
 ## Known technical debt
 
@@ -265,12 +301,19 @@ Two controlled axes plus one legacy label:
   and judged disproportionate.
 - `cityDistricts` has no entries for most regions, so the second location level is unavailable
   outside the 15 listed there.
-- Test coverage remains focused on tier logic, file validation, filtering, the Firestore REST
-  client and the security rules.
+- The mobile app creates a booking without a transaction: a client transaction cannot run a
+  query inside itself, so it checks availability and then writes. The website does this inside
+  a server action. Two requests in the same second are both accepted; the owner confirms
+  bookings by hand, so this is tolerated rather than fixed. Move it into a Cloud Function if
+  bookings ever start arriving.
+- Test coverage is pure logic only — no component or end-to-end tests. What is covered: tier
+  logic, display rules, filtering, image URL handling, basemap URLs, auth-error and translation
+  completeness, file validation, publication logic, the Firestore REST client, and the security
+  rules. What is not: any rendered screen, the payment callback, and the scheduled functions.
 
 ## Security rules
 
-`pnpm test:rules` runs 66 tests against the Firestore emulator: it starts the emulator, runs
+`pnpm test:rules` runs 90 tests against the Firestore emulator: it starts the emulator, runs
 `vitest` with `vitest.rules.config.ts`, then shuts it down. Tests live in `tests/rules/` and are
 excluded from the default suite, because `pnpm test:run` must pass without an emulator.
 
