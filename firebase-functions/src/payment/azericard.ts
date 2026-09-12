@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import {admin} from '../firebase-admin';
+import {applyPaidTier} from './apply-tier';
 import * as crypto from 'crypto';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
@@ -102,40 +103,6 @@ async function deleteDraftWithImages(propertyId: string): Promise<void> {
   } catch (error) {
     console.error('[Azericard] Failed to delete draft property:', propertyId, error);
   }
-}
-
-/**
- * Дата окончания тарифа после оплаты.
- *
- * Отсчёт идёт от текущей даты истечения, если она ещё не прошла, и только иначе
- * — от сегодня. Раньше считалось всегда от сегодня: владелец, продлевавший
- * заранее, терял весь неиспользованный остаток уже оплаченного срока.
- *
- * `currentExpiry` берётся по тому тарифу, который покупают. Значит продление
- * того же тарифа прибавляется к остатку, а переход с VIP на Premium начинает
- * срок заново — как и должно быть, это разные пакеты.
- */
-function getExpiryDate(duration: string, currentExpiry?: string): string {
-  const days = duration === '14days' ? 14 : 30;
-  let base = new Date();
-
-  if (currentExpiry) {
-    // Даты лежат в двух видах: 'YYYY-MM-DD' у записей от банка и полный ISO из
-    // редактора модератора. Короткую форму дотягиваем до конца дня, иначе
-    // последний оплаченный день пропадал бы.
-    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(currentExpiry)
-      ? `${currentExpiry}T23:59:59.999Z`
-      : currentExpiry;
-    const parsed = new Date(normalized);
-    if (!Number.isNaN(parsed.getTime()) && parsed.getTime() > Date.now()) {
-      base = parsed;
-    }
-  }
-
-  const d = new Date(base);
-  d.setDate(d.getDate() + days);
-  const p = (n: number) => n.toString().padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
 // =========================================================
@@ -368,36 +335,13 @@ export const azericardCallback = functions
 
     // ACTION=0 и RC=00 означает успешный платёж
     if (ACTION === '0' && RC === '00') {
-      const propertyRef = admin.firestore().collection('properties').doc(payment.propertyId);
-      const propertySnap = await propertyRef.get();
-      const currentExpiry = payment.tier === 'premium'
-        ? (propertySnap.data()?.premiumExpiresAt as string | undefined)
-        : (propertySnap.data()?.vipExpiresAt as string | undefined);
-      const expiryDate = getExpiryDate(payment.duration, currentExpiry);
-
-      // Куда объявление попадает после оплаты — решает его нынешний статус, а не
-      // флаг isUpgrade, посчитанный ещё до перехода в банк.
-      //
-      // `active` и `inactive` означают, что модерацию оно уже проходило: первое
-      // сейчас на витрине, второе скрыто из-за истёкшего тарифа. Содержимое с тех
-      // пор не менялось, поэтому продление возвращает объявление на витрину сразу.
-      // Черновик оплачен впервые — ему модерация нужна. Неизвестный статус тоже
-      // отправляем на проверку: ошибиться в сторону модерации безопаснее.
-      const currentStatus = propertySnap.data()?.status;
-      const nextStatus = currentStatus === 'active' || currentStatus === 'inactive'
-        ? 'active'
-        : 'pending';
-
-      await propertyRef.update({
-        status: nextStatus,
-        // Отметка о моменте скрытия больше не нужна — объявление вернулось.
-        expiredAt: '',
-        listingTier: payment.tier,
-        // Дата прежнего тарифа стирается. Иначе она остаётся в документе и
-        // продолжает влиять: значок и место в выдаче смотрят именно на дату.
-        ...(payment.tier === 'premium'
-          ? { isFeatured: true, premiumExpiresAt: expiryDate, vipExpiresAt: '' }
-          : { isFeatured: false, vipExpiresAt: expiryDate, premiumExpiresAt: '' }),
+      // Тариф, срок и статус ставит общая функция: ровно то же делает покупка
+      // через Google Play. Подпись банка проверена выше — это единственное, что
+      // отличает два пути.
+      await applyPaidTier({
+        propertyId: payment.propertyId,
+        tier: payment.tier,
+        duration: payment.duration,
       });
 
       await paymentDoc.ref.update({
