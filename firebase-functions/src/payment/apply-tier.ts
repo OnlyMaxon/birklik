@@ -25,7 +25,7 @@ export type TierDuration = '14days' | '30days';
  * приписываются к его сроку, а не ко «сегодня». Иначе человек, продлевающий
  * заранее, терял бы оплаченное.
  */
-export function getExpiryDate(duration: string, currentExpiry?: string): string {
+function getExpiryDate(duration: string, currentExpiry?: string): string {
   const days = duration === '14days' ? 14 : 30;
   let base = new Date();
 
