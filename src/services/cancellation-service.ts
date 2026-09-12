@@ -1,5 +1,5 @@
 import { db } from '../lib/firebase/client'
-import { collection, addDoc, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 import * as logger from './logger'
 
 const COLLECTION_NAME = 'cancellationRequests'
@@ -71,29 +71,6 @@ export const createCancellationRequest = async (
 }
 
 /**
- * Get pending cancellation requests for property owner
- * @param ownerId - Property owner ID
- * @returns Array of cancellation requests
- */
-export const getOwnerCancellationRequests = async (ownerId: string): Promise<CancellationRequest[]> => {
-  try {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where('ownerId', '==', ownerId),
-      where('status', '==', 'pending')
-    )
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as CancellationRequest[]
-  } catch (error) {
-    logger.error('Error getting owner cancellation requests:', error)
-    return []
-  }
-}
-
-/**
  * Запрос на отмену, привязанный к брони.
  *
  * Владелец отвечает на запрос из списка броней, а там на руках только id брони —
@@ -156,22 +133,3 @@ export const rejectCancellationRequest = async (requestId: string): Promise<bool
   }
 }
 
-/**
- * Get cancellation request by ID
- * @param requestId - Cancellation request ID
- * @returns Cancellation request or null
- */
-export const getCancellationRequest = async (requestId: string): Promise<CancellationRequest | null> => {
-  try {
-    const docRef = doc(db, COLLECTION_NAME, requestId)
-    const docSnap = await getDoc(docRef)
-    if (!docSnap.exists()) return null
-    return {
-      id: docSnap.id,
-      ...docSnap.data()
-    } as CancellationRequest
-  } catch (error) {
-    logger.error('Error getting cancellation request:', error)
-    return null
-  }
-}

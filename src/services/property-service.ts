@@ -16,22 +16,11 @@ import { auth } from '../lib/firebase/client'
 import { compressPropertyImage } from '../utils/image-compression'
 import { validatePropertyImage } from './file-validation'
 import { db, storage } from '../lib/firebase/client'
-import { Property, PropertyType, Comment } from '@birklik/core/types'
+import { Property, Comment } from '@birklik/core/types'
 import * as logger from './logger'
 import {normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 
 const COLLECTION_NAME = 'properties'
-
-export interface PropertyFilters {
-  type?: PropertyType | 'all'
-  district?: string
-  city?: string
-  minPrice?: number
-  maxPrice?: number
-  minRooms?: number
-  maxRooms?: number
-  search?: string
-}
 
 const mapDocToProperty = (snapshotDoc: { id: string; data: () => unknown }): Property => {
   const data = snapshotDoc.data() as Omit<Property, 'id'>

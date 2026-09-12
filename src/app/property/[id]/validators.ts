@@ -1,7 +1,6 @@
 import {z} from 'zod'
 
 export const propertyIdSchema = z.string().trim().min(1).max(128)
-export type PropertyIdInput = z.infer<typeof propertyIdSchema>
 
 const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 

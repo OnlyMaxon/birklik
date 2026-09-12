@@ -17,11 +17,6 @@ import {getProperty, getUserProfile} from './queries'
 import {createNotification} from './lib/create-notification'
 import {addComment, addRating} from './lib/interactions'
 
-export async function revalidatePropertyAction(propertyId: string) {
-  const validatedPropertyId = propertyIdSchema.parse(propertyId)
-  revalidateTag(`property:${validatedPropertyId}`, 'max')
-}
-
 class BookingConflictError extends Error {}
 class DuplicateReportError extends Error {}
 

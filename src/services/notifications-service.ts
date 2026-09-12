@@ -1,6 +1,6 @@
 import { db } from '../lib/firebase/client'
 import { collection, addDoc, query, where, orderBy, getDocs, updateDoc, doc, deleteDoc } from 'firebase/firestore'
-import { Notification, BookingApprovedNotification, BookingRejectedNotification, RatingNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification } from '@birklik/core/types'
+import { Notification, BookingApprovedNotification, BookingRejectedNotification, CancellationRequestNotification, CancellationApprovedNotification, CancellationRejectedNotification, ListingRejectedNotification } from '@birklik/core/types'
 import * as logger from './logger'
 
 // Удалены как неиспользуемые (2026-08-31): createNotification и обёртки для
@@ -88,31 +88,6 @@ export const deleteNotification = async (userId: string, notificationId: string)
 }
 
 
-
-/**
- * Create rating notification for property owner
- * @param {string} ownerId - Property owner's user ID
- * @param {RatingNotification} notificationData - Rating notification details
- * @returns {Promise<string|null>} Notification ID or null on error
- */
-export const createRatingNotification = async (
-  ownerId: string,
-  notificationData: Omit<RatingNotification, 'id' | 'createdAt' | 'userId'>
-): Promise<string | null> => {
-  try {
-    const notificationsRef = collection(db, COLLECTION_NAME, ownerId, NOTIFICATIONS_SUBCOLLECTION)
-    const docRef = await addDoc(notificationsRef, {
-      userId: ownerId,
-      ...notificationData,
-      read: false,
-      createdAt: new Date().toISOString()
-    })
-    return docRef.id
-  } catch (error) {
-    logger.error('Error creating rating notification:', error)
-    return null
-  }
-}
 
 /**
  * Create cancellation request notification for property owner

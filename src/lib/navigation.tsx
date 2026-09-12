@@ -2,7 +2,7 @@
 
 import NextLink, {type LinkProps as NextLinkProps} from 'next/link'
 import {useParams as useNextParams, usePathname, useRouter, useSearchParams as useNextSearchParams} from 'next/navigation'
-import {useEffect, type AnchorHTMLAttributes, type ReactNode} from 'react'
+import {type AnchorHTMLAttributes, type ReactNode} from 'react'
 import {DEFAULT_LOCALE, localeFromPath, localizePath, stripLocalePrefix} from '@/lib/locale-routes'
 
 type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> &
@@ -81,13 +81,4 @@ export function useSearchParams(): [URLSearchParams, (next: URLSearchParams) => 
   const pathname = usePathname()
   const router = useRouter()
   return [new URLSearchParams(params.toString()), next => router.replace(`${pathname}?${next.toString()}`)]
-}
-
-export function Navigate({to, replace}: {to: string; replace?: boolean}) {
-  const router = useRouter()
-  useEffect(() => {
-    if (replace) router.replace(to)
-    else router.push(to)
-  }, [replace, router, to])
-  return null
 }
