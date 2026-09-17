@@ -103,16 +103,29 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
     isLoadingMoreRef.current = true
     setIsLoadingMore(true)
 
-    const result = await loadMorePropertiesAction(
-      lastDocRef.current,
-      filters.city || undefined,
-      Array.from(premiumIdsRef.current)
-    )
+    // Страница может не дать ни одной карточки: все её объявления либо с
+    // истёкшим тарифом, либо уже показаны наверху как платные. Добавить в этом
+    // случае нечего, высота страницы не меняется, нового события прокрутки не
+    // будет — и подгрузка встанет насовсем, хотя дальше объявления есть.
+    // Поэтому тянем страницы подряд, пока не наберём непустую или не кончится
+    // курсор.
+    let batch: Property[] = []
+    while (lastDocRef.current) {
+      const result = await loadMorePropertiesAction(
+        lastDocRef.current,
+        filters.city || undefined,
+        Array.from(premiumIdsRef.current)
+      )
+      lastDocRef.current = result.cursor
+      if (result.properties.length > 0) {
+        batch = result.properties
+        break
+      }
+    }
 
-    setProperties(prev => [...prev, ...result.properties])
-    lastDocRef.current = result.cursor
-    hasMoreRef.current = result.cursor !== null
-    setHasMore(result.cursor !== null)
+    if (batch.length > 0) setProperties(prev => [...prev, ...batch])
+    hasMoreRef.current = lastDocRef.current !== null
+    setHasMore(hasMoreRef.current)
     isLoadingMoreRef.current = false
     setIsLoadingMore(false)
   }, [filters.city])
@@ -130,6 +143,10 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
     }
 
     window.addEventListener('scroll', check, { passive: true })
+    // Проверяем и сразу: на высоком экране первая порция может не дотянуться до
+    // нижнего края, и тогда прокручивать нечего — события бы не случилось, а
+    // подгрузка так и не началась.
+    check()
     return () => { window.removeEventListener('scroll', check) }
   }, [loadMore, isLoading])
 

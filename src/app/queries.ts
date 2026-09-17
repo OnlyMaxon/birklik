@@ -46,7 +46,7 @@ export async function getPropertiesPage(
   const where: QueryOptions['where'] = [['status', '==', 'active']]
   if (filters.city) where.push(['city', '==', filters.city])
 
-  const properties = (await queryDocs<Omit<Property, 'id'>>('properties', {
+  const documents = await queryDocs<Omit<Property, 'id'>>('properties', {
     where,
     // Сортировка по идентификатору вторым ключом делает курсор однозначным,
     // когда несколько объявлений созданы в одну и ту же миллисекунду.
@@ -57,17 +57,32 @@ export async function getPropertiesPage(
     ...(cursor ? {startAfter: [cursor.createdAt, cursor.id]} : {}),
     // Берём на один больше страницы, чтобы понять, есть ли продолжение.
     limit: PAGE_SIZE + 1
-  })).filter(isOnDisplay).map(normalizePropertyImageUrls).map(toListItem)
+  })
 
-  const hasMore = properties.length > PAGE_SIZE
-  const page = properties.slice(0, PAGE_SIZE)
-  const lastProperty = page[page.length - 1]
+  // ⚠️ Продолжение и курсор считаются по СЫРОЙ выдаче, до отсева по дате.
+  //
+  // Раньше `isOnDisplay` применялся первым, и лишний двадцать первый документ —
+  // тот самый признак продолжения — мог отсеяться вместе с истёкшим тарифом.
+  // Тогда 21 превращалось в 20, `20 > 20` давало ложь, курсор выходил пустым и
+  // подгрузка не начиналась вовсе: из 73 объявлений главная показывала 25.
+  // Ловушка тихая и появляется от данных, а не от правок — пока ни у кого не
+  // кончался оплаченный срок, отсеивать было нечего и всё работало.
+  //
+  // Курсор тоже строится по сырому документу: продолжать надо с места, где
+  // выборка реально оборвалась, иначе отсеянные документы были бы пройдены
+  // повторно или, наоборот, перепрыгнуты.
+  const hasMore = documents.length > PAGE_SIZE
+  const consumed = documents.slice(0, PAGE_SIZE)
+  const lastDocument = consumed[consumed.length - 1]
   // Курсор строится по createdAt, поэтому без него продолжать нечем — тогда
   // страница считается последней, а не отдаёт заведомо битый курсор.
   const nextCursor =
-    hasMore && lastProperty?.createdAt ? {createdAt: lastProperty.createdAt, id: lastProperty.id} : null
+    hasMore && lastDocument?.createdAt ? {createdAt: lastDocument.createdAt, id: lastDocument.id} : null
 
-  return {properties: page, cursor: nextCursor}
+  // Отсев уже не влияет на разбиение: страница просто отдаёт меньше карточек.
+  const properties = consumed.filter(isOnDisplay).map(normalizePropertyImageUrls).map(toListItem)
+
+  return {properties, cursor: nextCursor}
 }
 
 /**
