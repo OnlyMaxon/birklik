@@ -1,379 +1,331 @@
 # Birklik.az
 
-Платформа аренды жилья в Азербайджане (AZ/RU/EN) на React + TypeScript + Firebase.
+Маркетплейс краткосрочной аренды жилья в Азербайджане на трёх языках (AZ/RU/EN).
+Next.js 16 App Router на Cloudflare Workers, данные и вход — Firebase.
 
-Этот гайд покрывает полную миграцию проекта на Firebase и настройку проекта с нуля.
+Этот файл про то, **как поднять проект и как его выкатывать**. Про то, *почему*
+он устроен именно так, — [Architecture.md](./Architecture.md).
 
-## 📚 Documentation
+## 📚 Документация
 
-- **[Architecture.md](./Architecture.md)** - Project structure, services, setup requirements
-- **[SERVICES.md](./SERVICES.md)** - Available services and how to use them
-- **[SETUP_CUSTOM_CLAIMS.md](./SETUP_CUSTOM_CLAIMS.md)** - Firebase moderator role setup
+| файл | о чём |
+| --- | --- |
+| [Architecture.md](./Architecture.md) | устройство, границы отрисовки, соглашения. Источник истины по замыслу |
+| [AUDIT.md](./AUDIT.md) | сплошной аудит кода и данных, найденные дефекты и что с ними сделано |
+| [CLAUDE.md](./CLAUDE.md) | правила для ИИ-агентов, работающих с этим репозиторием |
 
-## 1. Что уже реализовано в коде
+⚠️ Имя файла — `Architecture.md`, именно в таком регистре. Windows разницы не
+видит (`core.ignorecase = true`), а на Linux и в CI ссылка на `ARCHITECTURE.md`
+никуда не ведёт.
 
-- Каталог объектов на главной загружается из Firestore.
-- Страница объекта загружает объект по id из Firestore.
-- Личный кабинет пользователя работает с Firestore:
-  - просмотр своих объявлений,
-  - добавление объявлений,
-  - загрузка фото в Firebase Storage,
-  - удаление объявлений.
-- Аутентификация и регистрация работают через Firebase Authentication.
+## 1. Что умеет проект
+
+**Витрина.** Каталог с поиском, фильтрами и картой; постраничная подгрузка;
+страницы регионов; карточка объявления с галереей, комментариями и оценками.
+
+**Кабинет владельца.** Создание и редактирование объявлений, загрузка фото,
+тарифы, продление, просмотр броней и уведомлений.
+
+**Брони.** Заявка от гостя, подтверждение или отказ владельцем, запросы на
+отмену, календарь занятости.
+
+**Модерация.** Очередь объявлений и жалоб на комментарии, роль модератора через
+custom claims.
+
+**Тарифы и оплата.** Бесплатный `standard`, платные `vip` и `premium` со сроком
+14 или 30 дней. На сайте оплата через Azericard, в мобильном приложении — через
+Google Play Billing. Обе кассы применяют тариф одной общей функцией.
+
+**Уведомления.** Внутренние плюс веб-пуши и пуши в приложении через FCM.
+
+**Фоновые задачи.** Четыре плановые функции: снятие истёкших тарифов, чистка
+черновиков, чистка зависших запросов и чистка осиротевших файлов в Storage.
 
 ## 2. Технологии
 
-- React 19
-- TypeScript 5
-- Next.js 16 App Router
-- next-intl
-- Firebase (Auth, Firestore, Storage)
-- React Leaflet + OpenStreetMap
-- Cloudflare Pages
+- Next.js 16 (App Router), React 19, TypeScript 5
+- next-intl — три языка, локаль в адресе
+- Firebase: Authentication, Firestore, Storage, Cloud Functions, App Check
+- Cloudflare Workers через `@opennextjs/cloudflare`
+- Leaflet + React Leaflet, тайлы CARTO с откатом на OpenStreetMap
+- pnpm-воркспейс; общая логика — подмодуль [`core`](https://github.com/OnlyMaxon/birklik-core)
+
+⚠️ На Workers **нет** `firebase-admin`: его зависимости генерируют код из строк,
+а воркеры это запрещают. Серверный доступ к Firestore идёт по REST —
+`src/lib/firebase/firestore-rest.ts`. Из этого следует общее правило: в проект
+нельзя тащить библиотеки, которым нужен настоящий Node-рантайм.
 
 ## 3. Быстрый старт
 
 ```bash
+git clone --recurse-submodules <repo>
 pnpm install
 ```
 
-Создайте файл .env:
-
-- Linux/macOS:
+Если репозиторий уже склонирован без подмодуля:
 
 ```bash
-cp .env.example .env
+git submodule update --init --recursive
 ```
 
-- Windows PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Запуск:
+Переменные окружения:
 
 ```bash
-pnpm dev
+cp .env.example .env          # Linux/macOS
+Copy-Item .env.example .env   # Windows PowerShell
 ```
 
-Сборка:
+`.env.example` объясняет каждую переменную и ловушки — прочитай его целиком,
+там не только имена. Особенно важны две:
+
+- **`NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY`** — именно с `_ENTERPRISE_`.
+  Положишь тот же ключ под именем без этого куска — код возьмёт провайдер
+  reCAPTCHA v3, App Check начнёт выдавать негодные токены, и Firestore с
+  Authentication станут молча отбивать запросы клиента;
+- **`NEXT_PUBLIC_CARTO_API_KEY`** — попадает в бандл **на сборке**, а не в
+  рантайме, поэтому обязан быть в окружении во время `pnpm cf:build`.
+
+Команды разработки:
 
 ```bash
-pnpm build
+pnpm dev          # локальный сервер
+pnpm typecheck    # tsc --noEmit
+pnpm test:run     # юнит-тесты
+pnpm test:rules   # тесты правил Firestore, нужен эмулятор и JDK
 ```
 
-Предпросмотр сборки:
+### Ключи служебных учётных записей
+
+Никогда не коммить и не вставлять JSON служебной учётной записи в исходники,
+`.env`, задачи или переписку. Файл держать вне репозитория и отдавать Google
+только путь к нему:
 
 ```bash
-pnpm start
+export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json
 ```
 
-### Firebase deployment credentials
+Утёкший ключ немедленно отзывать: Google Cloud Console → **IAM & Admin →
+Service Accounts → Keys**.
 
-Never commit or paste a service-account JSON key into source files, `.env`, issues, or chat. Keep the downloaded replacement key outside this repository and provide only its filesystem path to Google tooling:
+## 4. Настройка Firebase с нуля
 
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/new-service-account.json
-pnpm firestore:deploy-rules
+### Шаг 1. Проект
+
+1. https://console.firebase.google.com/ → **Create a project**.
+2. Имя, например `birklik-az`. Google Analytics можно выключить.
+
+### Шаг 2. Web App
+
+1. **Add app → Web (</>)**, имя например `birklik-web`.
+2. Забрать объект `firebaseConfig` — его значения идут в `.env`.
+
+### Шаг 3. Authentication
+
+1. **Build → Authentication → Get started**.
+2. **Sign-in method → Email/Password → Enable**.
+3. **Settings → Authorized domains** — добавить рабочий домен (`birklik.az`)
+   и адрес воркера, с которого ходят превью.
+
+Без этого Firebase ругается на OAuth redirect domain, а вход через
+popup/redirect не работает.
+
+### Шаг 4. Firestore и Storage
+
+1. **Build → Firestore Database → Create database → Production mode**, регион
+   поближе к пользователям.
+2. **Build → Storage → Get started**, тот же регион.
+
+### Шаг 5. App Check
+
+Ключ reCAPTCHA Enterprise создаётся в Google Cloud Console → **Security →
+reCAPTCHA Enterprise**; там же, на самом ключе, задаются домены, с которых
+разрешено брать токен. Мобильное приложение использует Play Integrity —
+подробности в Architecture.md.
+
+## 5. Структура данных Firestore
+
+Основные коллекции:
+
+```
+users/{uid}                              профиль, роль, токены пушей
+properties/{propertyId}                  объявления
+bookings/{bookingId}                     брони
+cancellationRequests/{id}                запросы на отмену
+payments/{paymentId}                     общий журнал оплат (Azericard и Google Play)
+playPurchases/{purchaseToken}            защита от повторного зачёта покупки
+users/{uid}/notifications/{id}           уведомления
 ```
 
-Revoke exposed keys immediately in Google Cloud Console under **IAM & Admin → Service Accounts → Keys**.
-
-## 4. Полный туториал по Firebase Console
-
-### Шаг 1. Создайте проект Firebase
-
-1. Откройте https://console.firebase.google.com/
-2. Нажмите Create a project.
-3. Назовите проект, например birklik-az.
-4. Google Analytics можно выключить (необязательно).
-
-### Шаг 2. Добавьте Web App
-
-1. Внутри проекта нажмите Add app -> Web (</>). 
-2. Укажите имя приложения, например birklik-web.
-3. Получите объект firebaseConfig.
-
-### Шаг 3. Заполните .env
-
-Скопируйте значения из firebaseConfig в .env:
-
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
-
-### Шаг 4. Включите Authentication
-
-1. Firebase Console -> Build -> Authentication.
-2. Нажмите Get started.
-3. Sign-in method -> Email/Password -> Enable.
-4. Authentication -> Settings -> Authorized domains:
-  - добавьте `birklik.az`
-  - добавьте `www.birklik.az` (если используется)
-  - добавьте ваш Cloudflare preview домен (`*.pages.dev` проектный домен)
-
-Без этого Firebase будет показывать предупреждение про OAuth redirect domain и popup/redirect провайдеры не будут работать на вашем домене.
-
-TEST 
-
-### Шаг 5. Включите Firestore
-
-1. Firebase Console -> Build -> Firestore Database.
-2. Create database.
-3. Выберите Production mode.
-4. Выберите регион (лучше ближе к вашим пользователям).
-
-### Шаг 6. Включите Storage
-
-1. Firebase Console -> Build -> Storage.
-2. Get started.
-3. Выберите тот же регион.
-
-## 5. Firestore структура данных
-
-Коллекции:
-
-- users/{uid}
-- properties/{propertyId}
-
-Пример users/{uid}:
+Пример `properties/{propertyId}` — только ключевые поля, полный набор описан
+типами в `core/src/types`:
 
 ```json
 {
-  "name": "Test User",
-  "email": "test@example.com",
-  "phone": "+994501112233",
-  "avatar": "https://...",
-  "createdAt": "2026-03-16T10:00:00.000Z"
-}
-```
-
-Пример properties/{propertyId}:
-
-```json
-{
+  "ownerId": "firebase_uid",
+  "status": "active",
+  "listingTier": "premium",
+  "premiumExpiresAt": "2026-10-14T19:59:59.000Z",
+  "vipExpiresAt": "",
+  "isFeatured": true,
   "type": "villa",
+  "city": "Baku",
   "district": "mardakan",
-  "price": {
-    "daily": 250,
-    "weekly": 1500,
-    "monthly": 6000,
-    "currency": "AZN"
-  },
+  "locationTags": ["mardakan"],
+  "price": { "daily": 250, "weekly": 1500, "monthly": 6000, "currency": "AZN" },
   "rooms": 4,
   "area": 220,
+  "minGuests": 2,
+  "maxGuests": 8,
   "amenities": ["pool", "wifi", "parking"],
   "images": ["https://..."],
   "coordinates": { "lat": 40.4093, "lng": 49.8671 },
-  "title": {
-    "az": "Başlıq",
-    "ru": "Заголовок",
-    "en": "Title"
-  },
-  "description": {
-    "az": "Təsvir",
-    "ru": "Описание",
-    "en": "Description"
-  },
-  "address": {
-    "az": "Ünvan",
-    "ru": "Адрес",
-    "en": "Address"
-  },
-  "owner": {
-    "name": "Test User",
-    "phone": "+994501112233",
-    "email": "test@example.com"
-  },
-  "ownerId": "firebase_uid",
-  "isFeatured": false,
-  "isActive": true,
-  "city": "Baku",
+  "title":       { "az": "Başlıq", "ru": "Заголовок", "en": "Title" },
+  "description": { "az": "Təsvir", "ru": "Описание",  "en": "Description" },
+  "address":     { "az": "Ünvan",  "ru": "Адрес",     "en": "Address" },
+  "owner": { "name": "...", "phone": "+994...", "email": "..." },
   "createdAt": "2026-03-16T10:00:00.000Z",
   "updatedAt": "2026-03-16T10:00:00.000Z"
 }
 ```
 
-## 6. Firestore Rules (вставьте как есть)
+⚠️ **`status` в базе отстаёт от срока тарифа** — статус `inactive` проставляет
+ночная функция, и до её прогона проходит до суток. Поэтому каждый список обязан
+досеивать выдачу функцией `isOnDisplay` из `core`. Разъедься эта проверка между
+сайтом и приложением — на телефоне неделю висели бы объявления, которых на сайте
+уже нет.
 
-Firebase Console -> Firestore -> Rules:
+## 6. Правила Firestore и Storage
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.uid == userId;
-    }
+Правила живут **в репозитории** и являются источником истины:
 
-    match /properties/{propertyId} {
-      allow read: if true;
-
-      allow create: if request.auth != null
-        && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.type is string
-        && request.resource.data.district is string
-        && request.resource.data.price.daily is number
-        && request.resource.data.rooms is number;
-
-      allow update, delete: if request.auth != null
-        && resource.data.ownerId == request.auth.uid;
-    }
-  }
-}
+```
+firestore.rules          258 строк
+storage.rules             42 строки
+firestore.indexes.json   композитные индексы
 ```
 
-## 7. Storage Rules (вставьте как есть)
+⚠️ **Не вставлять правила руками через Firebase Console.** Раньше здесь лежали
+«стартовые» правила с пометкой «вставьте как есть» — вставка любого такого
+образца затирает настоящие правила, а вместе с ними закрытые дыры из
+[AUDIT.md](./AUDIT.md): чужие комментарии и оценки на чужих объявлениях (C1, C6)
+и самоназначение роли модератора в собственном профиле (C7).
 
-Firebase Console -> Storage -> Rules:
-
-```javascript
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /properties/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    match /avatars/{userId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
-    }
-  }
-}
-```
-
-## 8. Firestore Indexes (важно)
-
-Для текущих запросов нужны композитные индексы в коллекции properties.
-
-Откройте Firebase Console -> Firestore -> Indexes -> Composite -> Create index и добавьте:
-
-1. type Asc, createdAt Desc
-2. district Asc, createdAt Desc
-3. ownerId Asc, createdAt Desc
-4. isFeatured Asc, createdAt Desc
-5. type Asc, price.daily Asc, createdAt Desc
-6. district Asc, price.daily Asc, createdAt Desc
-
-Примечание: если Firebase вернет ссылку на конкретный индекс в ошибке запроса, просто откройте эту ссылку и создайте индекс в 1 клик.
-
-## 9. Как проверить, что все подключено
-
-1. Запустите проект: pnpm dev.
-2. Зарегистрируйте пользователя.
-3. Войдите в Dashboard.
-4. Создайте объявление и прикрепите фото.
-5. Проверьте:
-   - документ появился в Firestore -> properties,
-   - фото появилось в Storage -> properties/,
-   - объявление видно в списке Dashboard,
-   - объявление видно на главной,
-   - карточка открывается по маршруту /property/:id.
-
-## 10. Деплой на Cloudflare
-
-### Через GitHub (рекомендуется)
-
-1. Push в репозиторий.
-2. Cloudflare Dashboard -> Workers & Pages -> Create application.
-3. Connect to Git.
-4. Build command: pnpm build.
-5. Build output: dist.
-6. Добавьте все переменные NEXT_PUBLIC_FIREBASE_* в Environment Variables.
-7. Deploy.
-
-### Через Wrangler CLI
+Выкладывать только командами:
 
 ```bash
-pnpm add --global wrangler
-wrangler login
-pnpm build
-wrangler deploy
+pnpm firestore:deploy-rules          # правила Firestore
+firebase deploy --only storage       # правила Storage
+firebase deploy --only firestore:indexes
 ```
 
-В этом проекте используется современный режим Wrangler static assets через [wrangler.toml](wrangler.toml), поэтому `wrangler deploy` публикует папку `dist` как статический сайт с SPA fallback.
+Проверять до выкладки:
 
-## 11. Частые проблемы
+```bash
+pnpm test:rules      # 90 тестов, нужен эмулятор Firestore и установленный JDK
+```
 
-1. Ошибка Missing or insufficient permissions:
-   - проверьте Firestore Rules,
-   - проверьте ownerId в документе.
+## 7. Проверка, что всё подключено
 
-2. Ошибка index required:
-   - создайте индекс по ссылке из ошибки.
+1. `pnpm dev`.
+2. Зарегистрировать пользователя, подтвердить почту.
+3. Создать объявление с фото.
+4. Убедиться, что:
+   - документ появился в `properties` со `status: pending`,
+   - фото легло в Storage,
+   - объявление видно в кабинете,
+   - после одобрения модератором оно видно на главной,
+   - карточка открывается по адресу `/property/<id>`.
 
-3. Картинки не загружаются:
-   - проверьте Storage Rules,
-   - проверьте, что пользователь авторизован.
+## 8. Деплой
 
-4. Пустой каталог:
-   - проверьте, есть ли документы в properties,
-   - проверьте .env и корректный projectId.
+Три независимые цели, и выкладываются они **по отдельности**:
 
-## 12. Структура проекта
+```bash
+# 1. Сайт (Cloudflare Workers)
+pnpm cf:build
+npx wrangler deploy
+
+# 2. Cloud Functions
+pnpm functions:deploy
+
+# 3. Правила Firestore
+pnpm firestore:deploy-rules
+```
+
+⚠️ **Обязательно `pnpm cf:build`, а не `pnpm build`.** Второй собирает только
+`.next`; `wrangler deploy` ничего не собирает и молча зальёт **старый** бандл из
+`.open-next`. Ошибка тихая — по времени файлов её не видно.
+
+Проверить, что в бою именно свежая сборка, — сверить `BUILD_ID`:
+
+```powershell
+$local = (Get-Content ".open-next\assets\BUILD_ID" -Raw).Trim()
+$r = Invoke-WebRequest "https://birklik.az/BUILD_ID" -UseBasicParsing
+$live = ([System.Text.Encoding]::UTF8.GetString($r.Content)).Trim()
+"local $local / live $live / совпало: $($local -eq $live)"
+```
+
+Рискованное катить через превью, не трогая боевой трафик:
+
+```bash
+npx wrangler versions upload                    # даёт превью-адрес
+npx wrangler versions list                      # взять ПОЛНЫЙ id последней версии
+npx wrangler versions deploy "<полный-id>@100%" --yes
+```
+
+⚠️ **Домены в `wrangler.jsonc` трогать осторожно.** wrangler приводит привязки
+воркера к списку `routes`: домен, добавленный через дашборд, но забытый в
+конфиге, ближайший `deploy` снимет вместе с DNS-записью. Боевой сайт так падал.
+
+## 9. Частые проблемы
+
+| симптом | куда смотреть |
+| --- | --- |
+| `Missing or insufficient permissions` | правила Firestore; `ownerId` в документе; не отбивает ли App Check |
+| `index required` | открыть ссылку из текста ошибки, затем внести индекс в `firestore.indexes.json` |
+| Карта с надписью «API KEY REQUIRED» | нет `NEXT_PUBLIC_CARTO_API_KEY` на момент сборки. Тайл при этом приходит с кодом 200, поймать обработчиком нельзя |
+| Вход крутит редиректы | несовпадение куки сессии и состояния Firebase — см. Architecture.md |
+| Задеплоили, а изменений нет | собрали `pnpm build` вместо `pnpm cf:build`; сверить `BUILD_ID` |
+| Картинки не грузятся | правила Storage; формат адреса (`/api/images/` против прямой ссылки) |
+
+## 10. Структура проекта
 
 ```text
 src/
-  components/
-  config/
-  context/
-  data/
-  i18n/
-  layouts/
-  pages/
-  services/
-  styles/
-  types/
+  app/            маршруты App Router, серверные действия, обработчики /api
+  components/     общие компоненты интерфейса
+  hooks/          клиентские хуки
+  lib/            firebase (REST и клиент), сессии, картинки, локали
+  messages/       переводы az / en / ru
+  services/       работа с данными на клиенте
+  utils/          мелкие помощники
+core/             подмодуль @birklik/core — логика, общая с приложением
+firebase-functions/
+  src/cleanup/    плановые чистки и ручные инструменты
+  src/payment/    Azericard, Google Play, применение тарифа
+  src/notifications/
+tests/rules/      тесты правил Firestore (эмулятор)
 ```
 
----
+⚠️ **Подмодуль `core` общий с мобильным приложением.** Правка общей логики — это
+три коммита подряд: сначала в `core`, потом указатель подмодуля в вебе, потом в
+приложении. Пропустишь второй — приложение соберётся со старой версией.
 
-Если нужно, могу сделать второй этап миграции:
+В `core` не должно попадать ничего, знающего про окружение: там нет `lib: DOM`,
+и он обязан работать под голым Node.
 
-- редактирование объявления (update) прямо из Dashboard,
-- геокодинг адреса и автоматическая установка coordinates,
-- полноценный production-поиск через Algolia (вместо client-side фильтра).
+## 11. Кратко о бизнесе
 
-## 13. Кратко: что за бизнес и как работает
+Birklik.az — маркетплейс краткосрочной аренды жилья в Азербайджане.
 
-Birklik.az — это маркетплейс краткосрочной аренды жилья в Азербайджане.
+**Модель.** Публикация объявления бесплатна (`standard`). Платные тарифы `vip` и
+`premium` на 14 или 30 дней дают место выше в выдаче и больше возможностей у
+объявления.
 
-### Бизнес-модель
+**Гость.** Открывает каталог, ищет и фильтрует, смотрит карточку с фото,
+описанием, ценой и картой, отправляет заявку на бронь.
 
-- Владельцы жилья публикуют объявления на платформе.
-- Публикация может быть в разных пакетах (например: free, standard, premium).
-- Платные пакеты дают больше видимости и возможностей для объявления.
-### Как это работает для гостя
+**Владелец.** Регистрируется, создаёт объявление, проходит модерацию, при
+желании покупает тариф, дальше управляет бронями и объявлениями из кабинета.
 
-1. Гость открывает каталог и использует поиск/фильтры.
-2. Переходит в карточку объекта, смотрит фото, описание, цену и карту.
-3. Отправляет заявку через форму контакта владельцу.
-
-### Как это работает для владельца
-
-1. Регистрируется и заходит в Dashboard.
-2. Создает объявление, заполняет параметры, добавляет фото и локацию.
-3. Объявление сохраняется в Firestore, фото — в Storage.
-4. Владелец управляет своими объявлениями из личного кабинета.
-
-### Технически (очень кратко)
-
-- Frontend: Next.js + React + TypeScript.
-- Auth: Firebase Authentication.
-- Данные: Firestore.
-- Файлы: Firebase Storage.
-- Карта: OpenStreetMap + React Leaflet.
-
-Карта: OpenStreetMap + React Leaflet. test Vite Сборка До PWA до Capacitor есть чат с Клаудом спец для этого Google Search Invented calilorucli42@gmail.com Google ReCaptcha ИнВент Надо Для всех Приложений Yandex Карты Добавлены Все Ключи либо в Claudflare либо в ENV Google Business profile invented calilorucli42@gmail.com business gmail info@birklik.az Google Cloud + Firebase trello+ BirCard Azerbaijan Bank give approve for integration the Bank payment in gmail calilorucli42@gmail.com approve + Важно Azericard : RSA Keys внутри Проекта и подключен Cloud Funtions в Папке Firebase Functions Token problem ctrl f5 solve with Cache (purge everything Cloudflare)
+**Модератор.** Разбирает очередь новых объявлений и жалобы на комментарии.

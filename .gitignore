@@ -72,3 +72,15 @@ firestore-debug.log
 firebase-debug.log
 firebase-debug.*.log
 ui-debug.log
+
+# graphify — граф собирается локально командой /graphify.
+# Внутрь попадают абсолютные пути этой машины (.graphify_python, .graphify_root),
+# а graph.json и graph.html весят под 6 МБ и меняются при каждой пересборке.
+graphify-out/
+
+# Личные разрешения Claude Code: машинозависимые пути, у каждого свои.
+# Общие настройки проекта лежат в .claude/settings.json — тот коммитится.
+.claude/settings.local.json
+
+# Личные рабочие заметки (аккаунты, доступы, напоминания)
+NOTES.local.md
