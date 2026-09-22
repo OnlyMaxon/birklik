@@ -16,7 +16,7 @@ Birklik.az is a multilingual property rental marketplace built with Next.js App 
 | Maps | Leaflet and react-leaflet, CARTO basemap tiles |
 | Functions | Firebase Cloud Functions v1, `europe-west1`, Node.js 22 |
 | Payments | Azericard, RSA-SHA256 `P_SIGN` verified in a Cloud Function |
-| Hosting | Cloudflare Workers via OpenNext |
+| Hosting | Cloudflare Workers via OpenNext, **Workers Paid** since 2026-09-22 |
 | Package manager | pnpm workspace |
 | Tests | Vitest |
 
@@ -76,7 +76,7 @@ src/
   app/
     [locale]/            # Locale-prefixed routes — see Internationalization
       (home)/            # Home page; the route group exists only for its loading.tsx
-      kiraye/[city]/     # Region landing pages
+      kiraye/[city]/     # Region landing pages; layout.tsx answers 404 for unknown regions
       about/ contact/ privacy/ terms/ user-agreement/
       layout.tsx         # Mounts SiteShell with the locale from the segment
     (auth)/              # login, register
@@ -92,7 +92,7 @@ src/
     cookie-locale-shell.tsx  # SiteShell for non-localized routes, locale from cookie
     site-json-ld.tsx     # Organization + WebSite markup
     robots.ts sitemap.ts llms.txt/
-    providers.tsx loading.tsx error.tsx not-found.tsx
+    providers.tsx error.tsx not-found.tsx
     actions.ts queries.ts
   components/            # Shared UI and providers
   data/                  # Static domain data and filtering
@@ -151,6 +151,26 @@ present.
 - `src/app/providers.tsx` owns the client provider tree.
 - Protected dashboard and moderator areas use route-group layouts rather than page-level wrappers.
 - `src/lib/navigation.tsx` is a temporary compatibility facade over Next navigation APIs for migrated interactive components.
+
+### `loading.tsx` placement decides the status code
+
+A `loading.tsx` creates a Suspense boundary, and the boundary sends headers before the page
+below it has finished. Once the headers are out, `notFound()` can no longer change the status:
+the visitor sees a correct "not found" page while a crawler gets a plain 200.
+
+Two rules follow, and both are load-bearing:
+
+- **Put a `loading.tsx` in the same segment as its page, never in a shared parent.** A root
+  `src/app/loading.tsx` used to exist and silently cancelled honest status codes for every
+  route underneath it. It was removed on 2026-09-22.
+- **Where a route must answer 404, do the existence check in `layout.tsx`.** A layout renders
+  *before* the boundary its own `loading.tsx` opens, so `notFound()` from there still sets the
+  status, and the skeleton is kept. `property/[id]/layout.tsx` and
+  `[locale]/kiraye/[city]/layout.tsx` both work this way. Keep those checks cheap — the first
+  reads a cached query the page reuses, the second only looks up the in-memory city directory.
+
+`generateMetadata` still needs its own `noindex` for missing records: metadata is computed in
+parallel with the page and can be emitted ahead of the 404 decision.
 
 ## Caching
 
@@ -292,9 +312,6 @@ Two controlled axes plus one legacy label:
 
 - The dashboard screen remains large and should be split into smaller route-local components.
 - Most authenticated reads still use the browser Firebase SDK; moving them server-side requires a Firebase session-cookie layer.
-- Non-existent URLs answer 200 instead of 404: the root `loading.tsx` opens the response stream
-  before a route can call `notFound()`. It is there because the Workers Free CPU limit needs
-  streaming. Removing it is the first task after moving to Workers Paid — see `AUDIT.md`.
 - Booking conflicts are checked when a booking is created, approved and edited, but Firestore
   does not lock date ranges, so two simultaneous requests can still both be accepted. Bookings
   carry no payment, so the owner resolves this by hand; a slot-document design was considered
