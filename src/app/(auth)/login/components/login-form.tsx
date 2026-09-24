@@ -3,7 +3,7 @@
 import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
-import {InlineSpinner} from '@/components'
+import {InlineSpinner, PasswordField} from '@/components'
 import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
@@ -170,8 +170,7 @@ export const LoginForm: React.FC = () => {
 
               <div className="form-group">
                 <label>{t.auth.password}</label>
-                <input
-                  type="password"
+                <PasswordField
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

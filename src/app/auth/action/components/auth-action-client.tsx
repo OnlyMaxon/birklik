@@ -3,7 +3,7 @@
 import React from 'react'
 import { useNavigate, useSearchParams } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
-import {AuthSkeleton, InlineSpinner} from '@/components'
+import {AuthSkeleton, InlineSpinner, PasswordField} from '@/components'
 import { verifyPasswordResetCode, confirmPasswordReset, applyActionCode } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
@@ -383,25 +383,25 @@ export const AuthActionClient: React.FC = () => {
 
               <div className="form-group">
                 <label>{language === 'en' ? 'New Password' : language === 'ru' ? 'Новый пароль' : 'Yeni şifrə'}</label>
-                <input
-                  type="password"
+                <PasswordField
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={language === 'en' ? 'Enter new password' : language === 'ru' ? 'Введите новый пароль' : 'Yeni şifrənizi daxil edin'}
                   required
                   disabled={loading}
+                  autoComplete="new-password"
                 />
               </div>
 
               <div className="form-group">
                 <label>{language === 'en' ? 'Confirm Password' : language === 'ru' ? 'Подтвердите пароль' : 'Şifrəni təsdiq edin'}</label>
-                <input
-                  type="password"
+                <PasswordField
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder={language === 'en' ? 'Confirm new password' : language === 'ru' ? 'Подтвердите новый пароль' : 'Yeni şifrəni təsdiq edin'}
                   required
                   disabled={loading}
+                  autoComplete="new-password"
                 />
               </div>
 

@@ -133,21 +133,50 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
   React.useEffect(() => {
     if (isLoading) return
 
-    const THRESHOLD = 500
+    // Насколько рано начинать подгрузку, считая от низа страницы.
+    //
+    // Раньше здесь стояли постоянные 500 пикселей, и этого не хватало: карточка
+    // объявления сама по себе высотой около 380, то есть запас был меньше
+    // полутора карточек. Человек успевал докрутить до подвала и решал, что
+    // объявления кончились, — а они дозагружались уже после.
+    //
+    // Два экрана вместо числа: на телефоне это около 1400 пикселей, на большом
+    // мониторе около 2000. Постоянная величина на этих двух устройствах значит
+    // совершенно разное, а «два экрана до низа» — одно и то же.
+    const threshold = () => Math.max(900, window.innerHeight * 2)
 
     const check = () => {
       if (isLoadingMoreRef.current || !hasMoreRef.current) return
-      if (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < THRESHOLD) {
+      if (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < threshold()) {
         loadMore()
       }
     }
 
-    window.addEventListener('scroll', check, { passive: true })
+    // Чтение scrollHeight заставляет браузер пересчитать раскладку, а событий
+    // прокрутки прилетает под сотню в секунду. Сводим проверку к одной на кадр:
+    // чаще всё равно бессмысленно, экран не обновляется быстрее.
+    let scheduled = false
+    const onScroll = () => {
+      if (scheduled) return
+      scheduled = true
+      window.requestAnimationFrame(() => {
+        scheduled = false
+        check()
+      })
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    // Поворот телефона и изменение окна меняют и высоту экрана, и порог —
+    // условие может стать истинным без единой прокрутки.
+    window.addEventListener('resize', onScroll, { passive: true })
     // Проверяем и сразу: на высоком экране первая порция может не дотянуться до
     // нижнего края, и тогда прокручивать нечего — события бы не случилось, а
     // подгрузка так и не началась.
     check()
-    return () => { window.removeEventListener('scroll', check) }
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
   }, [loadMore, isLoading])
 
   const filteredProperties = React.useMemo(() => {

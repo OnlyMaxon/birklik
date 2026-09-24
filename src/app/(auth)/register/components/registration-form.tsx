@@ -3,7 +3,7 @@
 import React from 'react'
 import { Link, useNavigate } from '@/lib/navigation'
 import { useLanguage, useAuth } from '@/components/providers'
-import {InlineSpinner} from '@/components'
+import {InlineSpinner, PasswordField} from '@/components'
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase/client'
@@ -225,8 +225,7 @@ export const RegistrationForm: React.FC = () => {
 
               <div className="form-group">
                 <label>{t.auth.password}</label>
-                <input
-                  type="password"
+                <PasswordField
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -238,8 +237,7 @@ export const RegistrationForm: React.FC = () => {
 
               <div className="form-group">
                 <label>{t.auth.confirmPassword}</label>
-                <input
-                  type="password"
+                <PasswordField
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
