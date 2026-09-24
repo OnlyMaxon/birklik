@@ -1,0 +1,107 @@
+.account-deletion {
+  padding: 2rem 1rem 4rem;
+  /* Узкая колонка намеренно: здесь читают, а не просматривают — человек должен
+     понять, что именно исчезнет, прежде чем нажмёт. */
+  max-width: 44rem;
+}
+
+.account-deletion__head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.account-deletion__intro {
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.account-deletion__what {
+  margin-top: 2rem;
+}
+
+.account-deletion__what h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.account-deletion__what ul {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  line-height: 1.7;
+}
+
+.account-deletion__note {
+  color: var(--gray-500);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-top: 0.5rem;
+}
+
+.account-deletion__warning {
+  margin: 1.5rem 0;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--error);
+  border-radius: var(--radius);
+  background: rgba(220, 38, 38, 0.06);
+  color: var(--error);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.account-deletion__signin,
+.account-deletion__form,
+.account-deletion__done {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+}
+
+.account-deletion__signin p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.account-deletion__who {
+  margin-bottom: 1rem;
+  color: var(--gray-700);
+}
+
+/* Кнопка красная, а не фирменная: это единственное необратимое действие на
+   сайте, и оно не должно выглядеть как обычное «сохранить». */
+.account-deletion__submit {
+  width: 100%;
+  background: var(--error);
+  color: var(--white);
+}
+
+.account-deletion__submit:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.account-deletion__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.account-deletion__done h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.account-deletion__done p {
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
+.account-deletion__contact {
+  margin-top: 2rem;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}

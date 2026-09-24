@@ -17,7 +17,10 @@ export const LOCALE_PREFIXED_STATIC_PATHS = [
   '/contact',
   '/terms',
   '/privacy',
-  '/user-agreement'
+  '/user-agreement',
+  // Google требует общедоступный адрес удаления аккаунта — он идёт в анкету
+  // «Безопасность данных» и должен открываться БЕЗ установки приложения.
+  '/account-deletion'
 ] as const
 
 /** Префиксы разделов, у которых локализованы и вложенные адреса. */

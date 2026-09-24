@@ -1,4 +1,5 @@
 import {cert, initializeApp} from 'firebase-admin/app'
+import {getAuth} from 'firebase-admin/auth'
 import {FieldValue, getFirestore} from 'firebase-admin/firestore'
 import {getMessaging} from 'firebase-admin/messaging'
 import {getStorage} from 'firebase-admin/storage'
@@ -10,6 +11,7 @@ const firestore = Object.assign(getFirestore, {FieldValue})
 export const admin = {
   initializeApp,
   credential: {cert},
+  auth: getAuth,
   firestore,
   messaging: getMessaging,
   storage: getStorage,

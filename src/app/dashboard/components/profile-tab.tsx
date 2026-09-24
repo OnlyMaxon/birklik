@@ -1,5 +1,6 @@
 'use client'
 
+import {Link} from '@/lib/navigation'
 import {useAuth, useLanguage} from '@/components/providers'
 import {InlineSpinner} from '@/components'
 import type {ProfileFormProps} from '../hooks/use-profile-form'
@@ -41,6 +42,14 @@ export function ProfileTab({form}: {form: ProfileFormProps}) {
           <button type="submit" className="btn btn-accent" disabled={form.isSaving} aria-busy={form.isSaving}>{form.isSaving && <InlineSpinner label={t.messages.loading} />}{form.isSaving ? t.messages.loading : t.form.submit}</button>
         </form>
       </div>
+
+      {/* Удаление аккаунта — ссылкой на отдельную страницу, а не кнопкой здесь.
+          Страница всё равно обязана существовать и быть общедоступной: её адрес
+          идёт в анкету «Безопасность данных» Play Console. Две реализации
+          одного и того же разошлись бы при первой же правке. */}
+      <p className="profile-danger-link">
+        <Link to="/account-deletion">{t.pages.accountDeletion.title}</Link>
+      </p>
     </div>
   )
 }

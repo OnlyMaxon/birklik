@@ -10,8 +10,9 @@ import { runAllStorageCleanups } from './cleanup/storage-cleanup';
 import { sendPushToUser } from './notifications/send-push';
 import { initiatePayment, azericardCallback } from './payment/azericard';
 import { verifyPlayPurchase } from './payment/verify-play-purchase';
+import { deleteAccount } from './account/delete-account';
 
-export { initiatePayment, azericardCallback, verifyPlayPurchase };
+export { initiatePayment, azericardCallback, verifyPlayPurchase, deleteAccount };
 
 admin.initializeApp();
 

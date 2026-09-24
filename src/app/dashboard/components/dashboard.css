@@ -1331,3 +1331,21 @@
     padding: 2.1rem 1rem;
   }
 }
+
+/* Ссылка на удаление аккаунта под формой профиля. Приглушена намеренно: путь к
+   удалению обязан быть на виду (Google требует его изнутри продукта), но это не
+   то действие, к которому стоит подталкивать. */
+.profile-danger-link {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.profile-danger-link a {
+  color: var(--gray-500);
+  text-decoration: underline;
+}
+
+.profile-danger-link a:hover {
+  color: var(--error);
+}
