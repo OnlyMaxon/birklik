@@ -101,7 +101,12 @@ export const deleteAccount = functions
 
       // Предупреждаем только по подтверждённым броням: человек рассчитывал на
       // эти даты. Отклонённая или отменённая никого ни к чему не обязывала.
-      if (booking.status === 'approved') {
+      //
+      // ⚠️ Статусов тут ДВА, а не один. В боевой базе у 8 броней из 46 стоит
+      // `active` — значения, которого нет в union `Booking['status']`; оно
+      // осталось от прежней схемы. Проверяй мы только `approved`, эти гости
+      // остались бы без предупреждения об отмене.
+      if (booking.status === 'approved' || booking.status === 'active') {
         const other = booking.userId === uid ? booking.ownerId : booking.userId;
         await notify(other || '', snapshot.id, booking.checkInDate || '');
       }
