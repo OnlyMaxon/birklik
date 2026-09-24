@@ -46,9 +46,20 @@ export function ProfileTab({form}: {form: ProfileFormProps}) {
       {/* Удаление аккаунта — ссылкой на отдельную страницу, а не кнопкой здесь.
           Страница всё равно обязана существовать и быть общедоступной: её адрес
           идёт в анкету «Безопасность данных» Play Console. Две реализации
-          одного и того же разошлись бы при первой же правке. */}
+          одного и того же разошлись бы при первой же правке.
+
+          ⚠️ Подпись задана здесь, а НЕ взята из t.pages. Раздел pages целиком
+          вырезается из словаря перед отправкой в браузер — см.
+          withoutServerOnlyMessages в site-shell.tsx. Обращение к нему из
+          клиентского компонента роняет весь кабинет, что и случилось. */}
       <p className="profile-danger-link">
-        <Link to="/account-deletion">{t.pages.accountDeletion.title}</Link>
+        <Link to="/account-deletion">
+          {language === 'en'
+            ? 'Delete your account'
+            : language === 'ru'
+              ? 'Удаление аккаунта'
+              : 'Hesabın silinməsi'}
+        </Link>
       </p>
     </div>
   )

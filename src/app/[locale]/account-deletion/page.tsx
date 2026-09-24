@@ -65,8 +65,24 @@ export default async function Page({params}: PageProps) {
       </p>
 
       {/* Сам вход и удаление — на клиенте: пароль подтверждает Firebase в
-          браузере, а вызываемая функция берёт человека из его же токена. */}
-      <AccountDeletionForm />
+          браузере, а вызываемая функция берёт человека из его же токена.
+
+          Строки передаются пропсами: раздел `pages` вырезается из словаря
+          перед отправкой в браузер, и форма их оттуда не достанет. */}
+      <AccountDeletionForm
+        text={{
+          signedInAs: content.signedInAs,
+          notSignedIn: content.notSignedIn,
+          goToLogin: content.goToLogin,
+          passwordLabel: content.passwordLabel,
+          deleteButton: content.deleteButton,
+          deleting: content.deleting,
+          doneTitle: content.doneTitle,
+          doneText: content.doneText,
+          wrongPassword: content.wrongPassword,
+          failed: content.failed
+        }}
+      />
 
       <p className="account-deletion__contact">{content.contactNote}</p>
     </div>

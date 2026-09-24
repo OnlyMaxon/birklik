@@ -11,6 +11,29 @@ import firebaseApp, {auth} from '@/lib/firebase/client'
 import {logoutAction} from '@/lib/auth/actions'
 
 /**
+ * Строки приходят пропсами, а не из `useLanguage`.
+ *
+ * ⚠️ Так обязано быть: раздел `pages` целиком вырезается из словаря перед
+ * отправкой в браузер (`withoutServerOnlyMessages` в `site-shell.tsx`) — там
+ * 17 КБ текстов правил и политики, и клиенту они не нужны. Клиентский
+ * компонент, полезший в `t.pages`, получает `undefined` и роняет страницу.
+ * Именно так и случилось: кабинет упал целиком. Серверная страница видит
+ * словарь полностью и передаёт сюда ровно то, что нужно форме.
+ */
+export type AccountDeletionText = {
+  signedInAs: string
+  notSignedIn: string
+  goToLogin: string
+  passwordLabel: string
+  deleteButton: string
+  deleting: string
+  doneTitle: string
+  doneText: string
+  wrongPassword: string
+  failed: string
+}
+
+/**
  * Подтверждение и вызов удаления.
  *
  * ⚠️ Повторный ввод пароля здесь не для красоты. Firebase отказывает в
@@ -23,11 +46,11 @@ import {logoutAction} from '@/lib/auth/actions'
  * тронуть ни чужие брони на его объявлениях, ни снимки с другого устройства,
  * ни его следы на чужих объявлениях. Здесь только подтверждение и вызов.
  */
-export const AccountDeletionForm: React.FC = () => {
+export const AccountDeletionForm: React.FC<{text: AccountDeletionText}> = ({text}) => {
   const {t} = useLanguage()
   const {isAuthenticated, firebaseUser, hasFirebaseResolved} = useAuth()
   const navigate = useNavigate()
-  const content = t.pages.accountDeletion
+  const content = text
 
   const [password, setPassword] = React.useState('')
   const [busy, setBusy] = React.useState(false)
