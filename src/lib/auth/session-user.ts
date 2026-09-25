@@ -25,9 +25,10 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const session = await getSession()
   if (!session) return null
 
+  // ⚠️ Здесь строился адрес заглушки с ui-avatars.com, и в нём ехало настоящее
+  // имя человека — на чужой сервер, при каждой отрисовке. Пустой аватар значит
+  // «нет аватара», инициалы рисует сам интерфейс.
   const fallbackName = session.email?.split('@')[0] || 'User'
-  const avatarFor = (name: string) =>
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1a365d&color=fff`
 
   try {
     const profile = await getDoc<{name?: string; phone?: string; avatar?: string}>(
@@ -42,7 +43,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
         name,
         email: session.email ?? '',
         phone: profile?.phone ?? '',
-        avatar: toImageApiUrl(profile?.avatar || '') || avatarFor(name)
+        avatar: toImageApiUrl(profile?.avatar || '') || ''
       }
     }
   } catch (error) {
@@ -57,7 +58,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
         name: fallbackName,
         email: session.email ?? '',
         phone: '',
-        avatar: avatarFor(fallbackName)
+        avatar: ''
       }
     }
   }

@@ -142,7 +142,11 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = '
         <div className="container">
           <div className="dashboard-header">
             <div className="user-info">
-              <img src={user.avatar} alt={user.name} className="dashboard-user-avatar" />
+              {user.avatar
+                ? <img src={user.avatar} alt={user.name} className="dashboard-user-avatar" />
+                : <div className="dashboard-user-avatar avatar-initials" aria-hidden="true">
+                    {user.name?.trim().charAt(0).toUpperCase() || 'U'}
+                  </div>}
               <div>
                 <h1>{t.dashboard.welcome}, {user.name}!</h1>
                 <p>{user.email}</p>

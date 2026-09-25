@@ -38,7 +38,11 @@ export async function completeRegistrationAction(
 
   if (!session.uid) return {success: false, error: 'auth/invalid-user-token'}
 
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(parsed.data.name)}&background=1a365d&color=fff`
+  // ⚠️ Здесь строился адрес картинки-заглушки с ui-avatars.com, и в нём ехало
+  // НАСТОЯЩЕЕ ИМЯ человека. Имена всех, кто регистрировался, уходили на чужой
+  // сервер при каждой отрисовке аватара. Пустое значение — это «аватара нет»,
+  // и интерфейс рисует инициалы сам.
+  const avatarUrl = ''
 
   try {
     await setDoc('users', session.uid, {

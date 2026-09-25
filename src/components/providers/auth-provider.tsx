@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
               name: userData.name || fbUser.displayName || 'User',
               email: fbUser.email || '',
               phone: userData.phone || '',
-              avatar: toImageApiUrl(userData.avatar || fbUser.photoURL || '') || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'User')}&background=1a365d&color=fff`
+              avatar: toImageApiUrl(userData.avatar || fbUser.photoURL || '') || ''
             })
           } else {
             // Fallback to Firebase user data
@@ -128,7 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
               name: fbUser.displayName || 'User',
               email: fbUser.email || '',
               phone: '',
-              avatar: toImageApiUrl(fbUser.photoURL || '') || `https://ui-avatars.com/api/?name=${encodeURIComponent(fbUser.displayName || 'User')}&background=1a365d&color=fff`
+              avatar: toImageApiUrl(fbUser.photoURL || '') || ''
             })
           }
         } catch (error) {
@@ -240,7 +240,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       const updates = {
         name: payload.name,
         phone: payload.phone,
-        avatar: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name || 'User')}&background=1a365d&color=fff`,
+        avatar: avatarUrl || '',
         updatedAt: new Date().toISOString()
       }
 

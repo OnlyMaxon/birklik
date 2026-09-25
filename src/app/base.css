@@ -885,3 +885,21 @@ textarea:focus-visible {
   color: var(--gray-500);
   margin-bottom: 1.5rem;
 }
+
+/* Кружок с первой буквой имени на месте аватара.
+   Ставится ВТОРЫМ классом к существующему — размер, рамку и скругление задаёт
+   он, здесь добавляется только заливка и выравнивание буквы.
+   ⚠️ Появился, когда убрали заглушки с ui-avatars.com: в их адресе ехало
+   настоящее имя человека на чужой сервер. Инициалы рисуются на месте. */
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 1;
+  box-sizing: border-box;
+  user-select: none;
+}

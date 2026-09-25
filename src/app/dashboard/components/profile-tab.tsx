@@ -20,7 +20,11 @@ export function ProfileTab({form}: {form: ProfileFormProps}) {
       <h2>{t.dashboard.profile}</h2>
       <div className="profile-card card">
         <div className="profile-header">
-          <img src={form.avatar || user.avatar} alt={user.name} className="profile-avatar" />
+          {form.avatar || user.avatar
+            ? <img src={form.avatar || user.avatar} alt={user.name} className="profile-avatar" />
+            : <div className="profile-avatar avatar-initials" aria-hidden="true">
+                {(form.name || user.name)?.trim().charAt(0).toUpperCase() || 'U'}
+              </div>}
           <div><h3>{form.name || user.name}</h3><p>{user.email}</p></div>
         </div>
         {form.error && <div className="error-message">{form.error}</div>}

@@ -21,9 +21,16 @@ describe('image URL helpers', () => {
     expect(toImageApiUrl(legacy)).toBe('/api/images/properties/user/photo.webp')
   })
 
+  // Здесь раньше проверялось, что заглушка с ui-avatars.com проходит насквозь.
+  // Поведение изменено НАМЕРЕННО: в её адресе ехало настоящее имя человека на
+  // чужой сервер. Теперь такой адрес означает «аватара нет».
   it('keeps unrelated external images unchanged', () => {
-    const external = 'https://ui-avatars.com/api/?name=User'
+    const external = 'https://example.com/photo.jpg'
     expect(toImageApiUrl(external)).toBe(external)
+  })
+
+  it('заглушка аватара считается отсутствием аватара', () => {
+    expect(toImageApiUrl('https://ui-avatars.com/api/?name=User')).toBeUndefined()
   })
 
   it('normalizes property and nested comment images', () => {
