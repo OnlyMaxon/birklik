@@ -63,6 +63,15 @@ describe('cancellationRequests: поиск при удалении брони', 
     )
   })
 
+  // Так ищет deleteProperty, когда объявление удаляет ВЛАДЕЛЕЦ: одна выборка по
+  // себе на всё объявление вместо запроса на каждую бронь. Ограничение по
+  // ownerId совпадает с веткой правила, поэтому bookingId здесь не нужен.
+  it('владелец ищет по одному ownerId — так удаляет своё объявление', async () => {
+    await assertSucceeds(
+      getDocs(query(requests(authed(env, OWNER)), where('ownerId', '==', OWNER)))
+    )
+  })
+
   it('гость ищет по bookingId вместе с guestId', async () => {
     await assertSucceeds(
       getDocs(query(

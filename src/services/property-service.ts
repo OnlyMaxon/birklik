@@ -198,37 +198,72 @@ export const updateProperty = async (
 }
 
 /**
- * Delete a property and all associated images and bookings from Firestore and Storage
- * @param {string} id - Property Firestore document ID
- * @returns {Promise<boolean>} True on success, false on failure
- * @throws {Error} On Firestore delete or image deletion failure
- * @example
- * const deleted = await deleteProperty('prop_999')
+ * Удаление объявления вместе с фотографиями, бронями и запросами на отмену.
+ *
+ * Зовут отсюда двое: владелец из своего кабинета (`listings-tab.tsx`) и
+ * модератор из разбора (`moderation-queue.tsx`). Права у них разные, и на этом
+ * функция ломалась.
+ *
+ * ⚠️ **Владельцу запрещено искать запросы отмены по одному `bookingId`.**
+ * Firestore проверяет правила по УСЛОВИЯМ запроса, а не по найденным
+ * документам: правило смотрит в `ownerId`, значит и запрос обязан. Прежний код
+ * искал только по `bookingId` — для модератора это разрешено, а у владельца
+ * запрос отклонялся, исключение обрывало всю функцию, и **объявление с
+ * бронями владелец удалить не мог вовсе**: кабинет отвечал «не удалось».
+ * Закреплено тестом «ЗАПРЕЩЕНО владельцу искать по одному bookingId» в
+ * `tests/rules/cancellation-requests.test.ts`.
+ *
+ * Поэтому запрос строится по тому, кто пришёл: владелец берёт свои запросы
+ * одной выборкой по `ownerId`, модератор — по каждой брони отдельно.
+ *
+ * ⚠️ Порядок шагов менять нельзя: брони удаляются ДО объявления. Правило
+ * удаления брони читает документ объявления через `get()`, чтобы узнать
+ * владельца; снеси мы объявление первым — `get()` вернёт пустоту, и владелец
+ * потеряет право на собственные брони.
+ *
+ * @param id идентификатор документа объявления
+ * @returns true при успехе, false при любой ошибке (она уходит в журнал)
  */
 export const deleteProperty = async (id: string): Promise<boolean> => {
   try {
-    // Get property to delete images
     const property = await getPropertyById(id)
     if (property?.images) {
       await deletePropertyImages(property.images)
     }
 
-    // Брони объявления, а вместе с ними и запросы на их отмену: иначе запрос
-    // остаётся ссылаться в пустоту.
+    const uid = auth.currentUser?.uid
+    const asOwner = Boolean(uid && property?.ownerId && property.ownerId === uid)
+
     const bookingsSnapshot = await getDocs(
       query(collection(db, 'bookings'), where('propertyId', '==', id))
     )
+
+    // Владелец: одна выборка по себе на всё объявление вместо запроса на
+    // каждую бронь. И правилам годится, и обращений меньше.
+    const ownRequests = asOwner
+      ? await getDocs(
+          query(collection(db, 'cancellationRequests'), where('ownerId', '==', uid))
+        )
+      : null
+
     for (const bookingDoc of bookingsSnapshot.docs) {
-      const requests = await getDocs(
-        query(collection(db, 'cancellationRequests'), where('bookingId', '==', bookingDoc.id))
-      )
-      for (const request of requests.docs) {
+      const requests = ownRequests
+        ? ownRequests.docs.filter(request => request.data().bookingId === bookingDoc.id)
+        : (
+            await getDocs(
+              query(
+                collection(db, 'cancellationRequests'),
+                where('bookingId', '==', bookingDoc.id)
+              )
+            )
+          ).docs
+
+      for (const request of requests) {
         await deleteDoc(request.ref)
       }
       await deleteDoc(bookingDoc.ref)
     }
 
-    // Delete the property itself
     await deleteDoc(doc(db, COLLECTION_NAME, id))
     return true
   } catch (error) {
