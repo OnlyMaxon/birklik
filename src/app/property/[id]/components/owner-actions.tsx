@@ -6,17 +6,15 @@ import {InlineSpinner} from '@/components'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import firebaseApp from '@/lib/firebase/client'
 import * as logger from '@/services/logger'
+// Цены — из общего пакета, своей копии здесь больше нет: приложение показывает
+// те же числа, и разъезжаться им нечем.
+import {TIER_PRICES} from '@birklik/core/data'
 import type {ListingTier} from '@birklik/core/types'
 
 interface OwnerActionsProps {
   propertyId: string
   listingTier?: ListingTier
 }
-
-const TIER_PRICES = {
-  vip: {'14days': 20, '30days': 30},
-  premium: {'14days': 30, '30days': 55}
-} as const
 
 export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
   const {language} = useLanguage()
