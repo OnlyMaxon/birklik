@@ -1,7 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { useLanguage } from '@/components/providers'
-import {cities} from '@birklik/core/data'
+import {cities, placeMatchScore} from '@birklik/core/data'
+import {FieldPopover, moveFocusWithArrows} from './field-popover'
 
 interface SearchBarProps {
   onChange: (value: string) => void
@@ -20,6 +21,92 @@ interface SearchBarProps {
 }
 
 const cityFilterLimit = 6
+const guestOptions = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+const maxGuestOptions = [...guestOptions, '10+']
+
+/**
+ * Выбор числа гостей.
+ *
+ * Здесь был системный `<select>`. Выглядел он на каждой платформе по-своему и с
+ * остальной строкой поиска не сходился: на телефоне это колесо во весь экран, в
+ * Windows — серый список другим шрифтом. Оформить его нельзя, оформляется только
+ * рамка вокруг.
+ *
+ * ⚠️ Список раскрывается через FieldPopover, а не рядом: строка поиска стоит
+ * внутри `.hero` с `overflow: hidden`, и раскрытый вниз список обрезало бы
+ * обложкой — тем же, чем обрезало подсказки городов.
+ */
+interface GuestSelectProps {
+  label: string
+  ariaLabel: string
+  value: string
+  options: string[]
+  onSelect: (value: string) => void
+}
+
+const GuestSelect: React.FC<GuestSelectProps> = ({label, ariaLabel, value, options, onSelect}) => {
+  const [isOpen, setIsOpen] = React.useState(false)
+  const triggerRef = React.useRef<HTMLButtonElement>(null)
+  const listId = React.useId()
+
+  const close = React.useCallback(() => setIsOpen(false), [])
+
+  const pick = (option: string) => {
+    onSelect(option)
+    setIsOpen(false)
+    // Фокус возвращается на кнопку: иначе он остался бы на исчезнувшем пункте и
+    // следующий Tab начал бы обход страницы заново.
+    triggerRef.current?.focus()
+  }
+
+  return (
+    <div className="guests-col">
+      <span className="guests-sublabel">{label}</span>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="search-guests-select search-guests-trigger"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listId : undefined}
+        onClick={() => setIsOpen(open => !open)}
+        onKeyDown={event => {
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault()
+            setIsOpen(true)
+          }
+        }}
+      >
+        <span className="search-guests-value">{value}</span>
+      </button>
+
+      <FieldPopover
+        id={listId}
+        anchorRef={triggerRef}
+        open={isOpen}
+        onDismiss={close}
+        onKeyDown={moveFocusWithArrows}
+        minWidth={96}
+        className="field-popover--guests"
+      >
+        {options.map(option => (
+          <button
+            key={option}
+            type="button"
+            role="option"
+            data-popover-option=""
+            aria-selected={option === value}
+            className={`field-popover-option ${option === value ? 'active' : ''}`}
+            onClick={() => pick(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </FieldPopover>
+    </div>
+  )
+}
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   onChange,
@@ -49,6 +136,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [tempCheckIn, setTempCheckIn] = React.useState(checkInValue)
   const [tempCheckOut, setTempCheckOut] = React.useState(checkOutValue)
   const cityInputRef = React.useRef<HTMLInputElement>(null)
+  const cityFieldRef = React.useRef<HTMLDivElement>(null)
+  const citySuggestionsId = React.useId()
 
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
@@ -79,11 +168,29 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     setMaxGuests(maxGuestsValue === '10+' ? '10+' : (maxGuestsValue?.toString() || '10'))
   }, [maxGuestsValue])
 
-  const normalizedQuery = citySearchText.trim().toLowerCase()
-  const filteredCities = cities.filter((city) => {
-    if (!normalizedQuery) return true
-    return [city.value, city.az, city.en, city.ru].some((l) => l.toLowerCase().includes(normalizedQuery))
-  }).slice(0, cityFilterLimit)
+  // ⚠️ Подсказки сравниваются СВЁРНУТЫМ написанием, а не подстрокой: иначе
+  // «Gebele» не находил «Qəbələ», «Guba» — «Quba», «Сумгаит» — «Sumqayıt».
+  // Разбор правил — в core/src/data/place-match.ts.
+  //
+  // Здесь, в отличие от отбора объявлений, опечатка ПРОЩАЕТСЯ: человек видит
+  // предложенный список и выбирает сам, поэтому «Ахдам» вправе привести к
+  // Ağdam. В отборе такой вольности нет — там виден только результат.
+  const cityQuery = citySearchText.trim()
+  const filteredCities = React.useMemo(() => {
+    if (!cityQuery) return cities.slice(0, cityFilterLimit)
+
+    return cities
+      .map((city) => ({
+        city,
+        score: Math.max(
+          ...[city.value, city.az, city.en, city.ru].map((name) => placeMatchScore(name, cityQuery, true))
+        )
+      }))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score || a.city.value.localeCompare(b.city.value))
+      .slice(0, cityFilterLimit)
+      .map((entry) => entry.city)
+  }, [cityQuery])
 
   const handleMinGuestsChange = (value: string) => {
     const newMin = Number(value)
@@ -100,6 +207,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     onMaxGuestsChange?.(value === '10+' ? '10+' : newMax)
     if (newMax < currentMin) { setMinGuests(value === '10+' ? '10' : value); onMinGuestsChange?.(newMax) }
   }
+
+  const closeSuggest = React.useCallback(() => setIsSuggestOpen(false), [])
 
   const handlePickCity = (city: typeof cities[number]) => {
     onCitySelect?.(city.value)
@@ -225,12 +334,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <div className="search-card-field search-location-field">
         <div className="search-field-content">
           <div className="search-field-label">{t.search.whereGoing}</div>
-          <div className="search-location-wrapper">
+          <div className="search-location-wrapper" ref={cityFieldRef}>
             <input
               ref={cityInputRef}
               type="text"
               className="search-field-input"
               placeholder={t.search.placeholder}
+              role="combobox"
+              aria-expanded={isSuggestOpen && filteredCities.length > 0}
+              aria-controls={isSuggestOpen ? citySuggestionsId : undefined}
+              aria-autocomplete="list"
               value={selectedCity ? getCityLabel(selectedCity) : citySearchText}
               onChange={(e) => handleCityInputChange(e.target.value)}
               onFocus={() => setIsSuggestOpen(true)}
@@ -244,20 +357,32 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 title={t.search.clear}
               >✕</button>
             )}
-            {isSuggestOpen && filteredCities.length > 0 && (
-              <div className="search-suggestions" role="listbox">
-                {filteredCities.map((city) => (
-                  <button
-                    key={city.value}
-                    type="button"
-                    className={`search-suggestion-item ${cityValue === city.value ? 'active' : ''}`}
-                    onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); cityInputRef.current?.blur(); handlePickCity(city) }}
-                  >
-                    {getCityLabel(city)}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* ⚠️ Панель уходит в портал: раскрытая вниз, она свисает ниже
+                обложки, а у `.hero` стоит `overflow: hidden` — список обрезало
+                ровно по краю, и это выглядело как «подсказки под сеткой
+                объявлений». Подробности — в field-popover.tsx. */}
+            <FieldPopover
+              id={citySuggestionsId}
+              anchorRef={cityFieldRef}
+              open={isSuggestOpen && filteredCities.length > 0}
+              onDismiss={closeSuggest}
+              onKeyDown={moveFocusWithArrows}
+              className="field-popover--cities"
+            >
+              {filteredCities.map((city) => (
+                <button
+                  key={city.value}
+                  type="button"
+                  role="option"
+                  data-popover-option=""
+                  aria-selected={cityValue === city.value}
+                  className={`field-popover-option ${cityValue === city.value ? 'active' : ''}`}
+                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); cityInputRef.current?.blur(); handlePickCity(city) }}
+                >
+                  {getCityLabel(city)}
+                </button>
+              ))}
+            </FieldPopover>
           </div>
         </div>
       </div>
@@ -334,28 +459,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         <div className="search-field-content">
           <div className="search-field-label">{t.search.guests}</div>
           <div className="guests-wrapper">
-            <div className="guests-col">
-              <span className="guests-sublabel">{t.search.min}</span>
-              <select
-                className="search-field-input search-guests-select"
-                value={minGuests}
-                onChange={(e) => handleMinGuestsChange(e.target.value)}
-              >
-                {[1,2,3,4,5,6,7,8,9,10].map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </div>
+            <GuestSelect
+              label={t.search.min}
+              ariaLabel={`${t.search.guests} — ${t.search.min}`}
+              value={minGuests}
+              options={guestOptions}
+              onSelect={handleMinGuestsChange}
+            />
             <span className="guests-separator">–</span>
-            <div className="guests-col">
-              <span className="guests-sublabel">{t.search.max}</span>
-              <select
-                className="search-field-input search-guests-select"
-                value={maxGuests}
-                onChange={(e) => handleMaxGuestsChange(e.target.value)}
-              >
-                {[1,2,3,4,5,6,7,8,9,10].map((n) => <option key={n} value={n}>{n}</option>)}
-                <option value="10+">10+</option>
-              </select>
-            </div>
+            <GuestSelect
+              label={t.search.max}
+              ariaLabel={`${t.search.guests} — ${t.search.max}`}
+              value={maxGuests}
+              options={maxGuestOptions}
+              onSelect={handleMaxGuestsChange}
+            />
           </div>
         </div>
       </div>

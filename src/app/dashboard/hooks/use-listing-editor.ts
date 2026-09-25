@@ -3,7 +3,7 @@
 import React from 'react'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import {useAuth, useLanguage} from '@/components/providers'
-import {resolveCity} from '@birklik/core/data/city-aliases'
+import {resolveCityQuery} from '@birklik/core/data'
 import firebaseApp from '@/lib/firebase/client'
 import {createProperty, deleteProperty, updateProperty} from '@/services'
 import type {Amenity, District, ListingStatus, ListingTier, LocationCategory, Property, PropertyType} from '@birklik/core/types'
@@ -170,7 +170,7 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
   const geocodeCity = async (cityName: string) => {
     if (!cityName) return
     try {
-      const resolvedQuery = resolveCity(cityName)
+      const resolvedQuery = resolveCityQuery(cityName)
       const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
       const res = await fetch(url, { headers: { 'Accept-Language': 'az' } })
       if (!res.ok) return
@@ -195,7 +195,7 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
     setLocationSearchError('')
 
     try {
-      const resolvedQuery = resolveCity(query)
+      const resolvedQuery = resolveCityQuery(query)
       const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
       const response = await fetch(url, {
         headers: {

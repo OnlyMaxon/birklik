@@ -308,6 +308,36 @@ Two controlled axes plus one legacy label:
 
 `cityDistricts` currently covers 15 of the 74 regions.
 
+### Place names are matched by fold, not by a synonym list
+
+An Azerbaijani place has several legitimate spellings — `Qəbələ`, `Gabala`, `Gebele`, `Габала`
+— and users type whichever one they know. `core/src/data/place-match.ts` folds a spelling to a
+single comparable form: Azerbaijani letters, Cyrillic transliteration, English digraphs
+(`sh`/`ch`/`kh`) and the `q`↔`g`, `x`↔`h` alternations.
+
+The fold is applied to **both** sides of every comparison — to the query and to each of the
+four spellings a city carries in the directory. That is what makes it work: any spelling
+already in `cities` matches by construction, and the fold only adds deviations on top. The
+alias table in `city-aliases.ts` is left for cases where the *names* differ rather than the
+spelling (`Bakı`/`Baku`, `Gəncə`/`Ganja`); it is no longer the mechanism.
+
+A typo is forgiven in exactly one place — the suggestion list, where the user sees what was
+offered and picks. It is **not** forgiven in `filterProperties` or before geocoding, where only
+the result is visible and there is nothing to check it against.
+
+⚠️ `String.prototype.normalize` is deliberately not used: `core/` is shared with the React
+Native app, and normalization in Hermes depends on the Intl build. Every substitution is an
+explicit table.
+
+⚠️ `resolveCityQuery` must run before any Nominatim call. Measured 2026-09-25: `Gebele` returns
+`Qədim Qəbələ, 8 Noyabr prospekti, Xətai rayonu` — a street in **Baku**, not the city Qəbələ.
+The response is successful and plausible, so nothing catches it; the listing silently got a pin
+in the wrong region. The website already did this; the app did not.
+
+The directory itself is guarded by a collision test in `place-match.test.ts` — no spelling of
+one city may match another. It found three wrong Russian names on its first run (`Hacıqabul`
+and `Xaçmaz` both carried `Хачмас`).
+
 ## Known technical debt
 
 - The dashboard screen remains large and should be split into smaller route-local components.
@@ -324,9 +354,14 @@ Two controlled axes plus one legacy label:
   bookings by hand, so this is tolerated rather than fixed. Move it into a Cloud Function if
   bookings ever start arriving.
 - Test coverage is pure logic only — no component or end-to-end tests. What is covered: tier
-  logic, display rules, filtering, image URL handling, basemap URLs, auth-error and translation
-  completeness, file validation, publication logic, the Firestore REST client, and the security
-  rules. What is not: any rendered screen, the payment callback, and the scheduled functions.
+  logic, display rules, filtering, place-name folding, image URL handling, basemap URLs,
+  auth-error and translation completeness, file validation, publication logic, the Firestore
+  REST client, and the security rules. What is not: any rendered screen, the payment callback,
+  and the scheduled functions.
+- The search bar's dropdowns are positioned from JavaScript because they render in a portal at
+  `<body>`; `.hero` has `overflow: hidden` and would clip anything hanging below the cover
+  image. See `src/app/components/field-popover.tsx` — an earlier attempt set
+  `overflow: visible` on the card, which is the wrong level and had no effect.
 
 ## Security rules
 

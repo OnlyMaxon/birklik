@@ -93,29 +93,36 @@
   box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.14);
 }
 
-/* Suggestions dropdown */
-.search-suggestions {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 20;
+/* Выпадающие панели полей поиска — подсказки городов и выбор гостей.
+   ⚠️ Рисуются в портале у <body>, а НЕ внутри строки поиска: у `.hero` стоит
+   `overflow: hidden`, и всё, что свисает ниже обложки, обрезалось по её краю.
+   Отсюда `position: fixed` — положение считает field-popover.tsx.
+   z-index 900 выбран между шапкой (100) и окном выбора даты (1000): панель
+   обязана перекрывать раздел объявлений, но не модальное окно над собой. */
+.field-popover {
+  position: fixed;
+  z-index: 900;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
   border: 1.5px solid var(--gray-200);
   border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  padding: 6px;
-  max-height: 220px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-.search-suggestion-item {
+.field-popover-option {
   width: 100%;
   border-radius: 8px;
   text-align: left;
   padding: 9px 12px;
   font-size: 14px;
   font-weight: 600;
+  font-family: inherit;
   color: var(--text-color);
   background: transparent;
   border: none;
@@ -123,10 +130,23 @@
   transition: background 0.15s;
 }
 
-.search-suggestion-item:hover,
-.search-suggestion-item.active {
+.field-popover-option:hover,
+.field-popover-option.active {
   background: rgba(var(--primary-color-rgb), 0.08);
   color: var(--primary-dark);
+}
+
+.field-popover-option:focus-visible {
+  background: rgba(var(--primary-color-rgb), 0.08);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+/* Числа ровным столбиком: у «1» и «10+» разная ширина, по левому краю список
+   выглядел бы рваным. */
+.field-popover--guests .field-popover-option {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Date trigger button */
@@ -462,6 +482,22 @@
   border-color: var(--primary-color);
   background-color: #ffffff;
   box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.14);
+}
+
+/* ⚠️ Поле гостей — это <button>, а не <select>: системный список нельзя было
+   оформить, он на каждой платформе свой. Класс .search-guests-select оставлен
+   на кнопке НАРОЧНО — к нему привязаны правила всех четырёх breakpoint'ов
+   ниже, и дублировать их для нового имени значило бы держать их в двух местах.
+   Здесь добивается только то, чем кнопка отличается от селектора. */
+.search-guests-trigger {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-weight: 500;
+}
+
+.search-guests-value {
+  flex: 1;
 }
 
 /* Action row */

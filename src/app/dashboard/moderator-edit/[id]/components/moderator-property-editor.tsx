@@ -6,7 +6,7 @@ import { useParams, useNavigate } from '@/lib/navigation'
 import { useLanguage } from '@/components/providers'
 import {CityLocationPicker, FormPageSkeleton, InlineSpinner} from '@/components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@birklik/core/data'
-import { resolveCity } from '@birklik/core/data/city-aliases'
+import { resolveCityQuery } from '@birklik/core/data'
 import { Language, PropertyType, District, Amenity, Property, ListingTier, LocationCategory, ListingStatus } from '@birklik/core/types'
 import { getPropertyById, updateProperty } from '@/services'
 
@@ -151,7 +151,7 @@ export const ModeratorPropertyEditor: React.FC = () => {
   const geocodeCity = async (cityName: string) => {
     if (!cityName) return
     try {
-      const resolvedQuery = resolveCity(cityName)
+      const resolvedQuery = resolveCityQuery(cityName)
       const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
       const res = await fetch(url, { headers: { 'Accept-Language': 'az' } })
       if (!res.ok) return
@@ -184,7 +184,7 @@ export const ModeratorPropertyEditor: React.FC = () => {
     setIsSearchingLocation(true)
     setLocationSearchError('')
     try {
-      const resolvedQuery = resolveCity(query)
+      const resolvedQuery = resolveCityQuery(query)
       const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=az&q=${encodeURIComponent(resolvedQuery)}`
       const response = await fetch(url, {
         headers: { 'Accept-Language': language === 'en' ? 'en' : language === 'ru' ? 'ru' : 'az' }
