@@ -147,7 +147,11 @@ export const createProperty = async (
 export const updateProperty = async (
   id: string,
   updates: Partial<Property>,
-  newImageFiles?: File[]
+  newImageFiles?: File[],
+  // Итог уборки снимков. Отдельным обратным вызовом, а не в ответе: запись в
+  // базу прошла успешно, и объявление сохранено — падать тут не из-за чего.
+  // Но и молчать нельзя, иначе повторится история с чужими снимками модератора.
+  onImageCleanup?: (result: ImageCleanupResult) => void
 ): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id)
@@ -187,7 +191,13 @@ export const updateProperty = async (
       (url) => !finalImages.includes(url)
     )
     if (removedImages.length > 0) {
-      await deletePropertyImages(removedImages)
+      // ⚠️ Уборка и оповещение — ДВА отдельных действия, и слить их в
+      // `onImageCleanup?.(await deletePropertyImages(...))` нельзя. Необязательный
+      // вызов не вычисляет аргументы: нет обработчика — не будет и удаления.
+      // Так я и сломал уборку везде, кроме страницы модератора; поймал старый
+      // тест «deletes removed images only after the publication update succeeds».
+      const cleanup = await deletePropertyImages(removedImages)
+      onImageCleanup?.(cleanup)
     }
 
     return true
@@ -318,26 +328,60 @@ export const uploadPropertyImages = async (files: File[]): Promise<string[]> => 
   return urls
 }
 
+/** Чем закончилась попытка убрать снимки из хранилища. */
+export type ImageCleanupResult = {
+  deleted: string[]
+  failed: {url: string; reason: string}[]
+}
+
 /**
- * Delete property images from Firebase Storage by URL
- * @param {string[]} urls - Array of same-origin or legacy Firebase image URLs to delete
- * @returns {Promise<void>}
- * @throws {Error} On storage delete failure (individual errors logged to console)
+ * Удаление снимков объявления из хранилища по их адресам.
+ *
+ * ⚠️ **Раньше отсюда не выходило НИЧЕГО.** Возвращалась пустота, отказ уходил в
+ * журнал, а неразобранный адрес не давал даже записи в журнале — `if (path)`
+ * молча пропускал его. Из-за этого две ошибки прожили незамеченными:
+ *
+ *  1. модератор убирал снимок у чужого объявления — правила отбивали по `uid`,
+ *     файл оставался в хранилище и был открыт на чтение по прямой ссылке;
+ *  2. полный адрес прокси `https://birklik.az/api/images/...` не разбирался, и
+ *     снимки удалённого объявления оставались навсегда.
+ *
+ * Обе чинились в другом месте, но **увидеть их было нечем**: на экране всё
+ * выглядело успешно. Поэтому теперь возвращается итог, а зовущий решает, что с
+ * ним делать. Исключение по-прежнему не бросается: один непослушный файл не
+ * должен рушить сохранение объявления.
+ *
  * @example
- * await deletePropertyImages(['/api/images/properties/user/photo.webp'])
+ * const {failed} = await deletePropertyImages(['/api/images/properties/user/photo.webp'])
  */
-export const deletePropertyImages = async (urls: string[]): Promise<void> => {
+export const deletePropertyImages = async (urls: string[]): Promise<ImageCleanupResult> => {
+  const result: ImageCleanupResult = {deleted: [], failed: []}
+
   for (const url of urls) {
+    const path = storagePathFromImageSource(url)
+
+    if (!path) {
+      // Неразобранный адрес — это не «нечего удалять», а незамеченная потеря.
+      result.failed.push({url, reason: 'адрес не разобрался'})
+      continue
+    }
+
     try {
-      const path = storagePathFromImageSource(url)
-      if (path) {
-        const storageRef = ref(storage, path)
-        await deleteObject(storageRef)
-      }
+      await deleteObject(ref(storage, path))
+      result.deleted.push(path)
     } catch (error) {
-      logger.error('Error deleting image:', error)
+      result.failed.push({url, reason: error instanceof Error ? error.message : String(error)})
     }
   }
+
+  if (result.failed.length > 0) {
+    logger.warn(
+      `Не удалось убрать ${result.failed.length} из ${urls.length} снимков`,
+      result.failed
+    )
+  }
+
+  return result
 }
 
 /**

@@ -382,3 +382,50 @@ Two habits these tests exist to enforce:
   `diff(resource.data).affectedKeys()` on updates, plain `keys()` only on creates.
 - **Writing a field its existing value does not make it an affected key.** A rule that forbids
   changing `status` will still allow a write that sets `status` to what it already was.
+
+## Photo storage: four URL shapes, one parser
+
+Photos live in Storage under **the uploader's folder**, not the listing's: `properties/{uid}/…`
+and `avatars/{uid}/…`. There is no "listing folder" — once a listing document is gone, nothing
+points at its files any more. Both the site and the app upload the same way and store the full
+download URL with its token.
+
+The same photo is written to Firestore in **four different shapes**, and every one of them
+occurs in production:
+
+| shape | who writes it |
+|---|---|
+| `https://firebasestorage.googleapis.com/…?alt=media&token=…` | fresh upload, site and app |
+| `/api/images/properties/…` | older site writes |
+| `https://birklik.az/api/images/properties/…` | **the app, on saving an edit** |
+| `gs://…` | legacy |
+
+The third one deserves the emphasis. The app cannot render a relative path — Glide rejects it
+with `no scheme was found` — so `withImageUrls` prefixes the origin on read. Saving an edit
+writes back what was displayed, and the document drifts to the absolute proxy form.
+
+`storagePathFromImageSource` in `core/src/utils/images.ts` is the **only** place that turns any
+of these back into a Storage path. Deletion on both platforms depends on it, and until
+2026-09-26 it did not know the absolute proxy shape: not the relative prefix, not a Google host,
+and `new URL` parsed it fine so the fallback branch never ran. It returned `null`, and **every
+caller treated `null` as "nothing to delete"**. Listings edited on the phone left all their
+photos behind for good.
+
+Two rules follow, and both are load-bearing:
+
+- **Never treat an unparsed URL as "nothing to delete".** It is a silent loss. `deletePropertyImages`
+  now returns `{deleted, failed}` and counts unparsed addresses as failures.
+- **Verify deletion against Storage, not against the document.** The document disappears either
+  way, and the function's own counters agree either way — they count what they managed to parse.
+
+## Moderators and Storage
+
+Storage rules allow a delete when the caller owns the folder **or** carries `moderator` in the
+auth token — the same custom claim `firestore.rules` already uses. Storage rules cannot read
+Firestore, so the claim is the only workable source of truth here; no Cloud Function is involved.
+
+Before 2026-09-26 the owner check stood alone, and removing a photo from someone else's listing
+worked **halfway and silently**: the URL left the document, so the photo vanished from the site,
+while the file stayed in the bucket — still world-readable by direct link, since
+`allow read: if true`. The client logged the refusal and reported success. The weekly
+`cleanupStorage` would collect it, but only after 30 days.

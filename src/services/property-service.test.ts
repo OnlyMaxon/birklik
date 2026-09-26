@@ -168,6 +168,47 @@ describe('propertyService publication logic', () => {
     consoleError.mockRestore()
   })
 
+  // ⚠️ Сторожит МОЛЧАНИЕ, а не удаление. Отказ хранилища раньше уходил только в
+  // журнал, и модератор видел «сохранено», когда файл чужого объявления
+  // оставался лежать открытым по прямой ссылке. Объявление при этом сохранить
+  // надо — падать из-за одного файла нельзя.
+  it('сообщает об отказе хранилища, но объявление сохраняет', async () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const removedUrl = 'https://firebasestorage.googleapis.com/v0/b/test/o/properties%2Fowner%2Fold.jpg?alt=media'
+    firestoreMocks.getDocMock.mockResolvedValue({
+      exists: () => true,
+      data: () => makeProperty({images: [removedUrl]})
+    })
+    firestoreMocks.updateDocMock.mockResolvedValue(undefined)
+    storageMocks.deleteObjectMock.mockRejectedValue(new Error('storage/unauthorized'))
+
+    const seen: {url: string; reason: string}[][] = []
+    const ok = await updateProperty('p-1', {images: []}, undefined, r => seen.push(r.failed))
+
+    expect(ok).toBe(true)
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toHaveLength(1)
+    expect(seen[0][0].reason).toContain('storage/unauthorized')
+    consoleWarn.mockRestore()
+  })
+
+  // ⚠️ Сторожит ловушку необязательного вызова: `onImageCleanup?.(await del(...))`
+  // НЕ вычисляет аргументы, когда обработчика нет, и уборка молча пропадала
+  // везде, кроме страницы модератора. Здесь обработчик НЕ передаётся намеренно.
+  it('убирает снимки и без обработчика итога', async () => {
+    const removedUrl = 'https://firebasestorage.googleapis.com/v0/b/test/o/properties%2Fowner%2Fold.jpg?alt=media'
+    firestoreMocks.getDocMock.mockResolvedValue({
+      exists: () => true,
+      data: () => makeProperty({images: [removedUrl]})
+    })
+    firestoreMocks.updateDocMock.mockResolvedValue(undefined)
+
+    const ok = await updateProperty('p-1', {images: []})
+
+    expect(ok).toBe(true)
+    expect(storageMocks.deleteObjectMock).toHaveBeenCalledTimes(1)
+  })
+
   // Два пропущенных теста на getProperties удалены вместе с самой функцией:
   // публичные списки собирает сервер, клиентская выборка не вызывалась ниоткуда.
 })

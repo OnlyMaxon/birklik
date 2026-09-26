@@ -69,6 +69,10 @@ export const ModeratorPropertyEditor: React.FC = () => {
   const [newFiles, setNewFiles] = React.useState<File[]>([])
   const [newFilePreviews, setNewFilePreviews] = React.useState<{ name: string; url: string }[]>([])
   const [removedImages, setRemovedImages] = React.useState<string[]>([])
+  // Сколько снимков не удалось убрать из хранилища. Раньше отказ уходил только
+  // в журнал, и модератор видел «сохранено», когда файл чужого объявления
+  // оставался лежать открытым по прямой ссылке.
+  const [imageCleanupFailed, setImageCleanupFailed] = React.useState(0)
   const [isSearchingLocation, setIsSearchingLocation] = React.useState(false)
   const [locationSearchError, setLocationSearchError] = React.useState('')
 
@@ -334,7 +338,16 @@ export const ModeratorPropertyEditor: React.FC = () => {
 
     // updateProperty removes discarded images only after the Firestore update
     // succeeds, so a failed save cannot leave the listing with broken URLs.
-    const ok = await updateProperty(id, updates, newFiles.length > 0 ? newFiles : undefined)
+    let cleanupFailed = 0
+    const ok = await updateProperty(
+      id,
+      updates,
+      newFiles.length > 0 ? newFiles : undefined,
+      cleanup => {
+        cleanupFailed = cleanup.failed.length
+        setImageCleanupFailed(cleanupFailed)
+      }
+    )
     if (!ok) {
       setError(t.listing.updateFailed)
       setIsSubmitting(false)
@@ -342,7 +355,9 @@ export const ModeratorPropertyEditor: React.FC = () => {
     }
 
     setSuccess(true)
-    setTimeout(() => navigate('/dashboard/review?tab=allListings'), 1200)
+    // Объявление сохранено, но часть файлов осталась в хранилище — задерживаемся
+    // на странице, чтобы предупреждение успели прочитать.
+    setTimeout(() => navigate('/dashboard/review?tab=allListings'), cleanupFailed > 0 ? 6000 : 1200)
   }
 
   if (isLoading) return <FormPageSkeleton />
@@ -1032,6 +1047,18 @@ export const ModeratorPropertyEditor: React.FC = () => {
               </div>
 
               {error && <div className="error-message">{error}</div>}
+
+              {/* Объявление сохранено, а файлы остались лежать. Молчать об этом
+                  нельзя: снимок пропал из объявления, но открыт по прямой ссылке. */}
+              {imageCleanupFailed > 0 && (
+                <div className="error-message">
+                  {isEnglish
+                    ? `Saved, but ${imageCleanupFailed} photo(s) could not be removed from storage`
+                    : isRussian
+                      ? `Сохранено, но ${imageCleanupFailed} фото не удалось убрать из хранилища`
+                      : `Saxlanıldı, amma ${imageCleanupFailed} şəkil anbardan silinmədi`}
+                </div>
+              )}
 
               <div className="form-actions">
                 <button
