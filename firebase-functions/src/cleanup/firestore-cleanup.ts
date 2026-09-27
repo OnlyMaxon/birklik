@@ -117,6 +117,12 @@ export async function cleanupStalePendingListings(): Promise<CleanupLog> {
       .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
 
+    // ⚠️ Снимки собираются ДО `batch.commit()`, и только у тех объявлений, что
+    // действительно удаляются (пропущенные проверкой — не трогать). Прежде
+    // здесь передавался id, а функция читала документ уже после удаления:
+    // выходила по `!doc.exists`, и фотографии зависших объявлений оставались
+    // в хранилище навсегда, открытые на чтение по прямой ссылке.
+    const images: string[] = [];
     const batch = admin.firestore().batch();
 
     for (const doc of query.docs) {
@@ -125,6 +131,9 @@ export async function cleanupStalePendingListings(): Promise<CleanupLog> {
         console.warn(`[SKIP] ${doc.id}: ${validation.reason}`);
         continue;
       }
+      for (const image of (doc.data()?.images as unknown[]) || []) {
+        images.push(String(image));
+      }
       batch.delete(doc.ref);
       deletedIds.push(doc.id);
       count++;
@@ -132,9 +141,7 @@ export async function cleanupStalePendingListings(): Promise<CleanupLog> {
 
     if (count > 0) {
       await batch.commit();
-      for (const id of deletedIds) {
-        await deletePropertyImages(id);
-      }
+      await deletePropertyImages(images);
     }
 
     return { timestamp: new Date(), type: 'stale_pending_listings', status: 'success', count, deletedIds, duration: Date.now() - startTime };
@@ -232,17 +239,23 @@ export async function cleanupTestData(): Promise<CleanupLog> {
       .limit(CLEANUP_RULES.maxDeletesPerRun)
       .get();
 
+    // ⚠️ Снимки собираются ДО удаления документов. Прежде `deletePropertyImages`
+    // принимала id и читала документ уже ПОСЛЕ `batch.commit()` — попадала на
+    // `!doc.exists` и молча выходила, так что файлы тестовых объявлений не
+    // удалялись никогда, а журнал при этом показывал успех.
+    const images: string[] = [];
     const batch = admin.firestore().batch();
     for (const doc of query.docs) {
+      for (const image of (doc.data()?.images as unknown[]) || []) {
+        images.push(String(image));
+      }
       batch.delete(doc.ref);
       deletedIds.push(doc.id);
       count++;
     }
     if (count > 0) {
       await batch.commit();
-      for (const id of deletedIds) {
-        await deletePropertyImages(id);
-      }
+      await deletePropertyImages(images);
     }
 
     return { timestamp: new Date(), type: 'test_data', status: 'success', count, deletedIds, duration: Date.now() - startTime };
@@ -253,38 +266,69 @@ export async function cleanupTestData(): Promise<CleanupLog> {
 }
 
 /**
- * Удаляет изображения объявления из Storage по URL-ссылкам в документе.
- * Поддерживает legacy Firebase URL и /api/images/{storagePath}.
+ * Адрес снимка → путь внутри хранилища.
+ *
+ * Ловит все виды, встречающиеся в боевой базе: относительный `/api/images/...`,
+ * ПОЛНЫЙ `https://birklik.az/api/images/...` (его кладёт приложение, сохраняя
+ * правку объявления), download-URL с `/o/` и древний `gs://`. Отметка ищется в
+ * любом месте строки, поэтому полный адрес разбирается тем же кодом, что
+ * относительный.
+ *
+ * ⚠️ Проверка префикса обязательна: удаляем под сервис-аккаунтом, которому в
+ * хранилище можно ВСЁ, а строка приходит из документа. Без неё запись с
+ * подделанным адресом снесла бы любой файл бакета.
  */
 function imageStoragePath(url: string): string | null {
-  const match = url.match(/\/o\/([^?]+)/) || url.match(/\/api\/images\/([^?]+)/);
-  if (!match) return null;
+  const proxy = url.match(/\/o\/([^?]+)/) || url.match(/\/api\/images\/([^?]+)/);
+  const legacy = url.match(/^https?:\/\/storage\.googleapis\.com\/[^\/]+\/([^?]+)/);
+  const gs = url.startsWith('gs://') ? url.slice(url.indexOf('/', 5) + 1) : null;
+
+  // Последний вариант — строка УЖЕ путь внутри хранилища: такие записи в базе
+  // тоже есть. Пропускать её нельзя, иначе файл останется навсегда; опасности
+  // нет, потому что ниже стоит проверка префикса.
+  const raw = proxy ? proxy[1] : legacy ? legacy[1] : gs !== null ? gs : url;
+  if (!raw) return null;
+
+  let path: string;
   try {
-    return decodeURIComponent(match[1]);
+    path = decodeURIComponent(raw);
   } catch {
     return null;
   }
+
+  const segments = path.split('/');
+  const allowed =
+    (path.startsWith('properties/') || path.startsWith('avatars/')) &&
+    segments.every(s => s !== '' && s !== '.' && s !== '..' && !s.includes('\0'));
+  return allowed ? path : null;
 }
 
-async function deletePropertyImages(propertyId: string): Promise<void> {
-  try {
-    const doc = await admin.firestore().collection('properties').doc(propertyId).get();
-    if (!doc.exists) return;
+/**
+ * Убирает файлы снимков.
+ *
+ * ⚠️ Принимает АДРЕСА, а не id объявления: к моменту вызова документов уже нет,
+ * и прочитать поле `images` негде.
+ */
+async function deletePropertyImages(images: string[]): Promise<void> {
+  const bucket = admin.storage().bucket();
+  const failed: string[] = [];
 
-    const images: string[] = doc.data()?.images || [];
-    const bucket = admin.storage().bucket();
-
-    for (const url of images) {
-      try {
-        const filePath = imageStoragePath(url);
-        if (!filePath) continue;
-        await bucket.file(filePath).delete();
-      } catch {
-        // Файл уже удалён — игнорируем
-      }
+  for (const url of images) {
+    const filePath = imageStoragePath(url);
+    if (!filePath) {
+      // Неразобранный адрес — это не «нечего удалять», а незамеченная потеря.
+      failed.push(`${url} — адрес не разобрался`);
+      continue;
     }
-  } catch (error) {
-    console.warn(`[WARN] Failed to delete images for property ${propertyId}:`, error);
+    try {
+      await bucket.file(filePath).delete();
+    } catch (error: any) {
+      if (error?.code !== 404) failed.push(`${filePath} — ${error?.message || error}`);
+    }
+  }
+
+  if (failed.length > 0) {
+    console.warn(`[WARN] deletePropertyImages: не убрано ${failed.length} из ${images.length} снимков:`, failed);
   }
 }
 

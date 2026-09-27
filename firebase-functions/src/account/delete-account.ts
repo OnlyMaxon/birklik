@@ -274,9 +274,11 @@ export const deleteAccount = functions
  * в свою сборку не тянут — импорт оттуда не соберётся, а тянуть его туда значит
  * раздуть архив деплоя. **Поменяется формат адресов — править обе стороны.**
  *
- * В боевой базе адреса четырёх видов, они копились годами: путь сайта через
- * прокси `/api/images/...`, `gs://`, прямая ссылка на `firebasestorage` с
- * токеном (так пишет приложение) и старая на `storage.googleapis.com`.
+ * В боевой базе адреса четырёх видов, они копились годами: относительный путь
+ * сайта через прокси `/api/images/...`, ПОЛНЫЙ адрес того же прокси
+ * `https://birklik.az/api/images/...` (его кладёт приложение, сохраняя правку),
+ * прямая ссылка на `firebasestorage` с токеном (свежая загрузка) и древний
+ * `gs://`. Старая `storage.googleapis.com` встречается у самых первых записей.
  *
  * Проверка префикса обязательна и здесь: путь приходит из документа, а удаляем
  * мы под сервис-аккаунтом, которому в хранилище можно всё. Без неё запись с
@@ -306,15 +308,19 @@ function decodePath(path: string): string | null {
   }
 }
 
+const IMAGE_API_PREFIX = '/api/images/';
+
+/** Разбор адреса прокси — одинаково для относительного и полного. */
+function pathFromImageApi(pathname: string): string | null {
+  const encoded = pathname.slice(IMAGE_API_PREFIX.length).split(/[?#]/, 1)[0];
+  const path = decodePath(encoded);
+  return path && isAllowedStoragePath(path) ? path : null;
+}
+
 function storagePathFromImageSource(source: string): string | null {
   if (!source) return null;
 
-  const IMAGE_API_PREFIX = '/api/images/';
-  if (source.startsWith(IMAGE_API_PREFIX)) {
-    const encoded = source.slice(IMAGE_API_PREFIX.length).split(/[?#]/, 1)[0];
-    const path = decodePath(encoded);
-    return path && isAllowedStoragePath(path) ? path : null;
-  }
+  if (source.startsWith(IMAGE_API_PREFIX)) return pathFromImageApi(source);
 
   if (source.startsWith('gs://')) {
     const firstSlash = source.indexOf('/', 'gs://'.length);
@@ -324,6 +330,16 @@ function storagePathFromImageSource(source: string): string | null {
 
   try {
     const url = new URL(source);
+
+    // ⚠️ ПОЛНЫЙ адрес прокси. Под префикс он не подпадает, хост не гугловый, а
+    // `new URL` на нём отрабатывает успешно — значит и `catch` ниже не спасёт.
+    // Без этой ветки снимки объявлений, правленных с телефона, оставались в
+    // хранилище после удаления аккаунта — и открытыми на чтение по ссылке.
+    // Хост намеренно не сверяется: за прокси наше же хранилище, отдать он может
+    // только `properties/` и `avatars/`, это проверяет isAllowedStoragePath.
+    if (url.pathname.startsWith(IMAGE_API_PREFIX)) {
+      return pathFromImageApi(url.pathname + url.search);
+    }
 
     if (url.hostname === 'firebasestorage.googleapis.com') {
       const marker = '/o/';

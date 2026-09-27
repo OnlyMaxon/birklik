@@ -404,12 +404,41 @@ The third one deserves the emphasis. The app cannot render a relative path — G
 with `no scheme was found` — so `withImageUrls` prefixes the origin on read. Saving an edit
 writes back what was displayed, and the document drifts to the absolute proxy form.
 
-`storagePathFromImageSource` in `core/src/utils/images.ts` is the **only** place that turns any
-of these back into a Storage path. Deletion on both platforms depends on it, and until
-2026-09-26 it did not know the absolute proxy shape: not the relative prefix, not a Google host,
-and `new URL` parsed it fine so the fallback branch never ran. It returned `null`, and **every
-caller treated `null` as "nothing to delete"**. Listings edited on the phone left all their
-photos behind for good.
+`storagePathFromImageSource` in `core/src/utils/images.ts` is the canonical parser. Deletion in
+the site and in the app both go through it, and until 2026-09-26 it did not know the absolute
+proxy shape: not the relative prefix, not a Google host, and `new URL` parsed it fine so the
+fallback branch never ran. It returned `null`, and **every caller treated `null` as "nothing to
+delete"**. Listings edited on the phone left all their photos behind for good.
+
+### ⚠️ The parser exists in four copies, and they drift
+
+`firebase-functions/` is built as a separate package and deliberately does not pull the `core`
+submodule in — an import from there would not compile, and vendoring it would bloat the deploy
+archive. So the parser is duplicated, and on 2026-09-27 three of the four copies were behind:
+
+| copy | purpose | state before 2026-09-27 |
+|---|---|---|
+| `core/src/utils/images.ts` | site + app | current |
+| `firebase-functions/src/account/delete-account.ts` | account deletion | **missed the absolute proxy shape** |
+| `firebase-functions/src/cleanup/firestore-cleanup.ts` | manual `cleanup:execute` | no prefix check, missed bare paths and `storage.googleapis.com` |
+| `firebase-functions/src/cleanup/storage-cleanup.ts` + `storage-orphans.ts` | **collects** references | fine — deliberately permissive |
+
+The last row is a different job and must stay permissive: it decides which files are *not*
+orphans, so a missed shape there deletes live photos. The others decide what *to* delete, so a
+missed shape there leaks files. **Opposite failure directions — do not unify them carelessly.**
+
+Whenever the URL shapes change, all copies change. There is no test runner in the functions
+package; the check is to extract the compiled functions out of `lib/` and run the eleven known
+shapes through them.
+
+### ⚠️ Collect the image URLs before deleting the document
+
+`cleanupStalePendingListings` and `cleanupTestData` used to `batch.commit()` the document
+deletions and *then* call `deletePropertyImages(id)`, which re-read the document to find its
+`images` field. It was always gone by then, the function returned on `!doc.exists`, and the
+files were never touched — while the log still reported success. Both now gather the URLs
+inside the same loop that stages the delete, and `deletePropertyImages` takes **addresses**,
+not an id.
 
 Two rules follow, and both are load-bearing:
 
