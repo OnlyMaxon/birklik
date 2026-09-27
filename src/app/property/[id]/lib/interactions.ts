@@ -1,8 +1,15 @@
 import 'server-only'
 import {revalidateTag} from 'next/cache'
-import {arrayUnion, getDoc, updateDoc} from '@/lib/firebase/firestore-rest'
-import type {Comment, Property} from '@birklik/core/types'
-import {commentSchema, ratingSchema} from '../validators'
+import {
+  arrayUnion,
+  getDoc,
+  generateDocumentId,
+  queryDocs,
+  runTransaction,
+  updateDoc
+} from '@/lib/firebase/firestore-rest'
+import type {Comment, Property, ReportReason} from '@birklik/core/types'
+import {commentSchema, ratingSchema, reportCommentSchema} from '../validators'
 import {getUserProfile, hasUserBookedProperty} from '../queries'
 import {createNotification} from './create-notification'
 
@@ -135,4 +142,90 @@ export async function addRating(
 
   revalidateTag(`property:${parsed.data.propertyId}`, 'max')
   return {success: true, rating: rounded, reviews: values.length}
+}
+
+
+/** Повторная жалоба того же человека на тот же отзыв. */
+export class DuplicateReportError extends Error {}
+
+/**
+ * Жалоба на отзыв.
+ *
+ * ⚠️ Здесь же, а не в экшене, ровно по той причине, что описана наверху файла:
+ * жалобу подают и с сайта, и из приложения. Правило «одна жалоба на отзыв от
+ * человека», состав записи и рассылка модераторам обязаны совпадать, иначе
+ * очередь модерации начнёт вести себя по-разному в зависимости от того, откуда
+ * пришли.
+ */
+export async function reportComment(
+  actor: Actor,
+  propertyId: string,
+  commentId: string,
+  commentText: string,
+  reason: ReportReason,
+  details?: string
+): Promise<InteractionResult> {
+  const parsed = reportCommentSchema.safeParse({propertyId, commentId, commentText, reason, details})
+  if (!parsed.success) return {success: false, error: 'invalid-input'}
+
+  const profile = await getUserProfile(actor.uid)
+  const reportedByName = profile?.name || 'User'
+
+  try {
+    const created = await runTransaction(async transaction => {
+      const existing = await transaction.query('commentReports', {
+        where: [
+          ['commentId', '==', parsed.data.commentId],
+          ['reportedBy', '==', actor.uid]
+        ],
+        limit: 1
+      })
+      if (existing.length > 0) throw new DuplicateReportError()
+
+      const reportId = generateDocumentId()
+      const reportData = {
+        propertyId: parsed.data.propertyId,
+        commentId: parsed.data.commentId,
+        commentText: parsed.data.commentText,
+        reportedBy: actor.uid,
+        reportedByName,
+        reason: parsed.data.reason,
+        details: parsed.data.details || '',
+        createdAt: new Date().toISOString(),
+        status: 'open' as const,
+        commentDeleted: false
+      }
+      transaction.set('commentReports', reportId, reportData)
+      return {id: reportId, ...reportData}
+    })
+
+    // Рассылка модераторам по полю `users.isModerator`. ⚠️ Метка модератора
+    // вообще-то живёт в claim токена, поэтому список может быть неполным —
+    // поведение прежнее, сохранено как было.
+    const moderators = await queryDocs('users', {where: [['isModerator', '==', true]]})
+    await Promise.all(
+      moderators.map(moderator =>
+        createNotification(moderator.id, {
+          userId: moderator.id,
+          type: 'commentReport',
+          title: 'New comment report',
+          message: `Report: ${created.reason}. Comment: "${created.commentText.slice(0, 50)}${created.commentText.length > 50 ? '...' : ''}"`,
+          read: false,
+          reportId: created.id,
+          propertyId: created.propertyId,
+          commentId: created.commentId,
+          reason: created.reason,
+          reportedBy: actor.uid,
+          relatedId: created.commentId,
+          relatedUserId: actor.uid,
+          relatedUserName: reportedByName
+        })
+      )
+    )
+
+    return {success: true}
+  } catch (error) {
+    if (error instanceof DuplicateReportError) return {success: false, error: 'duplicate'}
+    return {success: false, error: 'unknown'}
+  }
 }

@@ -3,7 +3,6 @@
 import {revalidateTag} from 'next/cache'
 import {
   getDoc,
-  queryDocs,
   updateDoc,
   runTransaction,
   generateDocumentId,
@@ -12,13 +11,12 @@ import {
 } from '@/lib/firebase/firestore-rest'
 import {getSession} from '@/lib/auth/session'
 import type {Booking, Comment, Property, ReportReason} from '@birklik/core/types'
-import {propertyIdSchema, bookingSchema, replySchema, reportCommentSchema} from './validators'
+import {propertyIdSchema, bookingSchema, replySchema} from './validators'
 import {getProperty, getUserProfile} from './queries'
 import {createNotification} from './lib/create-notification'
-import {addComment, addRating} from './lib/interactions'
+import {addComment, addRating, reportComment} from './lib/interactions'
 
 class BookingConflictError extends Error {}
-class DuplicateReportError extends Error {}
 
 export type ActionResult<T extends object = object> = ({success: true} & T) | {success: false; error: string}
 
@@ -240,67 +238,7 @@ export async function reportCommentAction(
   const session = await getSession()
   if (!session) return {success: false, error: 'not-authenticated'}
 
-  const parsed = reportCommentSchema.safeParse({propertyId, commentId, commentText, reason, details})
-  if (!parsed.success) return {success: false, error: 'invalid-input'}
-
-  const profile = await getUserProfile(session.uid)
-  const reportedByName = profile?.name || 'User'
-
-  try {
-    const created = await runTransaction(async transaction => {
-      const existing = await transaction.query('commentReports', {
-        where: [
-          ['commentId', '==', parsed.data.commentId],
-          ['reportedBy', '==', session.uid]
-        ],
-        limit: 1
-      })
-      if (existing.length > 0) throw new DuplicateReportError()
-
-      const reportId = generateDocumentId()
-      const reportData = {
-        propertyId: parsed.data.propertyId,
-        commentId: parsed.data.commentId,
-        commentText: parsed.data.commentText,
-        reportedBy: session.uid,
-        reportedByName,
-        reason: parsed.data.reason,
-        details: parsed.data.details || '',
-        createdAt: new Date().toISOString(),
-        status: 'open' as const,
-        commentDeleted: false
-      }
-      transaction.set('commentReports', reportId, reportData)
-      return {id: reportId, ...reportData}
-    })
-
-    // Fan-out to moderators — mirrors the existing (Firestore `users.isModerator` field)
-    // moderator lookup used elsewhere; moderator status is otherwise tracked via
-    // Firebase custom claims, so this list may be incomplete — pre-existing behavior.
-    const moderators = await queryDocs('users', {where: [['isModerator', '==', true]]})
-    await Promise.all(
-      moderators.map(moderator =>
-        createNotification(moderator.id, {
-          userId: moderator.id,
-          type: 'commentReport',
-          title: 'New comment report',
-          message: `Report: ${created.reason}. Comment: "${created.commentText.slice(0, 50)}${created.commentText.length > 50 ? '...' : ''}"`,
-          read: false,
-          reportId: created.id,
-          propertyId: created.propertyId,
-          commentId: created.commentId,
-          reason: created.reason,
-          reportedBy: session.uid,
-          relatedId: created.commentId,
-          relatedUserId: session.uid,
-          relatedUserName: reportedByName
-        })
-      )
-    )
-
-    return {success: true}
-  } catch (error) {
-    if (error instanceof DuplicateReportError) return {success: false, error: 'duplicate'}
-    return {success: false, error: 'unknown'}
-  }
+  // Сама жалоба живёт в `lib/interactions`: её подают и с сайта, и из
+  // приложения, и разойтись эти пути не должны. Здесь только личность.
+  return reportComment({uid: session.uid}, propertyId, commentId, commentText, reason, details)
 }

@@ -113,7 +113,11 @@ export function CommentsSection({propertyId, initialComments, currentUserId, isA
                 </button>
                 {isAuthenticated && (
                   <button onClick={() => setReportModal({isOpen: true, commentId: comment.id, commentText: comment.text})} className="pp-comment-action-btn pp-comment-action-btn--report">
-                    {language === 'en' ? 'Report' : language === 'ru' ? 'Пожаловаться' : 'Şikayyət'}
+                    {/* ⚠️ Подпись из переводов, а не тремя ветками в разметке. Зашитая
+                        здесь строка содержала опечатку «Şikayyət» вместо «Şikayət» и
+                        висела на самой видной кнопке — словари её не ловили, потому что
+                        она в них не заглядывала. В приложении подпись та же. */}
+                    {t.property.report}
                   </button>
                 )}
               </div>
