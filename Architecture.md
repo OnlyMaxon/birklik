@@ -458,3 +458,35 @@ worked **halfway and silently**: the URL left the document, so the photo vanishe
 while the file stayed in the bucket — still world-readable by direct link, since
 `allow read: if true`. The client logged the refusal and reported success. The weekly
 `cleanupStorage` would collect it, but only after 30 days.
+
+## Reporting user content: one function, two entry points
+
+Google Play requires an app that carries user-generated content to offer an in-app way to
+report it. The app could have written its own report document straight to Firestore, but then
+the reason enum, the one-report-per-user rule and the moderation-queue shape would exist twice
+and drift apart — exactly the failure the image parser above demonstrates.
+
+So the report follows the path comments and ratings already take:
+
+```
+site form ──► reportCommentAction  ─┐
+                                    ├─► reportComment()  in  property/[id]/lib/interactions.ts
+app modal ──► POST /api/property/report ─┘
+```
+
+`reportCommentAction` resolves the session cookie; the route verifies a Firebase ID token and
+`emailVerified`. Past that point both call the same function with the same arguments. **App and
+site cannot diverge on comments, ratings or reports** — there is one implementation and two
+entry points differing only in how the caller is authenticated.
+
+`DuplicateReportError` is part of that contract rather than a generic failure: the route answers
+400 with `duplicate`, and both clients say "you already reported this" instead of showing an
+error the user would retry forever. The one-report-per-user rule is enforced server-side, so the
+app never decides it.
+
+### ⚠️ Proving a new route is deployed
+
+A 401 alone proves nothing — an unknown path behind the same auth middleware can answer 401 too.
+Check a deliberately nonexistent sibling path in the same request batch: the real route answers
+401 and the control answers 404. Honest 404s only exist because the Workers Paid plan is in
+place and no `loading.tsx` sits above the handler; see the deploy notes.
