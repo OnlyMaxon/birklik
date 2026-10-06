@@ -7,6 +7,14 @@ import { useLanguage } from '@/components/providers'
 import {cityLandingPath, localizedCityName} from '@/lib/city-landing'
 import {cities} from '@birklik/core/data'
 
+/**
+ * Страница приложения в Google Play.
+ *
+ * Идентификатор `az.birklik.app` — тот же, что в `app.json` приложения; меняться
+ * он не может, Google не позволяет переиздать приложение под другим.
+ */
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=az.birklik.app'
+
 export interface FooterRegion {
   city: string
   count: number
@@ -29,6 +37,8 @@ export const Footer: React.FC<FooterProps> = ({regions = []}) => {
     .map(region => ({option: cities.find(city => city.value === region.city), count: region.count}))
     .filter((entry): entry is {option: (typeof cities)[number]; count: number} => Boolean(entry.option))
 
+  // Остался только для App Store: приложения для iOS ещё нет, и значок там
+  // стоит заглушкой. У Google Play с 2026-10-05 ссылка настоящая.
   const handleStoreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
   }
@@ -125,12 +135,18 @@ export const Footer: React.FC<FooterProps> = ({regions = []}) => {
                       </div>
                     </a>
 
+                    {/* Приложение в Google Play с 2026-10-05 — ссылка настоящая.
+                        Адрес без `pcampaignid`: этот хвост Google добавляет к
+                        ссылке «Поделиться», и для прямой ссылки он лишний.
+                        rel="noopener" обязателен при target="_blank" — без него
+                        открытая вкладка получает доступ к нашей через
+                        window.opener. */}
                     <a
-                      href="#"
+                      href={PLAY_STORE_URL}
                       className="store-btn"
                       aria-label="Google Play"
-                      aria-disabled="true"
-                      onClick={handleStoreClick}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true">
                         <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l242-242L47 0zM425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c17.2-9.3 17.2-31.3-.5-60.8h-.7zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>

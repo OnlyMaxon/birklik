@@ -165,9 +165,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
           <button
             className={`btn ${viewToggle.mode === 'compact' ? 'btn-primary' : 'btn-outline'} view-toggle-btn`}
             onClick={() => viewToggle.onToggle(viewToggle.mode === 'compact' ? 'normal' : 'compact')}
-            title={viewToggle.mode === 'compact'
-              ? (language === 'en' ? 'Normal view' : language === 'ru' ? 'Обычный вид' : 'Normal görünüş')
-              : (language === 'en' ? 'Compact view' : language === 'ru' ? 'Компактный вид' : 'Kompakt görünüş')}
+            title={viewToggle.mode === 'compact' ? t.search.normalView : t.search.compactView}
           >
             {viewToggle.mode === 'compact' ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -178,9 +176,7 @@ export const Filters: React.FC<FiltersProps> = ({ filters, onFilterChange, onCle
                 <rect x="2" y="2" width="9" height="9"/><rect x="13" y="2" width="9" height="9"/><rect x="2" y="13" width="9" height="9"/><rect x="13" y="13" width="9" height="9"/>
               </svg>
             )}
-            {viewToggle.mode === 'compact'
-              ? (language === 'en' ? 'Normal' : language === 'ru' ? 'Обычный' : 'Normal')
-              : (language === 'en' ? 'Compact' : language === 'ru' ? 'Компактный' : 'Kompakt')}
+            {viewToggle.mode === 'compact' ? t.search.normalView : t.search.compactView}
           </button>
         )}
       </div>
