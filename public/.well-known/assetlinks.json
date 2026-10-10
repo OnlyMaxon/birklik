@@ -1,0 +1,17 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "az.birklik.app",
+      "sha256_cert_fingerprints": [
+        "9A:08:FD:35:F9:86:14:72:33:FC:05:11:EF:76:50:73:DC:AE:F4:76:7C:B0:E5:07:84:D8:65:84:7F:13:46:3E",
+        "F1:D4:EF:1F:FB:7F:99:34:8D:DB:F8:56:1B:37:D8:90:60:2A:C6:D8:FD:E3:99:94:B1:AB:6D:27:4C:DF:D0:96",
+        "D7:62:38:E9:55:DF:42:C7:CB:21:34:EF:9E:9C:7B:88:FD:50:52:36:F0:40:50:BD:47:10:93:4A:98:7C:23:19"
+      ]
+    }
+  }
+]

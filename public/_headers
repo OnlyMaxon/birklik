@@ -84,6 +84,13 @@
   Cache-Control: no-cache, no-store
   Content-Type: text/plain
 
+# Связь сайта с приложением (Digital Asset Links). Google требует
+# application/json; расширение дало бы его и само, но здесь это записано явно.
+/.well-known/assetlinks.json
+  Cache-Control: public, max-age=3600
+  Content-Type: application/json
+  X-Content-Type-Options: nosniff
+
 /sitemap.xml
   Cache-Control: public, max-age=86400
   Content-Type: application/xml
