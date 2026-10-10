@@ -4,7 +4,15 @@ import React, {type Dispatch, type FormEvent, type SetStateAction} from 'react'
 import dynamic from 'next/dynamic'
 import {CityLocationPicker, InlineSpinner} from '@/components'
 import {useLanguage} from '@/components/providers'
-import {amenitiesList, moreFilterOptions, nearFilterOptions, propertyTypes} from '@birklik/core/data'
+import {
+  amenitiesList,
+  moreFilterOptions,
+  nearFilterOptions,
+  photoLimitForTier,
+  propertyTypes,
+  TIER_CURRENCY,
+  TIER_PRICES
+} from '@birklik/core/data'
 import type {Amenity, ListingTier, PropertyType} from '@birklik/core/types'
 import {DEFAULT_COORDINATES, type ListingFormState} from './dashboard-types'
 
@@ -74,26 +82,15 @@ export function ListingEditor({
   const isRussian = language === 'ru'
   const savedMessage = isEnglish ? 'Listing saved successfully' : isRussian ? 'Объявление успешно сохранено' : 'Elan uğurla yadda saxlanıldı'
 
-  const planFeatures = React.useMemo(() => ({
-    standard: isEnglish
-      ? ['20 photos', 'Full description', 'Open location']
-      : isRussian ? ['20 фото', 'Полное описание', 'Открытая локация'] : ['20 foto', 'Tam təsvir', 'Açıq lokasiya'],
-    vip: isEnglish
-      ? ['VIP badge on listing', 'Up to 20 photos', 'Open location', 'The ad will be randomly displayed at the top of the VIP section and search results in your area']
-      : isRussian
-        ? ['VIP значок на объявлении', 'До 20 фото', 'Открытая локация', 'Объявление будет отображаться в случайном порядке в топ-позициях в разделе VIP и результатах поиска по вашему региону']
-        : ['Elana VIP nişanı', '20 fotoya qədər', 'Açıq lokasiya', 'Elan VIP bölməsində və sizin ərazi üzrə axtarış nəticələrində təsadüfi qaydada ön sıralarda göstəriləcək'],
-    premium: isEnglish
-      ? ['Full description', 'Up to 30 photos', 'Open location', 'Priority Ad will be shown on the home page (recommendations)', 'The ad will be randomly displayed at the top of the search results in your area']
-      : isRussian
-        ? ['Полное описание', 'До 30 фото', 'Открытая локация', 'Приоритетное объявление будет отображаться на главной странице (в рекомендациях)', 'Объявление будет отображаться в случайном порядке в топ-позициях результатов поиска по вашему региону']
-        : ['Tam təsvir', '30 fotoya qədər', 'Açıq lokasiya', 'Prioritetli Elan əsas səhifədə (rekomendasiyalarda) göstəriləcək', 'Sizin ərazi üzrə axtarış nəticələrində təsadüfi qaydada ön sıralarda göstəriləcək']
-  }), [isEnglish, isRussian])
+  // Возможности тарифов — из общего пакета. Раньше три списка на трёх языках
+  // лежали прямо здесь, и приложение их не видело: оно обещало своё, сайт своё.
+  // Тексты при переносе не менялись, они взяты отсюда же.
+  const planFeatures = t.pricing.features
 
   const listingPlans = React.useMemo(() => [
     {id: 'standard' as ListingTier, title: t.pricing.standard, isFree: true, price: t.pricing.free, features: planFeatures.standard, emphasis: t.pricing.standardDesc, ribbon: '🎁 ' + t.pricing.free},
-    {id: 'vip' as ListingTier, title: t.pricing.vip, isFree: false, features: planFeatures.vip, emphasis: t.pricing.vipDesc, pricingOptions: [{duration: '14days', label: t.pricing.days14, price: '20 AZN'}, {duration: '30days', label: t.pricing.days30, price: '30 AZN'}], showPricingDropdown: true},
-    {id: 'premium' as ListingTier, title: t.pricing.premium, isFree: false, features: planFeatures.premium, emphasis: t.pricing.premiumDesc, pricingOptions: [{duration: '14days', label: t.pricing.days14, price: '30 AZN'}, {duration: '30days', label: t.pricing.days30, price: '55 AZN'}], showPricingDropdown: true, highlighted: true}
+    {id: 'vip' as ListingTier, title: t.pricing.vip, isFree: false, features: planFeatures.vip, emphasis: t.pricing.vipDesc, pricingOptions: [{duration: '14days', label: t.pricing.days14, price: `${TIER_PRICES.vip['14days']} ${TIER_CURRENCY}`}, {duration: '30days', label: t.pricing.days30, price: `${TIER_PRICES.vip['30days']} ${TIER_CURRENCY}`}], showPricingDropdown: true},
+    {id: 'premium' as ListingTier, title: t.pricing.premium, isFree: false, features: planFeatures.premium, emphasis: t.pricing.premiumDesc, pricingOptions: [{duration: '14days', label: t.pricing.days14, price: `${TIER_PRICES.premium['14days']} ${TIER_CURRENCY}`}, {duration: '30days', label: t.pricing.days30, price: `${TIER_PRICES.premium['30days']} ${TIER_CURRENCY}`}], showPricingDropdown: true, highlighted: true}
   ], [planFeatures, t])
 
   const handleAmenityToggle = (amenity: Amenity) => setNewListing(previous => ({...previous, amenities: previous.amenities.includes(amenity) ? previous.amenities.filter(item => item !== amenity) : [...previous.amenities, amenity]}))
@@ -627,10 +624,17 @@ export function ListingEditor({
             <div className="form-section-header-text">
               <div className="form-section-title">{t.form.photos}</div>
               <div className="form-section-subtitle">
-                {newListing.listingTier === 'standard' || newListing.listingTier === 'vip'
-                  ? (isEnglish ? 'Max 20 photos' : isRussian ? 'Макс. 20 фото' : 'Maks. 20 şəkil')
-                  : newListing.listingTier === 'premium'
-                  ? (isEnglish ? 'Max 30 photos' : isRussian ? 'Макс. 30 фото' : 'Maks. 30 şəkil')
+                {newListing.listingTier
+                  ? (() => {
+                      // Число — из общего пакета, слова прежние. Так подпись не
+                      // разойдётся ни с проверкой при сохранении, ни с приложением.
+                      const limit = photoLimitForTier(newListing.listingTier)
+                      return isEnglish
+                        ? `Max ${limit} photos`
+                        : isRussian
+                        ? `Макс. ${limit} фото`
+                        : `Maks. ${limit} şəkil`
+                    })()
                   : (isEnglish ? 'Select a plan first' : isRussian ? 'Сначала выберите тариф' : 'Əvvəlcə paket seçin')}
               </div>
             </div>

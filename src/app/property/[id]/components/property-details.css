@@ -1221,6 +1221,30 @@
 }
 
 /* ===== OWNER ACTIONS ===== */
+/* Почему у Premium нет кнопки VIP. Молчание читалось бы как потеря
+   возможности, а это защита от потери оплаченных дней. Строка занимает весь
+   ряд: кнопки выложены флексом, и без переноса она встала бы рядом с ними. */
+.pp-owner-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--neutral);
+}
+
+/* Что станет с днями после оплаты — под выбором срока, до нажатия. */
+.pp-upgrade-modal__note:empty {
+  display: none;
+}
+
+.pp-upgrade-modal__note {
+  margin: 0.6rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--neutral);
+  text-align: center;
+}
+
 .pp-owner-actions {
   display: flex;
   gap: 0.6rem;

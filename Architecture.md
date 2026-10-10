@@ -279,6 +279,31 @@ Visibility is decided in two places on purpose:
 Expired listings are never deleted. They keep their data and photos and return to the site on
 renewal.
 
+### Which upgrade a listing is offered
+
+Decided by the tier **in force**, never by the `listingTier` field alone — an expired paid
+listing keeps that field and would otherwise look VIP when it no longer is.
+
+```
+standard or expired   both steps: VIP and Premium
+VIP in force          extend VIP, or move up to Premium
+Premium in force      extend Premium only
+```
+
+⚠️ **Premium is never offered VIP, and that is a safety rule, not an omission.** Paying for VIP
+goes through `applyPaidTier`, which clears the previous tier's expiry: the listing would become
+VIP and the paid Premium days would be gone. A button that costs the buyer what they already
+paid for must not exist — in its place stands a line explaining why it is missing.
+
+Until 2026-10-10 the site did the opposite: a VIP listing was offered only Premium, and a
+Premium listing got **no buttons at all**, so it could not be renewed from its own page. The
+mobile app was built to the scheme above first, and the site was aligned to the app.
+
+Photo limits and the per-tier feature lists live in `core` (`TIER_PHOTO_LIMITS`,
+`photoLimitForTier`, `pricing.features` in the message catalogues). They used to be literals
+inside the web editor, which is why the app promised 15 photos to everyone and silently dropped
+the rest.
+
 ## Scheduled functions
 
 All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed

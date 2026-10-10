@@ -41,7 +41,17 @@ export const verifyPlayPurchase = functions
     const productId = typeof payload.productId === 'string' ? payload.productId : '';
     const propertyId = typeof payload.propertyId === 'string' ? payload.propertyId : '';
 
-    if (!purchaseToken || !productId || !propertyId) {
+    // ⚠️ `propertyId` здесь НЕ обязателен, и это важно. Приложение знает его,
+    // пока живёт экран оплаты; если процесс убили между списанием и проверкой,
+    // при следующем запуске оно забирает незавершённую покупку из магазина и
+    // присылает её БЕЗ номера объявления — в памяти его уже нет. Требовать его
+    // здесь значило бы отказывать как раз в том случае, ради которого повтор и
+    // придуман: деньги списаны, а тариф не поставлен.
+    //
+    // Номер при этом не теряется: приложение привязало его к покупке до оплаты
+    // (`obfuscatedProfileId`), и Google возвращает привязку нам. Её и берём
+    // ниже. Отказываем, только если нет ни привязки, ни слова приложения.
+    if (!purchaseToken || !productId) {
       throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
     }
 
@@ -92,6 +102,12 @@ export const verifyPlayPurchase = functions
     // нет — она появилась позже самой покупки и у старых записей её может не
     // быть. Когда есть, она главнее: её не подделать на устройстве.
     const targetPropertyId = purchase.obfuscatedExternalProfileId || propertyId;
+    if (!targetPropertyId) {
+      // Ни привязки, ни номера от приложения. Такое возможно только у покупок
+      // старше привязки; руками их разбирать по журналу, а не гадать здесь.
+      console.error('[Play] No property bound to purchase:', purchase.orderId);
+      throw new functions.https.HttpsError('invalid-argument', 'No property for this purchase');
+    }
 
     // Объявление должно существовать и принадлежать покупателю. Токен покупки
     // доказывает факт оплаты, но не право поднять именно это объявление.

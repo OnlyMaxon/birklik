@@ -152,7 +152,7 @@ export async function PropertyDetails({
                     </span>
                   )}
                 </div>
-                {isOwner && <OwnerActions propertyId={property.id} listingTier={property.listingTier} />}
+                {isOwner && <OwnerActions propertyId={property.id} listing={property} />}
               </div>
 
               <div className="pp-details-bar">

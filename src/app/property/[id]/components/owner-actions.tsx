@@ -9,15 +9,42 @@ import * as logger from '@/services/logger'
 // Цены — из общего пакета, своей копии здесь больше нет: приложение показывает
 // те же числа, и разъезжаться им нечем.
 import {TIER_PRICES} from '@birklik/core/data'
+import {isTierActive} from '@birklik/core/utils/premium-helper'
 import type {ListingTier} from '@birklik/core/types'
 
 interface OwnerActionsProps {
   propertyId: string
-  listingTier?: ListingTier
+  /**
+   * Тариф и его сроки. Нужны именно сроки: какую ступень предлагать, решает
+   * ДЕЙСТВУЮЩИЙ тариф, а у истёкшего платного поле `listingTier` остаётся
+   * прежним — по нему объявление выглядело бы VIP-овским, уже не будучи им.
+   */
+  listing: {listingTier?: ListingTier; vipExpiresAt?: string; premiumExpiresAt?: string}
 }
 
-export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
-  const {language} = useLanguage()
+/**
+ * Повышение тарифа на своём объявлении.
+ *
+ * ```
+ * обычное или истёкшее   VIP и Premium — обе ступени
+ * действует VIP          продлить VIP либо перейти на Premium
+ * действует Premium      только продлить Premium
+ * ```
+ *
+ * ⚠️ Premium-у VIP НЕ предлагается. Оплата VIP проходит через `applyPaidTier`,
+ * а она стирает дату прежнего тарифа: объявление стало бы VIP, и оплаченные дни
+ * Premium сгорели бы. Кнопки, после которой человек теряет оплаченное, быть не
+ * должно — вместо неё стоит объяснение, почему её нет.
+ *
+ * ⚠️ До 2026-10-10 здесь было иначе: VIP-объявлению предлагался только Premium,
+ * а Premium-объявлению — НИ ОДНОЙ кнопки, то есть продлить его со страницы
+ * объявления было нельзя вообще. Приложение теперь работает по схеме выше, и
+ * сайт выровнен по нему, а не наоборот.
+ */
+export function OwnerActions({propertyId, listing}: OwnerActionsProps) {
+  const {language, t} = useLanguage()
+  const premiumActive = isTierActive(listing, 'premium')
+  const vipActive = isTierActive(listing, 'vip')
   const [upgradeModal, setUpgradeModal] = React.useState<'vip' | 'premium' | null>(null)
   const [isUpgrading, setIsUpgrading] = React.useState(false)
 
@@ -56,16 +83,15 @@ export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
   return (
     <>
       <div className="pp-owner-actions">
-        {listingTier !== 'vip' && listingTier !== 'premium' && (
+        {!premiumActive && (
           <button onClick={() => setUpgradeModal('vip')} className="btn btn-sm pp-owner-btn--vip">
-            {language === 'en' ? '★ Upgrade to VIP' : language === 'ru' ? '★ VIP' : '★ VIP-ə yüksəlt'}
+            ★ {vipActive ? t.promote.extendVip : t.promote.upgradeVip}
           </button>
         )}
-        {listingTier !== 'premium' && (
-          <button onClick={() => setUpgradeModal('premium')} className="btn btn-sm pp-owner-btn--premium">
-            {language === 'en' ? '◆ Premium' : language === 'ru' ? '◆ Премиум' : '◆ Premium'}
-          </button>
-        )}
+        <button onClick={() => setUpgradeModal('premium')} className="btn btn-sm pp-owner-btn--premium">
+          ◆ {premiumActive ? t.promote.extendPremium : t.promote.upgradePremium}
+        </button>
+        {premiumActive && <p className="pp-owner-note">{t.promote.vipNotOffered}</p>}
       </div>
 
       {upgradeModal && (
@@ -98,6 +124,13 @@ export function OwnerActions({propertyId, listingTier}: OwnerActionsProps) {
                 )
               })}
             </div>
+            <p className="pp-upgrade-modal__note">
+              {upgradeModal === 'premium' && vipActive
+                ? t.promote.replaceNote
+                : (upgradeModal === 'vip' && vipActive) || (upgradeModal === 'premium' && premiumActive)
+                ? t.promote.addDaysNote
+                : ''}
+            </p>
             {isUpgrading
               ? <p className="pp-upgrade-modal__loading">
                   <InlineSpinner label={language === 'en' ? 'Redirecting' : language === 'ru' ? 'Переход' : 'Yönləndirilir'} />{' '}

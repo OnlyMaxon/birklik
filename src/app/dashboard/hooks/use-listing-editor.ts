@@ -3,7 +3,7 @@
 import React from 'react'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import {useAuth, useLanguage} from '@/components/providers'
-import {resolveCityQuery} from '@birklik/core/data'
+import {photoLimitForTier, resolveCityQuery} from '@birklik/core/data'
 import firebaseApp from '@/lib/firebase/client'
 import {createProperty, deleteProperty, updateProperty} from '@/services'
 import type {Amenity, District, ListingStatus, ListingTier, LocationCategory, Property, PropertyType} from '@birklik/core/types'
@@ -297,14 +297,13 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
       return
     }
 
-    if ((newListing.listingTier === 'standard' || newListing.listingTier === 'vip') && selectedFiles.length + existingImages.length > 20) {
-      setError(t.listing.maxImagesStandard)
-      setIsSubmitting(false)
-      return
-    }
-
-    if (newListing.listingTier === 'premium' && selectedFiles.length + existingImages.length > 30) {
-      setError(t.listing.maxImagesPremium)
+    // Предел снимков — из общего пакета: те же числа показывает приложение.
+    // Литералы 20 и 30 стояли здесь, приложение о них не знало и держало свои
+    // 15 на все тарифы, молча отрезая лишние.
+    if (selectedFiles.length + existingImages.length > photoLimitForTier(newListing.listingTier)) {
+      setError(
+        newListing.listingTier === 'premium' ? t.listing.maxImagesPremium : t.listing.maxImagesStandard
+      )
       setIsSubmitting(false)
       return
     }
