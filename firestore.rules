@@ -95,9 +95,16 @@ service cloud.firestore {
         // `src/app/property/[id]/lib/interactions.ts`, просмотры —
         // `recordPropertyView`. Владелец правит описание, цену, фотографии и
         // удобства; репутацию объявления он не правит.
+        //
+        // ⚠️ `boostedAt` в этом же списке, и это не формальность: по нему
+        // считается место в выдаче внутри полосы. Оставь его открытым — и
+        // владелец поднимал бы своё объявление наверх из браузера бесплатно и
+        // сколько угодно раз, одной правкой документа. Пишет его только сервер:
+        // `applyBoostPackage` после оплаты и ночная `dailyBoosts`.
         (isOwner(resource.data.ownerId)
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
                'ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'vipExpiresAt', 'isFeatured',
+               'boostedAt',
                'rating', 'reviews', 'ratings', 'comments', 'views', 'likes', 'favorites'
              ]))
         // Moderator: can update anything including status
@@ -123,6 +130,25 @@ service cloud.firestore {
       allow delete: if request.auth != null && (
         isOwner(resource.data.ownerId) || isModerator()
       );
+    }
+
+    // Счётчики незаконченных пакетов подъёма. Ключ — номер объявления.
+    match /boosts/{propertyId} {
+      // Читать разрешено вошедшему: экран продвижения показывает владельцу,
+      // сколько подъёмов осталось. Правило «только своё» писать нечем без
+      // лишнего чтения — у отсутствующего документа `resource` пуст, и условие
+      // по `ownerId` отказало бы на любом запросе про непокупавшееся
+      // объявление, то есть «подъёмов нет» стало бы неотличимо от «нет права».
+      // Тайны в записи нет: номер объявления, владелец и счётчик. Сам факт
+      // покупки подъёма виден и так — объявление стоит наверху.
+      allow read: if request.auth != null;
+
+      // Писать нельзя НИКОМУ, включая владельца и модератора. Это кошелёк:
+      // запись создаёт `applyBoostPackage` после подтверждённой оплаты, а
+      // расходует ночная `dailyBoosts`. Обе работают под сервис-аккаунтом, и
+      // правила их не касаются. Разреши правку здесь — и счётчик подъёмов
+      // выставлялся бы руками, без оплаты.
+      allow write: if false;
     }
 
     // Подколлекции properties/{id}/comments в проде нет: комментарии лежат

@@ -1276,6 +1276,24 @@
   background: linear-gradient(135deg, #9b7a4a, #b7925d) !important;
 }
 
+/* Подъём. Зелёный намеренно не из гаммы тарифов: это не ступень выше Premium, а
+   отдельная услуга, и похожесть на них читалась бы как «тариф ещё дороже». */
+.pp-owner-btn--boost {
+  background: linear-gradient(135deg, #1b7f5a, #2a9d73) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.pp-owner-btn--boost:hover {
+  background: linear-gradient(135deg, #156347, #1b7f5a) !important;
+}
+
+/* Строка состояния подъёма — тем же зелёным, что кнопка. */
+.pp-owner-note--boost {
+  color: #156347;
+  font-weight: 600;
+}
+
 /* ===== CONTACT HINT ===== */
 .pp-contact-hint {
   font-size: 0.875rem;
@@ -1612,6 +1630,32 @@
 .pp-upgrade-modal__option--premium {
   background: linear-gradient(135deg, #b7925d, #d4a574);
   color: #fff;
+}
+
+.pp-upgrade-modal__option--boost {
+  background: linear-gradient(135deg, #1b7f5a, #2a9d73);
+  color: #fff;
+}
+
+/* Пакетов подъёма четыре, а не два: в один ряд они сжались бы до нечитаемых
+   столбиков. Сетка по два в ряд, на узком экране — по одному. */
+.pp-upgrade-modal__options--boost {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 420px) {
+  .pp-upgrade-modal__options--boost {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Что получает покупатель пакета: «по разу в день, 3 дня». */
+.pp-upgrade-modal__hint {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  opacity: 0.85;
+  text-align: center;
 }
 
 .pp-upgrade-modal__days {

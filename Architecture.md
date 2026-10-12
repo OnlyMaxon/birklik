@@ -327,6 +327,56 @@ Photo limits and the per-tier feature lists live in `core` (`TIER_PHOTO_LIMITS`,
 inside the web editor, which is why the app promised 15 photos to everyone and silently dropped
 the rest.
 
+### Boost: lifting a listing inside its own band
+
+A boost moves a listing to the top of **its own band** and never out of it. A boosted standard
+listing outranks every other standard listing and still sits below every VIP and Premium. One
+helper owns the whole rule — `core/src/utils/boost-helper.ts`:
+
+```
+isBoostActive     boostedAt within BOOST_WINDOW_MS (25 h)
+compareListings   tier rank → boost → time     ← the only ordering rule on the platform
+listingSortTime   boosted: moment of the boost; otherwise createdAt
+```
+
+⚠️ **The order of those three steps is a price list.** Move the boost comparison above the tier
+one and a 2 ₼ boost outranks a 55 ₼ Premium. Both steps return a number, so nothing in the type
+system notices. `core/src/data/filter-properties.test.ts` pins it.
+
+The window is 25 hours, not 24, deliberately: a package is spent by a daily job, and the window
+has to outlive the gap between its runs. At exactly 24 h a scheduler running five minutes late
+would drop a paid listing out of the band until the next night.
+
+Packages are 1 / 3 / 5 / 10 boosts for 2 / 5 / 8 / 15 ₼ (`BOOST_PRICES` in `core`, with the
+mandatory second copy in `azericard.ts` — same reason as `TIER_PRICES`). The first boost happens
+at purchase, so a single-boost package leaves **no record at all**; the rest go into
+`boosts/{propertyId}` and are spent one a day by `dailyBoosts`, which deletes the record on the
+last one. Buying again adds to what is left — unlike `applyPaidTier`, a boost never burns days
+already paid for.
+
+⚠️ **Boost is offered to standard listings only.** The code supports it for any band, and a race
+(the listing turning VIP between the store window opening and the receipt check) applies it
+harmlessly inside the paid band. But the buttons are hidden for VIP and Premium, and
+`initiatePayment` refuses such a payment **before** money moves — those two already outrank every
+standard listing, and selling them what they have would be dishonest.
+
+⚠️ **The lifted listings need their own query, and without it the feature does nothing.** The
+reason is pagination, not ordering: the home feed cuts pages with a cursor on `createdAt`, so an
+old boosted listing sits on page three and the in-memory sort never gets the chance to lift it.
+`fetchBoostedProperties` in `src/app/queries.ts` fetches them the same way, and for the same
+reason, as the paid tiers — both arrive in `HomeProperties.pinned`. Region pages need no such
+query: they read every listing at once, so sorting is enough.
+
+The selector is the **presence** of `boostedAt` — the very Firestore behaviour that makes
+`orderBy` silently drop documents without the field. Here it works in our favour: a listing
+never boosted must not appear in that query. Never backfill `boostedAt` onto every listing "for
+consistency"; the query would collect the whole collection.
+
+`boostedAt` is server-written only and sits in the owner's forbidden-field list in
+`firestore.rules`, next to `listingTier` and the expiry dates. Left open, a boost would be one
+hand-edited document instead of two manats — the cheapest theft available on the platform.
+`tests/rules/properties.test.ts` and `tests/rules/boosts.test.ts` hold that shut.
+
 ## Scheduled functions
 
 All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed
@@ -338,6 +388,7 @@ that reason (see `AUDIT.md`).
 |---|---|---|
 | `cleanupDrafts` | every 2 hours | Expires stale payments, then removes abandoned drafts. Skips a draft while its payment is still `awaiting_payment`. |
 | `expirePaidTiers` | daily 03:00 UTC | Marks listings whose paid tier ran out as `inactive` and records `expiredAt`. Deletes nothing. |
+| `dailyBoosts` | daily 01:00 UTC | Spends one boost per listing from `boosts/`, deletes the record on the last one. 01:00 UTC is 05:00 in Baku — the lift has to land before people start browsing. Skips **without spending** when the last boost is under 20 h old (scheduler retries and manual runs must not burn paid days) or when the listing is off display (a paid day on a hidden listing is a day nobody sees). Removes records whose listing is gone, and abandoned ones after 90 days. |
 | `cleanupStaleRequests` | Sundays 05:00 UTC | Removes cancellation requests whose booking no longer exists. |
 | `cleanupStorage` | Sundays 04:00 UTC | Removes unreferenced images, `temp/` files and old avatars. Aborts if orphan candidates exceed 5% of the bucket — that shape of result means a URL format stopped being recognised, not that users deleted a hundred photos. |
 

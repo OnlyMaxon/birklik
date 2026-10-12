@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions/v1';
 import {admin} from '../firebase-admin';
 import {applyPaidTier} from './apply-tier';
+import {applyBoostPackage, isBoostPackage, type BoostPackage} from '../boost/apply-boost';
 import * as crypto from 'crypto';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
@@ -25,6 +26,13 @@ const TIER_PRICES: Record<string, Record<string, number>> = {
   vip: { '14days': 20, '30days': 30 },
   premium: { '14days': 30, '30days': 55 },
 };
+
+/**
+ * ⚠️ КОПИЯ. Источник — `BOOST_PRICES` в `core/src/data/pricing.ts`, оттуда же
+ * берёт цену сайт. Причина копии та же, что выше. **Меняя цену, править оба
+ * места.**
+ */
+const BOOST_PRICES: Record<number, number> = { 1: 2, 3: 5, 5: 8, 10: 15 };
 
 // MAC source: конкатенация "длина+значение" для каждого поля
 // Если значение пустое — добавляется "-" (по документации Azericard)
@@ -113,6 +121,23 @@ async function deleteDraftWithImages(propertyId: string): Promise<void> {
   }
 }
 
+/**
+ * Действует ли у объявления платный тариф прямо сейчас.
+ *
+ * ⚠️ Копия правила `isTierActive` из `core/src/utils/premium-helper.ts`:
+ * подмодуль `core` в сборку функций не тянут. Нужна и тариф, и непросроченная
+ * дата — платный тариф без даты действующим не считается.
+ */
+function hasActivePaidTier(data: Record<string, unknown>): boolean {
+  const tier = data.listingTier;
+  if (tier !== 'vip' && tier !== 'premium') return false;
+  const raw = (tier === 'vip' ? data.vipExpiresAt : data.premiumExpiresAt) as string | undefined;
+  if (!raw) return false;
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T23:59:59.999Z` : raw;
+  const parsed = new Date(normalized);
+  return !Number.isNaN(parsed.getTime()) && parsed.getTime() > Date.now();
+}
+
 // =========================================================
 // FUNCTION 1: initiatePayment
 // Вызывается с фронтенда после валидации формы.
@@ -127,13 +152,25 @@ export const initiatePayment = functions
       throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
     }
 
-    const { propertyId, tier, duration } = data as {
+    const { propertyId, tier, duration, kind, boostCount } = data as {
       propertyId: string;
-      tier: 'vip' | 'premium';
-      duration: '14days' | '30days';
+      tier?: 'vip' | 'premium';
+      duration?: '14days' | '30days';
+      /**
+       * Что покупают. Отсутствие означает тариф: так зовёт эта функция с 2025
+       * года, и открытая в браузере страница может быть старее сегодняшней
+       * выкладки.
+       */
+      kind?: 'tier' | 'boost';
+      boostCount?: number;
     };
 
-    if (!propertyId || !tier || !duration) {
+    const isBoost = kind === 'boost';
+
+    if (!propertyId) {
+      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
+    }
+    if (!isBoost && (!tier || !duration)) {
       throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
     }
 
@@ -146,7 +183,36 @@ export const initiatePayment = functions
       throw new functions.https.HttpsError('permission-denied', 'Not your property');
     }
 
-    const amount = TIER_PRICES[tier]?.[duration];
+    let amount: number | undefined;
+
+    if (isBoost) {
+      if (!isBoostPackage(boostCount)) {
+        throw new functions.https.HttpsError('invalid-argument', 'Invalid boost package');
+      }
+
+      // ⚠️ Здесь единственное место, где подъём можно ОТКАЗАТЬ, не теряя чужих
+      // денег. После оплаты `applyBoostPackage` применяет что заплатили и
+      // отказывать уже не вправе.
+      //
+      // Поднимать можно только то, что стоит на витрине: у черновика, ждущего
+      // модерации и скрытого объявления подъём сгорел бы впустую — его сутки
+      // истекли бы раньше, чем объявление кого-то увидит.
+      const target = propertySnap.data() ?? {};
+      if (target.status !== 'active') {
+        throw new functions.https.HttpsError('failed-precondition', 'Listing is not on display');
+      }
+      if (hasActivePaidTier(target)) {
+        // VIP и Premium и так стоят выше всех обычных. Подъём внутри своей
+        // полосы код поддерживает, но продавать его платному тарифу мы не
+        // договаривались — кнопки у него нет, значит и платежа быть не должно.
+        throw new functions.https.HttpsError('failed-precondition', 'Paid tier ranks above standard already');
+      }
+
+      amount = BOOST_PRICES[boostCount];
+    } else {
+      amount = TIER_PRICES[tier!]?.[duration!];
+    }
+
     if (!amount) {
       throw new functions.https.HttpsError('invalid-argument', 'Invalid tier or duration');
     }
@@ -164,12 +230,17 @@ export const initiatePayment = functions
     const nonce = generateNonce();
     const tierLabel = tier === 'premium' ? 'Premium' : 'VIP';
     const daysLabel = duration === '14days' ? '14 gun' : '30 gun';
+    // Описание видно человеку в выписке по карте, поэтому пишется латиницей без
+    // диакритики: банк не обещает в этом поле ничего, кроме ASCII.
+    const description = isBoost
+      ? `Birklik.az Boost - ${boostCount} defe`
+      : `Birklik.az ${tierLabel} - ${daysLabel}`;
 
     const params: Record<string, string> = {
       AMOUNT: amount.toFixed(2),
       CURRENCY,
       ORDER: orderId,
-      DESC: `Birklik.az ${tierLabel} - ${daysLabel}`,
+      DESC: description,
       TERMINAL: terminal,
       MERCH_NAME,
       MERCH_URL,
@@ -194,11 +265,15 @@ export const initiatePayment = functions
     await admin.firestore().collection('payments').add({
       propertyId,
       userId: context.auth.uid,
-      tier,
-      duration,
+      // Что именно куплено. У подъёма тарифа нет, у тарифа нет числа подъёмов —
+      // по этому полю колбэк и решает, какую из двух функций применять.
+      kind: isBoost ? 'boost' : 'tier',
+      ...(isBoost ? { boostCount } : { tier, duration }),
       amount,
       orderId,
-      isUpgrade,
+      // У подъёма всегда `true`: поднимают существующее объявление, и чистка
+      // черновика при неудаче к нему не относится ни при каком исходе.
+      isUpgrade: isBoost ? true : isUpgrade,
       status: 'awaiting_payment',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -343,14 +418,32 @@ export const azericardCallback = functions
 
     // ACTION=0 и RC=00 означает успешный платёж
     if (ACTION === '0' && RC === '00') {
-      // Тариф, срок и статус ставит общая функция: ровно то же делает покупка
-      // через Google Play. Подпись банка проверена выше — это единственное, что
-      // отличает два пути.
-      await applyPaidTier({
-        propertyId: payment.propertyId,
-        tier: payment.tier,
-        duration: payment.duration,
-      });
+      // Что применять, решает запись о платеже, а не параметры колбэка: банк
+      // присылает только номер заказа и подпись, и ничего не знает про тарифы.
+      if (payment.kind === 'boost') {
+        // Число подъёмов перепроверяется, хотя писали его мы сами: запись могли
+        // поправить руками в консоли, а по ней начисляется оплаченное.
+        if (!isBoostPackage(payment.boostCount)) {
+          console.error('[Azericard] Битое число подъёмов в платеже:', ORDER, payment.boostCount);
+          res.redirect(`${frontendBase}/dashboard?payment=error`);
+          return;
+        }
+        await applyBoostPackage({
+          propertyId: payment.propertyId,
+          count: payment.boostCount as BoostPackage,
+          ownerId: payment.userId,
+          source: 'azericard',
+        });
+      } else {
+        // Тариф, срок и статус ставит общая функция: ровно то же делает покупка
+        // через Google Play. Подпись банка проверена выше — это единственное, что
+        // отличает два пути.
+        await applyPaidTier({
+          propertyId: payment.propertyId,
+          tier: payment.tier,
+          duration: payment.duration,
+        });
+      }
 
       await paymentDoc.ref.update({
         status: 'completed',
@@ -360,7 +453,15 @@ export const azericardCallback = functions
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      res.redirect(`${frontendBase}/dashboard?payment=success`);
+      // Подъём возвращаем на страницу объявления: там человек и нажимал кнопку,
+      // и там же видно, что объявление поднято и сколько подъёмов осталось.
+      // Тариф по-прежнему ведёт в кабинет — после оплаты черновика объявление
+      // уходит на модерацию, и показывать его страницу рано.
+      res.redirect(
+        payment.kind === 'boost'
+          ? `${frontendBase}/property/${payment.propertyId}?payment=success`
+          : `${frontendBase}/dashboard?payment=success`
+      );
     } else {
       console.warn('[Azericard] Payment failed. ORDER:', ORDER, 'ACTION:', ACTION, 'RC:', RC);
 

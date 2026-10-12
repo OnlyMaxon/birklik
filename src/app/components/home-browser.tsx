@@ -36,18 +36,22 @@ const initialFilters: FilterState = {
 }
 
 interface HomeBrowserProps {
-  initialPremium: Property[]
+  /**
+   * Объявления, пришедшие мимо постраничной выдачи: платные тарифы и поднятые.
+   * Почему их нельзя ждать от страниц — в `fetchBoostedProperties`.
+   */
+  initialPinned: Property[]
   initialStandard: Property[]
   initialCursor: PropertyCursor | null
 }
 
-export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initialStandard, initialCursor }) => {
+export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPinned, initialStandard, initialCursor }) => {
   const { t } = useLanguage()
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [showMap, setShowMap] = React.useState(false)
   const [showFilters, setShowFilters] = React.useState(false)
   const [viewMode, setViewMode] = React.useState<'normal' | 'compact'>('normal')
-  const [properties, setProperties] = React.useState<Property[]>([...initialPremium, ...initialStandard])
+  const [properties, setProperties] = React.useState<Property[]>([...initialPinned, ...initialStandard])
   const [isLoading, setIsLoading] = React.useState(false)
   const [isLoadingMore, setIsLoadingMore] = React.useState(false)
   const [, setHasMore] = React.useState(initialCursor !== null)
@@ -56,8 +60,10 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
   const lastDocRef = React.useRef<PropertyCursor | null>(initialCursor)
   const hasMoreRef = React.useRef(initialCursor !== null)
   const isLoadingMoreRef = React.useRef(false)
-  // IDs of VIP/Premium already loaded — used to deduplicate paginated standard results
-  const premiumIdsRef = React.useRef<Set<string>>(new Set(initialPremium.map(p => p.id)))
+  // Что уже загружено мимо страниц — платные тарифы и поднятые. Нужно, чтобы
+  // постраничная выдача не прислала то же объявление вторым экземпляром: её
+  // запрос отбирает по одному `status`, без оглядки на тариф и подъём.
+  const pinnedIdsRef = React.useRef<Set<string>>(new Set(initialPinned.map(p => p.id)))
   // The server already rendered the unfiltered first page — only refetch when the
   // city filter actually changes after mount, not on the initial render.
   const isFirstRenderRef = React.useRef(true)
@@ -80,13 +86,13 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
       setHasMore(false)
       lastDocRef.current = null
       hasMoreRef.current = false
-      premiumIdsRef.current = new Set()
+      pinnedIdsRef.current = new Set()
 
-      const { premium, standard } = await refreshPropertiesAction(filters.city || undefined)
+      const { pinned, standard } = await refreshPropertiesAction(filters.city || undefined)
       if (cancelled) return
 
-      premiumIdsRef.current = new Set(premium.map(p => p.id))
-      setProperties([...premium, ...standard.properties])
+      pinnedIdsRef.current = new Set(pinned.map(p => p.id))
+      setProperties([...pinned, ...standard.properties])
       lastDocRef.current = standard.cursor
       hasMoreRef.current = standard.cursor !== null
       setHasMore(standard.cursor !== null)
@@ -114,7 +120,7 @@ export const HomeBrowser: React.FC<HomeBrowserProps> = ({ initialPremium, initia
       const result = await loadMorePropertiesAction(
         lastDocRef.current,
         filters.city || undefined,
-        Array.from(premiumIdsRef.current)
+        Array.from(pinnedIdsRef.current)
       )
       lastDocRef.current = result.cursor
       if (result.properties.length > 0) {

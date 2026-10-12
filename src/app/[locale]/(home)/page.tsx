@@ -33,10 +33,10 @@ export async function generateMetadata({
 }
 
 export default async function Page() {
-  const {premium, standard} = await getHomeProperties()
+  const {pinned, standard} = await getHomeProperties()
   return (
     <HomeBrowser
-      initialPremium={premium}
+      initialPinned={pinned}
       initialStandard={standard.properties}
       initialCursor={standard.cursor}
     />

@@ -40,6 +40,24 @@ export const PLAY_PRODUCTS: Record<string, {tier: PaidTier; duration: TierDurati
   premium_30: {tier: 'premium', duration: '30days'},
 };
 
+/**
+ * Товары подъёма — отдельной таблицей, а не ещё одним полем в `PLAY_PRODUCTS`.
+ *
+ * Подъём это не тариф: он не меняет полосу, не имеет срока и не стирает дат.
+ * Смешай их в одной записи — и пришлось бы заводить необязательные поля,
+ * которые каждый читающий обязан не перепутать. Здесь же товар либо тариф, либо
+ * подъём, и третьего нет.
+ *
+ * ⚠️ Имена обязаны совпадать с товарами в Play Console и со `BOOST_PRODUCTS` в
+ * `billing-service.ts` приложения. Цены задаёт Google, у нас их нет.
+ */
+export const BOOST_PRODUCTS: Record<string, {count: 1 | 3 | 5 | 10}> = {
+  boost_1: {count: 1},
+  boost_3: {count: 3},
+  boost_5: {count: 5},
+  boost_10: {count: 10},
+};
+
 /** Состояние покупки в ответе Google. 0 — куплено, это единственное, что нас устраивает. */
 const PURCHASED = 0;
 

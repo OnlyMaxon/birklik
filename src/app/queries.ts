@@ -4,6 +4,7 @@ import {queryDocs, DOCUMENT_ID, type QueryOptions} from '@/lib/firebase/firestor
 import type {Property} from '@birklik/core/types'
 import {normalizePropertyImageUrls} from '@/lib/images'
 import {isOnDisplay, toListItem} from '@/lib/property-list'
+import {isBoostActive} from '@birklik/core/utils/boost-helper'
 
 const PAGE_SIZE = 20
 
@@ -22,11 +23,20 @@ export interface PropertiesPage {
 }
 
 export interface HomeProperties {
-  premium: Property[]
+  /**
+   * Объявления, которые лента берёт МИМО постраничной выдачи: платные тарифы и
+   * поднятые.
+   *
+   * Называется не `premium`, хотя раньше так и было: теперь сюда попадают ещё и
+   * поднятые обычные объявления. Общее у них одно, и оно же причина отдельной
+   * выборки — их место в выдаче не зависит от даты создания, а страницы режутся
+   * курсором именно по ней.
+   */
+  pinned: Property[]
   standard: PropertiesPage
 }
 
-async function fetchPremiumProperties(filters: HomePropertiesFilters): Promise<Property[]> {
+async function fetchPaidProperties(filters: HomePropertiesFilters): Promise<Property[]> {
   const where: QueryOptions['where'] = [
     ['status', '==', 'active'],
     ['listingTier', 'in', ['vip', 'premium']]
@@ -37,6 +47,55 @@ async function fetchPremiumProperties(filters: HomePropertiesFilters): Promise<P
   // Отсев по дате поверх статуса: Firestore знает только `status`, а он меняется
   // раз в сутки ночным прогоном. См. isOnDisplay.
   return properties.filter(isOnDisplay).map(normalizePropertyImageUrls).map(toListItem)
+}
+
+/**
+ * Поднятые объявления — отдельной выборкой, и без неё подъём не работал бы вовсе.
+ *
+ * ⚠️ Причина не в порядке, а в ПОСТРАНИЧНОСТИ. Порядок лента считает в памяти
+ * (`filterProperties`), и поднятое встало бы наверх само — но только если его
+ * уже загрузили. А страницы режутся курсором по `createdAt`: старое объявление
+ * лежит на третьей странице, и до него человек доскроллит в лучшем случае.
+ * Платные тарифы обходят это ровно так же и по той же причине.
+ *
+ * Отбор по НАЛИЧИЮ `boostedAt` — то самое свойство Firestore, из-за которого
+ * `orderBy` молча выбрасывает документы без поля. Здесь оно работает на нас:
+ * никогда не поднимавшиеся объявления в эту выборку и не должны попадать.
+ * Переносить `boostedAt` всем подряд «для ровности» нельзя — выборка собрала бы
+ * всю базу.
+ *
+ * Выдохшиеся подъёмы отсеиваются уже здесь, а не только сортировкой: окно
+ * короче суток, а запрос всё равно вернул бы объявление месячной давности.
+ */
+async function fetchBoostedProperties(filters: HomePropertiesFilters): Promise<Property[]> {
+  const where: QueryOptions['where'] = [['status', '==', 'active']]
+  if (filters.city) where.push(['city', '==', filters.city])
+
+  // ⚠️ Отказ этой выборки НЕ должен ронять главную, и это не перестраховка.
+  // Запрос с `orderBy` по новому полю требует составного индекса, а индексы
+  // выкладываются отдельно от сайта (`firestore.indexes.json`). Выложи сайт
+  // первым — и Firestore ответит FAILED_PRECONDITION, а `Promise.all` в
+  // `getHomeProperties` уронил бы вместе с собой ВСЮ главную страницу.
+  // Без подъёмов лента работает; без главной — нет.
+  let properties: Array<Omit<Property, 'id'> & {id: string}>
+  try {
+    properties = await queryDocs<Omit<Property, 'id'>>('properties', {
+      where,
+      orderBy: [['boostedAt', 'desc']],
+      // Поднятых одновременно столько, сколько человек купило подъём на сутки.
+      // Пятьдесят — запас больше, чем всех обычных объявлений сейчас, а срез
+      // при переполнении отрежет самые давние подъёмы, то есть верные.
+      limit: 50
+    })
+  } catch (error) {
+    console.error('[Лента] выборка поднятых не удалась, лента идёт без них:', error)
+    return []
+  }
+
+  return properties
+    .filter(property => isBoostActive(property) && isOnDisplay(property))
+    .map(normalizePropertyImageUrls)
+    .map(toListItem)
 }
 
 export async function getPropertiesPage(
@@ -118,15 +177,24 @@ export const getCitiesWithListings = unstable_cache(
 // window since new/changed listings should show up reasonably quickly on the homepage.
 export const getHomeProperties = unstable_cache(
   async (filters: HomePropertiesFilters = {}): Promise<HomeProperties> => {
-    const [premium, standard] = await Promise.all([
-      fetchPremiumProperties(filters),
+    const [paid, boosted, standard] = await Promise.all([
+      fetchPaidProperties(filters),
+      fetchBoostedProperties(filters),
       getPropertiesPage(filters, null)
     ])
-    const premiumIds = new Set(premium.map(p => p.id))
+
+    // Поднятое платное объявление приходит из обеих выборок — склеиваем по
+    // идентификатору. Порядок внутри `pinned` не важен: его всё равно задаёт
+    // `filterProperties` в браузере, и он единственный на сайт и приложение.
+    const pinnedById = new Map(paid.map(property => [property.id, property]))
+    for (const property of boosted) pinnedById.set(property.id, property)
+    const pinned = [...pinnedById.values()]
+
+    const pinnedIds = new Set(pinnedById.keys())
     return {
-      premium,
+      pinned,
       standard: {
-        properties: standard.properties.filter(p => !premiumIds.has(p.id)),
+        properties: standard.properties.filter(p => !pinnedIds.has(p.id)),
         cursor: standard.cursor
       }
     }

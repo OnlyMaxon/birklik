@@ -7,6 +7,7 @@ import {
   expireStalePayments
 } from './cleanup/firestore-cleanup';
 import { runAllStorageCleanups } from './cleanup/storage-cleanup';
+import { runDailyBoosts } from './boost/daily-boosts';
 import { sendPushToUser } from './notifications/send-push';
 import { initiatePayment, azericardCallback } from './payment/azericard';
 import { verifyPlayPurchase } from './payment/verify-play-purchase';
@@ -70,6 +71,31 @@ export const expirePaidTiers = functions
   .onRun(async () => {
     const result = await cleanupExpiredPremium();
     console.log(`[Expiry] скрыто объявлений: ${result.count}`, result.deletedIds);
+    return null;
+  });
+
+/**
+ * Ежедневно расходует пакеты подъёма: по одному подъёму в сутки на объявление,
+ * пока счётчик не кончится. Закончившийся пакет удаляется сам.
+ *
+ * 01:00 UTC — это 05:00 в Баку. Выбрано намеренно: подъём должен случиться ДО
+ * того, как люди начнут смотреть объявления, иначе купленные сутки наверху
+ * начинались бы с пустого ночного часа.
+ *
+ * ⚠️ Расписание — не единственный способ попасть в эту задачу: планировщик
+ * повторяет вызов при ошибке функции. Защита от двойного расхода стоит внутри
+ * `runDailyBoosts` (`MIN_HOURS_BETWEEN_BUMPS`), а не здесь.
+ */
+export const dailyBoosts = functions
+  .region('europe-west1')
+  .pubsub.schedule('every day 01:00')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const result = await runDailyBoosts();
+    console.log(
+      `[Boost] поднято: ${result.bumped}, закончилось пакетов: ${result.finished}, ` +
+      `пропущено: ${result.skipped}, убрано записей: ${result.removed}`
+    );
     return null;
   });
 

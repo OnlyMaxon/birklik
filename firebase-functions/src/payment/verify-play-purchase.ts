@@ -2,7 +2,8 @@ import * as functions from 'firebase-functions/v1';
 import {admin} from '../firebase-admin';
 
 import {applyPaidTier} from './apply-tier';
-import {fetchPlayPurchase, isPurchased, PLAY_PRODUCTS} from './google-play';
+import {applyBoostPackage} from '../boost/apply-boost';
+import {BOOST_PRODUCTS, fetchPlayPurchase, isPurchased, PLAY_PRODUCTS} from './google-play';
 
 /**
  * Покупка тарифа из мобильного приложения.
@@ -56,7 +57,8 @@ export const verifyPlayPurchase = functions
     }
 
     const product = PLAY_PRODUCTS[productId];
-    if (!product) {
+    const boost = BOOST_PRODUCTS[productId];
+    if (!product && !boost) {
       // Товар, которого мы не знаем. Значит в Play Console он заведён под другим
       // именем, чем в PLAY_PRODUCTS, — деньги списаны, а что продали, неясно.
       // Такое надо видеть в журнале, а не молча глотать.
@@ -133,8 +135,13 @@ export const verifyPlayPurchase = functions
         propertyId: targetPropertyId,
         userId: context.auth.uid,
         productId,
-        tier: product.tier,
-        duration: product.duration,
+        // Что куплено. У подъёма ступени и срока нет, у тарифа нет числа
+        // подъёмов — поле `kind` отличает их и в этой записи, и в журнале
+        // платежей, куда пишет ещё и Azericard.
+        kind: boost ? 'boost' : 'tier',
+        ...(boost
+          ? {boostCount: boost.count}
+          : {tier: product.tier, duration: product.duration}),
         orderId: purchase.orderId ?? '',
         // Тестовая покупка из лицензионного теста помечается, чтобы её не
         // приняли за выручку при разборе платежей.
@@ -146,10 +153,51 @@ export const verifyPlayPurchase = functions
       if (existing.exists) {
         return {
           alreadyApplied: true,
+          kind: (existing.data()?.kind as string | undefined) ?? 'tier',
           expiryDate: (existing.data()?.expiryDate as string | undefined) ?? '',
+          remaining: (existing.data()?.remaining as number | undefined) ?? 0,
         };
       }
       throw err;
+    }
+
+    // Общая часть журнала платежей — того же, куда пишет Azericard. Иначе
+    // выручка из приложения не видна там, где её ищут.
+    const paymentBase = {
+      propertyId: targetPropertyId,
+      userId: context.auth.uid,
+      provider: 'google_play',
+      productId,
+      orderId: purchase.orderId ?? '',
+      purchaseToken,
+      isTestPurchase: purchase.purchaseType === 0,
+      status: 'completed',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      completedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (boost) {
+      // Подъём применяется БЕЗ проверки тарифа и статуса объявления: деньги уже
+      // списаны, и отказ здесь оставил бы человека и без подъёма, и без денег до
+      // возврата от Google. Кнопка подъёма у платных тарифов скрыта, так что
+      // сюда такой платёж попадает только гонкой — объявление стало VIP между
+      // открытием окна оплаты и проверкой чека. Тогда подъём поднимет его внутри
+      // полосы VIP: лишнего места это не даёт, Premium он не обгонит.
+      const {boostedAt, remaining} = await applyBoostPackage({
+        propertyId: targetPropertyId,
+        count: boost.count,
+        ownerId: context.auth.uid,
+        source: 'google_play',
+      });
+
+      await claimRef.update({boostedAt, remaining});
+      await admin.firestore().collection('payments').add({
+        ...paymentBase,
+        kind: 'boost',
+        boostCount: boost.count,
+      });
+
+      return {alreadyApplied: false, kind: 'boost', expiryDate: '', remaining};
     }
 
     const {expiryDate, status} = await applyPaidTier({
@@ -160,22 +208,12 @@ export const verifyPlayPurchase = functions
 
     await claimRef.update({expiryDate, appliedStatus: status});
 
-    // Запись в общий журнал платежей — тот же, куда пишет Azericard. Иначе
-    // выручка из приложения не видна там, где её ищут.
     await admin.firestore().collection('payments').add({
-      propertyId: targetPropertyId,
-      userId: context.auth.uid,
+      ...paymentBase,
+      kind: 'tier',
       tier: product.tier,
       duration: product.duration,
-      provider: 'google_play',
-      productId,
-      orderId: purchase.orderId ?? '',
-      purchaseToken,
-      isTestPurchase: purchase.purchaseType === 0,
-      status: 'completed',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    return {alreadyApplied: false, expiryDate, status};
+    return {alreadyApplied: false, kind: 'tier', expiryDate, status, remaining: 0};
   });
