@@ -377,6 +377,44 @@ consistency"; the query would collect the whole collection.
 hand-edited document instead of two manats — the cheapest theft available on the platform.
 `tests/rules/properties.test.ts` and `tests/rules/boosts.test.ts` hold that shut.
 
+### Finishing a payment when the connection dies
+
+Two tills, one effect — and they recover from an interruption in completely different ways.
+This section exists because the difference is the whole risk picture.
+
+```
+Google Play   the app itself returns to an unfinished purchase on every payment screen, and
+              Google refunds an unacknowledged purchase after three days by itself
+Azericard     a payment leaves `awaiting_payment` ONLY through the bank's callback. No
+              callback, no reconciliation — nobody finds out
+```
+
+**The Play side is now closed.** `verifyPlayPurchase` claims the receipt token with a
+`create` on `playPurchases/{purchaseToken}` before applying anything, and until 2026-10-14 it
+answered *any* already-claimed token with success. That was a silent money hole: if the function
+died between claiming the token and `applyPaidTier`, the app's retry got "already applied" and
+then **consumed the product** — and consuming is the acknowledgement that stops Google from
+refunding. Charged, nothing granted, no refund, nothing in the log.
+
+The claim now carries `applied: false` and only gets `applied: true` once the tier or the boost
+is in place. A claimed-but-unapplied token is **finished off** instead of being reported as
+done. Recognising old claims written before the flag works off the trace of the work itself —
+`expiryDate` for a tier, `boostedAt` for a boost. Applying twice at worst grants an extra day or
+an extra boost; not applying takes the buyer's money, so the error is deliberately biased
+towards the buyer. The payments-log entry is written once per receipt: on the recovery path the
+log is checked by `purchaseToken` first, or one purchase would count as revenue twice.
+
+⚠️ **The Azericard side is still open, and it cannot be closed from inside this codebase.**
+`azericardCallback` is reached through the buyer's browser, so a browser that dies between the
+bank's approval and our `BACKREF` leaves the card charged and the tier unset.
+`expireStalePayments` flips the record to `expired` after 24 h and that is the end of it: there
+is no status request (Azericard `TRTYPE=90`) implemented, so nothing ever asks the bank what
+happened to that order. Closing this properly means a reconciliation job against the bank; until
+then it is a **manual** process, and `pnpm payments:stuck` in `firebase-functions` exists to
+make those payments visible. It changes nothing and cross-checks each one against the listing,
+so the rows reading `ТАРИФА НЕТ` / `ПОДЪЁМА НЕТ` are the only ones worth a look in the Azericard
+cabinet.
+
 ## Scheduled functions
 
 All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed
@@ -452,6 +490,11 @@ and `Xaçmaz` both carried `Хачмас`).
   a server action. Two requests in the same second are both accepted; the owner confirms
   bookings by hand, so this is tolerated rather than fixed. Move it into a Cloud Function if
   bookings ever start arriving.
+- No reconciliation with Azericard. A payment approved by the bank whose callback never
+  reached us stays unapplied forever: the money is charged and the tier is not set. `pnpm
+  payments:stuck` lists such payments, but resolving them is manual. Implementing the bank's
+  status request (`TRTYPE=90`) on a schedule is the real fix. See "Finishing a payment when the
+  connection dies".
 - Test coverage is pure logic only — no component or end-to-end tests. What is covered: tier
   logic, display rules, filtering, place-name folding, image URL handling, basemap URLs,
   auth-error and translation completeness, file validation, publication logic, the Firestore

@@ -25,6 +25,11 @@ import {BOOST_PRODUCTS, fetchPlayPurchase, isPurchased, PLAY_PRODUCTS} from './g
  * важная страховка: пока мы не ответили успехом, приложение товар не расходует,
  * и если наша проверка сломается, Google через три дня вернёт человеку деньги
  * сам. Подтверждать здесь значило бы снять эту страховку.
+ *
+ * ⚠️ Из страховки следует главное правило функции: **успехом отвечать только
+ * когда оплаченное действительно выдано**. Приложение на успех расходует товар,
+ * то есть подтверждает покупку, и возврат от Google становится невозможен. До
+ * 2026-10-14 правило нарушалось — разбор занятого токена ниже.
  */
 export const verifyPlayPurchase = functions
   .region('europe-west1')
@@ -130,6 +135,10 @@ export const verifyPlayPurchase = functions
     // оно честно пришлёт тот же токен снова. Поэтому отвечаем успехом с
     // прошлым результатом, а не отказом.
     const claimRef = admin.firestore().collection('playPurchases').doc(purchaseToken);
+
+    /** Заняли ли токен ЭТИМ вызовом. Нет — значит разбираем прошлую попытку. */
+    let claimed = false;
+
     try {
       await claimRef.create({
         propertyId: targetPropertyId,
@@ -143,22 +152,70 @@ export const verifyPlayPurchase = functions
           ? {boostCount: boost.count}
           : {tier: product.tier, duration: product.duration}),
         orderId: purchase.orderId ?? '',
+        // ⚠️ Отметка «применено» ставится ПОСЛЕ применения, а не здесь. Занятый
+        // токен сам по себе не значит, что человек получил оплаченное: между
+        // занятием и применением функция может умереть.
+        applied: false,
         // Тестовая покупка из лицензионного теста помечается, чтобы её не
         // приняли за выручку при разборе платежей.
         isTestPurchase: purchase.purchaseType === 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+      claimed = true;
     } catch (err) {
       const existing = await claimRef.get();
-      if (existing.exists) {
+      if (!existing.exists) throw err;
+
+      const claim = existing.data() ?? {};
+
+      // ⚠️ ЗДЕСЬ БЫЛА ДЫРА, закрыта 2026-10-14. Прежний код на любой занятый
+      // токен отвечал успехом — не глядя, применена покупка или нет.
+      //
+      // Последствие: если функция падала между занятием токена и
+      // `applyPaidTier`, повтор от приложения получал «уже применено», и
+      // приложение РАСХОДОВАЛО товар (`finishTransaction`). Расход — это
+      // подтверждение покупки для Google, а с ним пропадает последняя
+      // страховка: неподтверждённую покупку Google через три дня возвращает
+      // сам. Деньги списаны, тариф не поставлен, возврата не будет.
+      //
+      // Признак применённого — не сама запись, а СЛЕД применения: дата
+      // окончания у тарифа, дата подъёма у подъёма. По ним же узнаются записи,
+      // сделанные до появления поля `applied`.
+      const wasApplied =
+        claim.applied === true || Boolean(claim.expiryDate) || Boolean(claim.boostedAt);
+
+      if (wasApplied) {
         return {
           alreadyApplied: true,
-          kind: (existing.data()?.kind as string | undefined) ?? 'tier',
-          expiryDate: (existing.data()?.expiryDate as string | undefined) ?? '',
-          remaining: (existing.data()?.remaining as number | undefined) ?? 0,
+          kind: (claim.kind as string | undefined) ?? 'tier',
+          expiryDate: (claim.expiryDate as string | undefined) ?? '',
+          remaining: (claim.remaining as number | undefined) ?? 0,
         };
       }
-      throw err;
+
+      // Токен занят, а оплаченное не выдано. Доводим до конца — ниже тот же
+      // путь, что у свежей покупки. Повторное применение в худшем случае
+      // прибавит лишний день или лишний подъём, невыданное — отнимает деньги.
+      // Ошибаемся в сторону покупателя.
+      console.error(
+        '[Play] Чек занят, но покупка НЕ применена — доводим до конца:',
+        purchase.orderId ?? purchaseToken
+      );
+    }
+
+    // Запись в журнал платежей делается один раз на чек. Разбирая прошлую
+    // попытку, проверяем, не попала ли она туда уже: иначе одна покупка
+    // посчиталась бы выручкой дважды. Запрос по одному полю Firestore
+    // индексирует сам, составной индекс не нужен.
+    let paymentLogged = false;
+    if (!claimed) {
+      const logged = await admin
+        .firestore()
+        .collection('payments')
+        .where('purchaseToken', '==', purchaseToken)
+        .limit(1)
+        .get();
+      paymentLogged = !logged.empty;
     }
 
     // Общая часть журнала платежей — того же, куда пишет Azericard. Иначе
@@ -190,12 +247,15 @@ export const verifyPlayPurchase = functions
         source: 'google_play',
       });
 
-      await claimRef.update({boostedAt, remaining});
-      await admin.firestore().collection('payments').add({
-        ...paymentBase,
-        kind: 'boost',
-        boostCount: boost.count,
-      });
+      await claimRef.update({applied: true, boostedAt, remaining});
+
+      if (!paymentLogged) {
+        await admin.firestore().collection('payments').add({
+          ...paymentBase,
+          kind: 'boost',
+          boostCount: boost.count,
+        });
+      }
 
       return {alreadyApplied: false, kind: 'boost', expiryDate: '', remaining};
     }
@@ -206,14 +266,16 @@ export const verifyPlayPurchase = functions
       duration: product.duration,
     });
 
-    await claimRef.update({expiryDate, appliedStatus: status});
+    await claimRef.update({applied: true, expiryDate, appliedStatus: status});
 
-    await admin.firestore().collection('payments').add({
-      ...paymentBase,
-      kind: 'tier',
-      tier: product.tier,
-      duration: product.duration,
-    });
+    if (!paymentLogged) {
+      await admin.firestore().collection('payments').add({
+        ...paymentBase,
+        kind: 'tier',
+        tier: product.tier,
+        duration: product.duration,
+      });
+    }
 
     return {alreadyApplied: false, kind: 'tier', expiryDate, status, remaining: 0};
   });

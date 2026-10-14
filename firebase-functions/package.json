@@ -7,6 +7,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "boost:list": "ts-node src/boost/admin.ts --list",
+    "payments:stuck": "ts-node src/payment/stuck-payments.ts",
     "boost:run": "ts-node src/boost/admin.ts --run",
     "cleanup:dry": "ts-node src/cleanup/admin.ts --dry-run",
     "cleanup:execute": "ts-node src/cleanup/admin.ts --execute",
