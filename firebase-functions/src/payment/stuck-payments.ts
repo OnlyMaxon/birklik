@@ -78,14 +78,58 @@ function ageHours(value: unknown): number {
   return Number.isNaN(ms) ? Infinity : (Date.now() - ms) / 3600000;
 }
 
-/** Действует ли у объявления то, за что заплатили. Копия правила isTierActive. */
-function tierActive(data: Fields, tier: unknown): boolean {
-  if (tier !== 'vip' && tier !== 'premium') return false;
-  const raw = (tier === 'vip' ? data.vipExpiresAt : data.premiumExpiresAt) as string | undefined;
-  if (!raw) return false;
-  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T23:59:59.999Z` : raw;
-  const parsed = new Date(normalized);
-  return !Number.isNaN(parsed.getTime()) && parsed.getTime() > Date.now();
+function parseMs(value: unknown): number {
+  if (typeof value === 'string') {
+    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T23:59:59.999Z` : value;
+    return new Date(normalized).getTime();
+  }
+  return (value as {toMillis?: () => number} | undefined)?.toMillis?.() ?? NaN;
+}
+
+/**
+ * Искать надо СЛЕД ОПЛАТЫ, а не действующий тариф.
+ *
+ * ⚠️ Первая версия этой проверки спрашивала `isTierActive`, то есть «действует ли
+ * тариф прямо сейчас», — и для старых платежей это бессмысленно: VIP на
+ * четырнадцать дней, купленный в августе, истёк бы в сентябре и сам, безо всяких
+ * потерянных колбэков. «Тарифа нет» у платежа двухмесячной давности не значило
+ * ровно ничего.
+ *
+ * Правильный признак — ДАТА ОКОНЧАНИЯ, даже протухшая, и её совпадение с
+ * «день оплаты плюс срок». Совпала — колбэк дошёл и тариф ставился. Нет самой
+ * даты — не ставился никогда.
+ *
+ * ⚠️ И обратное тоже надо держать в голове: тариф в базе **не доказательство
+ * оплаты**. Модератор ставит `listingTier` и даты руками из своего редактора
+ * (правила это разрешают), так что совпавшая дата — сильный довод, а не
+ * приговор. Единственный источник правды про деньги — кабинет Azericard.
+ */
+function paymentTrace(data: Fields, payment: Fields): string {
+  const tier = payment.tier;
+  if (tier !== 'vip' && tier !== 'premium') return 'тариф в платеже не указан';
+
+  const raw = (tier === 'vip' ? data.vipExpiresAt : data.premiumExpiresAt) as
+    | string
+    | undefined;
+  if (!raw) return 'СЛЕДА НЕТ: даты окончания не было никогда';
+
+  const expiryMs = parseMs(raw);
+  if (Number.isNaN(expiryMs)) return `дата окончания битая: ${raw}`;
+
+  const paidMs = parseMs(payment.createdAt);
+  const days = payment.duration === '14days' ? 14 : payment.duration === '30days' ? 30 : 0;
+  const shown = String(raw).slice(0, 10);
+
+  if (Number.isNaN(paidMs) || days === 0) return `дата окончания есть: ${shown}`;
+
+  // Срок считается от применения, а оно идёт следом за оплатой. Двое суток
+  // запаса — на продления и на разницу часовых поясов.
+  const expected = paidMs + days * 86400000;
+  const offDays = Math.abs(expiryMs - expected) / 86400000;
+
+  return offDays <= 2
+    ? `СЛЕД ЕСТЬ: до ${shown}, сходится с «оплата + ${days} дн.»`
+    : `дата есть (${shown}), но с оплатой НЕ сходится (${Math.round(offDays)} дн. разницы)`;
 }
 
 async function describeTarget(payment: Fields): Promise<string> {
@@ -93,19 +137,17 @@ async function describeTarget(payment: Fields): Promise<string> {
   if (!propertyId) return 'объявление не указано';
 
   const snap = await admin.firestore().collection('properties').doc(propertyId).get();
-  if (!snap.exists) return 'ОБЪЯВЛЕНИЕ УДАЛЕНО';
+  if (!snap.exists) return 'ОБЪЯВЛЕНИЕ УДАЛЕНО — проверить нечем';
 
   const data = (snap.data() ?? {}) as Fields;
 
   if (payment.kind === 'boost') {
     return data.boostedAt
       ? `подъём есть (${String(data.boostedAt).slice(0, 16)})`
-      : 'ПОДЪЁМА НЕТ';
+      : 'СЛЕДА ПОДЪЁМА НЕТ';
   }
 
-  return tierActive(data, payment.tier)
-    ? `тариф на месте (${String(data.listingTier)})`
-    : 'ТАРИФА НЕТ';
+  return paymentTrace(data, payment);
 }
 
 async function listAzericard(): Promise<void> {
@@ -148,9 +190,10 @@ async function listAzericard(): Promise<void> {
   }
 
   console.log(`Всего: ${found}.`);
-  console.log('Строки с «ТАРИФА НЕТ» и «ПОДЪЁМА НЕТ» надо сверить с кабинетом');
-  console.log('Azericard: если списание прошло, выдать оплаченное или вернуть деньги.');
-  console.log('Остальные — колбэк пришёл, запись просто не обновилась.\n');
+  console.log('«СЛЕД ЕСТЬ» — колбэк дошёл и тариф ставился, запись просто не обновилась.');
+  console.log('«СЛЕДА НЕТ» — вот это и надо сверить с кабинетом Azericard по номеру');
+  console.log('заказа: было списание — выдать оплаченное или вернуть деньги.');
+  console.log('⚠️ Тариф в базе НЕ доказательство оплаты: модератор ставит его руками.\n');
 }
 
 async function listPlay(): Promise<void> {
