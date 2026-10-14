@@ -50,6 +50,25 @@ const GRACE_HOURS = 2;
 
 type Fields = Record<string, unknown>;
 
+/**
+ * Дата по БАКИНСКОМУ времени (UTC+4).
+ *
+ * Именно она нужна для поиска в кабинете Azericard: там операции показаны по
+ * местному времени, а `serverTimestamp` у нас в UTC. Возраст в часах для поиска
+ * бесполезен — отсюда и дата рядом с ним.
+ *
+ * Смещение прибито числом намеренно: в Азербайджане перехода на летнее время
+ * нет с 2016 года, UTC+4 круглый год.
+ */
+function bakuTime(value: unknown): string {
+  const ms =
+    typeof value === 'string'
+      ? new Date(value).getTime()
+      : (value as {toMillis?: () => number} | undefined)?.toMillis?.() ?? NaN;
+  if (Number.isNaN(ms)) return 'дата неизвестна';
+  return new Date(ms + 4 * 3600000).toISOString().replace('T', ' ').slice(0, 16);
+}
+
 function ageHours(value: unknown): number {
   if (!value) return Infinity;
   const ms =
@@ -113,6 +132,7 @@ async function listAzericard(): Promise<void> {
 
       found += 1;
       console.log(`заказ      ${payment.orderId ?? doc.id}`);
+      console.log(`  начат    ${bakuTime(payment.createdAt)} (Баку)`);
       console.log(`  статус   ${status}, возраст ${Math.round(hours)} ч`);
       console.log(`  куплено  ${payment.kind ?? 'tier'} ${payment.tier ?? payment.boostCount ?? ''} ${payment.duration ?? ''}`);
       console.log(`  сумма    ${payment.amount ?? '—'}`);
@@ -154,6 +174,7 @@ async function listPlay(): Promise<void> {
     const claim = doc.data() as Fields;
     console.log(`заказ      ${claim.orderId ?? '—'}`);
     console.log(`  товар    ${claim.productId ?? '—'}`);
+    console.log(`  начат    ${bakuTime(claim.createdAt)} (Баку)`);
     console.log(`  возраст  ${Math.round(ageHours(claim.createdAt))} ч`);
     console.log(`  человек  ${claim.userId ?? '—'}`);
     console.log(`  сейчас   ${await describeTarget(claim)}`);
