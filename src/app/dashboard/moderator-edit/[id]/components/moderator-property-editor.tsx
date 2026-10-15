@@ -3,7 +3,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import { useParams, useNavigate } from '@/lib/navigation'
-import { useLanguage } from '@/components/providers'
+import { useAuth, useLanguage } from '@/components/providers'
 import {CityLocationPicker, FormPageSkeleton, InlineSpinner} from '@/components'
 import { propertyTypes, amenitiesList, moreFilterOptions, nearFilterOptions } from '@birklik/core/data'
 import { resolveCityQuery } from '@birklik/core/data'
@@ -31,6 +31,8 @@ export const ModeratorPropertyEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { language, t } = useLanguage()
+  // Нужен только ради автора правки в журнале изменений тарифа.
+  const { firebaseUser } = useAuth()
 
   const [property, setProperty] = React.useState<Property | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
@@ -318,6 +320,11 @@ export const ModeratorPropertyEditor: React.FC = () => {
       owner: { name: property.owner.name, phone: form.contactPhone, email: form.contactEmail },
       status: form.status,
       isActive: form.isActive,
+      // Кто правит. Нужно журналу изменений тарифа: триггер на сервере видит,
+      // что ступень или дата поменялись, но вошедшего у него нет — автор
+      // приходит только отсюда. Записывается на каждой правке модератора, даже
+      // когда тариф не менялся: лишнее поле дешевле забытого.
+      updatedBy: firebaseUser?.uid ?? '',
       listingTier: form.listingTier,
       tierPlanDuration: form.tierPlanDuration,
       isFeatured: form.listingTier === 'premium',

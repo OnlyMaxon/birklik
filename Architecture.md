@@ -491,6 +491,44 @@ the payment would stay in `awaiting_payment` for ever — money taken, ledger re
 That guard already existed in `applyBoostPackage`; it did not here. Such a payment is marked
 `needsRefund` and shows up first in `pnpm payments:stuck`.
 
+### Who changed this listing's tier
+
+`listingTier` and the expiry dates have **two** possible authors: a confirmed payment and a
+moderator's hand. The document keeps only the result, so until 2026-10-15 "who gave this listing
+Premium" had no answer at all. The payment audit of that day ran straight into it: one listing
+had its tier fields removed outright and nothing could say whether that was a refund, a job, or
+an edit.
+
+`auditTierChanges` — a Firestore `onUpdate` trigger on `properties/{id}` — now records every
+change to `listingTier`, `premiumExpiresAt`, `vipExpiresAt`, `isFeatured` and `boostedAt` into
+`tierAudit`, with before/after values and a classification:
+
+```
+оплата                  a payments record for this listing completed within 3 minutes
+возврат денег           … or reversed within 3 minutes
+ночная задача подъёма   only boostedAt moved, and boosts/{id}.lastBumpAt is fresh
+РУКАМИ                  nothing explains it — logged as a warning as well
+```
+
+⚠️ **A trigger, not a write from the browser, and that is the whole point.** An edit made in the
+Firebase console would never reach a client-side log — and that is exactly the kind of edit that
+happened on 2026-08-31. The trigger sees every write to the document regardless of its author.
+
+⚠️ The cost is one function invocation per listing update. `auditTierChange` therefore starts by
+diffing those five fields and returns on an ordinary text or photo edit before issuing a single
+database read.
+
+⚠️ A trigger has no signed-in user, so the author comes from `updatedBy`, written by the
+moderator editor — and it is trusted **only when `updatedAt` changed in the same write**.
+Otherwise it is the author of the *previous* edit, and attributing a console edit to them is
+worse than admitting the author is unknown.
+
+Writes to `tierAudit` are denied to everyone in `firestore.rules`, moderators included — a log
+that can be edited is not a log. Moderators may read it. `pnpm tier:audit` and `pnpm tier:hand`
+in `firebase-functions` print it, the second filtering to changes no payment explains.
+
+⚠️ The log starts at deployment. Nothing before it can be reconstructed.
+
 ## Scheduled functions
 
 All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed
@@ -577,13 +615,9 @@ and `Xaçmaz` both carried `Хачмас`).
   about a reversal that comes through our `BACKREF`; a refund made by hand in the bank's own
   interface never reaches us, so the downgrade has to be done by hand too. The Play half is
   automatic (`syncPlayRefunds`). See "A refund has to take back what it paid for".
-- Manual tier edits by a moderator leave no audit trail. `listingTier` and the expiry dates can
-  be written by the payment callback or by a moderator's hand, and the document records only the
-  result — so "who gave this listing Premium" has no answer. One listing in the ledger had its
-  tier fields removed outright on 2026-08-31, which neither `expirePaidTiers` (it leaves them
-  alone deliberately) nor the moderator editor (it writes an empty string) does — console
-  editing is the likely author. Writing a record on moderator tier changes would make this
-  answerable.
+- Tier changes made before 2026-10-15 cannot be attributed. `auditTierChanges` logs every change
+  from its deployment onwards, but the history before it is gone — including the listing whose
+  tier fields were removed outright on 2026-08-31. See "Who changed this listing's tier".
 - Test coverage is pure logic only — no component or end-to-end tests. What is covered: tier
   logic, display rules, filtering, place-name folding, image URL handling, basemap URLs,
   auth-error and translation completeness, file validation, publication logic, the Firestore
@@ -596,7 +630,7 @@ and `Xaçmaz` both carried `Хачмас`).
 
 ## Security rules
 
-`pnpm test:rules` runs 90 tests against the Firestore emulator: it starts the emulator, runs
+`pnpm test:rules` runs 107 tests against the Firestore emulator: it starts the emulator, runs
 `vitest` with `vitest.rules.config.ts`, then shuts it down. Tests live in `tests/rules/` and are
 excluded from the default suite, because `pnpm test:run` must pass without an emulator.
 

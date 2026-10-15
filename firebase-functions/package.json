@@ -9,6 +9,8 @@
     "boost:list": "ts-node src/boost/admin.ts --list",
     "payments:stuck": "ts-node src/payment/stuck-payments.ts",
     "payments:voided": "ts-node src/payment/voided-admin.ts",
+    "tier:audit": "ts-node src/moderation/tier-audit-admin.ts",
+    "tier:hand": "ts-node src/moderation/tier-audit-admin.ts --hand",
     "boost:run": "ts-node src/boost/admin.ts --run",
     "cleanup:dry": "ts-node src/cleanup/admin.ts --dry-run",
     "cleanup:execute": "ts-node src/cleanup/admin.ts --execute",

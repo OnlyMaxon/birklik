@@ -12,11 +12,45 @@ import { sendPushToUser } from './notifications/send-push';
 import { initiatePayment, azericardCallback } from './payment/azericard';
 import { verifyPlayPurchase } from './payment/verify-play-purchase';
 import { syncVoidedPurchases } from './payment/voided-purchases';
+import { auditTierChange } from './moderation/tier-audit';
 import { deleteAccount } from './account/delete-account';
 
 export { initiatePayment, azericardCallback, verifyPlayPurchase, deleteAccount };
 
 admin.initializeApp();
+
+/**
+ * Журналирует изменения тарифа и подъёма — чьи угодно.
+ *
+ * ⚠️ Решение владельца 2026-10-15: правки тарифа модератором должны
+ * журналироваться. Сделано триггером, а не записью из браузера, намеренно:
+ * правку через консоль Firebase браузерный журнал не увидел бы никогда — а
+ * именно такая у нас и случилась 31 августа, когда поля тарифа у одного
+ * объявления исчезли целиком.
+ *
+ * ⚠️ Функция зовётся на КАЖДУЮ правку объявления, и это осознанная цена. Чтобы
+ * она была минимальной, `auditTierChange` начинает со сравнения пяти полей и на
+ * обычной правке текста или фотографий заканчивает работу там же — без единого
+ * запроса в базу.
+ *
+ * Отказ журнала НЕ должен ронять правку: объявление уже записано, триггер идёт
+ * после. Поэтому ошибка только пишется в журнал функций.
+ */
+export const auditTierChanges = functions
+  .region('europe-west1')
+  .firestore.document('properties/{propertyId}')
+  .onUpdate(async (change, context) => {
+    try {
+      await auditTierChange({
+        propertyId: context.params.propertyId,
+        before: change.before.data() ?? {},
+        after: change.after.data() ?? {},
+      });
+    } catch (error) {
+      console.error('[TierAudit] Не удалось записать изменение:', error);
+    }
+    return null;
+  });
 
 export const onNotificationCreated = functions
   .region('europe-west1')
