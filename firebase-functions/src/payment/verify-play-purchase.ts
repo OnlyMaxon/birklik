@@ -260,11 +260,22 @@ export const verifyPlayPurchase = functions
       return {alreadyApplied: false, kind: 'boost', expiryDate: '', remaining};
     }
 
-    const {expiryDate, status} = await applyPaidTier({
+    const {expiryDate, status, applied} = await applyPaidTier({
       propertyId: targetPropertyId,
       tier: product.tier,
       duration: product.duration,
     });
+
+    // ⚠️ Объявление исчезло между проверкой выше и применением — гонка на
+    // секунды, но исход у неё денежный. Отвечаем ОТКАЗОМ намеренно: приложение
+    // на отказ товар НЕ расходует, а неподтверждённую покупку Google через три
+    // дня возвращает покупателю сам. То есть человек получит деньги назад —
+    // лучший доступный исход, когда поднимать стало нечего. Отметку «применено»
+    // не ставим: повтор придёт сюда же и снова честно откажет.
+    if (!applied) {
+      console.error('[Play] Объявление исчезло до применения тарифа:', targetPropertyId);
+      throw new functions.https.HttpsError('not-found', 'Property disappeared before the tier was applied');
+    }
 
     await claimRef.update({applied: true, expiryDate, appliedStatus: status});
 

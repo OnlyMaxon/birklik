@@ -437,6 +437,60 @@ check and it was useless: a 14-day VIP bought in August is expired by September 
 moderators set `listingTier` and the expiry dates by hand from their editor, and nothing records
 which author wrote them. Only the bank's cabinet knows about money.
 
+### A refund has to take back what it paid for
+
+Found and closed 2026-10-15, and it had been open since the first paid listing. The whole audit
+was hunting "paid and got nothing"; this is the mirror image — **got the money back and kept the
+service** — and it is invisible from the outside, because the buyer is happy and files no
+complaint.
+
+```
+card    the TRTYPE=22 branch marked the payment `reversed` and never touched the listing
+Play    refunds were not visible at all: no Pub/Sub notifications, no voidedpurchases poll
+```
+
+The card half had even been written down before: when `performReversal` was deleted on
+2026-08-09 the note said "a successful reversal did not downgrade the listing — it let you take
+the money back and keep premium". The function went; the hole stayed and merely became
+unreachable from outside.
+
+Both halves now go through two revoke functions, next to the apply ones and for the same reason
+— one effect, two tills:
+
+```
+revokePaidTier       listingTier → standard, isFeatured → false, both expiry fields DELETED
+revokeBoostPackage   boostedAt DELETED, boosts/{id} removed, remaining boosts forfeited
+syncPlayRefunds      daily 02:00 UTC — asks Google for voided purchases, revokes, marks the claim
+```
+
+⚠️ The expiry fields and `boostedAt` are **deleted, not blanked**. An empty string is still a
+present field, and both the pinned-band query and the boosted query select on *presence* — a
+blanked `boostedAt` would keep a refunded listing in the homepage's pinned band with no boost
+behind it.
+
+⚠️ `type=1` is mandatory on `voidedpurchases.list`. The default returns **subscriptions only**,
+and every product here is one-time — without it the list would always come back empty and the
+hole would look closed.
+
+⚠️ The poll looks a week back on a daily schedule. Repeats are harmless (the claim carries a
+`voided` flag) but a missed run is not: Google keeps voided purchases for about thirty days and
+what is missed cannot be recovered.
+
+⚠️ A refund issued from the **bank's own cabinet** probably never reaches `azericardCallback` at
+all — the callback hangs off our `BACKREF`. So the card half is not self-sufficient: a manual
+refund needs a manual downgrade. `pnpm payments:stuck` lists reversals and flags the ones whose
+revoke was never recorded.
+
+The same audit closed two smaller things in the callback. The amount in the callback is now
+**compared to the amount we computed** when the payment was created: the bank's signature covers
+`AMOUNT`, so it cannot be forged, but a signature only proves "the bank signed this", not "the
+bank charged what we asked" — a mismatch would hand out a 55 ₼ tier for whatever was actually
+taken. And `applyPaidTier` now **survives a listing that was deleted between payment and
+callback**: `update` on a missing document throws, the throw would 500 the bank's callback, and
+the payment would stay in `awaiting_payment` for ever — money taken, ledger reading "awaiting".
+That guard already existed in `applyBoostPackage`; it did not here. Such a payment is marked
+`needsRefund` and shows up first in `pnpm payments:stuck`.
+
 ## Scheduled functions
 
 All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed
@@ -449,6 +503,7 @@ that reason (see `AUDIT.md`).
 | `cleanupDrafts` | every 2 hours | Expires stale payments, then removes abandoned drafts. Skips a draft while its payment is still `awaiting_payment`. |
 | `expirePaidTiers` | daily 03:00 UTC | Marks listings whose paid tier ran out as `inactive` and records `expiredAt`. Deletes nothing. |
 | `dailyBoosts` | daily 01:00 UTC | Spends one boost per listing from `boosts/`, deletes the record on the last one. 01:00 UTC is 05:00 in Baku — the lift has to land before people start browsing. Skips **without spending** when the last boost is under 20 h old (scheduler retries and manual runs must not burn paid days) or when the listing is off display (a paid day on a hidden listing is a day nobody sees). Removes records whose listing is gone, and abandoned ones after 90 days. |
+| `syncPlayRefunds` | daily 02:00 UTC | Asks Google for voided purchases (refunds, chargebacks) and takes the paid tier or boost back. Looks a week back so a missed run is caught up; repeats are safe through the `voided` flag on the claim. 02:00 UTC sits between `dailyBoosts` and `expirePaidTiers`, so refunds are settled before expiry dates are counted. |
 | `cleanupStaleRequests` | Sundays 05:00 UTC | Removes cancellation requests whose booking no longer exists. |
 | `cleanupStorage` | Sundays 04:00 UTC | Removes unreferenced images, `temp/` files and old avatars. Aborts if orphan candidates exceed 5% of the bucket — that shape of result means a URL format stopped being recognised, not that users deleted a hundred photos. |
 
@@ -518,6 +573,10 @@ and `Xaçmaz` both carried `Хачмас`).
   arrives on both approvals and declines — so this is a latent gap, not an active leak.
   Implementing the bank's status request (`TRTYPE=90`) on a schedule is the real fix; `pnpm
   payments:stuck` is the manual stand-in. See "Finishing a payment when the connection dies".
+- Refunds issued from the Azericard cabinet are not detected. `azericardCallback` only hears
+  about a reversal that comes through our `BACKREF`; a refund made by hand in the bank's own
+  interface never reaches us, so the downgrade has to be done by hand too. The Play half is
+  automatic (`syncPlayRefunds`). See "A refund has to take back what it paid for".
 - Manual tier edits by a moderator leave no audit trail. `listingTier` and the expiry dates can
   be written by the payment callback or by a moderator's hand, and the document records only the
   result — so "who gave this listing Premium" has no answer. One listing in the ledger had its

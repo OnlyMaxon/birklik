@@ -109,3 +109,48 @@ export async function applyBoostPackage(params: {
   console.log(`[Boost] ${propertyId}: поднято, пакет ${count}, осталось ${remaining}`);
   return {boostedAt, remaining};
 }
+
+/**
+ * Снимает подъём и остаток пакета — после возврата денег.
+ *
+ * Рядом с `revokePaidTier` и по той же причине: возврат денег обязан забирать
+ * оплаченное, иначе человек возвращает себе деньги и оставляет услугу.
+ *
+ * ⚠️ `boostedAt` УДАЛЯЕТСЯ, а не затирается пустой строкой. Лента сайта отбирает
+ * поднятые по **наличию** поля (`orderBy` молча выбрасывает документы без него),
+ * и пустая строка оставила бы объявление в этой выборке — то есть на главной,
+ * среди закреплённых, уже без всякого подъёма.
+ *
+ * Уже израсходованные дни подъёма вернуть нельзя: они прошли. Забираем то, что
+ * ещё не израсходовано, — это всё, что в наших силах.
+ *
+ * @returns сколько подъёмов было отобрано из остатка.
+ */
+export async function revokeBoostPackage(params: {
+  propertyId: string;
+  reason: string;
+}): Promise<number> {
+  const {propertyId, reason} = params;
+  const db = admin.firestore();
+
+  const propertyRef = db.collection('properties').doc(propertyId);
+  const boostRef = db.collection(BOOSTS).doc(propertyId);
+
+  const taken = await db.runTransaction(async (tx) => {
+    const [property, existing] = await Promise.all([tx.get(propertyRef), tx.get(boostRef)]);
+
+    const left = existing.exists ? Number(existing.data()?.remaining ?? 0) : 0;
+
+    if (property.exists) {
+      tx.update(propertyRef, {boostedAt: admin.firestore.FieldValue.delete()});
+    }
+    if (existing.exists) {
+      tx.delete(boostRef);
+    }
+
+    return left;
+  });
+
+  console.log(`[Boost] Подъём снят у ${propertyId}: отобрано ${taken}, причина — ${reason}`);
+  return taken;
+}

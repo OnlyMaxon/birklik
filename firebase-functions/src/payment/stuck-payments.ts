@@ -150,6 +150,70 @@ async function describeTarget(payment: Fields): Promise<string> {
   return paymentTrace(data, payment);
 }
 
+/**
+ * Платежи, где деньги взяты, а выдать оказалось нечего.
+ *
+ * Отдельный раздел, потому что это **самые дорогие** строки разбора: по ним
+ * возврат нужен точно, а не «может быть». Ставит отметку `needsRefund` колбэк
+ * банка, когда объявление исчезло между оплатой и применением тарифа.
+ */
+async function listNeedsRefund(): Promise<void> {
+  console.log('=== Деньги взяты, выдать было нечего ===\n');
+
+  const snap = await admin
+    .firestore()
+    .collection('payments')
+    .where('needsRefund', '==', true)
+    .limit(100)
+    .get();
+
+  if (snap.empty) {
+    console.log('Таких нет.\n');
+    return;
+  }
+
+  for (const doc of snap.docs) {
+    const p = doc.data() as Fields;
+    console.log(`заказ      ${p.orderId ?? doc.id}`);
+    console.log(`  начат    ${bakuTime(p.createdAt)} (Баку)`);
+    console.log(`  куплено  ${p.kind ?? 'tier'} ${p.tier ?? p.boostCount ?? ''} ${p.duration ?? ''}`);
+    console.log(`  сумма    ${p.amount ?? '—'}`);
+    console.log(`  человек  ${p.userId ?? '—'}`);
+    console.log(`  причина  объявление ${p.propertyId} исчезло до применения`);
+    console.log('');
+  }
+
+  console.log(`Всего: ${snap.size}. По этим ВОЗВРАТ НУЖЕН — оплаченное выдать было некуда.\n`);
+}
+
+/** Возвраты, по которым оплаченное уже забрано автоматически. Для сверки. */
+async function listReversed(): Promise<void> {
+  console.log('=== Возвраты: оплаченное забрано ===\n');
+
+  const snap = await admin
+    .firestore()
+    .collection('payments')
+    .where('status', '==', 'reversed')
+    .limit(100)
+    .get();
+
+  if (snap.empty) {
+    console.log('Возвратов не было.\n');
+    return;
+  }
+
+  for (const doc of snap.docs) {
+    const p = doc.data() as Fields;
+    console.log(
+      `${bakuTime(p.createdAt)}  ${String(p.orderId ?? doc.id).padEnd(26)} ` +
+        `${String(p.kind ?? 'tier').padEnd(6)} ${p.amount ?? '—'}  ${p.revokeResult ?? 'отзыв не записан'}`
+    );
+  }
+  console.log('');
+  console.log('⚠️ Строки «отзыв не записан» — это возвраты ДО 2026-10-15, когда');
+  console.log('возврат денег тариф не снимал. Такие надо проверить руками.\n');
+}
+
 async function listAzericard(): Promise<void> {
   console.log('=== Azericard: платежи без колбэка ===\n');
 
@@ -230,7 +294,11 @@ async function listPlay(): Promise<void> {
 }
 
 void (async () => {
+  // Порядок разделов — по убыванию цены ошибки: сначала то, где возврат нужен
+  // точно, потом непонятное, потом сверка уже сделанного.
+  await listNeedsRefund();
   await listAzericard();
   await listPlay();
+  await listReversed();
   process.exit(0);
 })();

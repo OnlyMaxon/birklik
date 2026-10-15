@@ -144,3 +144,97 @@ export async function fetchPlayPurchase(
 export function isPurchased(purchase: PlayPurchase): boolean {
   return purchase.purchaseState === PURCHASED;
 }
+
+/** Отменённая покупка: возврат, отзыв или оспаривание платежа. */
+export interface VoidedPurchase {
+  purchaseToken: string;
+  orderId?: string;
+  purchaseTimeMillis?: string;
+  voidedTimeMillis?: string;
+  /** 0 — покупатель, 1 — разработчик, 2 — Google. */
+  voidedSource?: number;
+  /** 0 другое, 1 передумал, 2 не получил, 3 брак, 4 случайно, 5 мошенничество,
+   *  6 мошенничество «со своими», 7 оспаривание платежа. */
+  voidedReason?: number;
+}
+
+/** Расшифровка причины возврата — для журнала, чтобы не читать цифры. */
+export const VOIDED_REASONS: Record<number, string> = {
+  0: 'другое',
+  1: 'передумал',
+  2: 'не получил товар',
+  3: 'товар с браком',
+  4: 'купил случайно',
+  5: 'мошенничество',
+  6: 'мошенничество со знакомой карты',
+  7: 'оспаривание платежа',
+};
+
+export const VOIDED_SOURCES: Record<number, string> = {
+  0: 'покупатель',
+  1: 'разработчик',
+  2: 'Google',
+};
+
+/**
+ * Список отменённых покупок — возвраты, отзывы и оспаривания.
+ *
+ * ⚠️ Зачем вообще нужен отдельный запрос. Про возврат Google **нам не сообщает**:
+ * покупка просто перестаёт быть действительной, а у нас тариф уже стоит. Без
+ * этого опроса человек возвращает деньги и оставляет себе оплаченное — убыток
+ * тихий, жалоб не вызывает, и поэтому его легко не заметить годами. Второй
+ * способ узнавать — подписка на уведомления Google через Pub/Sub; опрос выбран
+ * потому, что не требует ни темы Pub/Sub, ни настройки в консоли, а задержка до
+ * суток для возврата несущественна.
+ *
+ * ⚠️ `type=1` обязателен. По умолчанию Google отдаёт **только подписки**, а у нас
+ * все товары одноразовые — без этого параметра список всегда приходил бы пустым,
+ * и дыра выглядела бы закрытой.
+ *
+ * ⚠️ История ограничена: Google держит отменённые покупки около тридцати дней.
+ * Поэтому опрос обязан быть регулярным — пропущенный месяц не догнать.
+ *
+ * @param sinceMs с какого момента искать (миллисекунды эпохи).
+ */
+export async function listVoidedPurchases(sinceMs: number): Promise<VoidedPurchase[]> {
+  const client = await auth.getClient();
+  const {token} = await client.getAccessToken();
+  if (!token) throw new Error('play-auth-failed');
+
+  const found: VoidedPurchase[] = [];
+  let pageToken: string | undefined;
+
+  // Предел страниц — защита от бесконечного цикла, если Google когда-нибудь
+  // начнёт отдавать тот же токен страницы. Тысяча возвратов за раз у нас
+  // означала бы беду совсем другого рода.
+  for (let page = 0; page < 20; page += 1) {
+    const url = new URL(
+      `${ANDROID_PUBLISHER}/applications/${PACKAGE_NAME}/purchases/voidedpurchases`
+    );
+    url.searchParams.set('startTime', String(Math.floor(sinceMs)));
+    url.searchParams.set('type', '1');
+    url.searchParams.set('maxResults', '100');
+    if (pageToken) url.searchParams.set('token', pageToken);
+
+    const response = await fetch(url.toString(), {
+      headers: {Authorization: `Bearer ${token}`},
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`play-voided-${response.status}: ${body.slice(0, 200)}`);
+    }
+
+    const data = (await response.json()) as {
+      voidedPurchases?: VoidedPurchase[];
+      tokenPagination?: {nextPageToken?: string};
+    };
+
+    found.push(...(data.voidedPurchases ?? []));
+
+    pageToken = data.tokenPagination?.nextPageToken;
+    if (!pageToken) break;
+  }
+
+  return found;
+}

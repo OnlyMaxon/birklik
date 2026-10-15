@@ -1,7 +1,12 @@
 import * as functions from 'firebase-functions/v1';
 import {admin} from '../firebase-admin';
-import {applyPaidTier} from './apply-tier';
-import {applyBoostPackage, isBoostPackage, type BoostPackage} from '../boost/apply-boost';
+import {applyPaidTier, revokePaidTier} from './apply-tier';
+import {
+  applyBoostPackage,
+  isBoostPackage,
+  revokeBoostPackage,
+  type BoostPackage,
+} from '../boost/apply-boost';
 import * as crypto from 'crypto';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
@@ -329,7 +334,18 @@ export const azericardCallback = functions
       return;
     }
 
-    // Handle TRTYPE=22 reversal callback
+    // Возврат денег (TRTYPE=22).
+    //
+    // ⚠️ До 2026-10-15 эта ветка только метила платёж `reversed` и объявления НЕ
+    // ТРОГАЛА — то есть человек возвращал себе деньги и оставлял себе тариф. Это
+    // было известно и записано ещё 2026-08-09, когда удаляли `performReversal`:
+    // «успешный возврат не понижал тариф объявления». Функцию убрали, а дыру
+    // оставили. Теперь оплаченное забирается.
+    //
+    // ⚠️ Возврат, сделанный из кабинета банка, сюда скорее всего не приходит
+    // вовсе — колбэк привязан к нашему `BACKREF`. Поэтому эта ветка не
+    // единственная защита: ручной возврат придётся сопровождать ручным
+    // понижением. Разбор показывает такие платежи — `pnpm payments:stuck`.
     if (TRTYPE === '22') {
       if (ACTION === '0' && RC === '00') {
         const reversalQuery = await admin.firestore()
@@ -339,11 +355,37 @@ export const azericardCallback = functions
           .limit(1)
           .get();
         if (!reversalQuery.empty) {
-          await reversalQuery.docs[0].ref.update({
+          const doc = reversalQuery.docs[0];
+          const reversed = doc.data();
+
+          // Сначала забираем оплаченное, потом метим платёж. Обратный порядок
+          // оставил бы «возвращено» на объявлении с живым тарифом, если отзыв
+          // сорвётся, — а это ровно та дыра, которую закрываем.
+          let revoked: string;
+          if (reversed.kind === 'boost') {
+            const taken = await revokeBoostPackage({
+              propertyId: reversed.propertyId,
+              reason: `возврат по заказу ${ORDER}`,
+            });
+            revoked = `подъём снят, отобрано ${taken}`;
+          } else {
+            const ok = await revokePaidTier({
+              propertyId: reversed.propertyId,
+              reason: `возврат по заказу ${ORDER}`,
+            });
+            revoked = ok ? 'тариф снят' : 'объявления уже нет';
+          }
+
+          await doc.ref.update({
             status: 'reversed',
             reversedAt: admin.firestore.FieldValue.serverTimestamp(),
+            revokeResult: revoked,
           });
-          console.log('[Azericard] Reversal success. ORDER:', ORDER);
+          console.log('[Azericard] Reversal success. ORDER:', ORDER, '—', revoked);
+        } else {
+          // Платежа в `completed` нет: либо возврат пришёл дважды, либо по
+          // заказу, который мы не проводили. Второе — повод смотреть глазами.
+          console.warn('[Azericard] Reversal: нет завершённого платежа по заказу', ORDER);
         }
         res.redirect(`${frontendBase}/dashboard?payment=reversed`);
       } else {
@@ -416,6 +458,46 @@ export const azericardCallback = functions
     const paymentDoc = paymentQuery.docs[0];
     const payment = paymentDoc.data();
 
+    /** Деньги взяты, а выдать оказалось нечему. Ставится ниже, читается разбором. */
+    let needsRefund = false;
+
+    // ⚠️ Сумма из колбэка сверяется с той, что мы сами посчитали при создании
+    // платежа. Подпись банка покрывает поле AMOUNT, так что подделать его нельзя
+    // — но подпись доказывает лишь «банк это подписал», а не «банк провёл
+    // столько, сколько мы просили». Расхождение означает, что тариф за
+    // пятьдесят пять манат выдавался бы по проведённой сумме в один. Проверка
+    // стоит один вызов Number и закрывает целый класс ошибок, включая наши
+    // собственные — например разъехавшиеся копии прейскуранта.
+    //
+    // Сравнение с допуском в копейку: банк присылает «55.00», мы считаем 55.
+    const expectedAmount = Number(payment.amount);
+    const paidAmount = Number(AMOUNT);
+    if (
+      ACTION === '0' && RC === '00' &&
+      Number.isFinite(expectedAmount) && Number.isFinite(paidAmount) &&
+      Math.abs(paidAmount - expectedAmount) > 0.01
+    ) {
+      console.error(
+        '[Azericard] СУММА НЕ СХОДИТСЯ. ORDER:', ORDER,
+        'ждали:', expectedAmount, 'в колбэке:', paidAmount
+      );
+      await paymentDoc.ref.update({
+        status: 'amount_mismatch',
+        paidAmount,
+        failedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      res.redirect(`${frontendBase}/dashboard?payment=error`);
+      return;
+    }
+
+    // Тип операции только записываем в журнал, но НЕ отказываем по нему.
+    // Запрос мы отправляем с TRTYPE=1, и всё остальное на успешном пути
+    // неожиданно; но отказать живой оплате из-за незнакомого кода хуже, чем
+    // применить её и увидеть странность в журнале.
+    if (ACTION === '0' && RC === '00' && TRTYPE && TRTYPE !== '1') {
+      console.warn('[Azericard] Неожиданный TRTYPE на успехе. ORDER:', ORDER, 'TRTYPE:', TRTYPE);
+    }
+
     // ACTION=0 и RC=00 означает успешный платёж
     if (ACTION === '0' && RC === '00') {
       // Что применять, решает запись о платеже, а не параметры колбэка: банк
@@ -438,11 +520,19 @@ export const azericardCallback = functions
         // Тариф, срок и статус ставит общая функция: ровно то же делает покупка
         // через Google Play. Подпись банка проверена выше — это единственное, что
         // отличает два пути.
-        await applyPaidTier({
+        const {applied} = await applyPaidTier({
           propertyId: payment.propertyId,
           tier: payment.tier,
           duration: payment.duration,
         });
+
+        // ⚠️ Объявление исчезло между оплатой и колбэком. Деньги уже списаны,
+        // отказывать поздно, бросать нельзя (платёж остался бы в
+        // `awaiting_payment` навсегда). Платёж помечаем так, чтобы разбор его
+        // нашёл: это кандидат на возврат, и решает человек.
+        if (!applied) {
+          needsRefund = true;
+        }
       }
 
       await paymentDoc.ref.update({
@@ -451,6 +541,7 @@ export const azericardCallback = functions
         rrn: RRN ?? '',
         intRef: INT_REF ?? '',
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
+        ...(needsRefund ? {applied: false, needsRefund: true} : {}),
       });
 
       // Подъём возвращаем на страницу объявления: там человек и нажимал кнопку,
