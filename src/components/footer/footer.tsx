@@ -162,7 +162,21 @@ export const Footer: React.FC<FooterProps> = ({regions = []}) => {
 
               <div className="footer-bottom">
                 <p>{t.footer.copyright}</p>
-                <p>{t.footer.taxNumber}</p>
+
+                {/* Юрлицо и адрес по регистрации. Тише копирайта намеренно: это
+                    обязательные сведения, а не то, за чем сюда приходят.
+
+                    ⚠️ Адрес здесь НЕ тот же, что на странице контактов: там
+                    контактный офис в Баку, здесь адрес регистрации общества в
+                    Сумгаите. Выравнивать их друг по другу нельзя — это разные
+                    сведения. */}
+                <p className="footer-legal">
+                  <span className="footer-legal-name">{t.footer.legalName}</span>
+                  <span className="footer-legal-sep" aria-hidden="true"> · </span>
+                  {t.footer.taxNumber}
+                  <span className="footer-legal-sep" aria-hidden="true"> · </span>
+                  {t.footer.legalAddress}
+                </p>
                 <p className="footer-credit">
                   {/* rel="noopener" — ссылка открывается в новой вкладке, без него
                       чужая страница получает доступ к window.opener нашей. */}
