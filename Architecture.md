@@ -482,10 +482,18 @@ refund needs a manual downgrade. `pnpm payments:stuck` lists reversals and flags
 revoke was never recorded.
 
 The same audit closed two smaller things in the callback. The amount in the callback is now
-**compared to the amount we computed** when the payment was created: the bank's signature covers
+compared to the amount we computed when the payment was created: the bank's signature covers
 `AMOUNT`, so it cannot be forged, but a signature only proves "the bank signed this", not "the
-bank charged what we asked" — a mismatch would hand out a 55 ₼ tier for whatever was actually
-taken. And `applyPaidTier` now **survives a listing that was deleted between payment and
+bank charged what we asked".
+
+⚠️ **The comparison refuses an underpayment only, and that asymmetry is deliberate.** The first
+version of this check refused *any* mismatch — and that was dangerous in exactly the way the
+rest of this section is about. The bank's `AMOUNT` format has never been verified against a live
+callback here: if it ever arrives in minor units (`5500` for 55 ₼) or with another decimal
+separator, a strict check would start rejecting **every correct payment** — money charged, tier
+withheld, across the board. So: paid less → refuse and flag `needsRefund`; paid more → apply and
+log loudly, because a changed format must never cost the buyer their purchase; unparseable →
+skip the check entirely. And `applyPaidTier` now **survives a listing that was deleted between payment and
 callback**: `update` on a missing document throws, the throw would 500 the bank's callback, and
 the payment would stay in `awaiting_payment` for ever — money taken, ledger reading "awaiting".
 That guard already existed in `applyBoostPackage`; it did not here. Such a payment is marked
