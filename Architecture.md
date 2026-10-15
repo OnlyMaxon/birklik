@@ -404,16 +404,38 @@ an extra boost; not applying takes the buyer's money, so the error is deliberate
 towards the buyer. The payments-log entry is written once per receipt: on the recovery path the
 log is checked by `purchaseToken` first, or one purchase would count as revenue twice.
 
-⚠️ **The Azericard side is still open, and it cannot be closed from inside this codebase.**
-`azericardCallback` is reached through the buyer's browser, so a browser that dies between the
-bank's approval and our `BACKREF` leaves the card charged and the tier unset.
-`expireStalePayments` flips the record to `expired` after 24 h and that is the end of it: there
-is no status request (Azericard `TRTYPE=90`) implemented, so nothing ever asks the bank what
-happened to that order. Closing this properly means a reconciliation job against the bank; until
-then it is a **manual** process, and `pnpm payments:stuck` in `firebase-functions` exists to
-make those payments visible. It changes nothing and cross-checks each one against the listing,
-so the rows reading `ТАРИФА НЕТ` / `ПОДЪЁМА НЕТ` are the only ones worth a look in the Azericard
-cabinet.
+The Azericard side has no reconciliation, and that gap cannot be closed from inside this
+codebase: `azericardCallback` is reached through the buyer's browser, `expireStalePayments` flips
+an unanswered payment to `expired` after 24 h, and no status request (Azericard `TRTYPE=90`) is
+implemented, so nothing ever asks the bank what happened to an order. Closing it properly means
+a reconciliation job against the bank.
+
+**Measured 2026-10-15, and the result matters more than the theory.** The whole ledger was read
+and every suspicious payment traced to its listing and its payer:
+
+```
+51 payments total — 41 by card, 10 from the app (8 of them licence-test purchases)
+card:  6 completed · 14 failed · 21 expired · 2 awaiting at the time of reading
+```
+
+Fourteen `failed` records are the important ones: the bank's callback **does** reach us, on
+declines as well as approvals — 20 of 41 attempts got an answer. And of the 21 `expired`, every
+single one was accounted for: 16 fall in dense June clusters from the launch weeks (six
+identical Premium attempts inside one hour on 7 June), 19 have listings long since deleted as
+abandoned drafts, one was a deliberate test by the owner on 10 October, and one more resolved
+itself four minutes later — the buyer retried and that second payment is `completed`. The owner
+checked the single remaining case with the buyer directly: **no money had been charged.**
+
+So `expired` means "the person reached the bank page and did not finish", not "we lost an
+answer". The theoretical gap stands; there is no evidence it has ever cost anyone money.
+
+`pnpm payments:stuck` in `firebase-functions` is the tool for the next time. It changes nothing,
+and it reports the **trace of the work** rather than the live tier — an expiry date ever written
+and matching "payment date + duration". Asking `isTierActive` was the first version of that
+check and it was useless: a 14-day VIP bought in August is expired by September anyway, so
+"no tier" said nothing. ⚠️ And a tier in the database is **not** proof of payment either —
+moderators set `listingTier` and the expiry dates by hand from their editor, and nothing records
+which author wrote them. Only the bank's cabinet knows about money.
 
 ## Scheduled functions
 
@@ -490,11 +512,19 @@ and `Xaçmaz` both carried `Хачмас`).
   a server action. Two requests in the same second are both accepted; the owner confirms
   bookings by hand, so this is tolerated rather than fixed. Move it into a Cloud Function if
   bookings ever start arriving.
-- No reconciliation with Azericard. A payment approved by the bank whose callback never
-  reached us stays unapplied forever: the money is charged and the tier is not set. `pnpm
-  payments:stuck` lists such payments, but resolving them is manual. Implementing the bank's
-  status request (`TRTYPE=90`) on a schedule is the real fix. See "Finishing a payment when the
-  connection dies".
+- No reconciliation with Azericard. If the bank ever approves a payment whose callback does not
+  reach us, the money is charged and the tier is not set, and nothing detects it. Measured on
+  2026-10-15: no case of this has been found in the whole ledger, and the callback demonstrably
+  arrives on both approvals and declines — so this is a latent gap, not an active leak.
+  Implementing the bank's status request (`TRTYPE=90`) on a schedule is the real fix; `pnpm
+  payments:stuck` is the manual stand-in. See "Finishing a payment when the connection dies".
+- Manual tier edits by a moderator leave no audit trail. `listingTier` and the expiry dates can
+  be written by the payment callback or by a moderator's hand, and the document records only the
+  result — so "who gave this listing Premium" has no answer. One listing in the ledger had its
+  tier fields removed outright on 2026-08-31, which neither `expirePaidTiers` (it leaves them
+  alone deliberately) nor the moderator editor (it writes an empty string) does — console
+  editing is the likely author. Writing a record on moderator tier changes would make this
+  answerable.
 - Test coverage is pure logic only — no component or end-to-end tests. What is covered: tier
   logic, display rules, filtering, place-name folding, image URL handling, basemap URLs,
   auth-error and translation completeness, file validation, publication logic, the Firestore
