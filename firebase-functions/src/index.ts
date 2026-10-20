@@ -14,8 +14,9 @@ import { verifyPlayPurchase } from './payment/verify-play-purchase';
 import { syncVoidedPurchases } from './payment/voided-purchases';
 import { auditTierChange } from './moderation/tier-audit';
 import { deleteAccount } from './account/delete-account';
+import { setUserBlocked } from './moderation/block-user';
 
-export { initiatePayment, azericardCallback, verifyPlayPurchase, deleteAccount };
+export { initiatePayment, azericardCallback, verifyPlayPurchase, deleteAccount, setUserBlocked };
 
 admin.initializeApp();
 

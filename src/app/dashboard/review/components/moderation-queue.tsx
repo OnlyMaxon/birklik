@@ -8,6 +8,7 @@ import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModer
 import { createListingRejectedNotification } from '@/services/notifications-service'
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
+import { setUserBlocked } from '@/services/block-service'
 import { Language, Property, CommentReport, Booking } from '@birklik/core/types'
 import { cities, districtLabel } from '@birklik/core/data'
 
@@ -50,6 +51,11 @@ export const ModerationQueue: React.FC = () => {
   const [allUsers, setAllUsers] = React.useState<UserRecord[]>([])
   const [userSearch, setUserSearch] = React.useState('')
   const [selectedUser, setSelectedUser] = React.useState<UserRecord | null>(null)
+  // Блокировка человека. Окно подтверждения отдельное от окна профиля:
+  // причина обязательна, и место для неё в карточке профиля не нашлось бы.
+  const [blockTarget, setBlockTarget] = React.useState<UserRecord | null>(null)
+  const [blockReason, setBlockReason] = React.useState('')
+  const [isBlocking, setIsBlocking] = React.useState(false)
   const [error, setError] = React.useState('')
   const [showRejectModal, setShowRejectModal] = React.useState(false)
   const [selectedPropertyForReject, setSelectedPropertyForReject] = React.useState<Property | null>(null)
@@ -84,6 +90,34 @@ export const ModerationQueue: React.FC = () => {
     setAllBookings(bookings)
     setIsLoading(false)
   }, [])
+
+  /**
+   * Подтверждённая блокировка или разблокировка.
+   *
+   * Список перезагружается целиком: вместе с человеком меняются и его
+   * объявления — уходят с витрины или возвращаются, — а они видны на других
+   * закладках этой же страницы.
+   */
+  const applyBlock = async () => {
+    if (!blockTarget) return
+    const blocking = blockTarget.blocked !== true
+
+    setIsBlocking(true)
+    setError('')
+    try {
+      await setUserBlocked(blockTarget.id, blocking, blocking ? blockReason.trim() : '')
+      setBlockTarget(null)
+      setBlockReason('')
+      // Окно профиля закрываем: данные в нём уже устарели, а предлагать
+      // «Заблокировать» тому, кого только что заблокировали, хуже, чем закрыть.
+      setSelectedUser(null)
+      await loadPendingListings()
+    } catch {
+      setError(t.moderation.blockFailed)
+    } finally {
+      setIsBlocking(false)
+    }
+  }
 
   const removeBooking = async (id: string) => {
     setIsDeletingBooking(id)
@@ -924,7 +958,12 @@ export const ModerationQueue: React.FC = () => {
                             : (u.name?.charAt(0) || '?').toUpperCase()}
                         </div>
                         <div className="people-info">
-                          <div className="people-name">{u.name || '—'}</div>
+                          <div className="people-name">
+                            {u.name || '—'}
+                            {u.blocked && (
+                              <span className="people-blocked-badge">{t.moderation.blockedBadge}</span>
+                            )}
+                          </div>
                           <div className="people-email">{u.email || '—'}</div>
                         </div>
                         <svg className="people-chevron" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -986,6 +1025,95 @@ export const ModerationQueue: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Блокировка. Кнопка одна и меняется по состоянию: показывать
+                  рядом «Заблокировать» и «Разблокировать» значило бы
+                  предлагать бессмысленное действие в половине случаев. */}
+              <div className="user-popup-actions">
+                {selectedUser.blocked ? (
+                  <>
+                    {selectedUser.blockedReason && (
+                      <div className="user-popup-blocked-reason">
+                        <div className="user-popup-label">{t.moderation.blockReason}</div>
+                        <span>{selectedUser.blockedReason}</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="btn btn-primary user-popup-action-btn"
+                      onClick={() => { setBlockReason(''); setBlockTarget(selectedUser) }}
+                    >
+                      {t.moderation.unblockUser}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-danger user-popup-action-btn"
+                    onClick={() => { setBlockReason(''); setBlockTarget(selectedUser) }}
+                  >
+                    {t.moderation.blockUser}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Блокировка: подтверждение с обязательной причиной. Отдельным окном
+            поверх профиля — человека надо выбрать, прочитать, что произойдёт,
+            и только потом нажать. */}
+        {blockTarget && (
+          <div className="moderation-overlay" onClick={() => !isBlocking && setBlockTarget(null)}>
+            <div className="moderation-modal" onClick={e => e.stopPropagation()}>
+              <h2>{blockTarget.blocked ? t.moderation.unblockTitle : t.moderation.blockTitle}</h2>
+
+              {error && <div className="error-message">{error}</div>}
+
+              <p className="rejection-title">{blockTarget.name || '—'} · {blockTarget.email || '—'}</p>
+
+              <p className="block-modal-hint">
+                {blockTarget.blocked ? t.moderation.unblockHint : t.moderation.blockReasonHint}
+              </p>
+
+              {!blockTarget.blocked && (
+                <>
+                  <label htmlFor="block-reason">{t.moderation.blockReason}</label>
+                  <textarea
+                    id="block-reason"
+                    className="rejection-textarea"
+                    rows={3}
+                    maxLength={500}
+                    placeholder={t.moderation.blockReasonPlaceholder}
+                    value={blockReason}
+                    onChange={e => setBlockReason(e.target.value)}
+                    disabled={isBlocking}
+                  />
+                </>
+              )}
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setBlockTarget(null)}
+                  disabled={isBlocking}
+                >
+                  {t.buttons.cancel}
+                </button>
+                <button
+                  type="button"
+                  className={blockTarget.blocked ? 'btn btn-primary' : 'btn btn-danger'}
+                  onClick={applyBlock}
+                  /* Причина обязательна: её увидит человек, и пустую показывать
+                     нечего. Сервер отказывает по той же причине — кнопка лишь
+                     не даёт дойти до отказа. */
+                  disabled={isBlocking || (!blockTarget.blocked && !blockReason.trim())}
+                >
+                  {isBlocking && <InlineSpinner label={t.messages.loading} />}
+                  {blockTarget.blocked ? t.moderation.confirmUnblock : t.moderation.confirmBlock}
+                </button>
               </div>
             </div>
           </div>

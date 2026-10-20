@@ -11,6 +11,32 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == ownerId;
     }
 
+    // Заблокированный модератором. Признак лежит в ЗАЯВКЕ ТОКЕНА, как и
+    // `moderator`, и это главное решение здесь: заявка приехала вместе с
+    // запросом и проверяется бесплатно. Альтернатива —
+    // `get(/databases/.../users/$(request.auth.uid)).data.blocked` — стоила бы
+    // дополнительное чтение на КАЖДОЕ сохранение объявления и каждую отметку в
+    // избранном, у всех подряд, включая тех, кого никто не блокировал.
+    //
+    // ⚠️ Цена заявки — задержка до часа: она попадает в токен при продлении.
+    // Функция `setUserBlocked` отзывает токены, чтобы продление случилось
+    // сразу, но уже выданный токен доживает свой час. Поэтому запрет на
+    // комментарии и оценки стоит НЕ здесь, а в `interactions.ts` на сервере —
+    // там он действует мгновенно, и там же он единственно возможен: те записи
+    // делает сервис-аккаунт, которого правила не касаются вовсе.
+    // ⚠️⚠️ Наличие ключа проверяется ОТДЕЛЬНО, и без этого правило ломает всё.
+    // В правилах обращение к несуществующему ключу заявки не даёт «ложь», а
+    // РОНЯЕТ проверку с ошибкой, а ошибка внутри цепочки `&&` равносильна
+    // отказу. Заявки `blocked` нет ни у кого, кроме заблокированных, — то есть
+    // короткая запись `token.blocked == true` отказывала бы в создании
+    // объявления и брони ВСЕМ нормальным людям. Поймано тестами правил до
+    // выкладки; на боевой базе это выглядело бы как «сайт сломался весь».
+    function isBlocked() {
+      return request.auth != null
+        && 'blocked' in request.auth.token
+        && request.auth.token.blocked == true;
+    }
+
     // В избранном менялась только отметка самого вошедшего.
     // Проверяются обе стороны: и что добавили не чужой uid, и что убрали не чужой.
     // hasOnly на пустом множестве истинен, поэтому «ничего не изменилось» тоже
@@ -36,15 +62,26 @@ service cloud.firestore {
       // разослать жалобы на комментарии, и в уведомление уходит имя пожаловавшегося.
       // То есть любой мог выписать себе это поле и начать получать жалобы вместе с
       // личностью заявителя.
+      // ⚠️ Поля блокировки в этом же запрете, и это не формальность: без него
+      // заблокированный стирал бы себе `blocked` одной правкой профиля. Самого
+      // запрета он так не снимет — тот живёт в заявке токена, — но полоса с
+      // причиной исчезла бы, и в поддержку пришёл бы человек, уверенный, что
+      // его никто не блокировал. Пишет эти поля только `setUserBlocked`.
       allow create: if request.auth != null && request.auth.uid == userId
-        && !request.resource.data.keys().hasAny(['moderator', 'admin', 'isModerator']);
+        && !request.resource.data.keys().hasAny([
+             'moderator', 'admin', 'isModerator',
+             'blocked', 'blockedReason', 'blockedAt', 'blockedBy'
+           ]);
       // На обновлении сверяются ИЗМЕНЁННЫЕ ключи, а не все. request.resource.data —
       // это документ целиком после записи, поэтому keys() видел бы и поля, которые
       // никто не трогал: пользователь с уже проставленным isModerator не смог бы
       // поправить даже собственное имя.
       allow update: if request.auth != null && request.auth.uid == userId
         && !request.resource.data.diff(resource.data).affectedKeys()
-             .hasAny(['moderator', 'admin', 'isModerator']);
+             .hasAny([
+               'moderator', 'admin', 'isModerator',
+               'blocked', 'blockedReason', 'blockedAt', 'blockedBy'
+             ]);
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
@@ -70,6 +107,7 @@ service cloud.firestore {
       // Create: paid-tier metadata is never client-controlled. Paid listings begin
       // as drafts and are activated by the verified Azericard callback.
       allow create: if request.auth != null
+        && !isBlocked()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.isFeatured == false
         && !request.resource.data.keys().hasAny(['premiumExpiresAt', 'vipExpiresAt'])
@@ -101,10 +139,16 @@ service cloud.firestore {
         // владелец поднимал бы своё объявление наверх из браузера бесплатно и
         // сколько угодно раз, одной правкой документа. Пишет его только сервер:
         // `applyBoostPackage` после оплаты и ночная `dailyBoosts`.
+        //
+        // ⚠️ `hiddenByBlock` в том же списке запрещённых полей. По нему
+        // разблокировка узнаёт, какие объявления сняла блокировка, а какие
+        // человек скрыл сам. Оставь его открытым — и владелец стёр бы пометку,
+        // после чего разблокировка не вернула бы ему ничего.
         (isOwner(resource.data.ownerId)
+          && !isBlocked()
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
                'ownerId', 'createdAt', 'status', 'listingTier', 'premiumExpiresAt', 'vipExpiresAt', 'isFeatured',
-               'boostedAt',
+               'boostedAt', 'hiddenByBlock',
                'rating', 'reviews', 'ratings', 'comments', 'views', 'likes', 'favorites'
              ]))
         // Moderator: can update anything including status
@@ -163,6 +207,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Журнал блокировок людей. Пишет только `setUserBlocked` под
+    // сервис-аккаунтом, по той же мысли, что и `tierAudit`: через полгода
+    // вопрос «кто и за что заблокировал этого человека» должен иметь ответ.
+    //
+    // ⚠️ Чтение закрыто и самому заблокированному. Свою причину он видит в
+    // профиле (`blockedReason`), а в журнале лежат ещё и чужие записи вместе с
+    // почтами — это не его чтение.
+    match /blockAudit/{entryId} {
+      allow read: if request.auth != null && isModerator();
+      allow write: if false;
+    }
+
     // Подколлекции properties/{id}/comments в проде нет: комментарии лежат
     // массивом `comments` внутри самого документа объявления, и пишет их сервер.
     // Правила для неё существовали, но не относились ни к чему — код, который
@@ -176,7 +232,8 @@ service cloud.firestore {
       allow read: if request.auth != null;
       
       // Create: user booking must be created by the authenticated user with 'pending' status
-      allow create: if request.auth != null 
+      allow create: if request.auth != null
+        && !isBlocked()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.keys().hasAny(['propertyId', 'checkInDate', 'checkOutDate', 'totalPrice', 'nights', 'userName', 'userEmail', 'userPhone']);

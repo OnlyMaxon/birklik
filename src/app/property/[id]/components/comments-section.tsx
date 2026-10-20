@@ -39,6 +39,13 @@ export function CommentsSection({propertyId, initialComments, currentUserId, isA
     if (result.success) {
       setComments(prev => [...prev, result.comment])
       setNewComment('')
+    } else if (result.error === 'blocked') {
+      // ⚠️ Раньше любой отказ здесь проглатывался молча: кнопка нажималась,
+      // комментарий не появлялся, и объяснения не было никакого. Для
+      // заблокированного это выглядело бы поломкой сайта — а блокировку мы
+      // решили объяснять. Сообщением, а не полосой: так же поступает соседний
+      // виджет оценки, и два разных способа в одном месте были бы хуже.
+      alert(t.errors.blocked)
     }
     setIsPostingComment(false)
   }

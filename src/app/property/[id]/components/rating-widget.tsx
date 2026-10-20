@@ -34,6 +34,8 @@ export function RatingWidget({propertyId, averageRating, reviewCount, initialUse
 
     if (result.success) {
       setUserRating(rating)
+    } else if (result.error === 'blocked') {
+      alert(t.errors.blocked)
     } else if (result.error === 'not-booked') {
       alert(t.property.onlyRateBooked)
     } else {

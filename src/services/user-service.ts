@@ -9,6 +9,14 @@ export interface UserRecord {
   phone: string
   avatar?: string
   createdAt: string
+  /**
+   * Блокировка модератором. Пишет эти поля только функция `setUserBlocked` —
+   * правила Firestore не дают браузеру трогать их ни у себя, ни у другого.
+   */
+  blocked?: boolean
+  blockedReason?: string
+  blockedAt?: string
+  blockedBy?: string
 }
 
 /**

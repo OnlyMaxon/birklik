@@ -43,6 +43,17 @@ export function anon(env: RulesTestEnvironment): RulesTestContext {
   return env.unauthenticatedContext()
 }
 
+/**
+ * Заблокированный модератором — так же заявкой в токене, как и модератор.
+ *
+ * ⚠️ Именно заявкой, а не полем в документе: правила спрашивают
+ * `request.auth.token.blocked`, и тест, подкладывающий поле в `users`, прошёл бы
+ * мимо настоящего запрета и ничего бы не проверил.
+ */
+export function blocked(env: RulesTestEnvironment, uid: string): RulesTestContext {
+  return env.authenticatedContext(uid, {blocked: true})
+}
+
 export const PROPERTY_ID = 'prop-1'
 
 export function propertyDoc(overrides: Record<string, unknown> = {}) {

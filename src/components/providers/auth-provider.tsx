@@ -119,7 +119,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
               name: userData.name || fbUser.displayName || 'User',
               email: fbUser.email || '',
               phone: userData.phone || '',
-              avatar: toImageApiUrl(userData.avatar || fbUser.photoURL || '') || ''
+              avatar: toImageApiUrl(userData.avatar || fbUser.photoURL || '') || '',
+              // ⚠️ Профиль собирается ПО ПОЛЯМ, а не растеканием документа, и
+              // всё неперечисленное здесь просто теряется. Признак блокировки
+              // нужно провести явно, иначе полоса с причиной не покажется
+              // никогда — и человек останется с «не работает» без объяснения.
+              blocked: userData.blocked === true,
+              blockedReason: userData.blockedReason || ''
             })
           } else {
             // Fallback to Firebase user data

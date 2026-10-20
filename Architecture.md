@@ -600,6 +600,12 @@ and `Xaçmaz` both carried `Хачмас`).
 
 ## Known technical debt
 
+- A blocked person's paid days keep burning. Blocking pulls their listings off the storefront
+  but `premiumExpiresAt` and `vipExpiresAt` still expire on schedule, so a long block eats days
+  the person paid for. Freezing the dates would be fairer but gives them a second meaning, which
+  every query reading them would have to learn. Left as a decision for the platform owner; see
+  "Blocking a person".
+
 - The dashboard screen remains large and should be split into smaller route-local components.
 - Most authenticated reads still use the browser Firebase SDK; moving them server-side requires a Firebase session-cookie layer.
 - Booking conflicts are checked when a booking is created, approved and edited, but Firestore
@@ -731,6 +737,101 @@ worked **halfway and silently**: the URL left the document, so the photo vanishe
 while the file stayed in the bucket — still world-readable by direct link, since
 `allow read: if true`. The client logged the refusal and reported success. The weekly
 `cleanupStorage` would collect it, but only after 30 days.
+
+## Blocking a person
+
+Apple's guideline 1.2 asks three things of an app carrying user-generated content: a way to flag
+objectionable content, published contact details, and **the ability to block abusive users from
+the service**. The first two existed — `commentReports` and the contacts page. The third did not,
+and a moderator's only tools were deleting one comment or one listing at a time.
+
+There is no user-to-user messaging here, so blocking is a moderator action only: people cannot
+reach each other inside the platform, and blocking each other would protect nobody.
+
+**What a block forbids** is posting and talking: creating or editing listings, commenting,
+rating and booking. Signing in and browsing stay open deliberately — the person has to be able
+to read why and reach support.
+
+### The ban lives in two places, and neither of them is a profile field
+
+```
+claim `blocked` in the ID token ──► Firestore rules: listings, bookings
+users/{id}.blocked               ──► nothing. It explains, it does not forbid
+interactions.ts server check     ──► comments, ratings
+```
+
+⚠️ **Both halves are mandatory.** Comments and ratings are written by the service account, which
+rules do not apply to **at all** — a ban living only in rules would not stop a blocked person
+from commenting for one second. Conversely listings and bookings are written by the client
+straight into Firestore and never reach our server, so the server check cannot see them.
+
+⚠️ **A claim, not a document read in the rules.** `get(/users/$(uid)).data.blocked` would cost an
+extra read on every listing save and every favourite toggle, for everybody, including people
+nobody ever blocked. The claim already arrives with the request and is free — the same mechanism
+`moderator` uses.
+
+⚠️ **The price of a claim is up to an hour of lag.** A claim reaches the token when the token is
+refreshed, and a token lives an hour. `setUserBlocked` calls `revokeRefreshTokens` so the refresh
+happens at once, but an already-issued token survives its hour. So a blocked person may still
+create a listing within that window — and that is nearly harmless, because the rules force an
+ordinary new listing to be born `pending`, invisible until a moderator approves it. Comments and
+ratings have no such window: the server reads the document live.
+
+⚠️ **`'blocked' in request.auth.token` is checked separately, and without it the rule breaks
+everything.** Reading a missing key off the token map does not yield false in rules — it raises
+an evaluation error, and an error inside an `&&` chain means denial. Nobody except blocked people
+has the claim, so the short form `token.blocked == true` would have denied listing and booking
+creation to **every normal user**. The rules tests caught it before deployment; in production it
+would have looked like "the whole site is broken".
+
+### Listings leave the storefront with a mark
+
+Blocking flips the owner's `active` listings to `inactive` and marks each one `hiddenByBlock`.
+Unblocking restores **only the marked ones** and deletes the mark.
+
+⚠️ The mark is what makes unblocking safe. Some of those listings were hidden by the owner long
+before the block; without a mark, unblocking would push them back onto the storefront — showing
+the world listings the person deliberately kept hidden. The field is deleted rather than set to
+`false`, like `boostedAt`, because queries elsewhere select on its presence.
+
+`hiddenByBlock` sits in the owner's forbidden-keys list in the rules alongside `boostedAt`: an
+owner who could clear the mark would get nothing back when unblocked.
+
+⚠️ **Paid days keep burning while blocked.** A Premium listing pulled from the storefront still
+expires on schedule. Freezing the expiry would be fairer but introduces a second meaning for
+those dates, so it was left out deliberately — flagged as a decision, not an oversight.
+
+### What the blocked person sees
+
+The reason, written by the moderator, in their account — `BlockedNotice` on the site, the same
+component name in the app, shown on profile, listings and the add-listing screen. Showing the
+reason is the platform owner's choice: without it a block looks like a broken site, and the
+person calls support with "nothing works".
+
+They cannot hide it. Rules keep `blocked`, `blockedReason`, `blockedAt` and `blockedBy` in the
+same forbidden-keys list as `isModerator` — clearing the field would not lift the ban anyway,
+but it would produce a caller convinced nobody ever blocked them.
+
+⚠️ Both auth providers build the profile **field by field**, so anything not listed there is
+dropped. `blocked` and `blockedReason` are passed through explicitly in each; forget that and the
+notice never appears.
+
+### Guards inside the function
+
+`setUserBlocked` refuses to block a moderator and refuses to block the caller. Without the first,
+one moderator could switch off another — including the platform owner, after which nobody could
+undo it, because the button is moderators-only.
+
+⚠️ `setCustomUserClaims` **replaces** the whole claims object rather than merging into it. The
+function reads the existing claims and merges; writing `{blocked: true}` would one day erase
+somebody's `moderator`.
+
+Every block and unblock lands in `blockAudit` — who, whom, why, how many listings moved — by the
+same reasoning as `tierAudit`: in six months "who blocked this person and what for" must have an
+answer. Writes are denied to everyone, moderators included.
+
+Reporting a comment is left open to blocked people on purpose: it is the safety valve, and
+repeat reports on the same comment are already rejected.
 
 ## Reporting user content: one function, two entry points
 

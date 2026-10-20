@@ -10,6 +10,7 @@ import {DashboardNavigation} from './dashboard-navigation'
 import {ListingsTab} from './listings-tab'
 import {ListingEditor} from './listing-editor'
 import {ProfileTab} from './profile-tab'
+import {BlockedNotice} from './blocked-notice'
 import {DashboardSkeleton} from '@/components'
 import type {DashboardTab, PaymentNotification} from './dashboard-types'
 import { isModerator } from '@/lib/auth/permissions'
@@ -164,6 +165,10 @@ export const DashboardClient: React.FC<DashboardClientProps> = ({ initialTab = '
 
             {/* Main Content */}
             <main className="dashboard-content">
+              {/* Полоса с причиной блокировки — выше всех закладок: человек
+                  приходит туда, где у него перестало работать. */}
+              <BlockedNotice />
+
               {activeTab === 'listings' && (
                 <ListingsTab
                   listings={listings}

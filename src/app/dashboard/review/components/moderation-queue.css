@@ -914,3 +914,64 @@
   outline: none;
   border-color: var(--primary-color);
 }
+
+/* ─────────────────── Блокировка человека ─────────────────── */
+
+/* ⚠️ `.btn-danger` вёрстка использовала и ДО блокировки — у кнопки отказа в
+   объявлении, — а описан он не был нигде: кнопка всё время рисовалась обычной.
+   Описан здесь, потому что рядом встала вторая такая же. */
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.people-blocked-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.user-popup-actions {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-popup-blocked-reason {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.user-popup-action-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Объяснение, что произойдёт. Намеренно не мелкое и не серое: это единственное
+   место, где модератор читает последствия до нажатия. */
+.block-modal-hint {
+  margin: 0 0 14px;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.5;
+}

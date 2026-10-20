@@ -38,6 +38,36 @@ export interface Actor {
   uid: string
 }
 
+/**
+ * Заблокированному модератором общаться нельзя.
+ *
+ * ⚠️ **Почему проверка здесь, а не в правилах Firestore.** Комментарии и оценки
+ * пишет сервер под сервис-аккаунтом — правила его не касаются ВООБЩЕ. Запрет,
+ * поставленный только в правилах, заблокированного не остановил бы ни на
+ * секунду: он бы продолжал комментировать через эту самую функцию.
+ *
+ * И наоборот: эта проверка не заменяет правил. Объявления и брони клиент пишет
+ * сам, напрямую в Firestore, и до сервера те записи не доходят. Поэтому запрет
+ * живёт в двух местах, и оба обязательны.
+ *
+ * ⚠️ Читается документ человека, а не заявка токена, и это НЕ лень: заявка
+ * обновляется при продлении токена, то есть с задержкой до часа, а здесь запрет
+ * действует мгновенно. Лишнее чтение документа на комментарий — цена, которую
+ * не жаль: комментариев у нас десятки в день, а не десятки в секунду.
+ *
+ * ⚠️ `getUserProfile` для этого не годится: он возвращает узкий тип для показа
+ * и поле `blocked` отбрасывает. Нужен отдельный запрос именно за признаком.
+ *
+ * ⚠️ Жалоба на комментарий НЕ закрывается намеренно. Это предохранительный
+ * клапан: заблокированный всё равно видит площадку, и если он наткнулся на
+ * настоящую грязь, пусть сообщит. Повторные жалобы на одно и то же уже
+ * отсекаются проверкой в `reportComment`.
+ */
+async function blockedRefusal(uid: string): Promise<{success: false; error: string} | null> {
+  const user = await getDoc<{blocked?: boolean}>('users', uid)
+  return user?.blocked === true ? {success: false, error: 'blocked'} : null
+}
+
 export async function addComment(
   actor: Actor,
   propertyId: string,
@@ -45,6 +75,9 @@ export async function addComment(
 ): Promise<InteractionResult<{comment: Comment}>> {
   const parsed = commentSchema.safeParse({propertyId, text})
   if (!parsed.success) return {success: false, error: 'invalid-input'}
+
+  const refused = await blockedRefusal(actor.uid)
+  if (refused) return refused
 
   const [property, profile] = await Promise.all([
     getDoc<Property>('properties', parsed.data.propertyId),
@@ -96,6 +129,9 @@ export async function addRating(
 ): Promise<InteractionResult<{rating: number; reviews: number}>> {
   const parsed = ratingSchema.safeParse({propertyId, rating})
   if (!parsed.success) return {success: false, error: 'invalid-input'}
+
+  const refused = await blockedRefusal(actor.uid)
+  if (refused) return refused
 
   // Оценивать может только тот, кто здесь останавливался. Иначе оценки
   // превращаются в способ свести счёты с чужим объявлением.
