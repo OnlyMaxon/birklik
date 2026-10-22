@@ -194,7 +194,13 @@ export const syncPlayRefunds = functions
  */
 export const syncAppleRefundsDaily = functions
   .region('europe-west1')
-  .runWith({timeoutSeconds: 540})
+  // ⚠️ Секреты объявляются ЗДЕСЬ, как у Azericard, и подключаются только к той
+  // функции, которой нужны. Выкладка их не стирает: хранит их Secret Manager,
+  // а код лишь называет. Никаких `.env` в проекте нет и не нужно.
+  .runWith({
+    timeoutSeconds: 540,
+    secrets: ['APPLE_ISSUER_ID', 'APPLE_KEY_ID', 'APPLE_PRIVATE_KEY'],
+  })
   .pubsub.schedule('every day 02:30')
   .timeZone('UTC')
   .onRun(async () => {

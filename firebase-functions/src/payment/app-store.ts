@@ -35,15 +35,18 @@ export const APPLE_BUNDLE_ID = 'az.birklik.app';
  * Числовой идентификатор приложения в App Store Connect.
  *
  * ⚠️ Библиотека требует его ТОЛЬКО для боевой среды и запрещает для песочницы.
- * Пока приложение в App Store Connect не заведено, числа не существует — и
- * боевые квитанции проверить нечем. Песочница при этом работает полностью,
- * поэтому разработку он не задерживает.
+ *
+ * Константой, а не переменной окружения, и это осознанно: число не секрет — оно
+ * стоит прямо в ссылке на приложение в магазине, — не меняется никогда и нужно
+ * для КАЖДОЙ боевой покупки. Спрячь его в секрет, и проверка покупок станет
+ * зависеть от настройки, которую легко забыть при переезде: всё соберётся,
+ * выложится и будет молча отказывать боевым квитанциям. Рядом с `bundleId` ему
+ * и место — они одной природы.
  */
+const APPLE_APP_ID = 6825836279;
+
 function appAppleId(): number | undefined {
-  const raw = process.env.APPLE_APP_ID?.trim();
-  if (!raw) return undefined;
-  const value = Number(raw);
-  return Number.isFinite(value) && value > 0 ? value : undefined;
+  return APPLE_APP_ID;
 }
 
 /**
@@ -58,13 +61,8 @@ function verifierFor(environment: Environment): SignedDataVerifier {
   const existing = verifiers.get(environment);
   if (existing) return existing;
 
+  // Песочнице числовой id передавать НЕЛЬЗЯ — библиотека на этом ругается.
   const id = environment === Environment.PRODUCTION ? appAppleId() : undefined;
-  if (environment === Environment.PRODUCTION && id === undefined) {
-    throw new AppleVerificationError(
-      'unavailable',
-      'APPLE_APP_ID не задан — боевые квитанции App Store проверить нечем'
-    );
-  }
 
   // ⚠️ `enableOnlineChecks: true` включает проверку отзыва сертификата и срока
   // по текущей дате — то есть обращение к Apple. Это осознанно: сорвётся связь
