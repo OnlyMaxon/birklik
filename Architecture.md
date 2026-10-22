@@ -377,6 +377,118 @@ consistency"; the query would collect the whole collection.
 hand-edited document instead of two manats — the cheapest theft available on the platform.
 `tests/rules/properties.test.ts` and `tests/rules/boosts.test.ts` hold that shut.
 
+### The App Store till
+
+The third till. One listing state, three tills: Azericard on the website, Google Play and the
+App Store in the app. The product catalogue is **shared** — the identifiers in App Store Connect
+are the same strings as in Play Console, so `verifyApplePurchase` reads the very same
+`PLAY_PRODUCTS` and `BOOST_PRODUCTS` tables, and applies tiers through the same `applyPaidTier`
+and `applyBoostPackage`. Only the proof of payment differs.
+
+```
+Google   client sends a purchase token, the server asks Google about it
+Apple    the purchase token IS the receipt — a JWS signed by Apple, verified here
+```
+
+Verification uses Apple's own `@apple/app-store-server-library`: parsing the x5c chain, checking
+it against a root, validating certificate expiry and revocation is exactly the sort of code that
+fails silently and is discovered by whoever already granted themselves free Premium.
+
+⚠️ **Apple's root certificates are embedded as base64 in `apple-roots.ts`, not shipped as files.**
+`tsc` copies only what it compiles — a `.cer` next to the source never reaches `lib/`, and the
+deployed function would fail reading it, in production only. The certificates were checked by
+owner and fingerprint rather than by a 200 response; the commands to re-check are in the file.
+
+⚠️ **No Apple key is needed for this.** Verifying a purchase needs only the root certificates.
+The In-App Purchase `.p8` key is needed for something else entirely — polling refunds, and
+answering `CONSUMPTION_REQUEST`.
+
+⚠️ **`APPLE_APP_ID` is required for production receipts and forbidden for sandbox ones.** The
+library enforces this. Until the app record exists in App Store Connect the number does not
+exist, so production receipts cannot be verified at all — sandbox works fully, so development is
+not blocked, but the first real purchase will fail until that variable is set.
+
+#### Sandbox receipts are accepted on purpose
+
+App Review buys in the **sandbox** while the app is already in the store. Refusing sandbox
+receipts would therefore fail review itself: the reviewer sees "purchase doesn't work". An
+ordinary user cannot produce one — it requires a Sandbox account, which only we can create, and
+a build that did not come from the store. Such purchases are flagged `isTestPurchase`, exactly
+as Play's licence-test purchases are, so they never count as revenue. The `Xcode` and
+`LocalTesting` environments are rejected: their receipts are signed by a developer's local
+certificate, which is to say by anybody.
+
+#### Apple has no `obfuscatedProfileId`, so the binding lives in `purchaseIntents`
+
+That Google field is what closed the "process killed after payment" hole on 2026-10-10: Google
+stores the listing id inside the purchase and hands it back to the server, so an app that has
+forgotten everything still gets the tier applied. Apple offers only `appAccountToken`, and it
+**must be a UUID** — neither our uid nor a listing id fits in one.
+
+So the app writes `purchaseIntents/{uuid}` — uid, listing, product — **before** opening the
+payment sheet, and sends only the UUID to Apple. It comes back inside the signed receipt, and the
+server reads the binding from its own database.
+
+```
+allow create   own uid, own listing (checked with a get), not blocked
+allow read     nobody — the server reads it under the service account
+update/delete  nobody: the intent is single-use and immutable
+```
+
+⚠️ A non-UUID in `appAccountToken` is **dropped silently** by StoreKit. The receipt would then
+arrive with no binding and the hole would reopen without a single error anywhere. The UUID is
+generated from `Math.random` deliberately: it is a lookup key, not a credential — guessing
+someone else's buys nothing, because getting it into a receipt costs real money and the server
+still compares the intent's owner with the caller.
+
+⚠️ **`onlyIncludeActiveItemsIOS: false` is passed explicitly** when listing unfinished purchases,
+and the whole interrupted-purchase protection rests on it. StoreKit counts as "active" what the
+user still owns: non-consumables and live subscriptions. Tiers and boosts are **consumables** and
+are not in that list. Leave the default and an interrupted purchase simply never appears —
+money taken, tier not applied, no error raised.
+
+⚠️ **Quantity is enforced in code.** On Google the "multiple copies per transaction" switch was
+turned off in the console, or a buyer would pay for thirty boosts and receive ten. Apple has no
+such switch, so `verifyApplePurchase` refuses any quantity other than one; the transaction stays
+unfinished and Apple refunds it.
+
+#### Refunds are pushed, not polled
+
+A refund was never a button of ours. The customer complains to Apple, Apple refunds on its own
+and merely tells us — and does so markedly more often than Google. The 2026-10-15 audit found
+that a refund **took nothing back** on either till, which is invisible from outside: the buyer is
+happy, the listing stays on top, the platform pays.
+
+`appleNotifications` is an `onRequest` endpoint receiving App Store Server Notifications V2.
+Its URL must be configured in App Store Connect **separately for production and for sandbox**:
+
+```
+https://europe-west1-birklik-65289.cloudfunctions.net/appleNotifications
+```
+
+⚠️ **The signature is the entire authentication.** The URL is public and holds no secret, because
+Apple provides for none — exactly like the Azericard callback, where `P_SIGN` proves authenticity.
+The nested `signedTransactionInfo` is verified separately: trusting its contents because the outer
+envelope was signed would be a hole.
+
+⚠️ **The response code decides whether Apple retries.** 200 means "accepted, don't repeat" and is
+returned even for notification types we ignore — Apple has two dozen of them, nearly all about
+subscriptions we do not sell, and refusing them would earn a day of retries. 400 means the
+signature failed and a retry changes nothing. 500 means **we** broke, so please send it again:
+answering 200 to our own failure loses the refund permanently.
+
+⚠️ **There is no second line of defence for Apple yet.** Google is polled nightly by
+`syncPlayRefunds`; the equivalent for Apple needs the In-App Purchase key, which we do not have.
+Until then a notification that never arrives is a refund we never see.
+
+⚠️ `CONSUMPTION_REQUEST` cannot be answered without that key either — Apple asks whether the item
+was consumed in order to decide the refund, and the answer travels through the App Store Server
+API. It is logged loudly so the silence is visible rather than assumed.
+
+⚠️ `REFUND_REVERSED` is **not** acted on automatically. Re-applying would count the tier from
+today, granting more than was bought. The claim is flagged `needsManualRestore` and logged as an
+error.
+
 ### Finishing a payment when the connection dies
 
 Two tills, one effect — and they recover from an interruption in completely different ways.

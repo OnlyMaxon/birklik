@@ -33,6 +33,15 @@ const ANDROID_PUBLISHER = 'https://androidpublisher.googleapis.com/androidpublis
  * приложение показывает то, что вернул магазин. Дублировать 20/30/55 AZN из
  * TIER_PRICES в azericard.ts здесь нельзя — разойдутся.
  */
+/**
+ * ⚠️ **Имя врёт с 2026-10-21: каталог общий для ДВУХ магазинов.** Товары в
+ * App Store Connect заведены под теми же именами, что в Play Console, поэтому
+ * `verifyApplePurchase` читает эту же таблицу. Переименовывать не стали: имя
+ * `PLAY_PRODUCTS` разошлось бы по истории и по памяти разработчиков, а польза
+ * нулевая. Главное — помнить, что правка здесь касается обеих касс, и имена
+ * обязаны совпадать буква в букву в ТРЁХ местах: здесь, в Play Console и в
+ * App Store Connect.
+ */
 export const PLAY_PRODUCTS: Record<string, {tier: PaidTier; duration: TierDuration}> = {
   vip_14: {tier: 'vip', duration: '14days'},
   vip_30: {tier: 'vip', duration: '30days'},

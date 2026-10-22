@@ -42,7 +42,8 @@ export async function applyBoostPackage(params: {
   propertyId: string;
   count: BoostPackage;
   ownerId: string;
-  source: 'azericard' | 'google_play';
+  /** Какая касса заплатила. Третья появилась с выходом в App Store. */
+  source: 'azericard' | 'google_play' | 'app_store';
 }): Promise<{boostedAt: string; remaining: number}> {
   const {propertyId, count, ownerId, source} = params;
   const db = admin.firestore();

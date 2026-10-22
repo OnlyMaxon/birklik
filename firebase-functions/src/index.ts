@@ -11,12 +11,22 @@ import { runDailyBoosts } from './boost/daily-boosts';
 import { sendPushToUser } from './notifications/send-push';
 import { initiatePayment, azericardCallback } from './payment/azericard';
 import { verifyPlayPurchase } from './payment/verify-play-purchase';
+import { verifyApplePurchase } from './payment/verify-apple-purchase';
+import { appleNotifications } from './payment/apple-notifications';
 import { syncVoidedPurchases } from './payment/voided-purchases';
 import { auditTierChange } from './moderation/tier-audit';
 import { deleteAccount } from './account/delete-account';
 import { setUserBlocked } from './moderation/block-user';
 
-export { initiatePayment, azericardCallback, verifyPlayPurchase, deleteAccount, setUserBlocked };
+export {
+  initiatePayment,
+  azericardCallback,
+  verifyPlayPurchase,
+  verifyApplePurchase,
+  appleNotifications,
+  deleteAccount,
+  setUserBlocked,
+};
 
 admin.initializeApp();
 
