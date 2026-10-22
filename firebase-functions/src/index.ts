@@ -14,6 +14,7 @@ import { verifyPlayPurchase } from './payment/verify-play-purchase';
 import { verifyApplePurchase } from './payment/verify-apple-purchase';
 import { appleNotifications } from './payment/apple-notifications';
 import { syncVoidedPurchases } from './payment/voided-purchases';
+import { syncAppleRefunds } from './payment/apple-refund-sync';
 import { auditTierChange } from './moderation/tier-audit';
 import { deleteAccount } from './account/delete-account';
 import { setUserBlocked } from './moderation/block-user';
@@ -177,6 +178,32 @@ export const syncPlayRefunds = functions
       // Отказ Google не должен ронять расписание: следующий прогон посмотрит на
       // ту же неделю назад и догонит пропущенное.
       console.error('[Voided] Сверка возвратов не удалась:', error);
+    }
+    return null;
+  });
+
+/**
+ * Ночной опрос возвратов App Store — второй рубеж к уведомлениям.
+ *
+ * ⚠️ Отдельной задачей от `syncPlayRefunds`, а не веткой внутри неё: кассы
+ * разные, ключи разные, и отказ одного магазина не должен мешать разбору
+ * другого. Время сдвинуто на полчаса, чтобы две задачи не будили друг друга.
+ *
+ * Без ключа In-App Purchase задача честно пишет об этом и выходит — расписание
+ * при этом остаётся целым.
+ */
+export const syncAppleRefundsDaily = functions
+  .region('europe-west1')
+  .runWith({timeoutSeconds: 540})
+  .pubsub.schedule('every day 02:30')
+  .timeZone('UTC')
+  .onRun(async () => {
+    try {
+      await syncAppleRefunds();
+    } catch (error) {
+      // Отказ Apple не должен ронять расписание: следующий прогон посмотрит на
+      // ту же неделю назад и догонит пропущенное.
+      console.error('[AppleSync] Сверка возвратов не удалась:', error);
     }
     return null;
   });

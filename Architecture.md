@@ -276,6 +276,25 @@ NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN  # optional, must be registered
 
 Function-only credentials remain server-side and must never use the `NEXT_PUBLIC_` prefix.
 
+App Store access needs four of them in `firebase-functions`:
+
+```text
+APPLE_APP_ID        numeric Apple ID from App Store Connect — required to verify
+                    PRODUCTION receipts, forbidden for sandbox ones
+APPLE_ISSUER_ID     Users and Access → Integrations, above the key list
+APPLE_KEY_ID        the In-App Purchase key id (the file is SubscriptionKey_<id>.p8)
+APPLE_PRIVATE_KEY   contents of that .p8
+```
+
+⚠️ The last one arrives with its newlines **escaped**, so the code unescapes `
+` before
+handing it over. Skip that and the library reports an invalid key format — never a line break,
+which is what it actually is.
+
+⚠️ Only `APPLE_APP_ID` affects verifying purchases. The other three belong to the nightly refund
+poll: without them it logs that it was skipped and exits, leaving refunds resting on
+notifications alone.
+
 ## Commands
 
 ```bash

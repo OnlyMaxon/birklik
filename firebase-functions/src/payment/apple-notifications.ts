@@ -1,8 +1,7 @@
 import * as functions from 'firebase-functions/v1';
 import {admin} from '../firebase-admin';
 
-import {revokePaidTier} from './apply-tier';
-import {revokeBoostPackage} from '../boost/apply-boost';
+import {applyAppleRefund} from './apple-refunds';
 import {AppleVerificationError, verifyAppleNotification, verifyAppleTransaction} from './app-store';
 
 /**
@@ -20,10 +19,12 @@ import {AppleVerificationError, verifyAppleNotification, verifyAppleTransaction}
  *
  * ⚠️ **У Google мы возвраты СПРАШИВАЕМ, у Apple их ПРИСЫЛАЮТ.** Это разные
  * механизмы, и подменить один другим нельзя: `syncPlayRefunds` ночью опрашивает
- * `voidedpurchases`, а Apple бьёт сюда уведомлением. Второй рубеж для Apple —
- * опрос через App Store Server API — требует ключа In-App Purchase, которого у
- * нас ещё нет; пока его нет, этот приёмник единственный, и уведомление, которое
- * не доехало, мы не увидим.
+ * `voidedpurchases`, а Apple бьёт сюда уведомлением.
+ *
+ * Второй рубеж у Apple всё же есть — `syncAppleRefunds` ночью спрашивает
+ * историю уведомлений через App Store Server API и догоняет то, что не доехало.
+ * Разбор у обоих путей ОБЩИЙ, в `apple-refunds.ts`: двух реализаций у одного
+ * события быть не должно.
  *
  * ⚠️ **Подпись — это вся проверка подлинности.** Адрес открыт, секрета в нём
  * нет и быть не может: Apple такого не предусматривает. Ровно так же устроен
@@ -148,74 +149,13 @@ export const appleNotifications = functions
         return;
       }
 
-      // Дальше только REFUND.
-      const claim = await claimRef.get();
+      // Дальше только REFUND. Сам разбор — в `apple-refunds.ts`: тем же кодом
+      // пользуется ночной опрос, и двух реализаций у одного события быть не
+      // должно.
+      const outcome = await applyAppleRefund(tx, 'уведомление');
+      if (uuid) await claimRef.set({notificationUUID: uuid}, {merge: true});
 
-      if (!claim.exists) {
-        // Apple знает о покупке, а мы её никогда не применяли. Бывает законно:
-        // человек купил, приложение умерло до проверки подписи, и покупку
-        // вернули — как раз та страховка, на которой держится порядок
-        // подтверждения товара.
-        console.warn('[AppleNotify] Возврат по неизвестной нам покупке:', tx.transactionId);
-        res.status(200).send('OK');
-        return;
-      }
-
-      const data = claim.data() ?? {};
-
-      // Повтор уведомления. Apple присылает их снова, пока не получит 200, и
-      // один возврат не должен отбирать подъёмы дважды.
-      if (data.voided === true) {
-        console.log('[AppleNotify] Этот возврат уже обработан:', tx.transactionId);
-        res.status(200).send('OK');
-        return;
-      }
-
-      const propertyId = data.propertyId as string | undefined;
-      const wasApplied =
-        data.applied === true || Boolean(data.expiryDate) || Boolean(data.boostedAt);
-
-      let revokeResult = 'выдать не успели — забирать нечего';
-
-      if (wasApplied && propertyId) {
-        const why = `возврат App Store, покупка ${tx.transactionId}`;
-        if (data.kind === 'boost') {
-          const taken = await revokeBoostPackage({propertyId, reason: why});
-          revokeResult = `подъём снят, отобрано ${taken}`;
-        } else {
-          const ok = await revokePaidTier({propertyId, reason: why});
-          revokeResult = ok ? 'тариф снят' : 'объявления уже нет';
-        }
-      }
-
-      await claimRef.update({
-        voided: true,
-        voidedAt: new Date().toISOString(),
-        voidedReason: 'возврат App Store',
-        notificationUUID: uuid,
-        revokeResult,
-      });
-
-      // Тот же след в общем журнале платежей: выручку считают по нему, и
-      // возвращённая покупка не должна в ней остаться.
-      const payments = await db
-        .collection('payments')
-        .where('transactionId', '==', tx.transactionId)
-        .limit(1)
-        .get();
-
-      if (!payments.empty) {
-        await payments.docs[0].ref.update({
-          status: 'reversed',
-          reversedAt: new Date().toISOString(),
-          reversedReason: 'возврат App Store',
-        });
-      }
-
-      console.log(
-        `[AppleNotify] Возврат обработан: ${tx.transactionId}, ` +
-        `объявление ${propertyId ?? '—'}, ${revokeResult}`
-      );
+      console.log(`[AppleNotify] Возврат ${tx.transactionId}: ${outcome.status}, ${outcome.detail}`);
       res.status(200).send('OK');
     } catch (error) {
       // Сломались МЫ: пусть Apple пришлёт снова, иначе возврат потеряется и
