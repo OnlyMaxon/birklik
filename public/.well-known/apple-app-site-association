@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["BPJZ8DL23K.az.birklik.app"],
+        "components": [
+          { "/": "/property/*" },
+          { "/": "/az/property/*" },
+          { "/": "/ru/property/*" },
+          { "/": "/en/property/*" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["BPJZ8DL23K.az.birklik.app"]
+  }
+}

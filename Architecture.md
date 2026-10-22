@@ -167,6 +167,31 @@ site's URLs first: expo-router resolves `/property/<id>`, but locale-prefixed pa
 ⚠️ The upload key (`FA:7F:0C:…`) is **not** among the three fingerprints Play Console
 generated. Links verify for builds installed from Play, not for an APK signed locally.
 
+### Apple's half: `/.well-known/apple-app-site-association`
+
+The same idea for iOS, and the same two-halves trap: this file plus `ios.associatedDomains` in
+the app. Either one missing and a birklik.az link quietly opens in the browser.
+
+```
+appIDs         BPJZ8DL23K.az.birklik.app   Team ID + bundle id
+components     /property/*, /az/..., /ru/..., /en/...
+webcredentials the same app — iOS password autofill, matching Android's
+               delegate_permission/common.get_login_creds
+```
+
+⚠️ **The file has no extension, and must not have one** — Apple requires exactly this name. So
+nothing implies its media type, and the `_headers` rule is the only source of
+`application/json`. Served as `application/octet-stream` it is silently rejected: links open in
+the browser and there is nowhere to look for a reason.
+
+⚠️ The locale-prefixed paths are declared on purpose, and the app does handle them:
+`+native-intent.tsx` strips `/az|ru|en` before expo-router sees the path. That hook is not
+Android-specific — it runs on both platforms — so what works for the Android intent filters
+works here.
+
+⚠️ Unlike Android, there is no certificate fingerprint here, so nothing ties the declaration to
+a particular build. What ties it is the Team ID: a build signed by another team will not match.
+
 ## Rendering boundaries
 
 - Route files, layouts, metadata, cached queries, and validation are server-first.

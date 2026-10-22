@@ -91,6 +91,16 @@
   Content-Type: application/json
   X-Content-Type-Options: nosniff
 
+# Связь сайта с приложением у Apple. ⚠️ Расширения у файла НЕТ и быть не должно
+# — Apple требует ровно это имя, — поэтому тип вывести не из чего, и заголовок
+# здесь не формальность, а единственный источник `application/json`. Отдай его
+# как `application/octet-stream`, и Apple файл молча не примет: ссылки будут
+# открываться в браузере, а причину искать негде.
+/.well-known/apple-app-site-association
+  Cache-Control: public, max-age=3600
+  Content-Type: application/json
+  X-Content-Type-Options: nosniff
+
 /sitemap.xml
   Cache-Control: public, max-age=86400
   Content-Type: application/xml
