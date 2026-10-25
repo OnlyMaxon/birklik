@@ -566,6 +566,30 @@ run also settles something nothing else can: whether the stored `.p8` is really 
 Purchase key rather than one of the three other Apple keys of ours, which are indistinguishable
 from the outside.
 
+⚠️ **The In-App Purchase key is named `SubscriptionKey_<KEYID>.p8`, not `AuthKey_…`.** APNs and
+DeviceCheck keys arrive as `AuthKey_…`; inside, all of them are ordinary ECDSA keys. The filename
+is the only external way to tell them apart, and picking the wrong one earns a permissions error
+whose cause is unguessable.
+
+⚠️ **A 401 against production is normal until the app has shipped.** The production host of the
+App Store Server API answers 401 to *every* call while the app has no released version; access
+opens with the first release. Measured on 2026-10-25: the same key, the same issuer, the same
+bundle id — production 401, sandbox `SUCCESS`. Read as "the key is wrong", this sends you
+rummaging through four interchangeable-looking `.p8` files. `apple-admin.ts` says so explicitly on
+a 401, because nothing else will.
+
+The first end-to-end run, 2026-10-25 in sandbox, proved four things at once:
+
+```
+Apple's own view     SUCCESS
+our log              [AppleNotify] Проверочное уведомление дошло…  → 200
+our verifier         signature accepted, notificationType TEST
+version              2.0  ← App Store Connect no longer offers a choice, and
+                           this is the measurement rather than the assumption
+```
+
+Until that run, not one line of the Apple code had ever executed.
+
 ⚠️ `REFUND_REVERSED` is **not** acted on automatically. Re-applying would count the tier from
 today, granting more than was bought. The claim is flagged `needsManualRestore` and logged as an
 error.

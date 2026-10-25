@@ -175,14 +175,36 @@ async function main(): Promise<void> {
     console.log(`Метка проверки: ${token}`);
     console.log('');
   } catch (error) {
-    // ⚠️ Самый частый отказ здесь — НЕ «адрес не настроен», а неподходящий ключ.
-    // Их у нас четыре разных: APNs, DeviceCheck, In-App Purchase и ключ
-    // App Store Connect API. Снаружи все `.p8`, и отличаются только правами.
+    const status = (error as {httpStatusCode?: number}).httpStatusCode;
     console.error('Запрос не удался:', error);
     console.error('');
+
+    // ⚠️ **401 в БОЮ — это норма, пока приложение не вышло в магазине.**
+    // Боевой адрес App Store Server API отвечает 401 на ЛЮБОЙ запрос, пока у
+    // приложения нет ни одного выпуска; доступ открывается с первым релизом.
+    // Измерено 2026-10-25: тем же ключом бой дал 401, песочница — SUCCESS.
+    //
+    // Без этой подсказки отказ читается как «ключ не тот» и поиски уходят в
+    // перебор четырёх разных `.p8`, которых у нас как раз четыре.
+    if (status === 401 && !sandbox) {
+      console.error('⚠️ 401 в БОЮ — скорее всего НОРМА, а не поломка.');
+      console.error('');
+      console.error('Боевой App Store Server API отвечает 401 на всё, пока приложение ни');
+      console.error('разу не выходило в магазине. Доступ открывается с первым выпуском.');
+      console.error('');
+      console.error('Повтори с песочницей — тем же ключом она работает:');
+      console.error('  pnpm apple:test-notify -- --key ... --issuer-file ... --sandbox');
+      process.exitCode = 1;
+      return;
+    }
+
+    // Иначе самый частый отказ — неподходящий ключ. Их у нас четыре: APNs,
+    // DeviceCheck, In-App Purchase и ключ App Store Connect API. Снаружи все
+    // `.p8`, и отличаются только правами.
     console.error('Если ответ про права или ключ — почти наверняка взят не тот .p8.');
     console.error('Нужен ключ In-App Purchase: App Store Connect → Users and Access →');
     console.error('Integrations → In-App Purchase. Ключи APNs и DeviceCheck сюда не годятся.');
+    console.error('Issuer ID берётся с ТОЙ ЖЕ вкладки In-App Purchase.');
     process.exitCode = 1;
     return;
   }
