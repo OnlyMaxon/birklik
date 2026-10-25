@@ -3,7 +3,7 @@
  * Проверка адреса уведомлений App Store руками.
  *
  * ```
- * pnpm apple:test-notify -- --key D:/VS/Birklik-mobile/Keys/AuthKey_XXXXXXXXXX.p8 --issuer <uuid>
+ * pnpm apple:test-notify -- --key D:/VS/Birklik-mobile/Keys/SubscriptionKey_XXXX.p8 --issuer-file D:/VS/Birklik-mobile/Keys/"ISSUER ID apple .txt"
  * pnpm apple:test-notify -- --key ... --issuer ... --sandbox
  * ```
  *
@@ -55,23 +55,58 @@ function arg(name: string): string | undefined {
 /**
  * Номер ключа из имени файла.
  *
- * Apple отдаёт ключи файлами вида `AuthKey_LDN5SZX76Z.p8`, где между `AuthKey_`
- * и расширением стоит ровно тот Key ID, который требуется в запросе. Просить его
- * отдельно значило бы просить переписать то, что уже лежит на диске, — и дать
- * шанс перепутать ключи между собой.
+ * Apple кладёт Key ID прямо в имя, и просить его отдельно значило бы просить
+ * переписать то, что уже лежит на диске, — то есть дать шанс перепутать ключи
+ * между собой.
+ *
+ * ⚠️ **Приставка у нужного ключа — `SubscriptionKey`, а не `AuthKey`.** Это
+ * главная ловушка выбора: ключ In-App Purchase Apple отдаёт файлом
+ * `SubscriptionKey_M27U92V98V.p8`, тогда как APNs и DeviceCheck приезжают как
+ * `AuthKey_…`. Имя — единственный внешний признак, по которому их вообще можно
+ * различить: внутри все три одинаковые ключи ECDSA.
+ *
+ * Хвост в скобках терпим намеренно: `AuthKey_7C57US8DP9(Firebase).p8` —
+ * подписанный руками файл, и отказ из-за пометки выглядел бы как «ключ не тот».
  */
 function keyIdFromFileName(file: string): string | undefined {
-  const m = /^AuthKey_([A-Z0-9]+)\.p8$/i.exec(path.basename(file));
+  const m = /^(?:AuthKey|SubscriptionKey)_([A-Z0-9]+)\s*(?:\([^)]*\))?\.p8$/i
+    .exec(path.basename(file));
   return m?.[1];
+}
+
+/**
+ * Issuer ID — из строки, из файла или из переменной окружения.
+ *
+ * ⚠️ Чтение из файла нужно не для красоты: Issuer ID у нас лежит в блокноте
+ * рядом с ключами, и путь к файлу набрать проще, чем перепечатать UUID. Опечатка
+ * в нём даёт отказ про права, который легко списать на неподходящий ключ, и
+ * поиски уходят совсем не туда.
+ */
+function resolveIssuer(): string | undefined {
+  const direct = arg('issuer');
+  if (direct) return direct.trim();
+
+  const file = arg('issuer-file');
+  if (file) {
+    if (!fs.existsSync(file)) {
+      console.error(`Файла с Issuer ID нет: ${file}`);
+      return undefined;
+    }
+    // Блокнот мог оставить BOM и перевод строки; UUID от этого не страдает, а
+    // подпись запроса — страдает.
+    return fs.readFileSync(file, 'utf8').replace(/^﻿/, '').trim();
+  }
+
+  return process.env.APPLE_ISSUER_ID?.trim();
 }
 
 async function main(): Promise<void> {
   const keyPath = arg('key');
-  const issuerId = arg('issuer') ?? process.env.APPLE_ISSUER_ID;
+  const issuerId = resolveIssuer();
   const sandbox = process.argv.includes('--sandbox');
 
   if (!keyPath) {
-    console.error('Нужен путь к ключу: --key D:/VS/Birklik-mobile/Keys/AuthKey_XXXXXXXXXX.p8');
+    console.error('Нужен путь к ключу: --key D:/VS/Birklik-mobile/Keys/SubscriptionKey_XXXX.p8');
     process.exitCode = 1;
     return;
   }
@@ -82,9 +117,13 @@ async function main(): Promise<void> {
   }
   if (!issuerId) {
     console.error(
-      'Нужен Issuer ID: --issuer <uuid>. Он один на всю команду и лежит в\n' +
-      'App Store Connect → Users and Access → Integrations → In-App Purchase,\n' +
-      'строкой над списком ключей.'
+      'Нужен Issuer ID — одним из трёх способов:\n' +
+      '  --issuer <uuid>\n' +
+      '  --issuer-file <путь к файлу с ним>\n' +
+      '  переменная окружения APPLE_ISSUER_ID\n' +
+      '\n' +
+      'Он один на всю команду и лежит в App Store Connect → Users and Access →\n' +
+      'Integrations → In-App Purchase, строкой над списком ключей.'
     );
     process.exitCode = 1;
     return;
@@ -93,11 +132,23 @@ async function main(): Promise<void> {
   const keyId = arg('key-id') ?? keyIdFromFileName(keyPath);
   if (!keyId) {
     console.error(
-      'Не удалось взять Key ID из имени файла. Переименуй его обратно в\n' +
-      '`AuthKey_XXXXXXXXXX.p8` либо передай --key-id XXXXXXXXXX.'
+      'Не удалось взять Key ID из имени файла. Ожидается `SubscriptionKey_XXXX.p8`\n' +
+      'либо `AuthKey_XXXX.p8` — или передай --key-id XXXXXXXXXX.'
     );
     process.exitCode = 1;
     return;
+  }
+
+  // ⚠️ Предупреждаем, а не отказываем. Ключ In-App Purchase приезжает файлом
+  // `SubscriptionKey_…`; `AuthKey_…` — это APNs или DeviceCheck, и запрос с ними
+  // Apple отвергнет отказом про права, по которому причину не угадать.
+  // Отказывать всё же нельзя: имя мог поправить человек, и тогда единственный
+  // верный ключ оказался бы недоступен.
+  if (!/^SubscriptionKey_/i.test(path.basename(keyPath))) {
+    console.warn(
+      `⚠️ Имя файла не начинается с SubscriptionKey_ — похоже, это не ключ\n` +
+      `   In-App Purchase. Если Apple ответит отказом про права, причина в этом.\n`
+    );
   }
 
   const environment = sandbox ? Environment.SANDBOX : Environment.PRODUCTION;
