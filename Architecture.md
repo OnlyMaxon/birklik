@@ -525,13 +525,46 @@ subscriptions we do not sell, and refusing them would earn a day of retries. 400
 signature failed and a retry changes nothing. 500 means **we** broke, so please send it again:
 answering 200 to our own failure loses the refund permanently.
 
-⚠️ **There is no second line of defence for Apple yet.** Google is polled nightly by
-`syncPlayRefunds`; the equivalent for Apple needs the In-App Purchase key, which we do not have.
-Until then a notification that never arrives is a refund we never see.
+⚠️ **Both tills now have a second line of defence, but they reach it differently.** Google is
+polled nightly for `voidedpurchases`; Apple is asked for its **notification history** by
+`syncAppleRefunds` (02:30 UTC, a seven-day window). Apple pushes, we also pull — because a push is
+a network event, and a notification that never arrives would otherwise be a refund we never see.
 
-⚠️ `CONSUMPTION_REQUEST` cannot be answered without that key either — Apple asks whether the item
-was consumed in order to decide the refund, and the answer travels through the App Store Server
-API. It is logged loudly so the silence is visible rather than assumed.
+⚠️ **The parsing is shared on purpose.** Both the webhook and the nightly poll hand the verified
+transaction to `applyAppleRefund` in `apple-refunds.ts`. Writing it twice would guarantee that one
+day a fix lands in one path and not the other, with nothing anywhere showing which path had
+handled a given refund. That already happened once with comments, until they were unified in
+`interactions.ts`.
+
+⚠️ `CONSUMPTION_REQUEST` is still **not** answered, even though the key now exists. Apple asks
+whether the item was consumed in order to decide the refund, and the answer travels through the
+App Store Server API. It is logged loudly so the silence is visible rather than assumed.
+
+#### Verifying the URL: there is no button
+
+⚠️ **App Store Connect offers no "send test notification" control** — checked by eye on
+2026-10-25. The `App Information` page shows the two URL fields and `Edit`, nothing more. Nor does
+it offer a version choice any longer: Apple retired V1, so a new configuration is V2 by
+construction.
+
+The only way to request one is the App Store Server API, signed with the In-App Purchase key:
+
+```
+pnpm apple:test-notify -- --key <path to AuthKey_XXXX.p8> --issuer <uuid>
+pnpm apple:test-notify -- --key ... --issuer ... --sandbox
+```
+
+`apple-admin.ts` takes a **path** to the key, never its contents: the keys live in
+`D:\VS\Birklik-mobile\Keys`, a folder excluded from git in its entirety. The script asks Apple to
+send a `TEST` notification, then polls `getTestNotificationStatus` and prints what Apple saw from
+its own side — including the HTTP code we answered — and finally re-verifies the returned payload
+with **our** verifier.
+
+⚠️ That last step is the point. Reaching the endpoint only proves the network works; re-verifying
+proves our signature check agrees with Apple, which is the part refunds actually depend on. The
+run also settles something nothing else can: whether the stored `.p8` is really the In-App
+Purchase key rather than one of the three other Apple keys of ours, which are indistinguishable
+from the outside.
 
 ⚠️ `REFUND_REVERSED` is **not** acted on automatically. Re-applying would count the tier from
 today, granting more than was bought. The claim is flagged `needsManualRestore` and logged as an

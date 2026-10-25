@@ -16,7 +16,8 @@
     "cleanup:execute": "ts-node src/cleanup/admin.ts --execute",
     "storage:audit": "ts-node src/cleanup/storage-orphans.ts",
     "storage:backup": "ts-node src/cleanup/storage-orphans.ts --backup",
-    "storage:purge": "ts-node src/cleanup/storage-orphans.ts"
+    "storage:purge": "ts-node src/cleanup/storage-orphans.ts",
+    "apple:test-notify": "ts-node src/payment/apple-admin.ts"
   },
   "engines": {
     "node": "22"
