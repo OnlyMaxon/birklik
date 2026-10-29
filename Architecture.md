@@ -641,6 +641,27 @@ Three shapes that cost time and are impossible to guess:
 - **Inline creation needs literal `${local-id}` ids**, dollar sign and braces included, both in
   `included` and in the relationship that points at it.
 
+⚠️ **Products are not swept into a review submission by themselves.** The 1.0.15 version went
+to review carrying exactly one item — itself — while all eight purchases stayed
+`READY_TO_SUBMIT`. Submitting them on their own is refused:
+`STATE_ERROR.FIRST_CONSUMABLE_MUST_BE_SUBMITTED_ON_VERSION`. The first consumable has to travel
+with a version, and `reviewSubmissionItems` has no relationship to a purchase at all — only
+`appStoreVersion`, `appEvent`, custom product pages and experiments. So this one step cannot be
+automated: the products are attached to the version in the console before submitting.
+
+The cost of missing it is invisible and large: the app is approved, ships, and has no purchases.
+`loadPlans` returns nothing and the tier and boost screens say the store is unavailable.
+
+Withdrawing is `PATCH /v1/reviewSubmissions/{id} {canceled: true}` — aimed at the one in
+`WAITING_FOR_REVIEW`, since an empty `READY_FOR_REVIEW` draft sits beside it and answers "not in
+cancellable state". The version then reads `DEVELOPER_REJECTED`, which is *we* pulled it back
+rather than Apple refusing it; everything already filled in survives.
+
+⚠️ **Game Center can be on without anyone turning it on.** Submission demanded the
+`com.apple.developer.game-center` entitlement "be added in Xcode" for an app that has no games.
+The cause was `gameCenterAppVersions.enabled: true` on the version, and the fix is a `PATCH` to
+`false` — not a new build carrying a capability the app has no business holding.
+
 ⚠️ **App Privacy is not in the API at all.** Five plausible routes, five 404s. The questionnaire
 is the one part of a submission that must be clicked by a human, so any automation here stops
 short of the finish line by construction.
