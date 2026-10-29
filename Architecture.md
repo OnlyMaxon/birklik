@@ -594,6 +594,57 @@ Until that run, not one line of the Apple code had ever executed.
 today, granting more than was bought. The claim is flagged `needsManualRestore` and logged as an
 error.
 
+### The store page is also an API, and it is a different one
+
+⚠️ **Two Apple APIs are in play and they are easy to confuse.** The *App Store Server* API
+(above) answers questions about purchases and is signed with `SubscriptionKey_…`. The *App Store
+Connect* API drives everything the console shows — description, screenshots, products, pricing —
+and is signed with the `AuthKey_…` created for `eas submit`. Same JWT shape (ES256, `kid`, issuer,
+`aud: appstoreconnect-v1`), different host, different key, different permissions.
+
+The whole 1.0.15 store page was filled through it on 2026-10-29. The mapping is mechanical:
+
+```
+description, keywords, URLs   appStoreVersionLocalizations
+subtitle, privacy policy      appInfoLocalizations
+categories, age rating        appInfos / ageRatingDeclarations
+screenshots                   appScreenshotSets -> appScreenshots
+products                      inAppPurchasesV2 + localizations, screenshot, availability
+price and territories         appPriceSchedules / appAvailabilities
+reviewer login and notes      appStoreReviewDetails
+```
+
+⚠️ **`MISSING_METADATA` on a product does not mean metadata.** All eight products stayed in that
+state with names, descriptions, prices and review screenshots all present. The real cause was a
+missing `inAppPurchaseAvailability` — the territory list — on four of them. The console says the
+same sentence either way, so the only way to find it was to diff a ready product against a stuck
+one, relationship by relationship.
+
+⚠️ **Pricing and Availability for the *app* was empty, and nothing said so.** No price schedule,
+no `appAvailabilityV2`; both answer 404 when unset, which reads identically to "this endpoint does
+not exist". An app that is for sale nowhere cannot be submitted, so this silently blocked the
+whole release while every other section looked finished.
+
+⚠️ **The version string must equal the build's marketing version.** The record said `1.0`, the
+builds carried `1.0.15`, and a build whose version does not match simply never appears in the
+picker. It looks exactly like a build that failed to upload.
+
+Three shapes that cost time and are impossible to guess:
+
+- **Versions are mixed on purpose.** Products are read under `/v2/inAppPurchases/…`, but their
+  localizations are *created* in the `/v1/inAppPurchaseLocalizations` collection with the
+  relationship named `inAppPurchaseV2`. Posting to `/v2/` demands a `version` relationship that an
+  unsubmitted product does not have yet.
+- **Uploads take three calls**: reserve (`POST`, returns upload operations), `PUT` each operation,
+  then `PATCH uploaded: true` with the md5 of the whole source file. Skip the third and the file
+  exists but is invisible.
+- **Inline creation needs literal `${local-id}` ids**, dollar sign and braces included, both in
+  `included` and in the relationship that points at it.
+
+⚠️ **App Privacy is not in the API at all.** Five plausible routes, five 404s. The questionnaire
+is the one part of a submission that must be clicked by a human, so any automation here stops
+short of the finish line by construction.
+
 ### Finishing a payment when the connection dies
 
 Two tills, one effect — and they recover from an interruption in completely different ways.
