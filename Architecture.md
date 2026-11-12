@@ -826,6 +826,95 @@ in `firebase-functions` print it, the second filtering to changes no payment exp
 
 ⚠️ The log starts at deployment. Nothing before it can be reconstructed.
 
+## Revenue: counted from the payment log, not from the tills
+
+`revenue/{YYYY-MM}` holds one document per month — what the platform earned, split by till and
+by product. Built on 2026-11-12 so the owner can see a month without opening three consoles.
+
+⚠️ **A trigger on `payments`, not an addition from each till.** There are three tills and a
+fourth will appear one day; a till that forgets the counter forgets it *silently* — revenue
+just comes out lower than it was, and the only way to notice is a reconciliation against the
+bank. The payment log is already shared by every till, so anything that reaches it reaches the
+counter. Same reasoning as `auditTierChanges`.
+
+⚠️ `onWrite`, not `onCreate`. Apple and Google write a payment already `completed`; the bank
+writes `awaiting_payment` first and only flips it in the callback. An `onCreate` would have
+missed **all** of the bank's revenue — the manat revenue, the one that gets reconciled.
+
+⚠️ Cloud Functions triggers are at-least-once: the same event can arrive twice, and a 55-manat
+payment would be counted twice with no way to explain the gap. The guard is `revenueCountedAt`
+on the payment itself, written in the **same transaction** as the increment. That write fires
+the trigger once more; the second pass sees the mark and stops on the first condition.
+
+What a month document holds, all fields optional because it is assembled by `FieldValue.increment`
+— a month with no boosts has no `byKindAzn.boost` field at all, not a zero:
+
+```
+grossAzn            total in manat (gross)
+gross               per currency, as charged: {AZN: 75, USD: 10}
+byProviderAzn       azericard | app_store | google_play
+byKindAzn           tier | boost
+count, countByProvider
+estimatedCount      counted from our price list, not from a receipt
+unconvertedCount    currency with no rate — not in grossAzn
+missingAmountCount  no amount anywhere — counted in `count` only
+refundedAzn, refundCount
+usdRate             the rate this month was counted at
+```
+
+⚠️ **The figures are gross.** Apple and Google keep their share, so the total will not match what
+lands in the bank. The moderation tab says so under the total — without that line the owner
+reconciles, finds a gap, and concludes the counter lies.
+
+⚠️ Sandbox purchases are excluded (`isTestPurchase`), or an App Store reviewer would run up the
+month. `amount_mismatch` is excluded too: money was taken but it is an underpayment waiting for
+a human decision, and until that decision there is no revenue.
+
+⚠️ **The month is Baku's** (UTC+4, no DST since 2016). A payment at 02:00 on 1 December in Baku
+is 30 November in UTC; counted by UTC it would land in November while the owner's statement puts
+it in December.
+
+⚠️ Google's receipt response carries **no price at all** — a property of the Play Developer API,
+not a gap of ours. Until 2026-11-12 Play payments had no amount in the log and no count could
+include them. They now carry our own price-list figure, tagged `amountSource: 'pricelist'` so
+"from the price list" is never passed off as "from the receipt". That price list lives in
+`firebase-functions/src/payment/prices.ts` — one copy inside the functions package, a second in
+`core/src/data/pricing.ts` for the site and the app. **Changing a price means editing both.**
+
+A refund lands in the month the purchase was *earned*, not the month of the refund — otherwise
+the earlier month stays permanently overstated. It is kept as `refundedAzn` rather than
+subtracted from `grossAzn`: "earned 300, refunded 55" is a different conversation than
+"earned 245". ⚠️ Only store refunds arrive here; a refund made from the bank's cabinet never
+reaches us at all.
+
+Writes are denied to everyone in `firestore.rules`, moderators included — a monthly total that
+can be typed in from a browser reconciles with nothing. Moderators read it; the tab is
+`src/app/dashboard/review/components/revenue-tab.tsx` on the site and
+`src/app/moderation/revenue-view.tsx` in the app, with shared labels from the dictionary.
+
+⚠️ The counter starts at deployment. Earlier payments are not backfilled — the owner's call on
+2026-11-12.
+
+## A new booking notifies the owner and every moderator
+
+`onBookingCreated` — a Firestore `onCreate` trigger on `bookings/{id}` — writes a notification
+into the owner's `users/{uid}/notifications` and into every moderator's. `onNotificationCreated`
+then delivers the push, as it does for every other kind.
+
+⚠️ **It has to be server-side.** Moderators are found by `users.isModerator`, and the rules let
+only a moderator read someone else's profile. A guest making a booking cannot obtain that list —
+by design, not by oversight.
+
+⚠️ **It also closed a hole.** Until 2026-11-12 the owner's notification was sent by the *site*,
+from `createBookingAction`. The app's `createBooking` merely wrote the document, so a booking
+made from a phone never reached the owner at all — invisible from outside, because the owner
+sees the request whenever they next open their account. The client-side send has been removed:
+keeping both would give the owner two notifications per booking made on the site.
+
+A moderator's copy carries `forModerator: true` and leads to the moderation panel, not to "My
+bookings" — the moderator has no such booking of their own and would land on an empty screen.
+The app's moderation screen therefore accepts `?tab=` to open a section directly.
+
 ## Scheduled functions
 
 All in `europe-west1`, defined in `firebase-functions/src/index.ts`. They are deployed
@@ -918,6 +1007,13 @@ and `Xaçmaz` both carried `Хачмас`).
   about a reversal that comes through our `BACKREF`; a refund made by hand in the bank's own
   interface never reaches us, so the downgrade has to be done by hand too. The Play half is
   automatic (`syncPlayRefunds`). See "A refund has to take back what it paid for".
+- Play revenue is counted from our own price list, not from the receipt. The Play Developer
+  API does not report the price of a one-time purchase at all, so `verifyPlayPurchase` writes
+  the price-list figure and tags it `amountSource: 'pricelist'`. Exact for the Azerbaijani
+  storefront, an estimate for any other; the moderation tab says how many purchases in the
+  month were counted this way. The real fix is asking Play for the regional catalogue price.
+  See "Revenue: counted from the payment log".
+
 - Tier changes made before 2026-10-15 cannot be attributed. `auditTierChanges` logs every change
   from its deployment onwards, but the history before it is gone — including the listing whose
   tier fields were removed outright on 2026-08-31. See "Who changed this listing's tier".
@@ -998,6 +1094,22 @@ missed shape there leaks files. **Opposite failure directions — do not unify t
 Whenever the URL shapes change, all copies change. There is no test runner in the functions
 package; the check is to extract the compiled functions out of `lib/` and run the eleven known
 shapes through them.
+
+### ⚠️ The app has to absolutize, and a screen that forgets shows white
+
+A relative `/api/images/...` path is enough for the site — it lives on the same host as the
+proxy. The app cannot complete it: Glide rejects the address outright. So every Firestore
+document the app turns into a `Property` goes through `withImageUrls` in
+`Birklik-mobile/src/lib/images.ts`, which prefixes the origin.
+
+⚠️ That wrapper sits in `property-service.ts` only, and the comment above it warns that *"a
+screen that forgets will silently show empty rectangles"*. The moderation panel was that screen:
+it reads Firestore with its own query in `moderation-service.ts`, and until 2026-11-12 had no
+wrapper at all. Listings stored with the old absolute Storage URL loaded fine, listings stored
+with a relative path showed white — which from the outside looks exactly like a bad connection,
+and reloading never helps. Avatars in the People tab had the same fault.
+
+**Any new query in the app that returns documents with images must wrap them.**
 
 ### ⚠️ Collect the image URLs before deleting the document
 
