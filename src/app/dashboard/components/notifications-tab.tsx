@@ -225,7 +225,14 @@ export const NotificationsTab = React.memo(() => {
       case 'cancellationRejected':
       case 'bookingApproved':
       case 'bookingRejected':
-        navigate('/dashboard?tab=bookings&subtab=requests')
+        // ⚠️ Копия для модератора ведёт в МОДЕРАТОРКУ: чужой брони в его
+        // собственных нет, и он попал бы на пустой список. Признак ставит
+        // рассылка `onBookingCreated` в функциях.
+        navigate(
+          selectedNotification.forModerator
+            ? '/dashboard/review?tab=bookings'
+            : '/dashboard?tab=bookings&subtab=requests'
+        )
         break
       case 'comment':
       case 'reply':

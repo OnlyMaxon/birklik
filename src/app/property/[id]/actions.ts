@@ -77,25 +77,17 @@ export async function createBookingAction(propertyId: string, checkInDate: strin
       return {id: bookingId, ...bookingData}
     })
 
-    if (property.ownerId) {
-      await createNotification(property.ownerId, {
-        userId: property.ownerId,
-        type: 'booking',
-        title: 'New booking request',
-        message: `${userName} booked your property`,
-        read: false,
-        propertyId: property.id,
-        bookingId: booking.id,
-        bookerName: userName,
-        bookerEmail: booking.userEmail,
-        bookerPhone: booking.userPhone,
-        checkInDate: booking.checkInDate,
-        checkOutDate: booking.checkOutDate,
-        relatedId: property.id,
-        relatedUserId: session.uid,
-        relatedUserName: userName
-      })
-    }
+    // Уведомление владельцу отсюда БОЛЬШЕ НЕ ШЛЁТСЯ — его рассылает триггер
+    // `onBookingCreated` в функциях, по самому документу брони.
+    //
+    // ⚠️ Причина переезда не в красоте. Бронь из ПРИЛОЖЕНИЯ не доходила до
+    // владельца вовсе: `createBooking` там просто клал документ, а эта отправка
+    // живёт только на сайте. Плюс с 2026-11-12 о брони узнают и модераторы, а
+    // список модераторов обычному гостю закрыт правилами — с клиента его не
+    // получить в принципе.
+    //
+    // ⚠️ Вернуть отправку сюда «на всякий случай» НЕЛЬЗЯ: триггер шлёт то же
+    // самое, и владелец получал бы по два уведомления на каждую бронь с сайта.
 
     revalidateTag(`property:${property.id}`, 'max')
     return {success: true, booking}

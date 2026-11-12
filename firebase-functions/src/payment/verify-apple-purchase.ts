@@ -244,7 +244,15 @@ export const verifyApplePurchase = functions
       // тысячу, иначе в журнале появятся тысячи манатов. У записей Google суммы
       // нет вовсе — это их известный долг, здесь он не повторён.
       ...(typeof tx.priceMilliunits === 'number'
-        ? {amount: tx.priceMilliunits / 1000, currency: tx.currency ?? ''}
+        ? {
+            amount: tx.priceMilliunits / 1000,
+            currency: tx.currency ?? '',
+            // Сумма пришла от магазина — в отличие от Google, где её берут из
+            // нашего прейскуранта (`amountSource: 'pricelist'`). Счётчик
+            // выручки различает эти два случая и показывает, сколько в месяце
+            // посчитано оценкой.
+            amountSource: 'store',
+          }
         : {}),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       completedAt: admin.firestore.FieldValue.serverTimestamp(),

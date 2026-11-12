@@ -4,6 +4,7 @@ import {admin} from '../firebase-admin';
 import {applyPaidTier} from './apply-tier';
 import {applyBoostPackage} from '../boost/apply-boost';
 import {BOOST_PRODUCTS, fetchPlayPurchase, isPurchased, PLAY_PRODUCTS} from './google-play';
+import {PLATFORM_CURRENCY, productPriceAzn} from './prices';
 
 /**
  * Покупка тарифа из мобильного приложения.
@@ -229,6 +230,19 @@ export const verifyPlayPurchase = functions
       purchaseToken,
       isTestPurchase: purchase.purchaseType === 0,
       status: 'completed',
+      // ⚠️ Сумма — НАША, из прейскуранта, а не из ответа Google: в ответе по
+      // чеку цены нет вовсе, это известное свойство Play Developer API, а не
+      // наша недоработка. До 2026-11-12 поля не было совсем, и выручка из
+      // Android-кассы не попадала ни в один подсчёт — её просто нечем было
+      // считать. Помечаем источник, чтобы «по прейскуранту» нигде не выдавалось
+      // за «по чеку»: для чужой витрины это оценка.
+      ...(productPriceAzn(productId) !== undefined
+        ? {
+            amount: productPriceAzn(productId),
+            currency: PLATFORM_CURRENCY,
+            amountSource: 'pricelist',
+          }
+        : {}),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       completedAt: admin.firestore.FieldValue.serverTimestamp(),
     };

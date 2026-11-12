@@ -975,3 +975,134 @@
   font-size: 13px;
   line-height: 1.5;
 }
+
+/* ===================== Вкладка «Выручка» =====================
+   Числа собирает триггер `recordRevenue` по журналу платежей; здесь только
+   показ. Главное требование к виду — итог месяца должен читаться с одного
+   взгляда, поэтому он крупный и один, а разрезы ниже и мельче. */
+
+.revenue-months {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.revenue-month-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--neutral);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.revenue-month-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.revenue-month-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+}
+
+.revenue-total {
+  padding: 22px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.revenue-total-label {
+  color: var(--neutral);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.revenue-total-value {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text-color);
+  line-height: 1.1;
+}
+
+.revenue-total-meta {
+  margin-top: 6px;
+  color: var(--neutral);
+  font-size: 14px;
+}
+
+.revenue-dim {
+  color: var(--gray-400, #9ca3af);
+}
+
+/* Возвраты показываем отдельной полосой, а не вычитаем из итога молча:
+   «заработали 300, вернули 55» — другой разговор, чем «заработали 245». */
+.revenue-refund {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-200);
+  color: #b45309;
+  font-size: 14px;
+}
+
+.revenue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.revenue-block {
+  padding: 18px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  border-radius: 12px;
+}
+
+.revenue-block h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neutral);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.revenue-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 15px;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--gray-100, #f3f4f6);
+}
+
+.revenue-row:last-child {
+  border-bottom: 0;
+}
+
+/* Оговорки. Первая из них объясняет, почему итог не сойдётся с поступлением на
+   счёт, — поэтому они не спрятаны под раскрывашку. */
+.revenue-notes {
+  margin-top: 16px;
+  color: var(--neutral);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.revenue-notes p {
+  margin: 0 0 6px;
+}

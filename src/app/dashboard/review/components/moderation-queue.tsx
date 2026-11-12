@@ -8,11 +8,13 @@ import { getPendingProperties, deleteCommentFromProperty, getAllCommentsForModer
 import { createListingRejectedNotification } from '@/services/notifications-service'
 import { getAllReports, closeReport } from '@/services/report-service'
 import { getAllUsers, UserRecord } from '@/services/user-service'
+import { getRevenueMonths } from '@/services/revenue-service'
 import { setUserBlocked } from '@/services/block-service'
-import { Language, Property, CommentReport, Booking } from '@birklik/core/types'
+import { Language, Property, CommentReport, Booking, MonthlyRevenue } from '@birklik/core/types'
 import { cities, districtLabel } from '@birklik/core/data'
+import { RevenueTab } from './revenue-tab'
 
-type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people'
+type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people' | 'revenue'
 
 // Статусы броней берём из самих данных, а не из типа Booking: часть старых записей
 // лежит со статусом 'active', которого в типе нет.
@@ -63,6 +65,10 @@ export const ModerationQueue: React.FC = () => {
   const [isRejectingProperty, setIsRejectingProperty] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'pending' | 'inactive' | 'draft'>('all')
   const [dateSortOrder, setDateSortOrder] = React.useState<'newest' | 'oldest'>('newest')
+  // Выручка по месяцам. Отдельный признак отказа, а не пустой список: «ещё не
+  // было покупок» и «не дали прочитать» выглядят одинаково, а значат разное.
+  const [revenueMonths, setRevenueMonths] = React.useState<MonthlyRevenue[]>([])
+  const [revenueFailed, setRevenueFailed] = React.useState(false)
 
   // Sync activeTab with URL search params
   React.useEffect(() => {
@@ -74,13 +80,14 @@ export const ModerationQueue: React.FC = () => {
   const loadPendingListings = React.useCallback(async () => {
     setIsLoading(true)
     setError('')
-    const [listings, comments, reports, allProps, users, bookings] = await Promise.all([
+    const [listings, comments, reports, allProps, users, bookings, revenue] = await Promise.all([
       getPendingProperties(),
       getAllCommentsForModeration(),
       getAllReports(),
       getAllProperties(),
       getAllUsers(),
-      getAllBookings()
+      getAllBookings(),
+      getRevenueMonths()
     ])
     setPendingListings(listings)
     setAllComments(comments)
@@ -88,6 +95,8 @@ export const ModerationQueue: React.FC = () => {
     setAllListings(allProps)
     setAllUsers(users)
     setAllBookings(bookings)
+    setRevenueMonths(revenue.months)
+    setRevenueFailed(revenue.failed)
     setIsLoading(false)
   }, [])
 
@@ -352,6 +361,14 @@ export const ModerationQueue: React.FC = () => {
               onClick={() => setActiveTab('people')}
             >
               {language === 'en' ? 'People' : language === 'ru' ? 'Люди' : 'İstifadəçilər'} ({allUsers.length})
+            </button>
+            {/* Подпись из словаря, а не тернарником по языку, как у соседей:
+                та же вкладка есть в приложении, и подпись у них общая. */}
+            <button
+              className={`tab-btn ${activeTab === 'revenue' ? 'active' : ''}`}
+              onClick={() => setActiveTab('revenue')}
+            >
+              {t.moderation.revenueTab}
             </button>
           </div>
 
@@ -974,6 +991,8 @@ export const ModerationQueue: React.FC = () => {
                 </div>
               )}
             </div>
+          ) : activeTab === 'revenue' ? (
+            <RevenueTab months={revenueMonths} failed={revenueFailed} t={t} />
           ) : null
           }
           </div>

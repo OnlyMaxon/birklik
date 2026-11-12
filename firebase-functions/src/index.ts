@@ -18,6 +18,8 @@ import { syncAppleRefunds } from './payment/apple-refund-sync';
 import { auditTierChange } from './moderation/tier-audit';
 import { deleteAccount } from './account/delete-account';
 import { setUserBlocked } from './moderation/block-user';
+import { notifyBookingCreated } from './notifications/booking-created';
+import { recordPaymentRevenue, recordRefundRevenue } from './revenue/record-revenue';
 
 export {
   initiatePayment,
@@ -60,6 +62,55 @@ export const auditTierChanges = functions
       });
     } catch (error) {
       console.error('[TierAudit] Не удалось записать изменение:', error);
+    }
+    return null;
+  });
+
+/**
+ * Считает выручку по журналу платежей.
+ *
+ * ⚠️ Стоит на `onWrite`, а не на `onCreate`, потому что у двух касс платёж
+ * попадает в журнал по-разному: Apple и Google кладут сразу `completed`, а
+ * банк сначала `awaiting_payment` и лишь потом, в колбэке, `completed`. Один
+ * `onCreate` пропустил бы ВСЮ выручку банка — то есть ровно ту, что идёт
+ * манатами и сверяется с выпиской.
+ *
+ * Отказ счётчика не должен ронять платёж: деньги уже взяты, объявление уже
+ * поднято, и бросок здесь только заставил бы Google повторять доставку. Поэтому
+ * ошибка пишется в журнал функций и на этом всё.
+ */
+export const recordRevenue = functions
+  .region('europe-west1')
+  .firestore.document('payments/{paymentId}')
+  .onWrite(async (change, context) => {
+    const after = change.after.exists ? change.after.data() : null;
+    if (!after) return null;
+
+    try {
+      await recordPaymentRevenue(context.params.paymentId, after);
+      await recordRefundRevenue(context.params.paymentId, after);
+    } catch (error) {
+      console.error('[Revenue] Не удалось учесть платёж:', context.params.paymentId, error);
+    }
+    return null;
+  });
+
+/**
+ * Рассылает уведомление о новой брони: владельцу объявления и всем модераторам.
+ *
+ * ⚠️ Триггером, а не с клиента, и причин две. Первая: список модераторов
+ * обычному гостю недоступен правилами, и это правильно. Вторая: до 2026-11-12
+ * уведомление владельцу слал только сайт, а бронь из приложения не доходила до
+ * него вовсе — здесь это лечится для обеих площадок разом.
+ */
+export const onBookingCreated = functions
+  .region('europe-west1')
+  .firestore.document('bookings/{bookingId}')
+  .onCreate(async (snap, context) => {
+    try {
+      await notifyBookingCreated(context.params.bookingId, snap.data() ?? {});
+    } catch (error) {
+      console.error('[Booking] Не удалось разослать уведомления:', context.params.bookingId, error);
     }
     return null;
   });

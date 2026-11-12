@@ -7,6 +7,7 @@ import {
   revokeBoostPackage,
   type BoostPackage,
 } from '../boost/apply-boost';
+import {BOOST_PRICES, TIER_PRICES} from './prices';
 import * as crypto from 'crypto';
 
 const AZERICARD_URL_TEST = 'https://testmpi.3dsecure.az/cgi-bin/cgi_link';
@@ -19,25 +20,6 @@ const COUNTRY = 'AZ';
 const MERCH_GMT = '+4';
 const CURRENCY = 'AZN';
 
-/**
- * ⚠️ КОПИЯ. Источник — `TIER_PRICES` в `core/src/data/pricing.ts`, оттуда же
- * берут цену сайт и приложение. Импортировать сюда нельзя: функции собираются
- * отдельным пакетом и подмодуль `core` в сборку не тянут.
- *
- * **Меняя цену, править оба места.** По этим числам банк берёт настоящие
- * деньги; расхождение выглядит как «на экране одна сумма, списали другую».
- */
-const TIER_PRICES: Record<string, Record<string, number>> = {
-  vip: { '14days': 20, '30days': 30 },
-  premium: { '14days': 30, '30days': 55 },
-};
-
-/**
- * ⚠️ КОПИЯ. Источник — `BOOST_PRICES` в `core/src/data/pricing.ts`, оттуда же
- * берёт цену сайт. Причина копии та же, что выше. **Меняя цену, править оба
- * места.**
- */
-const BOOST_PRICES: Record<number, number> = { 1: 2, 3: 5, 5: 8, 10: 15 };
 
 // MAC source: конкатенация "длина+значение" для каждого поля
 // Если значение пустое — добавляется "-" (по документации Azericard)
@@ -270,6 +252,11 @@ export const initiatePayment = functions
     await admin.firestore().collection('payments').add({
       propertyId,
       userId: context.auth.uid,
+      // Касса. У записей банка этого поля долго не было — он был единственной
+      // кассой, и подписывать было нечего. Счётчик выручки такие записи
+      // по-прежнему понимает (без поля касса считается банковской), но новые
+      // пишем явно: разбирать журнал по умолчанию — дурная привычка.
+      provider: 'azericard',
       // Что именно куплено. У подъёма тарифа нет, у тарифа нет числа подъёмов —
       // по этому полю колбэк и решает, какую из двух функций применять.
       kind: isBoost ? 'boost' : 'tier',
