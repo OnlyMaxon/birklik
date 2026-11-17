@@ -11,7 +11,7 @@ import * as logger from '../../services/logger'
 import {OptimizedImage} from '@/components/optimized-image'
 
 export const Header: React.FC = () => {
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage, prefetchLanguage, t } = useLanguage()
   const { isAuthenticated, user, firebaseUser, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -264,7 +264,12 @@ export const Header: React.FC = () => {
             <div className="language-switcher" ref={langRef}>
               <button
                 className={`lang-current${langOpen ? ' open' : ''}`}
-                onClick={() => setLangOpen(prev => !prev)}
+                onClick={() => {
+                  // Открывая список, подтягиваем словари: к нажатию они уже в
+                  // памяти, и подписи меняются без ожидания сервера.
+                  if (!langOpen) languages.forEach(item => prefetchLanguage(item.code))
+                  setLangOpen(prev => !prev)
+                }}
                 aria-haspopup="listbox"
                 aria-expanded={langOpen}
                 aria-label={`Language: ${language.toUpperCase()}`}

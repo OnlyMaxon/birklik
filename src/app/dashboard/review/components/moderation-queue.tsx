@@ -12,9 +12,11 @@ import { getRevenueMonths } from '@/services/revenue-service'
 import { setUserBlocked } from '@/services/block-service'
 import { Language, Property, CommentReport, Booking, MonthlyRevenue } from '@birklik/core/types'
 import { cities, districtLabel } from '@birklik/core/data'
-import { RevenueTab } from './revenue-tab'
+import { ReportsTab } from './reports-tab'
 
-type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people' | 'revenue'
+// ⚠️ `reports` — это ЖАЛОБЫ на комментарии, так было с самого начала. Месячный
+// отчёт пришлось назвать иначе, иначе адрес `?tab=reports` вёл бы в два места.
+type ModerationTab = 'posts' | 'comments' | 'reports' | 'allListings' | 'bookings' | 'people' | 'monthlyReports'
 
 // Статусы броней берём из самих данных, а не из типа Booking: часть старых записей
 // лежит со статусом 'active', которого в типе нет.
@@ -360,15 +362,13 @@ export const ModerationQueue: React.FC = () => {
               className={`tab-btn ${activeTab === 'people' ? 'active' : ''}`}
               onClick={() => setActiveTab('people')}
             >
-              {language === 'en' ? 'People' : language === 'ru' ? 'Люди' : 'İstifadəçilər'} ({allUsers.length})
+              {t.moderation.peopleTab} ({allUsers.length})
             </button>
-            {/* Подпись из словаря, а не тернарником по языку, как у соседей:
-                та же вкладка есть в приложении, и подпись у них общая. */}
             <button
-              className={`tab-btn ${activeTab === 'revenue' ? 'active' : ''}`}
-              onClick={() => setActiveTab('revenue')}
+              className={`tab-btn ${activeTab === 'monthlyReports' ? 'active' : ''}`}
+              onClick={() => setActiveTab('monthlyReports')}
             >
-              {t.moderation.revenueTab}
+              {t.moderation.reportsTab}
             </button>
           </div>
 
@@ -729,7 +729,12 @@ export const ModerationQueue: React.FC = () => {
                   onChange={(e) => setBookingSearch(e.target.value)}
                 />
                 <div className="ml-status-filters">
-                  {['all', ...Array.from(new Set(allBookings.map(b => b.status))).sort()].map(bf => (
+                  {/* «Все» и «Ожидает» стоят ВСЕГДА, остальные плашки — по
+                      встреченным статусам. Раньше весь список строился по
+                      данным, и стоило последней ожидающей брони получить
+                      ответ, плашка «Ожидает» исчезала — вместе со способом
+                      дождаться следующей. */}
+                  {['all', 'pending', ...Array.from(new Set(allBookings.map(b => b.status))).filter(status => status !== 'pending').sort()].map(bf => (
                     <button
                       key={bf}
                       type="button"
@@ -773,6 +778,12 @@ export const ModerationQueue: React.FC = () => {
                     return matchSearch && matchStatus
                   })
                   .sort((a, b) => {
+                    // Ожидающие — всегда сверху, и переключатель «новые/старые»
+                    // этого не меняет: они единственные, что ждёт ответа
+                    // модератора, а остальные уже отвечены.
+                    const aWaiting = a.status === 'pending' ? 0 : 1
+                    const bWaiting = b.status === 'pending' ? 0 : 1
+                    if (aWaiting !== bWaiting) return aWaiting - bWaiting
                     const aMs = a.createdAt ? new Date(a.createdAt).getTime() : 0
                     const bMs = b.createdAt ? new Date(b.createdAt).getTime() : 0
                     return bookingSortOrder === 'newest' ? bMs - aMs : aMs - bMs
@@ -991,8 +1002,19 @@ export const ModerationQueue: React.FC = () => {
                 </div>
               )}
             </div>
-          ) : activeTab === 'revenue' ? (
-            <RevenueTab months={revenueMonths} failed={revenueFailed} t={t} />
+          ) : activeTab === 'monthlyReports' ? (
+            <ReportsTab
+              users={allUsers}
+              bookings={allBookings}
+              listings={allListings}
+              revenue={revenueMonths}
+              revenueFailed={revenueFailed}
+              language={language}
+              t={t}
+              bookingStatusLabel={bookingStatusLabel}
+              getLocalizedText={getLocalizedText}
+              formatDate={formatDate}
+            />
           ) : null
           }
           </div>

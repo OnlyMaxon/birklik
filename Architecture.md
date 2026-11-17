@@ -257,6 +257,27 @@ There is no middleware. OpenNext supports only the edge runtime proxy, so locale
 produced by rewrites in `next.config.ts`, listed by name in `src/lib/locale-routes.ts`. **A new
 page under `[locale]` must be added to that list.**
 
+### Switching language without waiting for the server
+
+`language` is browser state and changes on the click. `t` comes from `useMessages()`, which is
+server data and only arrives with the next RSC payload. The two were therefore out of step for
+one round trip, and it showed: "Home", "Add listing", "Dashboard" and the payments tab in the
+moderation panel sat on the old language for a beat while their neighbours — written as
+`language === 'ru' ? … : …` ternaries right in the component — changed instantly. It read as if
+some labels were hard-coded.
+
+`language-provider.tsx` closes the gap: on switch it `import()`s the target `app.json` and
+serves that until `useLocale()` catches up, then drops it. The import path is relative with the
+locale interpolated, exactly as in `src/messages/request.ts` — the bundler has to see the
+directory to split all three locales, and it cannot do that through the package name. Each
+locale lands in its own lazy chunk, so a visitor who never switches downloads none of them; the
+header prefetches the other two when the dropdown opens, which makes the switch itself
+instantaneous.
+
+The upshot for new code: **take the label from `t`.** It is no longer the slower option, and a
+ternary in the component is a third place for the wording to drift (the Users tab had the site
+saying `İstifadəçilər` while the dictionary said `İnsanlar`).
+
 ## Environment variables
 
 Browser Firebase configuration uses only `NEXT_PUBLIC_*` names:
@@ -888,12 +909,54 @@ subtracted from `grossAzn`: "earned 300, refunded 55" is a different conversatio
 reaches us at all.
 
 Writes are denied to everyone in `firestore.rules`, moderators included — a monthly total that
-can be typed in from a browser reconciles with nothing. Moderators read it; the tab is
-`src/app/dashboard/review/components/revenue-tab.tsx` on the site and
-`src/app/moderation/revenue-view.tsx` in the app, with shared labels from the dictionary.
+can be typed in from a browser reconciles with nothing. Moderators only read it.
+
+⚠️ **The two surfaces show it in different places, deliberately.** The app still has its own
+Revenue tab (`src/app/moderation/revenue-view.tsx`). On the site the standalone tab is gone: on
+2026-11-17 the owner asked for one monthly report instead of four scattered numbers, so payments
+became a section inside **Reports** (below). Labels stay in the shared dictionary under
+`moderation.revenue*`, so the wording cannot drift between the two.
 
 ⚠️ The counter starts at deployment. Earlier payments are not backfilled — the owner's call on
 2026-11-12.
+
+## Reports: one month, four sections, no new queries
+
+`src/app/dashboard/review/components/reports-tab.tsx` — the site moderation panel's **Reports**
+tab. One selected month at a time: who signed up, who booked, which listings appeared and on
+which plan, and what was paid. Added 2026-11-17.
+
+⚠️ **It reads nothing of its own.** The moderation page already loads every user, booking,
+listing and revenue month in one `Promise.all` for the tabs next to it; Reports is a second view
+of the same arrays, passed in as props. That is why the feature needed no new security rules and
+no new index — and why adding a *query* here later would be the wrong instinct.
+
+⚠️ **Months are Baku months**, via `bakuMonth` in `core/src/utils/months.ts`. The server's
+revenue counter divides months the same way. Take the month from `toISOString()` instead and a
+payment made at 02:00 on the 1st in Baku lands in the previous month in the report while the
+counter has it in the next one — the two then disagree by a day with nothing on screen to
+explain it.
+
+⚠️ **Records with no `createdAt` belong to no month, and the tab says so out loud.** Such
+documents exist in production (one profile in 134). Silently dropping them would make the months
+fail to add up to the totals on the neighbouring tabs, which is exactly the trap
+`orderBy('createdAt')` already set once on the Users tab.
+
+⚠️ **The plan shown is `listingTier` — the plan chosen at posting, not the one in force now.**
+For a report about last month that is the only honest answer: a Premium period may have expired
+since, and "currently in force" would show a plain listing where Premium was paid for.
+
+⚠️ `reports` as a tab id was already taken — it means *complaints about comments* and has since
+the beginning. The monthly report is `monthlyReports`, so `?tab=reports` keeps leading where it
+always did.
+
+**Print and Excel.** Print is `window.print()` and a `@media print` block in
+`moderation-queue.css`; "save as PDF" is the browser's own dialog. Excel gets a CSV from
+`reports-export.ts` — not a real `.xlsx`, because that is a zip of several XML files and would
+need a library, and library weight is paid on every Cloudflare Workers response. The CSV opens
+on a double click because of two decisions that look like quirks and are not: a leading `sep=;`
+line and comma decimal separators, both aimed at Excel on a Russian or Azerbaijani Windows,
+which reads `16.83` as text or as a date. The BOM is what keeps the names from turning to mush.
 
 ## A new booking notifies the owner and every moderator
 
@@ -1013,6 +1076,13 @@ and `Xaçmaz` both carried `Хачмас`).
   storefront, an estimate for any other; the moderation tab says how many purchases in the
   month were counted this way. The real fix is asking Play for the regional catalogue price.
   See "Revenue: counted from the payment log".
+
+- `bakuMonth` exists in two copies: `core/src/utils/months.ts` for the site and a private one
+  in `firebase-functions/src/revenue/record-revenue.ts` for the server. The functions package
+  has its own `package.json` with no `@birklik/core` in it, and the deployment would not carry
+  the workspace package along, so sharing the one definition means first making functions depend
+  on core. Until then: change the offset in one and you must change it in the other, or the
+  report and the counter start cutting months in different places. See "Reports".
 
 - Tier changes made before 2026-10-15 cannot be attributed. `auditTierChanges` logs every change
   from its deployment onwards, but the history before it is gone — including the listing whose

@@ -241,6 +241,37 @@ export const ModeratorPropertyEditor: React.FC = () => {
     setRemovedImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  /**
+   * Перестановка снимка на один шаг.
+   *
+   * Порядок — это не украшение: первый снимок идёт обложкой в выдачу, в карточку
+   * и в приложение. Своё объявление владелец переставляет в `listing-editor`, а
+   * здесь, в правке модератора, такой возможности не было вовсе: одобренному
+   * объявлению обложку сменить было нельзя, только удалить снимок и залить
+   * заново — причём залитый встал бы в конец.
+   */
+  const swapAt = <T,>(list: T[], from: number, to: number): T[] => {
+    if (to < 0 || to >= list.length) return list
+    const next = [...list]
+    next[from] = list[to]
+    next[to] = list[from]
+    return next
+  }
+
+  const moveExisting = (index: number, shift: -1 | 1) => {
+    setExistingImages(prev => swapAt(prev, index, index + shift))
+  }
+
+  /**
+   * ⚠️ Новые снимки живут ДВУМЯ связанными списками — файлы и их превью, — и
+   * переставлять надо оба. Сдвинешь один: под снимком окажется чужое имя, а в
+   * хранилище уедет не тот файл.
+   */
+  const moveNewFile = (index: number, shift: -1 | 1) => {
+    setNewFiles(prev => swapAt(prev, index, index + shift))
+    setNewFilePreviews(prev => swapAt(prev, index, index + shift))
+  }
+
   const toggleAmenity = (amenity: Amenity) => {
     setForm(prev => ({
       ...prev,
@@ -993,6 +1024,28 @@ export const ModeratorPropertyEditor: React.FC = () => {
                           <div className="preview-photo-wrapper">
                             <img src={url} alt={`Photo ${index + 1}`} />
                             <div className="preview-controls">
+                              {index > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveExisting(index, -1)}
+                                  className="control-btn move-up-btn"
+                                  title={t.buttons.moveUp}
+                                  aria-label={t.buttons.moveUp}
+                                >
+                                  ↑
+                                </button>
+                              )}
+                              {index < existingImages.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveExisting(index, 1)}
+                                  className="control-btn move-down-btn"
+                                  title={t.buttons.moveDown}
+                                  aria-label={t.buttons.moveDown}
+                                >
+                                  ↓
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveExisting(index)}
@@ -1034,6 +1087,28 @@ export const ModeratorPropertyEditor: React.FC = () => {
                           <div className="preview-photo-wrapper">
                             <img src={preview.url} alt={preview.name} />
                             <div className="preview-controls">
+                              {index > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveNewFile(index, -1)}
+                                  className="control-btn move-up-btn"
+                                  title={t.buttons.moveUp}
+                                  aria-label={t.buttons.moveUp}
+                                >
+                                  ↑
+                                </button>
+                              )}
+                              {index < newFilePreviews.length - 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveNewFile(index, 1)}
+                                  className="control-btn move-down-btn"
+                                  title={t.buttons.moveDown}
+                                  aria-label={t.buttons.moveDown}
+                                >
+                                  ↓
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => handleRemoveNewFile(index)}

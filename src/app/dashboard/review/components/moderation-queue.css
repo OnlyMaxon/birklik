@@ -1011,36 +1011,6 @@
   color: var(--white);
 }
 
-.revenue-total {
-  padding: 22px;
-  border: 1px solid var(--gray-200);
-  background: var(--white);
-  border-radius: 12px;
-  margin-bottom: 16px;
-}
-
-.revenue-total-label {
-  color: var(--neutral);
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.revenue-total-value {
-  margin-top: 6px;
-  font-family: var(--font-display);
-  font-size: 38px;
-  font-weight: 700;
-  color: var(--text-color);
-  line-height: 1.1;
-}
-
-.revenue-total-meta {
-  margin-top: 6px;
-  color: var(--neutral);
-  font-size: 14px;
-}
-
 .revenue-dim {
   color: var(--gray-400, #9ca3af);
 }
@@ -1071,7 +1041,8 @@
   border-radius: 12px;
 }
 
-.revenue-block h3 {
+.revenue-block h3,
+.revenue-block h4 {
   margin: 0 0 12px;
   font-size: 14px;
   font-weight: 700;
@@ -1105,4 +1076,191 @@
 
 .revenue-notes p {
   margin: 0 0 6px;
+}
+
+/* ===== Вкладка «Отчёты» ===== */
+
+.reports-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reports-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.reports-head {
+  margin-bottom: 18px;
+}
+
+.reports-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.reports-head p {
+  margin: 4px 0 0;
+  color: var(--neutral);
+  font-size: 13px;
+}
+
+.reports-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.reports-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 18px;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  border-radius: 12px;
+}
+
+.reports-tile-label {
+  color: var(--neutral);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reports-tile-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-color);
+}
+
+.reports-tile-meta {
+  color: var(--neutral);
+  font-size: 12px;
+}
+
+.reports-section {
+  margin-top: 26px;
+}
+
+.reports-section h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neutral);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Таблица шире экрана телефона всегда: шесть столбцов у броней не сжать.
+   Крутится она сама, а не вся страница. */
+.reports-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.reports-table th,
+.reports-table td {
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--gray-100, #f3f4f6);
+}
+
+.reports-table th {
+  color: var(--neutral);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.reports-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.reports-cell-dim {
+  color: var(--neutral);
+}
+
+.reports-flag {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reports-note {
+  margin: 8px 0 0;
+  color: var(--neutral);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ===== Печать отчёта (и сохранение в PDF — это та же кнопка браузера) =====
+
+   Прячем обвязку по именам через `display: none` — тем же способом, которым
+   общее правило печати в `base.css` убирает шапку, подвал и кнопки. Вариант со
+   `visibility: hidden` на всём документе тоже работает, но тогда отчёт
+   приходится вынимать наверх абсолютным положением, а оно считается от
+   ближайшего позиционированного родителя — то есть ломается от правки вёрстки
+   где-то выше.
+
+   Содержимое других вкладок прятать не нужно: оно вообще не отрисовано — в
+   модераторке активная вкладка одна. */
+@media print {
+  .moderation-header,
+  .moderation-tabs,
+  .reports-noprint {
+    display: none !important;
+  }
+
+  /* Общее правило печати в base.css дописывает адрес после каждой ссылки.
+     В отчёте ссылок нет, но пусть и не появятся. */
+  .reports-print a[href]:after {
+    content: '';
+  }
+
+  .reports-table {
+    font-size: 11pt;
+  }
+
+  .reports-table th,
+  .reports-table td {
+    padding: 4px 8px;
+    white-space: normal;
+  }
+
+  /* Разрывать раздел посередине нельзя: заголовок уехал бы на одну страницу,
+     а таблица на другую. */
+  .reports-section,
+  .reports-tile,
+  .revenue-block {
+    break-inside: avoid;
+  }
+
+  .reports-table-wrap {
+    overflow: visible;
+  }
 }
