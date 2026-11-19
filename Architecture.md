@@ -950,13 +950,50 @@ since, and "currently in force" would show a plain listing where Premium was pai
 the beginning. The monthly report is `monthlyReports`, so `?tab=reports` keeps leading where it
 always did.
 
+**The summary tiles are the section filter.** Clicking a tile leaves only that section below;
+clicking it again, or the "show all" button, clears the choice. The tiles are `button`s with
+`aria-pressed`, not `div`s with an `onClick`: a screen reader has no other way to tell a pressed
+tile from an ordinary one. The choice deliberately survives a change of month — having picked
+Bookings, the owner pages through months *by bookings*, and resetting each time would undo what
+they just pressed.
+
+⚠️ **The filter never reaches the export.** Print follows the screen because the filtered
+sections are simply not in the DOM, but the Excel button always writes the whole month. That is
+the owner's decision of 2026-11-19, and it is not an oversight to "fix": a file holding half a
+report carries the same name as a full one, and the two cannot be told apart afterwards.
+
 **Print and Excel.** Print is `window.print()` and a `@media print` block in
-`moderation-queue.css`; "save as PDF" is the browser's own dialog. Excel gets a CSV from
-`reports-export.ts` — not a real `.xlsx`, because that is a zip of several XML files and would
-need a library, and library weight is paid on every Cloudflare Workers response. The CSV opens
-on a double click because of two decisions that look like quirks and are not: a leading `sep=;`
-line and comma decimal separators, both aimed at Excel on a Russian or Azerbaijani Windows,
-which reads `16.83` as text or as a date. The BOM is what keeps the names from turning to mush.
+`moderation-queue.css`; "save as PDF" is the browser's own dialog. Excel gets a **real `.xlsx`**,
+built by `xlsx.ts` with no library at all: the package is a zip of a handful of XML parts, and a
+zip whose entries are *stored* rather than deflated needs nothing but a CRC32 — about sixty
+lines, against the 400 KB of SheetJS or ExcelJS. The price is size (a month lands near a hundred
+kilobytes instead of ten), which costs nothing for a file that goes straight to disk.
+
+⚠️ **This replaced a CSV in November 2026, and the reason was not taste.** Names arrived as
+mush — `XÉ™yal` for `Xəyal`, `â€"` for a dash — and the BOM was never the culprit: it was there
+all along. The leading `sep=;` line was. **Seeing it, Excel takes an older parsing path and stops
+honouring the BOM**, reading UTF-8 as a single-byte code page. A CSV cannot have both a
+dependable separator and dependable letters: drop `sep=;` and the letters come back, but on a
+machine whose list separator is a comma the whole report lands in one column. `.xlsx` has no such
+fork — the XML declares its encoding.
+
+Four things follow that CSV could not express at all, and all four were complaints: column
+widths (no more `########` where a date should be), real dates and real numbers (the money column
+adds up, the date column sorts), **one sheet per section** instead of one sheet where column `C`
+meant five different things, and a frozen header row with an autofilter.
+
+⚠️ **Dates are written as Excel serials shifted by the Baku offset**, the same one `bakuMonth`
+uses — `BAKU_OFFSET_MS` is exported from `core/src/utils/months.ts` for exactly this. Use UTC and
+a record made at 02:00 on the 1st lands on the right sheet under the previous day's date.
+
+⚠️ **The style indices in `xlsx.ts` are positional.** `STYLE_DATE = 2` means the third `xf` in
+`styles.xml`. Insert one in the middle and every format shifts at once, with no error anywhere —
+dates simply become five-digit numbers. The same goes for the zeroth font, fill and border, and
+for fill number one having to be `gray125`: Excel treats the first two fills as reserved and
+calls the workbook corrupt without them.
+
+⚠️ **There are always five sheets, even when a section is empty** — an empty sheet carrying "no
+records this month" answers the question that a missing sheet makes you hunt for.
 
 ## A new booking notifies the owner and every moderator
 

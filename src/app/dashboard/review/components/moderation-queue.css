@@ -1119,6 +1119,9 @@
   gap: 12px;
 }
 
+/* Плитка — ещё и переключатель раздела, поэтому она `button`. Сбрасываем то,
+   что браузер даёт кнопке по умолчанию: без `font: inherit` и `text-align`
+   подписи уехали бы в центр мелким системным шрифтом. */
 .reports-tile {
   display: flex;
   flex-direction: column;
@@ -1127,6 +1130,49 @@
   border: 1px solid var(--gray-200);
   background: var(--white);
   border-radius: 12px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reports-tile:hover {
+  border-color: var(--primary-color);
+}
+
+/* Выбранная плитка.
+
+   Заливать её целиком цветом, как плитку месяца, нельзя: число здесь крупное,
+   и на цветном фоне оно читается хуже, чем сейчас на белом. Отмечаем рамкой
+   погуще и цветом подписи — видно сразу, а цифра остаётся цифрой.
+
+   Рамка именно `box-shadow: inset`, а не `border-width: 2px`: толстая рамка
+   сдвинула бы содержимое плитки на пиксель, и ряд заметно дёргался бы при
+   каждом нажатии. */
+.reports-tile.active {
+  border-color: var(--primary-color);
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.reports-tile.active .reports-tile-label,
+.reports-tile.active .reports-tile-value {
+  color: var(--primary-color);
+}
+
+/* Подсказка и кнопка сброса занимают одно и то же место: показывается всегда
+   ровно одна из них. `min-height` — чтобы строка не прыгала при переключении:
+   кнопка выше строки текста. */
+.reports-filter-bar {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  margin-top: 10px;
+}
+
+.reports-filter-hint {
+  color: var(--neutral);
+  font-size: 13px;
 }
 
 .reports-tile-label {

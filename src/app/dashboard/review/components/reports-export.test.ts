@@ -1,70 +1,209 @@
 import {describe, expect, it} from 'vitest'
-import {buildCsv, csvNumber} from './reports-export'
+import ru from '@birklik/core/messages/ru/app.json'
+import type {Booking, MonthlyRevenue, Property, Translations} from '@birklik/core/types'
+import type {UserRecord} from '@/services/user-service'
+import {buildMonthReport, type ReportSources} from './reports-data'
+import {reportSheets, type ReportExportDeps} from './reports-export'
 
-describe('csvNumber', () => {
-  it('пишет дробную часть ЗАПЯТОЙ', () => {
-    // С точкой русский Excel принял бы 16.83 за текст или за дату, и столбец
-    // сумм перестал бы складываться. Та же причина, что у `sep=;`.
-    expect(csvNumber(16.83)).toBe('16,83')
+/**
+ * Проверки выгрузки отчёта в Excel.
+ *
+ * Здесь проверяется РАСКЛАДКА книги — что на каком листе и в каком столбце.
+ * Сами байты файла проверяет `xlsx.test.ts`.
+ */
+
+/** Словарь лежит под ключом `App` — как его берут и сайт, и приложение. */
+const t = (ru as {App: Translations}).App
+
+const user = (over: Partial<UserRecord> = {}): UserRecord => ({
+  id: 'u1',
+  name: 'Xəyal Əliyev',
+  email: 'xeyal@birklik.az',
+  phone: '+994501234567',
+  createdAt: '2026-11-17T09:00:00.000Z',
+  ...over
+} as UserRecord)
+
+const booking = (over: Partial<Booking> = {}): Booking => ({
+  id: 'b1',
+  propertyId: 'p1',
+  userName: 'Elgün Yolcuyev',
+  userPhone: '+994551112233',
+  userEmail: 'elgun@birklik.az',
+  checkInDate: '2026-11-23T00:00:00.000Z',
+  checkOutDate: '2026-11-25T00:00:00.000Z',
+  nights: 2,
+  totalPrice: 340,
+  status: 'approved',
+  createdAt: '2026-11-13T10:00:00.000Z',
+  ...over
+} as Booking)
+
+const listing = (over: Partial<Property> = {}): Property => ({
+  id: 'p1',
+  title: {az: 'Home Rent', en: 'Home Rent', ru: 'Home Rent'},
+  listingTier: 'vip',
+  owner: {name: 'Babək Quliyev'},
+  createdAt: '2026-11-05T08:00:00.000Z',
+  ...over
+} as Property)
+
+const revenue = (over: Partial<MonthlyRevenue> = {}): MonthlyRevenue => ({
+  month: '2026-11',
+  grossAzn: 75,
+  count: 3,
+  refundedAzn: 10,
+  refundCount: 1,
+  byProviderAzn: {azericard: 55, app_store: 20, google_play: 0},
+  countByProvider: {azericard: 2, app_store: 1, google_play: 0},
+  byKindAzn: {tier: 60, boost: 15},
+  ...over
+} as MonthlyRevenue)
+
+const deps = (over: Partial<ReportExportDeps> = {}): ReportExportDeps => ({
+  t,
+  listingTitle: () => 'Home Rent',
+  ownerName: () => 'Babək Quliyev',
+  bookingStatusLabel: status => (status === 'approved' ? 'Подтверждено' : status),
+  getLocalizedText: value => value.ru || value.az || '',
+  revenueFailed: false,
+  undated: {users: 0, bookings: 0, listings: 0},
+  generatedAt: new Date('2026-11-19T04:54:09.000Z'),
+  ...over
+})
+
+function sheets(sources: Partial<ReportSources> = {}, over: Partial<ReportExportDeps> = {}) {
+  const full: ReportSources = {users: [], bookings: [], listings: [], revenue: [], ...sources}
+  return reportSheets(buildMonthReport('2026-11', full), deps(over))
+}
+
+const byName = (list: ReturnType<typeof sheets>, name: string) => {
+  const found = list.find(sheet => sheet.name === name)
+  if (!found) throw new Error(`нет листа «${name}»`)
+  return found
+}
+
+describe('раскладка книги', () => {
+  it('всегда пять листов, по разделу на каждый', () => {
+    // Плавающее число листов заставляло бы искать, есть ли раздел вообще.
+    expect(sheets().map(sheet => sheet.name)).toEqual([
+      'Сводка за месяц',
+      'Регистрации',
+      'Бронирования',
+      'Новые объявления',
+      'Оплаты'
+    ])
   })
 
-  it('целые пишет без дробной части', () => {
-    // «55,00 ₼» рядом с ценой «55 ₼» читалось бы как другая сумма.
-    expect(csvNumber(55)).toBe('55')
+  it('пустые листы остаются на месте и объясняют пустоту', () => {
+    expect(byName(sheets(), 'Регистрации').rows).toHaveLength(0)
+    expect(byName(sheets(), 'Регистрации').notes).toEqual([t.moderation.reportsEmpty])
   })
 
-  it('округляет до копеек', () => {
-    expect(csvNumber(16.8333)).toBe('16,83')
+  it('у каждого листа ширина задана ровно на число его столбцов', () => {
+    // Разойдутся — последние столбцы останутся узкими, и даты покажутся как
+    // ########. Ровно это и было в CSV, где ширины нет вовсе.
+    sheets({users: [user()], bookings: [booking()], listings: [listing()], revenue: [revenue()]})
+      .forEach(sheet => {
+        if (sheet.head) expect(sheet.widths).toHaveLength(sheet.head.length)
+        sheet.rows.forEach(row => expect(row.length).toBeLessThanOrEqual(sheet.widths.length))
+      })
   })
 })
 
-describe('buildCsv', () => {
-  it('ставит sep=; первой строкой', () => {
-    // Это указание самому Excel: без него файл с точками с запятой лёг бы в
-    // один столбец.
-    const csv = buildCsv([{title: 'Отчёт', head: ['А'], rows: [['1']]}])
-    expect(csv.split('\r\n')[0]).toBe('sep=;')
+describe('сводка', () => {
+  it('ставит в заголовок название площадки и месяц словами', () => {
+    expect(byName(sheets(), 'Сводка за месяц').title).toBe('Birklik.az — Отчёты: Ноябрь 2026')
   })
 
-  it('разделяет строки CRLF', () => {
-    // С одними переводами строки Excel склеивает всё в одну строку.
-    const csv = buildCsv([{title: 'Отчёт', head: [], rows: [['1']]}])
-    expect(csv).toBe('sep=;\r\nОтчёт\r\n1')
+  it('считает по тем же данным, что и плитки на экране', () => {
+    const summary = byName(sheets({users: [user(), user({id: 'u2'})], bookings: [booking()]}), 'Сводка за месяц')
+    expect(summary.rows[0]).toEqual([{kind: 'label', value: 'Регистрации'}, {kind: 'number', value: 2}])
+    expect(summary.rows[1]).toEqual([{kind: 'label', value: 'Бронирования'}, {kind: 'number', value: 1}])
+    expect(summary.rows[2]).toEqual([{kind: 'text', value: 'Сумма'}, {kind: 'money', value: 340}])
   })
 
-  it('берёт в кавычки поле с точкой с запятой', () => {
-    const csv = buildCsv([{title: 'Т', head: [], rows: [['Баку; Сумгаит']]}])
-    expect(csv).toContain('"Баку; Сумгаит"')
+  it('оговорку про брутто несёт всегда', () => {
+    // Её увидит тот, кто вкладку не открывал; без неё итог выглядит
+    // окончательным, а он до удержаний Apple и Google.
+    expect(byName(sheets(), 'Сводка за месяц').notes?.[0]).toContain('Суммы')
   })
 
-  it('удваивает кавычки внутри поля', () => {
-    const csv = buildCsv([{title: 'Т', head: [], rows: [['дом "Чайка"']]}])
-    expect(csv).toContain('"дом ""Чайка"""')
+  it('о записях без даты говорит, а не молчит', () => {
+    const notes = byName(sheets({}, {undated: {users: 1, bookings: 0, listings: 2}}), 'Сводка за месяц').notes
+    expect(notes?.join(' ')).toContain('3')
   })
 
-  it('не теряет строку с переводом строки внутри поля', () => {
-    const csv = buildCsv([{title: 'Т', head: [], rows: [['первая\nвторая']]}])
-    expect(csv).toContain('"первая\nвторая"')
+  it('без записей без даты лишней оговорки не пишет', () => {
+    expect(byName(sheets(), 'Сводка за месяц').notes).toHaveLength(1)
+  })
+})
+
+describe('брони', () => {
+  it('заезд и выезд — ДВА столбца настоящих дат, а не одна строка', () => {
+    // В CSV это был текст «23.11.2026 — 25.11.2026», и отобрать брони по дате
+    // заезда было нельзя.
+    const sheet = byName(sheets({bookings: [booking()]}), 'Бронирования')
+    expect(sheet.head).toContain('Заезд')
+    expect(sheet.head).toContain('Выезд')
+    expect(sheet.rows[0][3]).toEqual({kind: 'date', value: '2026-11-23T00:00:00.000Z'})
+    expect(sheet.rows[0][4]).toEqual({kind: 'date', value: '2026-11-25T00:00:00.000Z'})
   })
 
-  it('пустое поле отдаёт пустым, а не словом undefined', () => {
-    const csv = buildCsv([{title: 'Т', head: [], rows: [['', 5]]}])
-    expect(csv.endsWith(';5')).toBe(true)
+  it('сумму кладёт деньгами, а статус берёт у модераторки', () => {
+    const row = byName(sheets({bookings: [booking()]}), 'Бронирования').rows[0]
+    expect(row[6]).toEqual({kind: 'money', value: 340})
+    expect(row[7]).toEqual({kind: 'text', value: 'Подтверждено'})
   })
 
-  it('разделяет разделы пустой строкой и пропускает пустую шапку', () => {
-    const csv = buildCsv([
-      {title: 'Сводка', head: [], rows: [['Регистрации', 3]]},
-      {title: 'Люди', head: ['Имя'], rows: [['Орхан']]}
-    ])
-    expect(csv.split('\r\n')).toEqual([
-      'sep=;',
-      'Сводка',
-      'Регистрации;3',
-      '',
-      'Люди',
-      'Имя',
-      'Орхан'
-    ])
+  it('бронь без числа ночей оставляет ячейку пустой, а не нулём', () => {
+    const row = byName(sheets({bookings: [booking({nights: undefined})]}), 'Бронирования').rows[0]
+    expect(row[5]).toEqual({kind: 'blank'})
+  })
+})
+
+describe('регистрации', () => {
+  it('помечает заблокированных', () => {
+    const row = byName(sheets({users: [user({blocked: true} as Partial<UserRecord>)]}), 'Регистрации').rows[0]
+    expect(row[0]).toEqual({kind: 'text', value: 'Xəyal Əliyev (заблокирован)'})
+  })
+
+  it('почту и телефон сводит в один столбец контактов', () => {
+    const row = byName(sheets({users: [user()]}), 'Регистрации').rows[0]
+    expect(row[1]).toEqual({kind: 'text', value: 'xeyal@birklik.az · +994501234567'})
+  })
+})
+
+describe('оплаты', () => {
+  it('за пустой месяц отличает «покупок не было» от «не прочиталось»', () => {
+    // Выглядят одинаково, а значат разное: во втором случае деньги могли быть.
+    expect(byName(sheets(), 'Оплаты').notes).toEqual([t.moderation.revenueEmpty])
+    expect(byName(sheets({}, {revenueFailed: true}), 'Оплаты').notes).toEqual([t.moderation.loadFailed])
+  })
+
+  it('разбивает по магазинам и по видам, и считает чистую сумму', () => {
+    const rows = byName(sheets({revenue: [revenue()]}), 'Оплаты').rows
+    expect(rows).toHaveLength(7)
+    expect(rows[6][1]).toEqual({kind: 'money', value: 65}) // 75 брутто минус 10 возврата
+  })
+
+  it('курс и оговорки по видам сумм кладёт под таблицу', () => {
+    const notes = byName(sheets({revenue: [revenue({usdRate: 1.7, estimatedCount: 2})]}), 'Оплаты').notes ?? []
+    expect(notes.join(' ')).toContain('1 $ = 1.7 ₼')
+    expect(notes.join(' ')).toContain('2')
+  })
+})
+
+describe('объявления', () => {
+  it('берёт тариф, ВЫБРАННЫЙ при размещении', () => {
+    // Действующий мог с тех пор истечь, и отчёт за прошлый месяц показал бы
+    // обычное объявление там, где за VIP заплатили.
+    const row = byName(sheets({listings: [listing()]}), 'Новые объявления').rows[0]
+    expect(row[1]).toEqual({kind: 'text', value: 'VIP'})
+  })
+
+  it('объявление без названия подписывает его номером', () => {
+    const row = byName(sheets({listings: [listing({title: {az: '', en: ''}})]}), 'Новые объявления').rows[0]
+    expect(row[0]).toEqual({kind: 'text', value: 'p1'})
   })
 })

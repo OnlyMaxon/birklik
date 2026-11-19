@@ -1,10 +1,11 @@
 'use client'
 
 import React from 'react'
-import type {Booking, Language, MonthlyRevenue, Property, RevenueProvider, Translations} from '@birklik/core/types'
+import type {Booking, Language, MonthlyRevenue, Property, Translations} from '@birklik/core/types'
 import type {UserRecord} from '@/services/user-service'
-import {buildMonthReport, reportMonths, tierOf, undatedCounts, type MonthReport, type ReportSources, type ReportTier} from './reports-data'
-import {buildCsv, csvNumber, downloadCsv, type CsvSection} from './reports-export'
+import {buildMonthReport, reportMonths, tierOf, undatedCounts, type ReportSources} from './reports-data'
+import {CURRENCY_SIGNS, dateLocale, monthLabel, money, PROVIDERS, providerLabel, tierLabel, TIERS} from './reports-labels'
+import {exportReport} from './reports-export'
 
 /**
  * Вкладка «Отчёты» в модераторке.
@@ -26,47 +27,42 @@ import {buildCsv, csvNumber, downloadCsv, type CsvSection} from './reports-expor
  * которые модераторка уже загрузила для соседних вкладок.
  */
 
-const MONTH_KEYS = [
-  'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-  'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
-] as const
+/**
+ * Раздел, на котором можно сосредоточиться. `null` — показаны все сразу.
+ *
+ * Ключи — не номера плиток: плитку можно переставить местами, а строка
+ * переживёт перестановку.
+ */
+type FocusKey = 'users' | 'bookings' | 'listings' | 'payments'
 
-/** Знак валюты для сумм «как заплатили». Незнакомую пишем кодом: `10 PLN`. */
-const CURRENCY_SIGNS: Record<string, string> = {AZN: '₼', USD: '$', EUR: '€'}
-
-const PROVIDERS: RevenueProvider[] = ['azericard', 'app_store', 'google_play']
-
-const TIERS: ReportTier[] = ['standard', 'vip', 'premium']
-
-/** Сумма для показа: `55 ₼`, `16.83 ₼`. Целые — без дробной части. */
-function money(value: number | undefined, sign = '₼'): string {
-  const rounded = Math.round((value ?? 0) * 100) / 100
-  return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(2)} ${sign}`
+interface ReportTileProps {
+  section: FocusKey
+  focus: FocusKey | null
+  onToggle: (section: FocusKey) => void
+  label: string
+  value: React.ReactNode
+  meta?: React.ReactNode
 }
 
-/** `2026-11` → «Ноябрь 2026». */
-function monthLabel(month: string, t: Translations): string {
-  const [year, index] = month.split('-')
-  const key = MONTH_KEYS[Number(index) - 1]
-  return key ? `${t.calendar.months[key]} ${year}` : month
-}
-
-function providerLabel(provider: RevenueProvider, t: Translations): string {
-  if (provider === 'app_store') return t.moderation.providerAppStore
-  if (provider === 'google_play') return t.moderation.providerGooglePlay
-  return t.moderation.providerAzericard
-}
-
-function tierLabel(tier: ReportTier, t: Translations): string {
-  if (tier === 'vip') return t.moderation.reportsTierVip
-  if (tier === 'premium') return t.moderation.reportsTierPremium
-  return t.moderation.reportsTierStandard
-}
-
-/** Язык для дат. Тот же набор, что в модераторке: отчёт и вкладки рядом должны совпадать. */
-function dateLocale(language: Language): string {
-  return language === 'en' ? 'en-GB' : language === 'ru' ? 'ru-RU' : 'az-Latn-AZ'
-}
+/**
+ * Плитка сводки — она же переключатель раздела.
+ *
+ * Это `button`, а не `div` с `onClick`: с клавиатуры кнопка доступна сама, а
+ * `aria-pressed` — единственное, чем диктор отличает нажатую плитку от
+ * обычной (цветной рамки он не видит).
+ */
+const ReportTile: React.FC<ReportTileProps> = ({section, focus, onToggle, label, value, meta}) => (
+  <button
+    type="button"
+    className={`reports-tile card ${focus === section ? 'active' : ''}`}
+    aria-pressed={focus === section}
+    onClick={() => onToggle(section)}
+  >
+    <span className="reports-tile-label">{label}</span>
+    <strong className="reports-tile-value">{value}</strong>
+    {meta !== undefined && <span className="reports-tile-meta">{meta}</span>}
+  </button>
+)
 
 interface ReportsTabProps {
   users: UserRecord[]
@@ -111,6 +107,19 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   )
   const undated = React.useMemo(() => undatedCounts(sources), [sources])
 
+  /**
+   * Выбранная плитка. Сбрасывать её при смене месяца не надо: выбрав
+   * «Брони», владелец листает месяцы именно по броням, и сброс каждый раз
+   * отменял бы то, что он только что нажал.
+   */
+  const [focus, setFocus] = React.useState<FocusKey | null>(null)
+  /** Повторное нажатие по той же плитке снимает выбор — второй способ сброса. */
+  const toggleFocus = React.useCallback(
+    (section: FocusKey) => setFocus(current => (current === section ? null : section)),
+    []
+  )
+  const shows = (section: FocusKey) => focus === null || focus === section
+
   /** Объявление могло быть удалено: и отказ, и удаление уносят документ. */
   const listingById = React.useMemo(
     () => new Map(listings.map(listing => [listing.id, listing])),
@@ -132,101 +141,26 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
     [userById]
   )
 
-  const csvSections = React.useCallback(
-    (data: MonthReport): CsvSection[] => {
-      const sections: CsvSection[] = [
-        {
-          title: `Birklik.az — ${t.moderation.reportsTab}: ${monthLabel(data.month, t)}`,
-          head: [],
-          rows: [
-            [t.moderation.reportsNewUsers, data.users.length],
-            [t.moderation.reportsBookings, data.bookings.length],
-            [t.moderation.reportsNewListings, data.listings.length],
-            ...TIERS.map(tier => [`   ${tierLabel(tier, t)}`, data.byTier[tier]] as (string | number)[]),
-            [t.moderation.reportsPayments, csvNumber(data.revenue?.grossAzn ?? 0)],
-            [t.moderation.reportsGeneratedAt, new Date().toLocaleString(dateLocale(language))]
-          ]
-        },
-        {
-          title: t.moderation.reportsNewUsers,
-          head: [t.moderation.reportsColName, t.moderation.reportsColContacts, t.moderation.reportsColDate],
-          rows: data.users.map(person => [
-            person.blocked ? `${person.name || '—'} (${t.moderation.reportsBlocked})` : person.name || '—',
-            [person.email, person.phone].filter(Boolean).join(' · '),
-            formatDate(person.createdAt)
-          ])
-        },
-        {
-          title: t.moderation.reportsBookings,
-          head: [
-            t.moderation.reportsColGuest,
-            t.moderation.reportsColContacts,
-            t.moderation.reportsColListing,
-            t.moderation.reportsColStay,
-            t.moderation.reportsColNights,
-            t.moderation.reportsColSum,
-            t.moderation.reportsColStatus,
-            t.moderation.reportsColDate
-          ],
-          rows: data.bookings.map(booking => [
-            booking.userName || '—',
-            [booking.userPhone, booking.userEmail].filter(Boolean).join(' · '),
-            listingTitle(booking.propertyId),
-            `${formatDate(booking.checkInDate)} — ${formatDate(booking.checkOutDate)}`,
-            booking.nights ?? '',
-            csvNumber(Number(booking.totalPrice) || 0),
-            bookingStatusLabel(booking.status),
-            formatDate(booking.createdAt)
-          ])
-        },
-        {
-          title: t.moderation.reportsNewListings,
-          head: [
-            t.moderation.reportsColListing,
-            t.moderation.reportsColTier,
-            t.moderation.reportsColOwner,
-            t.moderation.reportsColDate
-          ],
-          rows: data.listings.map(listing => [
-            getLocalizedText(listing.title) || listing.id,
-            tierLabel(tierOf(listing), t),
-            ownerName(listing),
-            formatDate(listing.createdAt)
-          ])
-        }
-      ]
-
-      if (data.revenue) {
-        const paid = data.revenue
-        sections.push({
-          title: t.moderation.reportsPayments,
-          head: [t.moderation.reportsColName, t.moderation.reportsColSum, t.moderation.revenuePurchases],
-          rows: [
-            ...PROVIDERS.map(provider => [
-              providerLabel(provider, t),
-              csvNumber(paid.byProviderAzn?.[provider] ?? 0),
-              paid.countByProvider?.[provider] ?? 0
-            ] as (string | number)[]),
-            [t.moderation.revenueTier, csvNumber(paid.byKindAzn?.tier ?? 0), ''],
-            [t.moderation.revenueBoost, csvNumber(paid.byKindAzn?.boost ?? 0), ''],
-            [t.moderation.revenueRefunded, csvNumber(paid.refundedAzn ?? 0), paid.refundCount ?? 0],
-            [t.moderation.revenueNet, csvNumber((paid.grossAzn ?? 0) - (paid.refundedAzn ?? 0)), ''],
-            // Оговорка про брутто едет и в файл: распечатку увидят те, кто
-            // вкладку не открывал, и без неё итог выглядит окончательным.
-            [t.moderation.revenueGrossNote, '', '']
-          ]
-        })
-      }
-
-      return sections
-    },
-    [t, language, formatDate, getLocalizedText, bookingStatusLabel, listingTitle, ownerName]
-  )
-
-  const exportCsv = React.useCallback(() => {
+  /**
+   * Выгрузка — ВСЕГДА весь месяц, независимо от выбранной плитки.
+   *
+   * Плитки фильтруют экран, а не файл: решение владельца от 2026-11-19. Файл с
+   * половиной отчёта называется так же, как полный, и отличить их потом
+   * нельзя.
+   */
+  const exportExcel = React.useCallback(() => {
     if (!report) return
-    downloadCsv(`birklik-${report.month}.csv`, buildCsv(csvSections(report)))
-  }, [report, csvSections])
+    exportReport(report, {
+      t,
+      listingTitle,
+      ownerName,
+      bookingStatusLabel,
+      getLocalizedText,
+      revenueFailed,
+      undated,
+      generatedAt: new Date()
+    })
+  }, [report, t, listingTitle, ownerName, bookingStatusLabel, getLocalizedText, revenueFailed, undated])
 
   if (!report) {
     return (
@@ -268,7 +202,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           <button type="button" className="btn btn-outline btn-sm" onClick={() => window.print()}>
             {t.moderation.reportsPrint}
           </button>
-          <button type="button" className="btn btn-outline btn-sm" onClick={exportCsv}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={exportExcel}>
             {t.moderation.reportsExcel}
           </button>
         </div>
@@ -284,31 +218,53 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         </div>
 
         <div className="reports-tiles">
-          <div className="reports-tile card">
-            <span className="reports-tile-label">{t.moderation.reportsNewUsers}</span>
-            <strong className="reports-tile-value">{report.users.length}</strong>
-          </div>
-          <div className="reports-tile card">
-            <span className="reports-tile-label">{t.moderation.reportsBookings}</span>
-            <strong className="reports-tile-value">{report.bookings.length}</strong>
-            <span className="reports-tile-meta">{money(report.bookingsSum)}</span>
-          </div>
-          <div className="reports-tile card">
-            <span className="reports-tile-label">{t.moderation.reportsNewListings}</span>
-            <strong className="reports-tile-value">{report.listings.length}</strong>
-            <span className="reports-tile-meta">
-              {TIERS.map(tier => `${tierLabel(tier, t)} ${report.byTier[tier]}`).join(' · ')}
-            </span>
-          </div>
-          <div className="reports-tile card">
-            <span className="reports-tile-label">{t.moderation.reportsPayments}</span>
-            <strong className="reports-tile-value">{money(gross)}</strong>
-            <span className="reports-tile-meta">
-              {paid?.count ?? 0} {t.moderation.revenuePurchases}
-            </span>
-          </div>
+          <ReportTile
+            section="users"
+            focus={focus}
+            onToggle={toggleFocus}
+            label={t.moderation.reportsNewUsers}
+            value={report.users.length}
+          />
+          <ReportTile
+            section="bookings"
+            focus={focus}
+            onToggle={toggleFocus}
+            label={t.moderation.reportsBookings}
+            value={report.bookings.length}
+            meta={money(report.bookingsSum)}
+          />
+          <ReportTile
+            section="listings"
+            focus={focus}
+            onToggle={toggleFocus}
+            label={t.moderation.reportsNewListings}
+            value={report.listings.length}
+            meta={TIERS.map(tier => `${tierLabel(tier, t)} ${report.byTier[tier]}`).join(' · ')}
+          />
+          <ReportTile
+            section="payments"
+            focus={focus}
+            onToggle={toggleFocus}
+            label={t.moderation.reportsPayments}
+            value={money(gross)}
+            meta={`${paid?.count ?? 0} ${t.moderation.revenuePurchases}`}
+          />
         </div>
 
+        {/* Подсказка, пока ничего не выбрано, и кнопка сброса, когда выбрано.
+            Вместе они не нужны: подсказка объясняет ровно то действие, которое
+            кнопка отменяет. На печать не идёт — в бумаге нажимать нечего. */}
+        <div className="reports-filter-bar reports-noprint">
+          {focus === null ? (
+            <span className="reports-filter-hint">{t.moderation.reportsFilterHint}</span>
+          ) : (
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => setFocus(null)}>
+              {t.moderation.reportsFilterAll}
+            </button>
+          )}
+        </div>
+
+        {shows('payments') && (
         <section className="reports-section">
           <h3>{t.moderation.reportsPayments}</h3>
           {revenueFailed ? (
@@ -381,7 +337,9 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             </>
           )}
         </section>
+        )}
 
+        {shows('users') && (
         <section className="reports-section">
           <h3>
             {t.moderation.reportsNewUsers} · {report.users.length}
@@ -416,7 +374,9 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             </div>
           )}
         </section>
+        )}
 
+        {shows('bookings') && (
         <section className="reports-section">
           <h3>
             {t.moderation.reportsBookings} · {report.bookings.length}
@@ -457,7 +417,9 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             </div>
           )}
         </section>
+        )}
 
+        {shows('listings') && (
         <section className="reports-section">
           <h3>
             {t.moderation.reportsNewListings} · {report.listings.length}
@@ -489,11 +451,16 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             </div>
           )}
         </section>
+        )}
 
         {/* Записи без даты ни в один месяц не попадают. Молчать об этом нельзя:
             сумма месяцев тогда не сойдётся с числом на соседних вкладках, и
-            понять, куда делись люди, будет нельзя. */}
-        {(undated.users > 0 || undated.bookings > 0 || undated.listings > 0) && (
+            понять, куда делись люди, будет нельзя.
+
+            Под выбранной плиткой оговорку прячем: она считает людей, брони и
+            объявления ВМЕСТЕ, и рядом с одними регистрациями её число
+            выглядело бы относящимся к ним. */}
+        {focus === null && (undated.users > 0 || undated.bookings > 0 || undated.listings > 0) && (
           <p className="reports-note">
             {t.moderation.reportsNoDateNote.replace(
               '{count}',
