@@ -1,4 +1,6 @@
-import {getAppTranslations} from '@/lib/i18n/get-app-translations'
+'use client'
+
+import {useLanguage} from '@/components/providers'
 import {Link} from '@/lib/navigation'
 import {PropertyCard} from '@/components'
 import {ImageGallery} from './image-gallery'
@@ -26,7 +28,22 @@ interface PropertyDetailsProps {
   currentUserId: string | null
 }
 
-export async function PropertyDetails({
+/**
+ * ⚠️ Компонент КЛИЕНТСКИЙ, и это сделано ради смены языка.
+ *
+ * Раньше он был серверным и брал язык из куки через `getAppTranslations()`. Из-за
+ * этого на странице объявления язык менялся В ДВА ПРИЁМА: клиентские части —
+ * галерея, календарь, комментарии, карта — переключались сразу, а всё, что
+ * рисовал этот файл (двадцать пять подписей, название города, формат даты,
+ * названия удобств), ждало ответа сервера после `router.refresh()`. Выглядело
+ * так, будто половина слов захардкожена. Замечено владельцем 2026-11-22.
+ *
+ * ⚠️ На выдаче в поиске это НЕ отражается: Next отдаёт клиентские компоненты
+ * обычным HTML при первой загрузке, разметка остаётся та же. Переносить сюда
+ * загрузку данных по-прежнему нельзя — всё приходит пропсами со страницы,
+ * которая остаётся серверной и кэшируемой.
+ */
+export function PropertyDetails({
   property,
   bookings,
   similarProperties,
@@ -37,7 +54,7 @@ export async function PropertyDetails({
   userRating,
   currentUserId
 }: PropertyDetailsProps) {
-  const {language, t} = await getAppTranslations()
+  const {language, t} = useLanguage()
 
   const getLocalizedText = (text: Partial<Record<Language, string>>) => text[language] || text.az || text.en || ''
 

@@ -278,6 +278,23 @@ The upshot for new code: **take the label from `t`.** It is no longer the slower
 ternary in the component is a third place for the wording to drift (the Users tab had the site
 saying `İstifadəçilər` while the dictionary said `İnsanlar`).
 
+### ⚠️ A server component is the other half of the same gap
+
+The fix above only reaches components that read `t` on the client. A **server** component takes
+the locale from the cookie and cannot know the switch happened until the next RSC payload —
+so its text waits for `router.refresh()` while its client neighbours change instantly.
+
+`property-details.tsx` was exactly that, and the listing page changed language in two visible
+stages: gallery, calendar, comments and map switched at once; twenty-five labels, the city name,
+the date format and the amenity names lagged a beat behind. It read, again, as if half the words
+were hard-coded. Reported 2026-11-22.
+
+It is now a client component, and the rule is: **a component whose only server-side need is
+`getAppTranslations()` belongs on the client.** Converting one costs nothing in search results —
+Next renders client components to HTML on the first request like any other — as long as the
+data still arrives as props from a server page. Do not move queries down with it: the page stays
+server-rendered and cacheable, which is where the SEO actually lives.
+
 ## Environment variables
 
 Browser Firebase configuration uses only `NEXT_PUBLIC_*` names:
@@ -1456,3 +1473,66 @@ the pipeline, returning resumes it. A failure became a pause.
   `errorNetwork`, `errorRights`) and blames the connection only when the connection is at
   fault. The old text accused it always, and that is what sent the first day of the
   investigation in the wrong direction.
+
+## Push to a phone: three platforms, three blocks, and iOS had none
+
+`sendPushToUser` sends one FCM message per device token. The message carries a separate block
+per platform, and **a missing block is silent** — which is how iOS went without notifications
+for as long as the app has existed.
+
+```
+data        общее тело; из него веб рисует уведомление сам (public/sw.js)
+android     блок с notification → рисует система телефона
+apns        добавлен 2026-11-22; без него iPhone не показывал НИЧЕГО
+webpush     заголовки и вид для браузера
+```
+
+FCM treats a message as displayable only if it has a top-level `notification` **or**
+`apns.payload.aps.alert`. There was neither, so for iOS every notification was a data-only
+message — and iOS does not display those: no banner, no sound. The app cannot step in either;
+it has no incoming-message handler at all, only token registration, so the system is the only
+thing that draws. Android never noticed because its own block answers it, and the web draws its
+own. Two platforms out of three worked, so nothing looked broken.
+
+The owner confirmed it live on 2026-11-22: a booking arrived on Android and not on iPhone. The
+APNs key itself was fine — a dry-run send against all 91 live tokens produced no auth error.
+
+### The sound lives on the channel, not in the message
+
+⚠️ **From Android 8 the `sound` field of a message is ignored.** The sound comes from the
+notification channel, and channels are created **on the device** — here in
+`MainApplication.kt` of the app, in native Kotlin, because notifee would be a whole native
+module for two calls while `android/` is hand-maintained anyway.
+
+```
+booking     три ноты, вибрация в два толчка   хозяину жилья: его деньги, его гость
+moderation  две ноты, один толчок             копия для присмотра
+```
+
+- The server picks the channel from `forModerator`, **not** from `type`: both notifications are
+  deliberately `type: 'booking'` so one screen can render them.
+- Every other notification type gets **no** channel and stays on FCM's fallback with the system
+  sound. That is not an oversight: nobody chose sounds for them, and filing them under
+  "Rezervasiyalar" would lie to the user in their phone's settings.
+- ⚠️ **Channel settings are frozen at first creation.** Re-creating with the same id changes
+  nothing — Android gives that control to the user permanently. A different sound needs a new
+  channel id (`booking_v2`), and everyone who already installed the app keeps the old one.
+- ⚠️ Channel ids must match the server's `android.notification.channelId`. If they drift, FCM
+  draws in its fallback channel — system sound, no heads-up — **and reports no error**.
+- `IMPORTANCE_HIGH` is what makes it pop up with sound; one step down it lands silently in the
+  shade, which is what the fallback channel was doing all along.
+- `AudioAttributes` must say `USAGE_NOTIFICATION`, or the sound is routed to the media stream
+  and a phone with music muted plays nothing.
+
+### iOS: time-sensitive now, a custom sound with the next build
+
+`interruption-level: time-sensitive` is sent already — it breaks through Focus and Do Not
+Disturb and needs no permission from Apple, only the
+`com.apple.developer.usernotifications.time-sensitive` entitlement, now declared in `app.json`.
+Until an iOS build ships, the entitlement is absent and iOS simply ignores the field, so sending
+it early costs nothing.
+
+The sound stays `default` on iOS on purpose: a custom one has to sit **inside the bundle**, and
+there is no `ios/` directory in the repository — EAS generates it. Name a file that is not in
+the bundle and the behaviour on a missing sound is the system's business, which can mean silence.
+The name goes in on the same day the file does.

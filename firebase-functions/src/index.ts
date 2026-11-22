@@ -129,12 +129,27 @@ export const onNotificationCreated = functions
 
     if (!data) return null;
 
+    // Какой канал, то есть какой звук. Решение владельца 2026-11-22: бронь и
+    // присмотр модератора должны звучать по-разному, потому что это разные дела.
+    //
+    // ⚠️ Отличает их `forModerator`, а НЕ тип: тип у обоих уведомлений один
+    // (`booking`) намеренно — экран уведомлений умеет показывать именно его, и
+    // заводить второй вид значило бы править разбор в двух приложениях сразу.
+    //
+    // ⚠️ Остальные уведомления канала НЕ получают и остаются на резервном со
+    // системным звуком. Это не забывчивость: своих звуков для них никто не
+    // выбирал, а свалить их в канал «Rezervasiyalar» значило бы соврать
+    // человеку в системных настройках телефона.
+    const channel =
+      data.type === 'booking' ? (data.forModerator === true ? 'moderation' : 'booking') : undefined;
+
     await sendPushToUser(userId, {
       type: data.type || 'general',
       title: data.title || 'Birklik.az',
       message: data.message || '',
       propertyId: data.relatedId || '',
       bookingId: data.bookingId || '',
+      ...(channel ? { channel } : {}),
     });
 
     return null;

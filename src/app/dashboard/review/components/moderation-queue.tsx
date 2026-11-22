@@ -356,7 +356,14 @@ export const ModerationQueue: React.FC = () => {
               className={`tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
               onClick={() => setActiveTab('bookings')}
             >
-              {language === 'en' ? 'Bookings' : language === 'ru' ? 'Бронирования' : 'Rezervasiyalar'} ({allBookings.length})
+              {/*
+                ⚠️ В числе ТОЛЬКО ожидающие, а не все брони. Решение владельца
+                2026-11-22: число на вкладке — это «сколько дел», а подтверждённые
+                и отклонённые брони дела собой не требуют. Раньше стояло
+                `allBookings.length`, и счётчик рос навсегда: он показывал объём
+                архива, то есть не говорил ничего.
+              */}
+              {language === 'en' ? 'Bookings' : language === 'ru' ? 'Бронирования' : 'Rezervasiyalar'} ({allBookings.filter(b => b.status === 'pending').length})
             </button>
             <button
               className={`tab-btn ${activeTab === 'people' ? 'active' : ''}`}
