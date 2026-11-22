@@ -17,6 +17,7 @@ import { compressPropertyImage } from '../utils/image-compression'
 import { validatePropertyImage } from './file-validation'
 import { db, storage } from '../lib/firebase/client'
 import { Property, Comment } from '@birklik/core/types'
+import { describeFailure, reportSubmit } from './diagnostics-service'
 import * as logger from './logger'
 import {normalizePropertyImageUrls, storagePathFromImageSource} from '../lib/images'
 
@@ -102,8 +103,23 @@ export const getPropertiesByOwner = async (ownerId: string): Promise<Property[]>
  */
 export const createProperty = async (
   property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>,
-  imageFiles?: File[]
+  imageFiles?: File[],
+  /**
+   * Донесение о том, чем кончилась подача. **Необязательно и по умолчанию
+   * выключено** — у этой функции есть и другие вызывающие (правка модератором,
+   * служебные сценарии), и начинать доносить за них всех незачем. Доносит тот,
+   * кто передал код: сейчас это форма подачи в кабинете.
+   *
+   * ⚠️ Отчёт собирается ЗДЕСЬ, а не у вызывающего, по одной причине: загрузка
+   * снимков живёт внутри этой функции, и только отсюда видно, на чём именно
+   * оборвалось — на фотографиях или на записи документа. Снаружи виден лишь
+   * `null`, из которого непонятно ничего. Ровно этой разницы не хватило в
+   * разборе 21 ноября.
+   */
+  diagnostics?: {code: string; tier?: string}
 ): Promise<Property | null> => {
+  const startedAt = Date.now()
+  let step: 'photos' | 'saving' = 'photos'
   try {
     // Upload images if provided
     let imageUrls: string[] = []
@@ -126,10 +142,39 @@ export const createProperty = async (
       updatedAt: now,
     }
 
+    step = 'saving'
     const docRef = await addDoc(collection(db, COLLECTION_NAME), propertyData)
+
+    if (diagnostics) {
+      void reportSubmit({
+        outcome: 'success',
+        code: diagnostics.code,
+        step,
+        photosTotal: imageFiles?.length,
+        photosDone: imageUrls.length,
+        durationMs: Date.now() - startedAt,
+        tier: diagnostics.tier,
+        propertyId: docRef.id
+      })
+    }
+
     return { id: docRef.id, ...propertyData } as Property
   } catch (error) {
     logger.error('Error creating property:', error)
+    // ⚠️ Возвращаемое значение НЕ меняется: вызывающие рассчитывают на `null`,
+    // и переделывать их ради донесения нельзя. Причина теперь не теряется, но
+    // уезжает отдельным путём — к нам, а не наружу.
+    if (diagnostics) {
+      void reportSubmit({
+        outcome: 'error',
+        code: diagnostics.code,
+        step,
+        photosTotal: imageFiles?.length,
+        durationMs: Date.now() - startedAt,
+        tier: diagnostics.tier,
+        ...describeFailure(error)
+      })
+    }
     return null
   }
 }

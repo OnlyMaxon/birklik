@@ -6,6 +6,7 @@ import {useAuth, useLanguage} from '@/components/providers'
 import {photoLimitForTier, resolveCityQuery} from '@birklik/core/data'
 import firebaseApp from '@/lib/firebase/client'
 import {createProperty, deleteProperty, updateProperty} from '@/services'
+import {newReportCode} from '@/services/diagnostics-service'
 import type {Amenity, District, ListingStatus, ListingTier, LocationCategory, Property, PropertyType} from '@birklik/core/types'
 import * as logger from '@/services/logger'
 import {DEFAULT_COORDINATES, type ListingFormState} from '../components/dashboard-types'
@@ -26,6 +27,17 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
   const {language, t} = useLanguage()
   const isEnglish = language === 'en'
   const isRussian = language === 'ru'
+
+  /**
+   * Дописать к сообщению об отказе код этой попытки.
+   *
+   * ⚠️ Подпись берётся из `t.dialog.errorCode` — того же ключа, которым её
+   * показывает приложение. Своей копии текста на сайте быть не должно: код
+   * человек называет по телефону, и звучать это обязано одинаково, откуда бы он
+   * ни подавал.
+   */
+  const withReportCode = (message: string, code: string) =>
+    `${message} ${t.dialog.errorCode.replace('{code}', code)}`
 
   const [showAddSuccess, setShowAddSuccess] = React.useState(false)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -239,6 +251,13 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
     setIsSubmitting(true)
     setError('')
 
+    // Код этой попытки. Придумывается ДО первого обращения к сети: человек
+    // должен увидеть его и тогда, когда донесение до нас не доедет, — а не
+    // доезжает оно как раз при обрыве связи. Он называет код по телефону, мы
+    // находим по нему запись. Разбор 21 ноября стоил двух суток именно потому,
+    // что такого кода не существовало.
+    const reportCode = newReportCode()
+
     // Check if user is authenticated
     if (!user) {
       setError(language === 'en' ? 'Please sign in to add a listing' : language === 'ru' ? 'Пожалуйста, войдите чтобы добавить объявление' : 'Elan əlavə etmək üçün giriş yapın')
@@ -421,9 +440,12 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
     } else if (newListing.listingTier === 'vip' || newListing.listingTier === 'premium') {
       // Платный тариф: сохраняем как draft, затем редиректим на оплату
       const draftPayload = { ...propertyPayload, status: 'draft' as ListingStatus }
-      const created = await createProperty(draftPayload, selectedFiles)
+      const created = await createProperty(draftPayload, selectedFiles, {
+        code: reportCode,
+        tier: newListing.listingTier,
+      })
       if (!created) {
-        setError(t.listing.createdFailed)
+        setError(withReportCode(t.listing.createdFailed, reportCode))
         setIsSubmitting(false)
         return
       }
@@ -464,9 +486,12 @@ export function useListingEditor({listings, onEditStarted, onSaved}: UseListingE
         return
       }
     } else {
-      const created = await createProperty(propertyPayload, selectedFiles)
+      const created = await createProperty(propertyPayload, selectedFiles, {
+        code: reportCode,
+        tier: newListing.listingTier,
+      })
       if (!created) {
-        setError(t.listing.createdFailed)
+        setError(withReportCode(t.listing.createdFailed, reportCode))
         setIsSubmitting(false)
         return
       }

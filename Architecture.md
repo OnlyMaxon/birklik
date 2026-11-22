@@ -1136,7 +1136,7 @@ and `Xaçmaz` both carried `Хачмас`).
 
 ## Security rules
 
-`pnpm test:rules` runs 107 tests against the Firestore emulator: it starts the emulator, runs
+`pnpm test:rules` runs 159 tests against the Firestore emulator: it starts the emulator, runs
 `vitest` with `vitest.rules.config.ts`, then shuts it down. Tests live in `tests/rules/` and are
 excluded from the default suite, because `pnpm test:run` must pass without an emulator.
 
@@ -1372,3 +1372,87 @@ A 401 alone proves nothing — an unknown path behind the same auth middleware c
 Check a deliberately nonexistent sibling path in the same request batch: the real route answers
 401 and the control answers 404. Honest 404s only exist because the Workers Paid plan is in
 place and no `loading.tsx` sits above the handler; see the deploy notes.
+
+## Why a listing submission failed: the client has to tell us
+
+For five months no listing was created from the mobile app, and nobody knew. The app went
+public on 12 November 2026; on 21 November the first person to try — a landlord with seventeen
+live listings — failed twice, twenty minutes apart. Reconstructing what happened took two days
+and was possible only by accident: his photos had already been uploaded, so the file names and
+timestamps in `properties/{uid}/` told the story.
+
+```
+May–October   1054 photos uploaded → 0 orphaned   every upload became a listing
+November        22 photos uploaded → 22 orphaned   two attempts, both lost
+```
+
+The error itself existed nowhere, for three independent reasons, and all three had to be fixed:
+
+1. **A listing is written to Firestore straight from the device.** No function sits between the
+   client and the database, so there is no server code that could have logged anything. Rule
+   denials are not recorded anywhere readable either — `firebaserules` keeps no per-request log.
+2. **`catch {`** — with no binding — in the app's submit handler. The device received a precise
+   answer about what failed and discarded it unread.
+3. **`createProperty` on the website does the same thing in a different shape**: it catches,
+   writes to the *browser's* console and returns `null`. A console we cannot read is as useless
+   as a phone we cannot reach.
+
+### `reportClientError`: one function, two entry points
+
+The same shape as comment reports. `firebase-functions/src/diagnostics/report-client-error.ts`
+is a callable; the app posts to it directly (`services/diagnostics-service.ts`, plain POST with
+an ID token, as `billing-service` already does), the site calls it through `httpsCallable` from
+inside `createProperty`. `source` distinguishes them and they cannot drift, because what gets
+stored is decided on the server.
+
+Three choices in that function look wrong and are deliberate:
+
+- **App Check is not enforced**, though it is enforced everywhere else in the project. If App
+  Check is broken on a device, that *is* the failure we are chasing, and enforcing it here
+  would discard exactly the report we came for. The verdict is stored in `appCheck` instead.
+- **Sign-in is not required.** "The session expired" is one of the causes being hunted.
+- **The function never fails.** Garbage fields, over-quota, write errors — every answer is a
+  success with `accepted: false`. A diagnostics channel that can throw would replace the user's
+  real error with its own.
+
+The hourly quota (20 per uid, 60 for anonymous) is counted with **two equality filters**
+(`owner`, `hour`) rather than a range on `createdAt`, so Firestore serves it from single-field
+indexes and no composite index has to be deployed.
+
+Successes are recorded too — the owner's decision on 2026-11-22. Without them there is no
+denominator: three failures mean one thing out of three attempts and another out of a hundred.
+
+What is never stored: phone, e-mail, name, listing text, address. The `uid`, the step and the
+build number answer every question those would have.
+
+### The code is minted on the device, not on the server
+
+`ELAN-7F3K`, from an alphabet without `I`, `O`, `0` or `1` because people read it aloud down
+the phone. It is generated **before the first network call**, so the person sees a code even
+when the report cannot be sent — which is precisely the case when the connection is the
+problem. An undelivered report is queued in the device's storage and retried on next launch
+(`flushPendingReports` in the root layout); without that, we would only ever learn about
+failures that happened while the network was fine.
+
+### The actual bug: a watermark drawn by screenshotting a view
+
+Two images cannot be composited in React Native without rendering them; the watermark is
+applied by snapshotting an off-screen view (`use-watermark.tsx`). A backgrounded app draws
+nothing, so the image never finished loading and an eight-second guard declared the frame
+failed — which aborted the whole submission and showed "the listing was not saved, usually it
+is the connection". Twenty photos take tens of seconds and people switch apps while they wait,
+so this hit every Android user who did.
+
+The guard and the capture now run **only while the app is in the foreground**: leaving pauses
+the pipeline, returning resumes it. A failure became a pause.
+
+- ⚠️ **Timers are not a substitute for asking.** A backgrounded Android app has its timers
+  frozen too — sometimes. That is why the bug looked random: in the first attempt the guard
+  never fired and the upload simply stalled for 2m24s, and in the second it fired.
+- ⚠️ **The first frame after returning waits 400 ms, not 32.** The view has just come back on
+  screen and needs more than one layout pass; capturing immediately returns a half-drawn frame,
+  which is the black-photo bug this file already fought once.
+- ⚠️ The dialog now names a cause (`errorLeftApp`, `errorSignedOut`, `errorPhoto`,
+  `errorNetwork`, `errorRights`) and blames the connection only when the connection is at
+  fault. The old text accused it always, and that is what sent the first day of the
+  investigation in the wrong direction.

@@ -20,6 +20,7 @@ import { deleteAccount } from './account/delete-account';
 import { setUserBlocked } from './moderation/block-user';
 import { notifyBookingCreated } from './notifications/booking-created';
 import { recordPaymentRevenue, recordRefundRevenue } from './revenue/record-revenue';
+import { reportClientError } from './diagnostics/report-client-error';
 
 export {
   initiatePayment,
@@ -29,6 +30,10 @@ export {
   appleNotifications,
   deleteAccount,
   setUserBlocked,
+  // Единственное место, куда клиент может рассказать, чем кончилась подача
+  // объявления: в базу она пишется напрямую с устройства, и логировать её
+  // больше нечем. Разбор, из-за которого функция появилась, — в её шапке.
+  reportClientError,
 };
 
 admin.initializeApp();
