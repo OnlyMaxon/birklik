@@ -1474,6 +1474,43 @@ the pipeline, returning resumes it. A failure became a pause.
   fault. The old text accused it always, and that is what sent the first day of the
   investigation in the wrong direction.
 
+### ⚠️ One sanitiser must not serve two units
+
+The very first real report (`ELAN-9K66`, 23 November 2026) arrived with an empty `durationMs`,
+and the cause was in this file: milliseconds were validated by `count`, whose ceiling of
+`100000` is a hundred seconds. The submission had taken 164. So the guard silently discarded
+exactly the cases it was built for — a short submission rarely fails, a broken one hangs for
+minutes. Durations now go through `millis` (ceiling one hour); `count` stays for photo counts.
+
+The same report also carried the lesson that made the field worth having: it named the step
+(`photos`), the photo (`8/20`), the device (Galaxy S23 FE, Android 16), the build (21) and the
+code — `[storage/unknown] The server has terminated the upload session`. That is a
+client-side Storage failure, and **nothing on the server can repair it**: the phone uploads
+straight to Storage, no function stands in the path. The repair lives in the app
+(`uploadOne`) and reaches people only with a new build. Reports also now carry `retries` and
+`retryCode`, so the next one says whether the repair held.
+
+### The log line has to be readable without opening the entry
+
+Two faults were found the first time anyone actually read this log in anger. The entry was
+emitted with `logger.error('…', fields)`, and that call synthesises an `Error`: twenty lines of
+`firebase-functions` stack landed in the record and the step, the version and the device sank
+into them. And `device` and `osVersion` were not in the line at all — they were in the stored
+record, so learning that the phone was a Galaxy S23 FE on Android 16 took a separate query
+against Firestore, which is exactly what a log exists to avoid.
+
+Now `logger.write` is used — it emits what it is given and nothing else — and the `message` is
+one human sentence, readable in the console with the entry collapsed:
+
+```
+[ClientError] ОТКАЗ · ELAN-9K66 · app/android 16 · v1.0.16 (21) · SM-S711B ·
+шаг photos 8/20 · 164с · СВЁРНУТО · storage/unknown: The server has terminated the upload session
+```
+
+The fields are still attached underneath for filtering. ⚠️ The code is not repeated: Firebase
+already prefixes its own message with `[storage/unknown]`, and joining the two naively read
+`storage/unknown: [storage/unknown] …` on every line.
+
 ## Push to a phone: three platforms, three blocks, and iOS had none
 
 `sendPushToUser` sends one FCM message per device token. The message carries a separate block

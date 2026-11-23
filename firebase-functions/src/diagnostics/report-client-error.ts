@@ -82,6 +82,36 @@ const count = (value: unknown): number | null =>
     ? value
     : null;
 
+/**
+ * Длительность в миллисекундах — предел ЧАС.
+ *
+ * ⚠️ Раньше здесь стоял `count`, и это была ошибка: его потолок 100 000 — это
+ * сто секунд. Первое же настоящее донесение (ELAN-9K66, 2026-11-23) сообщило о
+ * подаче длиной 164 секунды и получило в графе `durationMs` пустоту. То есть
+ * мерка молча выбрасывала ровно те случаи, ради которых её ставили: короткая
+ * подача отказывает редко, а подолгу висят как раз сломанные. Один потолок на
+ * «число снимков» и на «миллисекунды» — не экономия, а потеря.
+ */
+const millis = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 3600000
+    ? Math.round(value)
+    : null;
+
+/**
+ * Код и описание отказа одной строкой, без повтора кода.
+ *
+ * ⚠️ Firebase сам вшивает код в начало описания — `[storage/unknown] The server
+ * has terminated…`. Склеивая их в лоб, журнал читался
+ * `storage/unknown: [storage/unknown] The server…`, и глазу приходилось
+ * спотыкаться на каждой строке.
+ */
+const reason = (code: string | null, message: string | null): string => {
+  if (!message) return code ?? 'без описания';
+  const prefix = code ? `[${code}]` : '';
+  const body = prefix && message.startsWith(prefix) ? message.slice(prefix.length).trim() : message;
+  return code ? `${code}: ${body}` : body;
+};
+
 const flag = (value: unknown): boolean | null =>
   typeof value === 'boolean' ? value : null;
 
@@ -131,7 +161,7 @@ export const reportClientError = functions
       tier: text(payload.tier, SHORT_LIMIT),
       photosTotal: count(payload.photosTotal),
       photosDone: count(payload.photosDone),
-      durationMs: count(payload.durationMs),
+      durationMs: millis(payload.durationMs),
 
       online: flag(payload.online),
       // ⚠️ Выходил ли человек из приложения во время подачи. Из-за этого и
@@ -139,6 +169,12 @@ export const reportClientError = functions
       // знак, и страховка на восемь секунд объявляла снимок неудавшимся. Поле
       // оставлено и после починки — им проверяется, что починка работает.
       backgrounded: flag(payload.backgrounded),
+      // ⚠️ Сколько раз отправка снимка срывалась и начиналась заново
+      // (`uploadOne` в приложении). Ноль при успехе — ответ, а не пустая графа:
+      // повторы не понадобились. Больше нуля при успехе — подача доехала только
+      // благодаря им. Больше нуля при отказе — повтор не спас, причина глубже.
+      retries: count(payload.retries),
+      retryCode: text(payload.retryCode, SHORT_LIMIT),
 
       errorName: text(payload.errorName, SHORT_LIMIT),
       errorCode: text(payload.errorCode, SHORT_LIMIT),
@@ -164,19 +200,54 @@ export const reportClientError = functions
       step: record.step,
       source: record.source,
       platform: record.platform,
+      // ⚠️ Устройство и версия системы в строке журнала СТОЯЛИ не всегда: до
+      // 2026-11-23 их тут не было, и первое же настоящее донесение пришлось
+      // доставать из базы отдельным запросом, чтобы узнать, что это Galaxy S23
+      // FE на Android 16. В записи поля были, а в журнале — нет; журнал для
+      // того и существует, чтобы в базу не ходить.
+      osVersion: record.osVersion,
+      device: record.device,
       appVersion: record.appVersion,
       build: record.build,
       errorCode: record.errorCode,
       errorMessage: record.errorMessage,
       backgrounded: record.backgrounded,
       photos: `${record.photosDone ?? '?'}/${record.photosTotal ?? '?'}`,
+      durationMs: record.durationMs,
+      retries: record.retries,
+      retryCode: record.retryCode,
       appCheck: record.appCheck,
     };
-    if (record.outcome === 'error') {
-      functions.logger.error('[ClientError] отказ у человека', logLine);
-    } else {
-      functions.logger.info('[ClientError] подача удалась', logLine);
-    }
+
+    /**
+     * Одна читаемая строка — то, что видно в журнале БЕЗ раскрытия записи.
+     *
+     * ⚠️ Раньше здесь звался `logger.error` со строкой-заголовком, и это было
+     * ошибкой устройства: такой вызов подмешивает в запись стек вызовов самого
+     * `firebase-functions`, и в журнале читалось двадцать строк чужого стека, а
+     * версия и шаг тонули в них. Поэтому `logger.write`: он пишет ровно то, что
+     * дано, и `message` остаётся человеческим.
+     */
+    const headline = [
+      record.outcome === 'error' ? 'ОТКАЗ' : 'успех',
+      record.code ?? 'без кода',
+      `${record.source ?? '?'}/${record.platform ?? '?'}${record.osVersion ? ' ' + record.osVersion : ''}`,
+      record.appVersion ? `v${record.appVersion}${record.build ? ' (' + record.build + ')' : ''}` : null,
+      record.device,
+      `шаг ${record.step ?? '?'} ${logLine.photos}`,
+      record.durationMs !== null ? `${Math.round(record.durationMs / 1000)}с` : null,
+      record.backgrounded ? 'СВЁРНУТО' : null,
+      record.retries ? `повторов ${record.retries}` : null,
+      record.outcome === 'error' ? reason(record.errorCode, record.errorMessage) : record.propertyId,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+
+    functions.logger.write({
+      severity: record.outcome === 'error' ? 'ERROR' : 'INFO',
+      message: `[ClientError] ${headline}`,
+      ...logLine,
+    });
 
     try {
       const collection = admin.firestore().collection('clientErrors');
