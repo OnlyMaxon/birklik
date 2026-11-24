@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions/v1';
 import {admin} from './firebase-admin';
 import {
   cleanupExpiredPremium,
+  cleanupExpiredClientErrors,
   cleanupOrphanedCancellationRequests,
   cleanupOrphanedDrafts,
   expireStalePayments
@@ -286,19 +287,30 @@ export const syncAppleRefundsDaily = functions
   });
 
 /**
- * Еженедельно убирает запросы на отмену, чья бронь больше не существует.
+ * Еженедельная уборка мелких коллекций базы.
  *
- * Основную дыру закрыли в приложении — `deleteBooking` удаляет запрос вместе с
- * бронью. Это сеть под ней: брони пропадают и мимо приложения, вместе с
- * удалённым объявлением или правкой руками в консоли.
+ * Запросы на отмену, чья бронь больше не существует: основную дыру закрыли в
+ * приложении — `deleteBooking` удаляет запрос вместе с бронью. Это сеть под ней:
+ * брони пропадают и мимо приложения, вместе с удалённым объявлением или правкой
+ * руками в консоли.
+ *
+ * Донесения об ошибках с истёкшим сроком — вместо политики TTL самой Firestore.
+ * ⚠️ Она включается ТОЛЬКО руками в консоли, кодом её не выразить и выкладкой не
+ * поставить, а поле `expiresAt` без неё просто дата в документе и ничего не
+ * удаляет. Решение владельца 2026-11-23: делать кодом, чтобы выкладывалось
+ * командой и не забывалось. Сюда, а не в `cleanupStorage`: донесения лежат в
+ * Firestore, а та ходит по хранилищу.
  */
 export const cleanupStaleRequests = functions
   .region('europe-west1')
   .pubsub.schedule('every sunday 05:00')
   .timeZone('UTC')
   .onRun(async () => {
-    const result = await cleanupOrphanedCancellationRequests();
-    console.log(`[Cleanup] запросы на отмену без брони: ${result.count}`);
+    const stale = await cleanupOrphanedCancellationRequests();
+    const reports = await cleanupExpiredClientErrors();
+    console.log(
+      `[Cleanup] запросы на отмену без брони: ${stale.count}, донесений просроченных: ${reports.count}`
+    );
     return null;
   });
 

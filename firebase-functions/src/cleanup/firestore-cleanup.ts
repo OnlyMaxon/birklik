@@ -341,6 +341,78 @@ async function deletePropertyImages(images: string[]): Promise<void> {
 // заново. Скрытие делает cleanupExpiredPremium, см. выше.
 
 /**
+ * Удаляет донесения об ошибках, чей срок хранения вышел.
+ *
+ * Заменяет политику TTL самой Firestore. Поле `expiresAt` (90 дней) функция
+ * `reportClientError` пишет в каждую запись с самого начала — но **дата в
+ * документе сама ничего не удаляет**. Чтобы по ней удалялось, в настройках базы
+ * нужна политика TTL, и включается она только руками в консоли: кодом её не
+ * выразить, в `firestore.indexes.json` её нет, выкладкой она не ставится.
+ * Проверено 2026-11-23: в проекте не включено ни одной. Владелец предпочёл
+ * сделать это кодом — так оно выкладывается командой и не забывается.
+ *
+ * ⚠️ Запись БЕЗ `expiresAt` не удаляется никогда. Неравенство в Firestore
+ * пропускает документы, у которых поля нет вовсе, — то есть случайно занесённое
+ * руками или оставшееся от старой версии останется лежать. Это и нужно: сносить
+ * то, чей срок неизвестен, здесь не за что.
+ *
+ * ⚠️ Предел `maxDeletesPerRun` (100) здесь НЕ годится, и это не вольность.
+ * Донесений в сутки единицы, но ровно в тот день, когда сломается сборка, их
+ * станут тысячи — и уборка со сотней за неделю не догонит никогда. Поэтому
+ * сносим пачками по 450 (предел пакета Firestore — 500) и не больше десяти
+ * пачек за запуск: потолок есть, но он на два порядка выше обычного дня.
+ */
+export async function cleanupExpiredClientErrors(): Promise<CleanupLog> {
+  const startTime = Date.now();
+  const deletedIds: string[] = [];
+  const BATCH = 450;
+  const MAX_BATCHES = 10;
+
+  try {
+    for (let pass = 0; pass < MAX_BATCHES; pass++) {
+      const snap = await admin
+        .firestore()
+        .collection('clientErrors')
+        .where('expiresAt', '<', admin.firestore.Timestamp.now())
+        .limit(BATCH)
+        .get();
+
+      if (snap.empty) break;
+
+      const batch = admin.firestore().batch();
+      for (const doc of snap.docs) {
+        batch.delete(doc.ref);
+        deletedIds.push(doc.id);
+      }
+      await batch.commit();
+
+      if (snap.size < BATCH) break;
+    }
+
+    console.log(`[Cleanup] донесений с истёкшим сроком удалено: ${deletedIds.length}`);
+    return {
+      timestamp: new Date(),
+      type: 'expired_client_errors',
+      status: 'success',
+      count: deletedIds.length,
+      deletedIds,
+      duration: Date.now() - startTime,
+    };
+  } catch (error: any) {
+    console.error('[ERROR] cleanupExpiredClientErrors:', error);
+    return {
+      timestamp: new Date(),
+      type: 'expired_client_errors',
+      status: 'failed',
+      count: 0,
+      deletedIds,
+      error: error.message,
+      duration: Date.now() - startTime,
+    };
+  }
+}
+
+/**
  * Удаляет запросы на отмену, чья бронь больше не существует.
  *
  * Такой запрос никому не виден и ничего не значит: интерфейс владельца работает
