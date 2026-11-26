@@ -1247,6 +1247,27 @@
   color: var(--neutral);
 }
 
+/* Имя объявления в отчёте — ссылка на само объявление.
+
+   Цвет тот же, которым подсвечены имена объявлений на соседних вкладках
+   модераторки (`.property-link`): синего в оформлении сайта нет совсем, и
+   один синий пункт посреди зелёных читался бы как чужой.
+
+   Подчёркивание только под курсором: в таблице из двадцати строк подчёркнутое
+   каждое имя рябит и мешает читать остальные столбцы. */
+.reports-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.reports-link:hover,
+.reports-link:focus-visible {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
 .reports-flag {
   margin-left: 8px;
   padding: 1px 7px;
@@ -1283,9 +1304,19 @@
   }
 
   /* Общее правило печати в base.css дописывает адрес после каждой ссылки.
-     В отчёте ссылок нет, но пусть и не появятся. */
+     В отчёте ссылка одна — имя объявления, — и адрес вида
+     `(https://birklik.az/property/AbC123)` рядом с ним только ломает столбец.
+
+     Цвет в бумаге тоже снимаем: на печати ссылка никуда не ведёт, а зелёное
+     имя среди чёрных читается как пометка, которой не задумано. */
   .reports-print a[href]:after {
     content: '';
+  }
+
+  .reports-link {
+    color: inherit;
+    font-weight: inherit;
+    text-decoration: none;
   }
 
   .reports-table {

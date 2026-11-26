@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import {Link} from '@/lib/navigation'
 import type {Booking, Language, MonthlyRevenue, Property, Translations} from '@birklik/core/types'
 import type {UserRecord} from '@/services/user-service'
 import {buildMonthReport, reportMonths, tierOf, undatedCounts, type ReportSources} from './reports-data'
@@ -440,7 +441,23 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 <tbody>
                   {report.listings.map(listing => (
                     <tr key={listing.id}>
-                      <td>{getLocalizedText(listing.title) || listing.id}</td>
+                      <td>
+                        {/* Имя объявления — ссылка на само объявление: из отчёта
+                            владелец идёт смотреть, что именно добавилось.
+
+                            Отдельной вкладкой, потому что вкладка отчёта держит
+                            выбранный месяц и выбранную плитку в своём состоянии:
+                            уход на объявление и возврат назад сбросили бы их на
+                            текущий месяц и «показаны все». */}
+                        <Link
+                          to={`/property/${listing.id}`}
+                          className="reports-link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {getLocalizedText(listing.title) || listing.id}
+                        </Link>
+                      </td>
                       <td>{tierLabel(tierOf(listing), t)}</td>
                       <td>{ownerName(listing)}</td>
                       <td>{formatDate(listing.createdAt)}</td>
